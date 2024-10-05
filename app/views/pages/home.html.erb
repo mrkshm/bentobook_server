@@ -1,9 +1,24 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<div class="container mx-auto mt-8 p-4">
+  <h1 class="text-3xl font-bold text-primary">Welcome to Your App</h1>
+  
+  <div class="mt-4">
+    <button class="btn btn-primary">Primary Button</button>
+    <button class="btn btn-secondary">Secondary Button</button>
+  </div>
 
-<p>it is my home page</p>
+  <div class="mt-4">
+    <div class="card w-96 bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Card title</h2>
+        <p>If a dog chews shoes whose shoes does he choose?</p>
+        <div class="card-actions justify-end">
+          <button class="btn btn-primary">Buy Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-<%= vite_javascript_tag 'application' %>
 
 <script>
   console.log('This is an inline script')

@@ -30,11 +30,30 @@ gem "kamal", ">= 2.1.0", require: false
 
 gem 'vite_rails'
 
+gem 'pagy'
+
+gem 'alba'
+
+gem 'pg_search'
+
+gem 'heroicon'
+
+gem "view_component"
+
+gem 'money-rails'
+
+gem 'geocoder'
+
+gem 'devise'
+
+gem 'acts-as-taggable-on'
+
+gem 'devise-jwt'
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 1.2"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -52,8 +71,15 @@ group :development do
   gem "web-console"
 end
 
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
+  gem 'rswag-specs'
+end
+
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  gem 'simplecov', require: false
 end
