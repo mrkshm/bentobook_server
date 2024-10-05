@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+require "fileutils"
+
+# Default to development if no RAILS_ENV is specified
+ENV["RAILS_ENV"] ||= "development"
+
+# Load environment variables from .env file if present
+if File.exist?(".env")
+  File.foreach(".env") do |line|
+    key, value = line.strip.split("=", 2)
+    ENV[key] = value
+  end
+end
+
+exec "foreman start -f Procfile.dev"
