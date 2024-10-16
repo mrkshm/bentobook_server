@@ -105,6 +105,10 @@ GEM
     connection_pool (2.4.1)
     crass (1.0.6)
     csv (3.3.0)
+    database_cleaner-active_record (2.2.0)
+      activerecord (>= 5.a)
+      database_cleaner-core (~> 2.0.0)
+    database_cleaner-core (2.0.1)
     date (3.3.4)
     debug (1.9.2)
       irb (~> 1.10)
@@ -285,6 +289,10 @@ GEM
       activesupport (= 8.0.0.beta1)
       bundler (>= 1.15.0)
       railties (= 8.0.0.beta1)
+    rails-controller-testing (1.0.5)
+      actionpack (>= 5.0.1.rc1)
+      actionview (>= 5.0.1.rc1)
+      activesupport (>= 5.0.1.rc1)
     rails-dom-testing (2.2.0)
       activesupport (>= 5.0.0)
       minitest
@@ -373,6 +381,8 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
+    shoulda-matchers (6.4.0)
+      activesupport (>= 5.2.0)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -460,6 +470,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   capybara
+  database_cleaner-active_record
   debug
   devise
   devise-jwt
@@ -476,10 +487,12 @@ DEPENDENCIES
   propshaft
   puma (>= 5.0)
   rails (~> 8.0.0.beta1)
+  rails-controller-testing
   rspec-rails
   rswag-specs
   rubocop-rails-omakase
   selenium-webdriver
+  shoulda-matchers
   simplecov
   solid_cable
   solid_cache

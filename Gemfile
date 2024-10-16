@@ -82,4 +82,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   gem 'simplecov', require: false
+  gem 'shoulda-matchers'
+  gem 'rails-controller-testing'
+  gem 'database_cleaner-active_record'
 end

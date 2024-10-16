@@ -1,0 +1,13 @@
+<div data-controller="tag-input">
+  <div class="flex flex-wrap gap-2 mb-2" data-tag-input-target="tagList"></div>
+  <input type="text" 
+         class="input input-bordered w-full" 
+         data-tag-input-target="input"
+         data-action="keydown->tag-input#handleKeyDown input->tag-input#filterSuggestions"
+         placeholder="Add tags...">
+  <div class="mt-1" data-tag-input-target="suggestions"></div>
+  <input type="hidden" 
+         name="<%= input_name %>" 
+         value="<%= tags.join(',') %>" 
+         data-tag-input-target="hiddenInput">
+</div>

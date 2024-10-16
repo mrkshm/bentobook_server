@@ -1,0 +1,44 @@
+<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300 relative">
+  <%= link_to restaurant_path(restaurant), class: "absolute inset-0 z-10", "aria-label": "View details for #{restaurant.name}", data: { turbo: false } do %>
+    <span class="sr-only">View details for <%= restaurant.name %></span>
+  <% end %>
+  <div class="card-body">
+    <h2 class="card-title flex items-center">
+      <%= restaurant.name %>
+      <% if restaurant.cuisine_type %>
+        <span class="ml-2 text-sm font-normal text-gray-500"><%= restaurant.cuisine_type.name %></span>
+      <% end %>
+    </h2>
+    <div class="mt-2">
+      <h3 class="font-semibold mb-1">Address</h3>
+      <p><%= "#{restaurant.street_number} #{restaurant.street}" %></p>
+      <p><%= "#{restaurant.postal_code} #{restaurant.city}" %></p>
+      <% if restaurant.state.present? %>
+        <p><%= restaurant.state %></p>
+      <% end %>
+      <p><%= restaurant.country %></p>
+    </div>
+    <div class="mt-4">
+      <h3 class="font-semibold mb-1">Contact</h3>
+      <% if restaurant.phone_number.present? %>
+        <div class="flex items-center mb-2">
+          <%= heroicon "phone", options: { class: "w-5 h-5 mr-2 text-gray-600" } %>
+          <span><%= restaurant.phone_number %></span>
+        </div>
+      <% end %>
+      <% if restaurant.url.present? %>
+        <div class="flex items-center relative z-20">
+          <%= heroicon "globe-alt", options: { class: "w-5 h-5 mr-2 text-gray-600" } %>
+          <%= link_to restaurant.url, restaurant.url, target: "_blank", class: "link link-primary", data: { turbo: false } %>
+        </div>
+      <% end %>
+    </div>
+    <% if restaurant.tags.any? %>
+      <div class="mt-4">
+        <% restaurant.tags.each do |tag| %>
+          <span class="badge badge-outline mr-1 mb-1"><%= tag.name %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

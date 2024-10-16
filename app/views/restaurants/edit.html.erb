@@ -1,0 +1,142 @@
+<div class="card bg-base-100 shadow-xl max-w-2xl mx-auto mt-4">
+  <div class="card-body">
+    <%= form_with(model: @restaurant, local: true, class: "space-y-6") do |form| %>
+      <% if @restaurant.errors.any? %>
+        <div class="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div>
+            <h3 class="font-bold">Please correct the following errors:</h3>
+            <ul class="mt-2 list-disc list-inside">
+              <% @restaurant.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Name, Address and Contact Information -->
+      <div data-controller="editable-address-section">
+        <div data-editable-address-section-target="readOnly">
+          <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-bold"><%= @restaurant.name %></h1>
+            <%= button_tag type: "button", 
+                           data: { 
+                             action: "click->editable-address-section#toggleEdit"
+                           },
+                           class: "btn btn-ghost btn-sm" do %>
+              <%= heroicon "pencil", options: { class: "w-5 h-5" } %>
+            <% end %>
+          </div>
+          <%= render 'restaurants/basic-info', restaurant: @restaurant %>
+        </div>
+        <div data-editable-address-section-target="editable" class="hidden">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Edit Restaurant Details</h2>
+            <%= button_tag type: "button", 
+                           data: { action: "click->editable-address-section#toggleEdit" },
+                           class: "btn btn-ghost btn-sm" do %>
+              <%= heroicon "x-mark", options: { class: "w-5 h-5" } %>
+            <% end %>
+          </div>
+          <div class="space-y-4">
+            <div class="form-control">
+              <%= form.label :name, class: "label" %>
+              <%= form.text_field :name, value: @restaurant.combined_name, class: "input input-bordered w-full" %>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="form-control">
+                <%= form.label :street_number, class: "label text-sm" %>
+                <%= form.text_field :street_number, value: @restaurant.combined_street_number, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :street, class: "label text-sm" %>
+                <%= form.text_field :street, value: @restaurant.combined_street, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :postal_code, class: "label text-sm" %>
+                <%= form.text_field :postal_code, value: @restaurant.combined_postal_code, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :city, class: "label text-sm" %>
+                <%= form.text_field :city, value: @restaurant.combined_city, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :state, class: "label text-sm" %>
+                <%= form.text_field :state, value: @restaurant.combined_state, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :country, class: "label text-sm" %>
+                <%= form.text_field :country, value: @restaurant.combined_country, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :phone_number, class: "label text-sm" %>
+                <%= form.text_field :phone_number, value: @restaurant.combined_phone_number, class: "input input-bordered input-sm w-full" %>
+              </div>
+              <div class="form-control">
+                <%= form.label :url, class: "label text-sm" %>
+                <%= form.text_field :url, value: @restaurant.combined_url, class: "input input-bordered input-sm w-full" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Restaurant Details (always editable) -->
+      <div class="card bg-base-200 shadow-sm">
+        <div class="card-body p-4 space-y-3">
+          <!-- <h2 class="card-title text-lg">Restaurant Details</h2> -->
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="form-control">
+              <%= form.label :rating, "Your Rating", class: "label text-sm" %>
+              <%= render(RatingsComponent.new(rating: @restaurant.rating, form: form)) %>
+            </div>
+            <div class="form-control">
+              <%= form.label :price_level, class: "label text-sm" %>
+              <%= render(PriceLevelComponent.new(restaurant: @restaurant, form: form)) %>
+            </div>
+            <div class="form-control">
+              <%= render(CuisineTypeSelectComponent.new(form: form, cuisine_types: CuisineType.all)) %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags (always editable) -->
+      <div class="card bg-base-200 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="card-title text-lg mb-2">Tags</h2>
+          <%= render(TagInputComponent.new(tags: @restaurant.tag_list, input_name: "restaurant[tag_list]")) %>
+        </div>
+      </div>
+
+      <!-- Notes (always editable) -->
+      <div class="card bg-base-200 shadow-sm">
+        <div class="card-body p-4">
+          <h2 class="card-title text-lg mb-2">Notes</h2>
+          <%= form.text_area :notes, value: @restaurant.notes, rows: 3, class: "textarea textarea-bordered w-full" %>
+        </div>
+      </div>
+
+      <!-- Images (unchanged) -->
+      <div class="form-control mt-4">
+        <h2 class="text-lg font-semibold mb-2">Restaurant Images</h2>
+        <%= render(ImageUploadComponent.new(form, @restaurant, self)) %>
+      </div>
+
+      <div class="flex items-center justify-between mt-6">
+        <%= form.submit "Update Restaurant", class: "btn btn-primary", data: { turbo: false } %>
+        <%= link_to "Cancel", restaurant_path(@restaurant), class: "btn btn-ghost" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="card bg-base-100 shadow-xl max-w-2xl mx-auto mt-8">
+  <div class="card-body">
+    <h2 class="card-title text-xl mb-4">Delete this restaurant</h2>
+    <p class="mb-4">If you no longer want to track this restaurant, you can remove it from your list.</p>
+    <%= button_to "Delete Restaurant", restaurant_path(@restaurant), method: :delete, data: { turbo_confirm: "Are you sure you want to remove this restaurant from your list?" }, class: "btn btn-error" %>
+  </div>
+</div>

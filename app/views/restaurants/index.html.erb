@@ -1,0 +1,74 @@
+<h1 class="text-4xl mb-4">Restaurants</h1>
+
+<% flash.each do |type, message| %>
+  <div class="alert alert-<%= type %>">
+    <%= message %>
+  </div>
+<% end %>
+
+<% if params[:tag].present? %>
+  <div class="alert alert-info">
+    Showing restaurants tagged with "<%= params[:tag] %>"
+  </div>
+<% end %>
+
+<div class="mb-4">
+  <%= render(ButtonComponent.new(text: 'Create New Restaurant', path: new_restaurant_path, method: :get)) %>
+</div>
+
+<div class="mb-4 flex flex-col md:flex-row justify-between items-end gap-4">
+  <%= form_tag restaurants_path, method: :get, class: 'w-full md:w-auto', id: 'sort-form' do %>
+    <%= hidden_field_tag :search, params[:search] %>
+    <div class="form-control w-full">
+      <label for="sort-select" class="label">
+        <span class="label-text">Sort by:</span>
+      </label>
+      <div class="flex gap-2 items-center">
+        <select id="sort-select" name="order_by" class="select select-bordered w-full md:w-64" onchange="this.form.submit()">
+          <% [['name', 'Name'], ['created_at', 'Created At'], ['updated_at', 'Updated At'], ['distance', 'Distance']].each do |value, label| %>
+            <option value="<%= value %>" <%= 'selected' if params[:order_by] == value %>><%= label %></option>
+          <% end %>
+        </select>
+        <div class="flex gap-1">
+          <%= button_tag type: 'submit', name: 'order_direction', value: 'asc', class: "btn btn-ghost btn-sm #{'btn-active' if params[:order_direction] != 'desc'}" do %>
+            <%= heroicon "arrow-down", options: { class: "w-5 h-5" } %>
+          <% end %>
+          <%= button_tag type: 'submit', name: 'order_direction', value: 'desc', class: "btn btn-ghost btn-sm #{'btn-active' if params[:order_direction] == 'desc'}" do %>
+            <%= heroicon "arrow-up", options: { class: "w-5 h-5" } %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%= form_tag restaurants_path, method: :get, class: 'w-full md:w-1/2', id: 'search-form' do %>
+    <div class="flex flex-col md:flex-row items-end gap-2">
+      <div class="form-control w-full">
+        <label for="search-input" class="label">
+          <span class="label-text">Search:</span>
+        </label>
+        <div class="flex gap-2">
+          <input type="text" id="search-input" name="search" value="<%= params[:search] %>" class="input input-bordered w-full" placeholder="Search restaurants...">
+          <%= submit_tag 'Search', class: 'btn btn-primary whitespace-nowrap' %>
+          <%= button_tag 'Reset', type: 'button', class: 'btn btn-ghost whitespace-nowrap', onclick: "window.location='#{restaurants_path}'" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<% if @restaurants.empty? %>
+  <p class="no-restaurants-message">No restaurants found.</p>
+<% else %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <% @restaurants.each do |restaurant| %>
+      <%= render(RestaurantCardComponent.new(restaurant: restaurant)) %>
+    <% end %>
+  </div>
+  <div class="flex flex-col items-center space-y-4 mt-8">
+    <%== pagy_daisy_ui_nav(@pagy) %>
+    <div class="text-sm text-gray-600 bg-base-200 p-2 rounded-lg">
+      <%== pagy_info(@pagy) %>
+    </div>
+  </div>
+<% end %>

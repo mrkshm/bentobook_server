@@ -71,4 +71,111 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
   config.include FactoryBot::Syntax::Methods
+  config.include Devise::Test::ControllerHelpers, type: :controller
+  config.include Devise::Test::IntegrationHelpers, type: :request
+  config.include ActionDispatch::TestProcess
+  config.include ActiveSupport::Testing::FileFixtures
+  
+  # If you're using DatabaseCleaner, make sure to clean the test database after each test
+  config.use_transactional_fixtures = false
+
+  config.before(:suite) do
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.strategy = :transaction
+  end
+
+  config.before(:each, js: true) do
+    DatabaseCleaner.strategy = :truncation
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
+
+  config.before(:each) do
+    class << Rails.logger
+      def debug_messages
+        @debug_messages ||= []
+      end
+
+      def debug(message = nil)
+        debug_messages << message if message
+      end
+    end
+  end
+
+  config.after(:each) do
+    Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
+  end
 end
+
+require 'shoulda/matchers'
+require 'rails-controller-testing'
+
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+end
+
+Geocoder::Lookup::Test.set_default_stub(
+  [
+    {
+      'coordinates'  => [40.7143528, -74.0059731],
+      'address'      => 'New York, NY, USA',
+      'state'        => 'New York',
+      'state_code'   => 'NY',
+      'country'      => 'United States',
+      'country_code' => 'US'
+    }
+  ]
+)
+
+Geocoder::Lookup::Test.add_stub(
+  [40.7300, -74.0000], [
+    {
+      'coordinates'  => [40.7300, -74.0000],
+      'address'      => 'New York, NY, USA',
+      'state'        => 'New York',
+      'state_code'   => 'NY',
+      'country'      => 'United States',
+      'country_code' => 'US'
+    }
+  ]
+)
+
+Geocoder::Lookup::Test.add_stub(
+  [40.7128, -74.0060], [
+    {
+      'coordinates'  => [40.7128, -74.0060],
+      'address'      => 'New York, NY, USA',
+      'state'        => 'New York',
+      'state_code'   => 'NY',
+      'country'      => 'United States',
+      'country_code' => 'US'
+    }
+  ]
+)
+
+Geocoder::Lookup::Test.add_stub(
+  [40.7489, -73.9680], [
+    {
+      'coordinates'  => [40.7489, -73.9680],
+      'address'      => 'New York, NY, USA',
+      'state'        => 'New York',
+      'state_code'   => 'NY',
+      'country'      => 'United States',
+      'country_code' => 'US'
+    }
+  ]
+)
+
+Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
