@@ -6,6 +6,10 @@ class TagInputComponent < ViewComponent::Base
       @input_name = input_name
     end
   
+    def tag_list
+      @tags.join(',')
+    end
+  
     private
   
     attr_reader :tags, :input_name

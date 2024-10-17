@@ -12,10 +12,10 @@ class RestaurantCardComponent < ApplicationComponent
     def formatted_address
       [
         "#{restaurant.street_number} #{restaurant.street}",
-        "#{restaurant.postal_code} #{restaurant.city}",
+        [restaurant.postal_code, restaurant.city].compact.join(' '),
         restaurant.state,
         restaurant.country
-      ].compact.join(", ")
+      ].compact.reject(&:empty?).join(', ')
     end
   end
   

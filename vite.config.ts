@@ -7,6 +7,12 @@ export default defineConfig({
   plugins: [
     RubyPlugin(),
   ],
+  resolve: {
+    alias: {
+      '@hotwired/stimulus': '@hotwired/stimulus/dist/stimulus.js',
+      '@hotwired/turbo': '@hotwired/turbo/dist/turbo.es2017-esm.js',
+    },
+  },
   css: {
     postcss: {
       plugins: [
@@ -14,5 +20,9 @@ export default defineConfig({
         autoprefixer,
       ],
     },
+  },
+  build: {
+    // This ensures that CSS is extracted into a separate file
+    cssCodeSplit: false,
   },
 })

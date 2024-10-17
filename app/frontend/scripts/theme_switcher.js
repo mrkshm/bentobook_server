@@ -1,4 +1,4 @@
-function initializeThemeSwitcher() {
+export function initializeThemeSwitcher() {
     const themeSelect = document.getElementById('theme-select');
     if (themeSelect) {
       const currentTheme = localStorage.getItem('theme') || 'light';

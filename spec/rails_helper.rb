@@ -75,6 +75,10 @@ RSpec.configure do |config|
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include ActionDispatch::TestProcess
   config.include ActiveSupport::Testing::FileFixtures
+  config.include ViewComponent::TestHelpers, type: :component
+  config.include ActionView::Helpers::FormHelper
+  config.include ActionView::RecordIdentifier
+  config.include ActionDispatch::Routing::PolymorphicRoutes
   
   # If you're using DatabaseCleaner, make sure to clean the test database after each test
   config.use_transactional_fixtures = false

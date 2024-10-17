@@ -2,4 +2,8 @@
 
 class ApplicationComponent < ViewComponent::Base
     include HeroiconHelper
+
+    def call
+        content
+    end
 end
