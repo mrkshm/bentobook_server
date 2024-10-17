@@ -13,7 +13,8 @@ class RestaurantsController < ApplicationController
   
       restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
   
-      @restaurants = RestaurantQuery.new(restaurants_scope, search_params).call
+      query_params = search_params.merge(order_params)
+      @restaurants = RestaurantQuery.new(restaurants_scope, query_params).call
       @pagy, @restaurants = pagy(@restaurants, items: items_per_page)
   
       @tags = ActsAsTaggableOn::Tag.most_used(10)
@@ -97,7 +98,8 @@ class RestaurantsController < ApplicationController
         if @restaurant.save
           redirect_to restaurant_path(@restaurant), notice: 'Tag added successfully.'
         else
-          render :show, alert: 'Failed to add tag.'
+          flash.now[:alert] = 'Failed to add tag.'
+          render :show
         end
       else
         redirect_to restaurant_path(@restaurant), alert: 'No tag provided.'
@@ -111,7 +113,8 @@ class RestaurantsController < ApplicationController
         if @restaurant.save
           redirect_to restaurant_path(@restaurant), notice: 'Tag removed successfully.'
         else
-          render :show, alert: 'Failed to remove tag.'
+          flash.now[:alert] = 'Failed to remove tag.'
+          render :show
         end
       else
         redirect_to restaurant_path(@restaurant), alert: 'No tag provided.'
@@ -134,7 +137,7 @@ class RestaurantsController < ApplicationController
         order_direction = RestaurantQuery::DEFAULT_ORDER[:direction]
       end
 
-      [order_field, order_direction]
+      { order_by: order_field, order_direction: order_direction }
     end
   
     def valid_order_direction?(direction)
@@ -142,7 +145,7 @@ class RestaurantsController < ApplicationController
     end
   
     def search_params
-      params.permit(:search, :tag, :order_by, :order_direction, :latitude, :longitude).merge(user: current_user)
+      params.permit(:search, :tag, :latitude, :longitude).merge(user: current_user)
     end
   
     def tag_params
@@ -155,7 +158,10 @@ class RestaurantsController < ApplicationController
   
     def build_restaurant
       restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type))
-      restaurant.cuisine_type = CuisineType.find_or_create_by(name: restaurant_params[:cuisine_type])
+      cuisine_type_name = restaurant_params[:cuisine_type]
+      if cuisine_type_name.present?
+        restaurant.cuisine_type = CuisineType.find_or_create_by(name: cuisine_type_name)
+      end
       restaurant
     end
   

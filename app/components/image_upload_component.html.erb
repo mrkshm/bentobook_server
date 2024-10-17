@@ -26,7 +26,11 @@
       <div class="image-thumbnail relative">
         <% if image.file.attached? %>
           <% if image.file.variable? %>
-            <%= image_tag image.file.variant(resize_to_limit: [100, 100]), class: "rounded-lg shadow-md w-full h-full object-cover" %>
+            <% begin %>
+              <%= image_tag image.file.variant(resize_to_limit: [100, 100]), class: "rounded-lg shadow-md w-full h-full object-cover" %>
+            <% rescue StandardError => e %>
+              <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">Error loading image</div>
+            <% end %>
           <% else %>
             <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">Non-variable image</div>
           <% end %>
