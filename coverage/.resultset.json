@@ -53,6 +53,39 @@
         "lines": [
           1,
           1,
+          1,
+          null
+        ]
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/helpers/daisy_ui_pagy_helper.rb": {
+        "lines": [
+          1,
+          1,
+          9,
+          9,
+          9,
+          null,
+          9,
+          9,
+          7,
+          null,
+          2,
+          null,
+          9,
+          16,
+          13,
+          1,
+          1,
+          1,
+          null,
+          null,
+          8,
+          6,
+          null,
+          2,
+          null,
+          8,
+          null,
           null
         ]
       },
@@ -1335,8 +1368,8 @@
           8,
           8,
           40,
-          11,
-          11,
+          10,
+          10,
           null,
           null,
           8,
@@ -1384,6 +1417,6 @@
         ]
       }
     },
-    "timestamp": 1729261089
+    "timestamp": 1729262367
   }
 }
