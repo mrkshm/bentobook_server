@@ -73,7 +73,6 @@ RSpec.describe RestaurantUpdater do
       it "creates a new cuisine type if it doesn't exist" do
         expect {
           result = updater_for_cuisine_test.send(:update_cuisine_type)
-          puts "Test 1: CuisineType count: #{CuisineType.count}, Result: #{result}"
           expect(result).to be true
         }.to change(CuisineType, :count).by(1)
         restaurant_for_cuisine_test.reload
@@ -85,7 +84,6 @@ RSpec.describe RestaurantUpdater do
         create(:cuisine_type, name: "italian")
         expect {
           result = updater_for_cuisine_test.send(:update_cuisine_type)
-          puts "Test 2: CuisineType count: #{CuisineType.count}, Result: #{result}"
           expect(result).to be true
         }.not_to change(CuisineType, :count)
         restaurant_for_cuisine_test.reload
@@ -97,7 +95,6 @@ RSpec.describe RestaurantUpdater do
         cuisine_type = create(:cuisine_type, name: "italian")
         restaurant_for_cuisine_test.update!(cuisine_type: cuisine_type)
         result = updater_for_cuisine_test.send(:update_cuisine_type)
-        puts "Test 3: CuisineType count: #{CuisineType.count}, Result: #{result}"
         expect(result).to be false
       end
 
@@ -106,7 +103,6 @@ RSpec.describe RestaurantUpdater do
         params[:cuisine_type_name] = "ITALIAN"
         expect {
           result = updater_for_cuisine_test.send(:update_cuisine_type)
-          puts "Test 4: CuisineType count: #{CuisineType.count}, Result: #{result}"
           expect(result).to be true
         }.not_to change(CuisineType, :count)
         restaurant_for_cuisine_test.reload

@@ -1,0 +1,15 @@
+<% if object.errors.any? %>
+  <div class="alert alert-error shadow-lg">
+    <div>
+      <%= heroicon "x-circle", options: { class: "w-6 h-6 stroke-current" } %>
+      <div>
+        <h3 class="font-bold">Please correct the following errors:</h3>
+        <ul class="mt-2 list-disc list-inside">
+          <% object.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,11 @@
+en:
+  visits:
+    index:
+      title: "Your Visits"
+    new:
+      title: "New Visit"
+    edit:
+      title: "Edit Visit"
+    show:
+      title: "Visit Details"
+

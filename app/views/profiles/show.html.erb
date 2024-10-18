@@ -1,0 +1,70 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title text-2xl mb-4"><%= t('profile.title') %></h2>
+
+    <div class="flex flex-col md:flex-row items-start md:items-center mb-6">
+      <% if @profile.avatar.attached? %>
+        <%= image_tag @profile.avatar, class: "avatar rounded-full w-24 h-24 mr-4 mb-4 md:mb-0" %>
+      <% else %>
+        <div class="avatar placeholder mr-4 mb-4 md:mb-0">
+          <div class="bg-neutral-focus text-neutral-content rounded-full w-24">
+            <span class="text-3xl"><%= @profile.display_name.first.upcase %></span>
+          </div>
+        </div>
+      <% end %>
+
+      <div>
+        <h3 class="text-xl font-semibold"><%= @profile.display_name %></h3>
+        <% if @profile.username.present? %>
+          <p class="text-sm text-base-content/70">@<%= @profile.username %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @profile.about.present? %>
+      <div class="mb-6">
+        <h4 class="font-semibold mb-2">About</h4>
+        <p><%= @profile.about %></p>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <% if @profile.full_name.present? %>
+        <div>
+          <h4 class="font-semibold mb-2">Full Name</h4>
+          <p><%= @profile.full_name %></p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="card-actions justify-end mt-6">
+      <%= link_to 'Edit Profile', edit_profile_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+</div>
+
+<!-- Theme and Language switchers -->
+<div class="mt-8 flex justify-center space-x-4">
+  <select class="select select-bordered w-full max-w-xs" id="theme-select">
+    <option value="light">Light</option>
+    <option value="dark">Dark</option>
+    <option value="cupcake">Cupcake</option>
+    <option value="black">Black</option>
+  </select>
+
+  <div class="flex justify-center">
+    <%= button_to profile_path(locale: nil), method: :get, 
+        class: "btn btn-ghost #{I18n.locale.to_s == 'en' ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}", 
+        disabled: I18n.locale.to_s == 'en' do %>
+      <span class="text-2xl">🇬🇧</span>
+      <span class="ml-2">EN</span>
+    <% end %>
+
+    <%= button_to profile_path(locale: 'fr'), method: :get, 
+        class: "btn btn-ghost #{I18n.locale.to_s == 'fr' ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}", 
+        disabled: I18n.locale.to_s == 'fr' do %>
+      <span class="text-2xl">🇫🇷</span>
+      <span class="ml-2">FR</span>
+    <% end %>
+  </div>
+</div>

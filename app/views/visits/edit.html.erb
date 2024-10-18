@@ -1,0 +1,73 @@
+<div class="card bg-base-100 shadow-xl max-w-5xl mx-auto mt-8">
+  <div class="card-body">
+    <h1 class="card-title text-3xl mb-6">Edit Visit</h1>
+
+    <%= form_with(model: @visit, local: true, class: "space-y-8") do |form| %>
+      <%= render 'form_errors', object: @visit %>
+
+      <div class="grid grid-cols-1 gap-8">
+        <%= render 'form_fields', form: form, visit: @visit %>
+      </div>
+
+      <!-- Display current images -->
+      <div class="mt-6">
+        <h2 class="text-xl font-semibold mb-4">Current Images</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <% @visit.images.each do |image| %>
+            <div class="relative group">
+              <% if image.file.attached? %>
+                <%= image_tag image.file, class: "w-full h-48 object-cover rounded-lg shadow-md" %>
+                <%= link_to image_path(image), 
+                            method: :delete, 
+                            data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, 
+                            class: "btn btn-circle btn-xs btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" do %>
+                  <%= heroicon "trash", options: { class: "w-4 h-4" } %>
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Add new images -->
+      <div class="form-control mt-8">
+        <h2 class="text-xl font-semibold mb-4">Add New Images</h2>
+        <%= render(ImageUploadComponent.new(form, @visit, self)) %>
+      </div>
+
+      <div class="flex justify-between items-center mt-8">
+        <%= form.submit 'Update Visit', class: 'btn btn-primary' %>
+        <div>
+          <%= link_to 'Show', @visit, class: 'btn btn-ghost mr-2' %>
+          <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const currencyInput = document.getElementById('visit_price_paid_currency');
+  const datalist = document.getElementById('currency-list');
+
+  currencyInput.addEventListener('input', () => {
+    const val = currencyInput.value.toUpperCase();
+    const options = datalist.options;
+    let found = false;
+
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].value.startsWith(val)) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found && val.length > 0) {
+      currencyInput.setCustomValidity('Please select a valid currency');
+    } else {
+      currencyInput.setCustomValidity('');
+    }
+  });
+});
+</script>

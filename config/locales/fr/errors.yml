@@ -1,0 +1,7 @@
+fr:
+  errors:
+    visits:
+      restaurant_required: "Un restaurant doit être sélectionné."
+      update_failed: "Restaurant invalide sélectionné ou la mise à jour a échoué. Veuillez vérifier vos informations."
+      not_found: "Visite non trouvée."
+

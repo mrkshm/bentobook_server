@@ -22,12 +22,12 @@ RSpec.describe Visit, type: :model do
     end
 
     it 'allows nil values for price_paid' do
-      visit = Visit.new(user: user, restaurant: restaurant, price_paid: nil)
+      visit = Visit.new(user: user, restaurant: restaurant, price_paid: nil, date: Date.today)
       expect(visit).to be_valid
     end
 
     it 'sets the correct currency for price_paid' do
-      visit = Visit.new(user: user, restaurant: restaurant, price_paid_cents: 1000, price_paid_currency: 'USD')
+      visit = Visit.new(user: user, restaurant: restaurant, price_paid_cents: 1000, price_paid_currency: 'USD', date: Date.today)
       expect(visit.price_paid.currency.iso_code).to eq('USD')
     end
   end

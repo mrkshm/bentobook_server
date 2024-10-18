@@ -1,0 +1,9 @@
+en:
+  errors:
+    visits:
+      restaurant_required: "Restaurant must be selected."
+      update_failed: "Invalid restaurant selected or update failed. Please check your input."
+      not_found: "Visit not found."
+      image_processing_failed: "Image processing failed. Please try again."
+      save_failed: "Failed to save the visit. Please check the form for errors."
+

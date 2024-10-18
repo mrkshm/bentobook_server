@@ -1,0 +1,7 @@
+fr:
+  notices:
+    visits:
+      created: "La visite a été créée avec succès."
+      updated: "La visite a été mise à jour avec succès."
+      deleted: "La visite a été supprimée avec succès."
+

@@ -1,0 +1,72 @@
+<div class="card bg-base-100 shadow-xl max-w-4xl mx-auto mt-8">
+  <div class="card-body">
+    <h1 class="card-title text-3xl mb-6"><%= @visit.title %></h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h2 class="text-xl font-semibold mb-2">Visit Details</h2>
+        <div class="space-y-2">
+          <p><strong>Date:</strong> <%= @visit.date.strftime("%B %d, %Y") %></p>
+          <p><strong>Restaurant:</strong> <%= @visit.restaurant&.name || "N/A" %></p>
+          <% if @visit.price_paid.present? %>
+            <p><strong>Price Paid:</strong> <%= @visit.price_paid.format %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-xl font-semibold mb-2">Rating</h2>
+        <%= render(RatingsComponent.new(rating: @visit.rating, readonly: true)) %>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-semibold">Notes</h2>
+      <div class="bg-base-200 p-4 rounded-lg">
+        <%= simple_format(@visit.notes) %>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="space-y-4">
+      <h2 class="text-xl font-semibold">Contacts</h2>
+      <% if @visit.contacts.any? %>
+        <div class="flex flex-wrap gap-4">
+          <% @visit.contacts.each do |contact| %>
+            <%= link_to contact_path(contact), class: "flex items-center space-x-2 hover:bg-base-200 p-2 rounded-lg transition-colors duration-200" do %>
+              <%= render(AvatarComponent.new(user: contact, size: :medium)) %>
+              <span class="font-medium"><%= contact.name %></span>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <p>No contacts associated with this visit.</p>
+      <% end %>
+    </div>
+
+    <% if @visit.images.any? %>
+      <div class="divider"></div>
+      <div class="space-y-4">
+        <h2 class="text-xl font-semibold">Attached Images</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <% @visit.images.each do |image| %>
+            <div class="card bg-base-200">
+              <%= image_tag url_for(image.file), class: "w-full h-48 object-cover rounded-t-lg" %>
+              <div class="card-body p-2">
+                <p class="text-sm"><%= image.file.filename %></p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="card-actions justify-end mt-6">
+      <%= link_to 'Edit', edit_visit_path(@visit), class: 'btn btn-primary' %>
+      <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<div class="space-y-6">
+  <div class="form-control">
+    <%= form.label :restaurant_id, "Select Restaurant", class: "label" %>
+    <%= form.collection_select :restaurant_id, Restaurant.with_google, :id, :name, { prompt: "Select a restaurant" }, { class: "select select-bordered w-full" } %>
+  </div>
+
+  <div class="form-control">
+    <%= form.label :date, class: "label" %>
+    <div class="flex flex-wrap gap-2">
+      <%= form.date_select :date, {}, { class: "select select-bordered" } %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="form-control md:col-span-2">
+      <%= form.label :title, class: "label" %>
+      <%= form.text_field :title, class: "input input-bordered w-full" %>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :contacts, "Select Contacts", class: "label" %>
+      <div class="flex items-center">
+        <div class="overflow-y-auto max-h-48 bg-base-200 rounded-lg p-2 flex-grow">
+          <%= form.collection_check_boxes :contact_ids, Contact.all, :id, :name do |b| %>
+            <label class="label cursor-pointer flex items-center">
+              <%= b.check_box class: "checkbox mr-2" %>
+              <div class="flex items-center">
+                <%= render(AvatarComponent.new(user: b.object, size: :small)) %>
+                <span class="label-text ml-2"><%= b.text %></span>
+              </div>
+            </label>
+          <% end %>
+        </div>
+        <%= link_to new_contact_path, class: "btn btn-circle btn-sm ml-2", data: { turbo_frame: "new_contact" } do %>
+          <%= heroicon "plus", options: { class: "w-5 h-5" } %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-control">
+    <%= form.label :notes, class: "label" %>
+    <%= form.text_area :notes, class: "textarea textarea-bordered h-24 w-full" %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+    <div class="form-control">
+      <%= form.label :rating, "Rate this Visit", class: "label" %>
+      <div class="mt-2">
+        <%= render(RatingsComponent.new(rating: visit.rating, form: form)) %>
+      </div>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :price_paid, "Price Paid", class: "label" %>
+      <div class="flex space-x-2">
+        <%= form.number_field :price_paid, step: 0.01, class: "input input-bordered w-full md:w-32" %>
+        <%= form.text_field :price_paid_currency, list: "currency-list", autocomplete: "off", class: "input input-bordered w-full md:w-24" %>
+      </div>
+      <datalist id="currency-list">
+        <% Money::Currency.all.each do |currency| %>
+          <option value="<%= currency.iso_code %>"><%= "#{currency.iso_code} - #{currency.name}" %></option>
+        <% end %>
+      </datalist>
+    </div>
+  </div>
+</div>
+
+<%= turbo_frame_tag "new_contact" %>

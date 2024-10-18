@@ -6,5 +6,11 @@ FactoryBot.define do
     title { "Visit to Restaurant" }
     notes { "Had a great time" }
     rating { rand(1..5) }
+
+    trait :with_image do
+      after(:create) do |visit|
+        create(:image, imageable: visit)
+      end
+    end
   end
 end

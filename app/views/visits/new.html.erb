@@ -1,0 +1,49 @@
+<div class="card bg-base-100 shadow-xl max-w-5xl mx-auto mt-8">
+  <div class="card-body">
+    <h1 class="card-title text-3xl mb-6">New Visit</h1>
+
+    <%= form_with(model: @visit, local: true, class: "space-y-8") do |form| %>
+      <%= render 'form_errors', object: @visit %>
+
+      <div class="grid grid-cols-1 gap-8">
+        <%= render 'form_fields', form: form, visit: @visit %>
+      </div>
+
+      <div class="form-control mt-8">
+        <h2 class="text-xl font-semibold mb-4">Add Images</h2>
+        <%= render(ImageUploadComponent.new(form, @visit, self)) %>
+      </div>
+
+      <div class="flex justify-between items-center mt-8">
+        <%= form.submit 'Create Visit', class: 'btn btn-primary' %>
+        <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const currencyInput = document.getElementById('visit_price_paid_currency');
+  const datalist = document.getElementById('currency-list');
+
+  currencyInput.addEventListener('input', () => {
+    const val = currencyInput.value.toUpperCase();
+    const options = datalist.options;
+    let found = false;
+
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].value.startsWith(val)) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found && val.length > 0) {
+      currencyInput.setCustomValidity('Please select a valid currency');
+    } else {
+      currencyInput.setCustomValidity('');
+    }
+  });
+});
+</script>

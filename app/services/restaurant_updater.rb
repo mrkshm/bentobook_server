@@ -56,10 +56,8 @@ class RestaurantUpdater
       if restaurant.cuisine_type != cuisine_type
         restaurant.cuisine_type = cuisine_type
         restaurant.save!  # Save the restaurant to persist the cuisine_type change
-        puts "Updated restaurant cuisine_type to: #{cuisine_type.inspect}"
         true
       else
-        puts "Restaurant already has the cuisine_type: #{cuisine_type.inspect}"
         false
       end
     elsif params[:cuisine_type_id].present?

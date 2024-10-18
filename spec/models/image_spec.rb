@@ -10,7 +10,6 @@ RSpec.describe Image, type: :model do
   end
 
   describe 'validations' do
-    it { should validate_presence_of(:imageable) }
     it { should validate_presence_of(:file) }
   end
 

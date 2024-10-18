@@ -1,4 +1,5 @@
 require 'simplecov'
+
 SimpleCov.start 'rails' do
   add_filter '/test/'
   add_filter '/config/'
@@ -122,6 +123,7 @@ end
 
 require 'shoulda/matchers'
 require 'rails-controller-testing'
+require 'timecop'
 
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|
@@ -183,3 +185,11 @@ Geocoder::Lookup::Test.add_stub(
 )
 
 Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+
+def exceed_query_limit(limit)
+  raise_error(RSpec::Expectations::ExpectationNotMetError) do |error|
+    query_count = ActiveRecord::QueryCounter.count { yield }
+    error.message = "Expected to run maximum #{limit} queries, but ran #{query_count}"
+    query_count > limit
+  end
+end

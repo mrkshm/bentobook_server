@@ -1,0 +1,92 @@
+<div class="card bg-base-100 shadow-xl max-w-2xl mx-auto mt-8">
+  <div class="card-body">
+    <h2 class="card-title text-2xl mb-6">Edit Your Profile</h2>
+
+    <%= form_with(model: @profile, local: true, class: "space-y-6") do |form| %>
+      <% if @profile.errors.any? %>
+        <div class="alert alert-error">
+          <h2><%= pluralize(@profile.errors.count, "error") %> prohibited this profile from being saved:</h2>
+          <ul>
+            <% @profile.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="form-control">
+        <%= form.label :avatar, class: "label" %>
+        <div id="avatar-container" class="mb-4">
+          <% if @profile.avatar.attached? %>
+            <%= image_tag @profile.avatar, class: "w-24 h-24 object-cover rounded-full", id: "current-avatar" %>
+          <% end %>
+        </div>
+        <%= form.file_field :avatar, onchange: "previewAvatar(this);", class: "file-input file-input-bordered w-full max-w-xs" %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :username, class: "label" %>
+        <%= form.text_field :username, class: "input input-bordered" %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :first_name, class: "label" %>
+        <%= form.text_field :first_name, class: "input input-bordered" %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :last_name, class: "label" %>
+        <%= form.text_field :last_name, class: "input input-bordered" %>
+      </div>
+
+      <div class="form-control">
+        <%= form.label :about, class: "label" %>
+        <%= form.text_area :about, class: "textarea textarea-bordered h-24" %>
+      </div>
+
+      <div class="form-control mt-6">
+        <%= form.submit 'Update Profile', class: "btn btn-primary" %>
+      </div>
+    <% end %>
+
+    <div class="card-actions justify-end mt-6">
+      <%= link_to 'Back to Profile', profile_path, class: "btn btn-ghost" %>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewAvatar(input) {
+  const avatarContainer = document.getElementById('avatar-container');
+  const currentAvatar = document.getElementById('current-avatar');
+
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+      if (currentAvatar) {
+        currentAvatar.style.display = 'none';
+      }
+
+      let preview = avatarContainer.querySelector('.avatar-preview');
+      if (!preview) {
+        preview = document.createElement('img');
+        preview.className = 'w-24 h-24 object-cover rounded-full avatar-preview';
+        avatarContainer.appendChild(preview);
+      }
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+    
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    if (currentAvatar) {
+      currentAvatar.style.display = 'block';
+    }
+    const preview = avatarContainer.querySelector('.avatar-preview');
+    if (preview) {
+      preview.style.display = 'none';
+    }
+  }
+}
+</script>

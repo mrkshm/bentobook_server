@@ -127,7 +127,7 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "redirects to the created restaurant" do
         post :create, params: { restaurant: valid_attributes }
-        expect(response).to redirect_to(Restaurant.last)
+        expect(response).to redirect_to(restaurant_path(Restaurant.last))
       end
     end
 

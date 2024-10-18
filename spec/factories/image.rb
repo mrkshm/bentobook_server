@@ -5,5 +5,9 @@ FactoryBot.define do
       after(:build) do |image|
         image.file.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'test_image.jpg')), filename: 'test_image.jpg', content_type: 'image/jpeg')
       end
+
+      trait :for_visit do
+        association :imageable, factory: :visit
+      end
     end
 end

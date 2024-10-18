@@ -1,0 +1,7 @@
+en:
+  notices:
+    visits:
+      created: "Visit was successfully created."
+      updated: "Visit was successfully updated."
+      deleted: "Visit was successfully deleted."
+
