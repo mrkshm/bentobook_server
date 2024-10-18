@@ -17,6 +17,8 @@ Rails.application.routes.draw do
       resources :images, only: [:destroy]
     end
 
+    resources :contacts
+
     resource :profile, only: [:show, :edit, :update] do
       post 'change_locale', on: :collection
     end

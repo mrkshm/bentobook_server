@@ -1,0 +1,37 @@
+<h1 class="flex justify-between items-center">
+  Your Contacts
+  <%= render(ButtonComponent.new(text: 'Add a Contact', path: new_contact_path, style: :primary, size: :normal, extra_classes: 'ml-4')) %>
+</h1>
+
+<table class="min-w-full divide-y divide-gray-200">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>City</th>
+      <th>Country</th>
+      <th>Phone</th>
+      <th>Notes</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @contacts.each do |contact| %>
+      <tr>
+        <td><%= contact.name %></td>
+        <td><%= contact.email %></td>
+        <td><%= contact.city %></td>
+        <td><%= contact.country %></td>
+        <td><%= contact.phone %></td>
+        <td><%= contact.notes %></td>
+        <td><%= link_to 'Show', contact %></td>
+        <td><%= link_to 'Edit', edit_contact_path(contact) %></td>
+        <td><%= render(ButtonComponent.new(text: 'Destroy', path: contact_path(contact), method: :delete, style: :secondary, size: :small, extra_classes: 'ml-4')) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%== pagy_nav(@pagy) %>
+<%== pagy_info(@pagy) %>

@@ -1,0 +1,41 @@
+<h1>Contact Details</h1>
+
+<% if @contact.avatar.attached? %>
+  <%= image_tag @contact.avatar, class: "avatar" %>
+<% end %>
+
+<p>
+  <strong>Name:</strong>
+  <%= @contact.name %>
+</p>
+
+<p>
+  <strong>Email:</strong>
+  <%= @contact.email %>
+</p>
+
+<p>
+  <strong>City:</strong>
+  <%= @contact.city %>
+</p>
+
+<p>
+  <strong>Country:</strong>
+  <%= @contact.country %>
+</p>
+
+<p>
+  <strong>Phone:</strong>
+  <%= @contact.phone %>
+</p>
+
+<p>
+  <strong>Notes:</strong>
+  <%= @contact.notes %>
+</p>
+
+<div class="actions mt-6">
+  <%= link_to 'Edit', edit_contact_path(@contact), class: 'btn btn-warning' %>
+  <%= link_to 'Delete', contact_path(@contact), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+  <%= link_to 'Back to Contacts', contacts_path, class: 'btn btn-secondary' %>
+</div>

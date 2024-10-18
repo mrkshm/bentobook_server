@@ -1,0 +1,95 @@
+<%= form_with(model: contact, local: true, class: "space-y-6") do |form| %>
+  <% if contact.errors.any? %>
+    <div class="alert alert-error">
+      <h2><%= pluralize(contact.errors.count, "error") %> prohibited this contact from being saved:</h2>
+      <ul class="list-disc list-inside">
+        <% contact.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-control">
+    <%= form.label :avatar, class: "label" %>
+    <div id="avatar-container" class="mb-4">
+      <% if contact.avatar.attached? %>
+        <%= image_tag contact.avatar, class: "w-24 h-24 object-cover rounded-full", id: "current-avatar" %>
+      <% end %>
+    </div>
+    <%= form.file_field :avatar, onchange: "previewAvatar(this);", class: "file-input file-input-bordered w-full" %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="form-control">
+      <%= form.label :name, class: "label" %>
+      <%= form.text_field :name, class: "input input-bordered w-full" %>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :email, class: "label" %>
+      <%= form.email_field :email, class: "input input-bordered w-full" %>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :city, class: "label" %>
+      <%= form.text_field :city, class: "input input-bordered w-full" %>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :country, class: "label" %>
+      <%= form.text_field :country, class: "input input-bordered w-full" %>
+    </div>
+
+    <div class="form-control">
+      <%= form.label :phone, class: "label" %>
+      <%= form.telephone_field :phone, class: "input input-bordered w-full" %>
+    </div>
+  </div>
+
+  <div class="form-control">
+    <%= form.label :notes, class: "label" %>
+    <%= form.text_area :notes, class: "textarea textarea-bordered h-24 w-full" %>
+  </div>
+
+  <div class="form-control mt-6">
+    <%= form.submit submit_text, class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+<script>
+function previewAvatar(input) {
+  const avatarContainer = document.getElementById('avatar-container');
+  const currentAvatar = document.getElementById('current-avatar');
+
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      if (currentAvatar) {
+        currentAvatar.style.display = 'none';
+      }
+
+      let preview = avatarContainer.querySelector('.avatar-preview');
+      if (!preview) {
+        preview = document.createElement('img');
+        preview.className = 'w-24 h-24 object-cover rounded-full avatar-preview';
+        avatarContainer.appendChild(preview);
+      }
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    // If no file is selected (e.g., user cancelled file selection)
+    if (currentAvatar) {
+      currentAvatar.style.display = 'block';
+    }
+    const preview = avatarContainer.querySelector('.avatar-preview');
+    if (preview) {
+      preview.style.display = 'none';
+    }
+  }
+}
+</script>
