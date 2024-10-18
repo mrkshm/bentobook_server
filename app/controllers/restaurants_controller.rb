@@ -73,12 +73,14 @@ class RestaurantsController < ApplicationController
         @restaurant.google_restaurant = @google_restaurant
 
         if @restaurant.save
-          redirect_to restaurant_path(@restaurant), notice: 'Restaurant was successfully created.'
+          redirect_to({ action: :show, id: @restaurant.id }, notice: 'Restaurant was successfully created.')
         else
+          Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
           render :new, status: :unprocessable_entity
         end
       end
     rescue ActiveRecord::RecordInvalid => e
+      Rails.logger.error "Failed to create restaurant: #{e.message}"
       flash.now[:alert] = e.message
       render :new, status: :unprocessable_entity
     end
