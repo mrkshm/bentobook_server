@@ -542,14 +542,14 @@
           1,
           null,
           1,
-          102,
+          103,
           null,
           null,
           1,
-          102,
-          102,
-          100,
-          100,
+          103,
+          103,
+          101,
+          101,
           null,
           2,
           null,
@@ -564,8 +564,8 @@
           null,
           null,
           1,
-          102,
-          102,
+          103,
+          103,
           null,
           null
         ]
@@ -1480,8 +1480,23 @@
           1,
           null
         ]
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/serializers/profile_serializer.rb": {
+        "lines": [
+          0,
+          0,
+          null,
+          0,
+          null,
+          0,
+          0,
+          0,
+          0
+        ],
+        "branches": {
+        }
       }
     },
-    "timestamp": 1729262822
+    "timestamp": 1729345582
   }
 }
