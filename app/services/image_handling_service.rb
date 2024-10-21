@@ -1,11 +1,15 @@
 require 'securerandom'
 
 class ImageHandlingService
-  def self.process_images(visit, image_params)
-    return { success: false, message: "No image params" } unless image_params && image_params[:images]
+  def self.process_images(visit, params)
+    Rails.logger.info "Starting process_images for visit #{visit.id}"
+    return { success: false, message: "No image params" } unless params && params[:images]
 
     results = []
-    image_params[:images].each do |image|
+    success = true
+
+    params[:images].each_with_index do |image, index|
+      Rails.logger.info "Processing image #{index + 1}"
       if image.respond_to?(:tempfile) && image.respond_to?(:original_filename)
         new_image = visit.images.new
         new_image.file.attach(
@@ -28,6 +32,7 @@ class ImageHandlingService
     end
 
     visit.save!
+    Rails.logger.info "Finished processing images for visit #{visit.id}"
     { success: true, results: results }
   rescue StandardError => e
     Rails.logger.error "Error in process_images: #{e.message}"

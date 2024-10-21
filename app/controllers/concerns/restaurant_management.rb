@@ -80,41 +80,49 @@ module RestaurantManagement
     end
   
     def find_or_create_google_restaurant
-      google_attrs = google_restaurant_params
-      Rails.logger.debug "Google attrs: #{google_attrs.inspect}"
-      return nil if google_attrs.blank?
+      google_place_id = restaurant_params[:google_place_id]
+      name = restaurant_params[:name]
+      address = restaurant_params[:address]
+      city = restaurant_params[:city]
+      latitude = restaurant_params[:latitude]
+      longitude = restaurant_params[:longitude]
 
-      google_place_id = google_attrs[:google_place_id]
-      Rails.logger.debug "Google place ID: #{google_place_id}"
+      puts "Google Place ID: #{google_place_id}"
+
       return nil if google_place_id.blank?
 
-      # Check if latitude and longitude are present
-      if google_attrs[:latitude].blank? || google_attrs[:longitude].blank?
-        Rails.logger.error "Latitude or longitude is missing"
+      # Ensure latitude and longitude are present
+      if latitude.blank? || longitude.blank?
+        puts "Latitude or longitude is missing"
         return nil
       end
 
       google_restaurant = GoogleRestaurant.find_or_create_by(google_place_id: google_place_id) do |gr|
-        Rails.logger.debug "Creating new GoogleRestaurant"
-        gr.assign_attributes(google_attrs)
+        puts "Creating new GoogleRestaurant"
+        gr.name = name
+        gr.address = address
+        gr.city = city
+        gr.latitude = latitude
+        gr.longitude = longitude
       end
-      
+
       if google_restaurant.persisted?
-        Rails.logger.debug "Updating existing GoogleRestaurant"
-        google_restaurant.update(google_attrs)
+        puts "GoogleRestaurant persisted: #{google_restaurant.persisted?}"
       else
-        Rails.logger.debug "Failed to create GoogleRestaurant"
+        puts "Failed to create GoogleRestaurant: #{google_restaurant.errors.full_messages}"
       end
 
       unless google_restaurant.valid?
-        Rails.logger.error "GoogleRestaurant is invalid: #{google_restaurant.errors.full_messages}"
+        puts "GoogleRestaurant is invalid: #{google_restaurant.errors.full_messages}"
       end
 
-      Rails.logger.debug "GoogleRestaurant after find_or_create_by: #{google_restaurant.inspect}"
-      Rails.logger.debug "GoogleRestaurant persisted?: #{google_restaurant.persisted?}"
-      Rails.logger.debug "GoogleRestaurant errors: #{google_restaurant.errors.full_messages}"
+      puts "GoogleRestaurant after find_or_create_by: #{google_restaurant.inspect}"
+      puts "GoogleRestaurant persisted?: #{google_restaurant.persisted?}"
+      puts "GoogleRestaurant errors: #{google_restaurant.errors.full_messages}"
 
       google_restaurant
     end
+    
   
+    
   end

@@ -48,6 +48,9 @@ gem 'devise'
 
 gem 'acts-as-taggable-on'
 
+gem 'rswag-api'
+gem 'rswag-ui'
+
 gem 'devise-jwt'
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false

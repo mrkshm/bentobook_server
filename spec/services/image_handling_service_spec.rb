@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe ImageHandlingService do
+  before(:each) do
+    allow(ImageHandlingService).to receive(:process_images).and_call_original
+  end
+ 
   let(:visit) { create(:visit) }
 
   after(:each) do

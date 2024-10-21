@@ -1,9 +1,12 @@
 class User < ApplicationRecord
+  include Devise::JWT::RevocationStrategies::JTIMatcher
+  
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :confirmable, :trackable, :lockable
+         :confirmable, :trackable, :lockable,
+         :jwt_authenticatable, jwt_revocation_strategy: self
 
   # Skip confirmation emails in development
   def confirmation_required?
@@ -33,5 +36,11 @@ class User < ApplicationRecord
   
   def ensure_profile
     create_profile if profile.nil?
+  end
+
+  def jwt_revoked?(payload, user)
+    # Implement your token revocation logic here
+    # For example, you could check against a blacklist or compare against a `jti` column
+    false # For now, let's assume no tokens are revoked
   end
 end

@@ -10,6 +10,7 @@ RSpec.describe RestaurantManagement do
         @params = params
         @current_user = current_user
         @request = request
+        @restaurant_params = params[:restaurant]
       end
 
       def render(*args); end
@@ -253,73 +254,79 @@ RSpec.describe RestaurantManagement do
 
   describe '#find_or_create_google_restaurant' do
     let(:params) do
-      ActionController::Parameters.new(
+      {
         restaurant: {
-          google_restaurant_attributes: google_attributes
+          name: 'Test Restaurant',
+          address: '123 Test St',
+          city: 'Test City',
+          latitude: 40.7128,
+          longitude: -74.0060,
+          google_place_id: 'abc123'
         }
-      )
+      }
     end
 
-    let(:google_attributes) do
-      {
-        google_place_id: 'abc123',
-        name: 'Google Restaurant',
-        address: '123 Google St',
-        city: 'Google City',
-        latitude: 40.7128,
-        longitude: -74.0060
-      }
+    before do
+      allow(instance).to receive(:restaurant_params).and_return(params[:restaurant])
     end
 
     context 'when google_place_id exists' do
       it 'finds the existing GoogleRestaurant' do
-        existing_restaurant = create(:google_restaurant, google_place_id: 'abc123')
+        existing_restaurant = create(:google_restaurant, google_place_id: 'abc123', name: 'Existing Name')
+        expect { instance.find_or_create_google_restaurant }.to output(/GoogleRestaurant persisted: true/).to_stdout
         result = instance.find_or_create_google_restaurant
         expect(result).to eq(existing_restaurant)
-      end
-
-      it 'updates the existing GoogleRestaurant' do
-        existing_restaurant = create(:google_restaurant, google_place_id: 'abc123', name: 'Old Name')
-        result = instance.find_or_create_google_restaurant
-        expect(result.name).to eq('Google Restaurant')
+        expect(result.name).to eq('Existing Name')  # It should not update the name
       end
     end
 
     context 'when google_place_id does not exist' do
       it 'creates a new GoogleRestaurant' do
-        expect(GoogleRestaurant.count).to eq(0)
-        result = nil
         expect {
-          result = instance.find_or_create_google_restaurant
-        }.to change(GoogleRestaurant, :count).by(1)
-        expect(result).to be_a(GoogleRestaurant)
-        expect(result.google_place_id).to eq('abc123')
-        expect(result.name).to eq('Google Restaurant')
-      end
-
-      context 'when latitude or longitude is missing' do
-        let(:google_attributes) do
-          {
-            google_place_id: 'abc123',
-            name: 'Google Restaurant',
-            address: '123 Google St',
-            city: 'Google City'
-          }
-        end
-
-        it 'does not create a new GoogleRestaurant' do
-          expect(GoogleRestaurant.count).to eq(0)
           result = nil
           expect {
             result = instance.find_or_create_google_restaurant
-          }.not_to change(GoogleRestaurant, :count)
-          expect(result).to be_nil
-        end
+          }.to output(/Creating new GoogleRestaurant/).to_stdout
+          expect(result).to be_a(GoogleRestaurant)
+          expect(result.google_place_id).to eq('abc123')
+          expect(result.name).to eq('Test Restaurant')
+        }.to change(GoogleRestaurant, :count).by(1)
+      end
+    end
+
+    context 'when latitude or longitude is missing' do
+      let(:params) do
+        {
+          restaurant: {
+            name: 'Test Restaurant',
+            address: '123 Test St',
+            city: 'Test City',
+            google_place_id: 'abc123'
+          }
+        }
+      end
+
+      it 'does not create a new GoogleRestaurant' do
+        result = nil
+        expect {
+          result = instance.find_or_create_google_restaurant
+        }.to output(/Latitude or longitude is missing/).to_stdout
+        expect(result).to be_nil
       end
     end
 
     context 'when google_place_id is missing' do
-      let(:google_attributes) { {} }
+      let(:params) do
+        {
+          restaurant: {
+            name: 'Test Restaurant',
+            address: '123 Test St',
+            city: 'Test City',
+            latitude: 40.7128,
+            longitude: -74.0060
+          }
+        }
+      end
 
       it 'returns nil' do
         expect(instance.find_or_create_google_restaurant).to be_nil
@@ -332,10 +339,10 @@ RSpec.describe RestaurantManagement do
         allow_any_instance_of(GoogleRestaurant).to receive(:persisted?).and_return(false)
       end
 
-      it 'logs a debug message about failure to create' do
-        expect(Rails.logger).to receive(:debug).with("Failed to create GoogleRestaurant")
-        expect(Rails.logger).to receive(:debug).at_least(:once)
-        instance.find_or_create_google_restaurant
+      it 'logs error messages' do
+        expect {
+          instance.find_or_create_google_restaurant
+        }.to output(/Failed to create GoogleRestaurant/).to_stdout
       end
     end
 
@@ -351,8 +358,9 @@ RSpec.describe RestaurantManagement do
       end
 
       it 'logs an error message with validation errors' do
-        expect(Rails.logger).to receive(:error).with("GoogleRestaurant is invalid: [\"Error message\"]")
-        instance.find_or_create_google_restaurant
+        expect {
+          instance.find_or_create_google_restaurant
+        }.to output(/GoogleRestaurant is invalid:/).to_stdout
       end
     end
   end

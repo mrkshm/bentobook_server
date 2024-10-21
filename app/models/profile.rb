@@ -4,6 +4,7 @@ class Profile < ApplicationRecord
   has_one_attached :avatar
 
   validates :username, uniqueness: true, allow_blank: true
+  validates :first_name, :last_name, length: { maximum: 50 }
 
   def full_name
     "#{first_name} #{last_name}".strip.presence

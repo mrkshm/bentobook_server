@@ -1,0 +1,321 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+components:
+  securitySchemes:
+    bearer_auth:
+      type: http
+      scheme: bearer
+      bearer_format: JWT
+security:
+- bearer_auth: []
+paths:
+  "/api/v1/contacts":
+    get:
+      summary: Retrieves all contacts
+      tags:
+      - Contacts
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: contacts found
+        '401':
+          description: unauthorized
+    post:
+      summary: Creates a contact
+      tags:
+      - Contacts
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: contact created
+        '422':
+          description: invalid request
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                city:
+                  type: string
+                country:
+                  type: string
+                phone:
+                  type: string
+                notes:
+                  type: string
+              required:
+              - name
+              - email
+  "/api/v1/contacts/{id}":
+    get:
+      summary: Retrieves a contact
+      tags:
+      - Contacts
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: contact found
+        '404':
+          description: contact not found
+        '401':
+          description: unauthorized
+    patch:
+      summary: Updates a contact
+      tags:
+      - Contacts
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: contact updated
+        '422':
+          description: invalid request
+        '404':
+          description: contact not found
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                city:
+                  type: string
+                country:
+                  type: string
+                phone:
+                  type: string
+                notes:
+                  type: string
+    delete:
+      summary: Deletes a contact
+      tags:
+      - Contacts
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: contact deleted
+        '404':
+          description: contact not found
+        '401':
+          description: unauthorized
+  "/api/v1/profile":
+    get:
+      summary: Retrieves the user profile
+      tags:
+      - Profiles
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: profile found
+        '401':
+          description: unauthorized
+    patch:
+      summary: Updates the user profile
+      tags:
+      - Profiles
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '200':
+          description: profile updated
+        '422':
+          description: invalid request
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                about:
+                  type: string
+                avatar:
+                  type: string
+  "/api/v1/visits":
+    get:
+      summary: Retrieves all visits
+      tags:
+      - Visits
+      security:
+      - bearer_auth: []
+      responses:
+        '200':
+          description: visits found
+        '401':
+          description: unauthorized
+    post:
+      summary: Creates a visit
+      tags:
+      - Visits
+      security:
+      - bearer_auth: []
+      parameters: []
+      responses:
+        '201':
+          description: visit created
+        '422':
+          description: invalid request
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                title:
+                  type: string
+                notes:
+                  type: string
+                restaurant_id:
+                  type: integer
+                rating:
+                  type: integer
+                price_paid:
+                  type: number
+                price_paid_currency:
+                  type: string
+                contact_ids:
+                  type: array
+                  items:
+                    type: integer
+              required:
+              - date
+              - title
+              - restaurant_id
+  "/api/v1/visits/{id}":
+    get:
+      summary: Retrieves a visit
+      tags:
+      - Visits
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: visit found
+        '404':
+          description: visit not found
+        '401':
+          description: unauthorized
+    patch:
+      summary: Updates a visit
+      tags:
+      - Visits
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: visit updated
+        '422':
+          description: invalid request
+        '404':
+          description: visit not found
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                title:
+                  type: string
+                notes:
+                  type: string
+                restaurant_id:
+                  type: integer
+                rating:
+                  type: integer
+                price_paid:
+                  type: number
+                price_paid_currency:
+                  type: string
+                contact_ids:
+                  type: array
+                  items:
+                    type: integer
+    delete:
+      summary: Deletes a visit
+      tags:
+      - Visits
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: visit deleted
+        '404':
+          description: visit not found
+        '401':
+          description: unauthorized
