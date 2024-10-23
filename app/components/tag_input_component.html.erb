@@ -1,4 +1,5 @@
-<div data-controller="tag-input">
+<div data-controller="tag-input" 
+     data-tag-input-available-tags-value="<%= available_tags.to_json %>">
   <div class="flex flex-wrap gap-2 mb-2" data-tag-input-target="tagList"></div>
   <input type="text" 
          class="input input-bordered w-full" 
@@ -8,6 +9,6 @@
   <div class="mt-1" data-tag-input-target="suggestions"></div>
   <input type="hidden" 
          name="<%= input_name %>" 
-         value="<%= tag_list %>" 
+         value="<%= tags.join(',') %>" 
          data-tag-input-target="hiddenInput">
 </div>

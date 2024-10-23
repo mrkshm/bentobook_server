@@ -1,0 +1,121 @@
+<div class="card bg-base-200 shadow-xl">
+  <div class="card-body">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="card-title text-2xl" id="name-display"></h2>
+      <button @click="editing = !editing" class="btn btn-sm btn-ghost">
+        <template x-if="!editing">
+          <%= heroicon "pencil-square", options: { class: "w-4 h-4 mr-1" } %>
+          Edit
+        </template>
+        <template x-if="editing">
+          <%= heroicon "x-mark", options: { class: "w-4 h-4 mr-1" } %>
+          Close
+        </template>
+      </button>
+    </div>
+    
+    <div x-show="!editing" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Address Section -->
+      <div class="space-y-2">
+        <h3 class="text-lg font-semibold flex items-center gap-2">
+          <%= heroicon "map-pin", options: { class: "w-5 h-5" } %>
+          Address
+        </h3>
+        <div class="pl-7">
+          <p>
+            <span id="street-number-display"></span>
+            <span id="street-display"></span>
+          </p>
+          <p>
+            <span id="postal-code-display"></span>
+            <span id="city-display"></span>
+          </p>
+          <p id="state-display"></p>
+          <p id="country-display"></p>
+        </div>
+      </div>
+
+      <!-- Contact Section -->
+      <div class="space-y-2">
+        <h3 class="text-lg font-semibold flex items-center gap-2">
+          <%= heroicon "information-circle", options: { class: "w-5 h-5" } %>
+          Contact
+        </h3>
+        <div class="pl-7 space-y-2">
+          <p class="flex items-center gap-2" id="phone-container">
+            <%= heroicon "phone", options: { class: "w-4 h-4" } %>
+            <span id="phone-display"></span>
+          </p>
+          
+          <p class="flex items-center gap-2" id="url-container">
+            <%= heroicon "globe-alt", options: { class: "w-4 h-4" } %>
+            <a id="url-display" target="_blank" class="link link-primary"></a>
+          </p>
+
+          <p class="flex items-center gap-2" id="business-status-container">
+            <%= heroicon "building-storefront", options: { class: "w-4 h-4" } %>
+            <span id="business-status-display"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Function to update display values
+function updateDisplayValues() {
+  const fields = {
+    'restaurant_name': ['name-display', 'textContent'],
+    'restaurant_street_number': ['street-number-display', 'textContent'],
+    'restaurant_street': ['street-display', 'textContent'],
+    'restaurant_postal_code': ['postal-code-display', 'textContent'],
+    'restaurant_city': ['city-display', 'textContent'],
+    'restaurant_state': ['state-display', 'textContent'],
+    'restaurant_country': ['country-display', 'textContent'],
+    'restaurant_phone_number': ['phone-display', 'textContent'],
+    'restaurant_url': ['url-display', 'href'],
+    'restaurant_business_status': ['business-status-display', 'textContent']
+  };
+
+  Object.entries(fields).forEach(([inputId, [displayId, property]]) => {
+    const input = document.getElementById(inputId);
+    const display = document.getElementById(displayId);
+    
+    if (input && display) {
+      display[property] = input.value;
+      if (inputId === 'restaurant_url') {
+        display.textContent = input.value;
+      }
+    }
+  });
+}
+
+// Update display when place is selected
+document.addEventListener('place-selected', updateDisplayValues);
+
+// Update display when editing is toggled off
+document.addEventListener('alpine:init', () => {
+  Alpine.effect(() => {
+    const editing = Alpine.$data(document.getElementById('restaurant-form')).editing;
+    if (!editing) {
+      updateDisplayValues();
+    }
+  });
+});
+
+// Add input event listeners to all form fields
+document.addEventListener('DOMContentLoaded', function() {
+  const fields = [
+    'name', 'address', 'street_number', 'street', 'postal_code',
+    'city', 'state', 'country', 'phone_number', 'url', 'business_status'
+  ];
+  
+  fields.forEach(field => {
+    const input = document.getElementById(`restaurant_${field}`);
+    if (input) {
+      input.addEventListener('input', updateDisplayValues);
+    }
+  });
+});
+</script>

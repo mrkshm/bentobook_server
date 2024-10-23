@@ -9,7 +9,7 @@ class PriceLevelComponent < ViewComponent::Base
   end
 
   def call
-    render(@form ? :render_editable_price_level : :render_readonly_price_level)
+    @form ? render_editable_price_level : render_readonly_price_level
   end
 
   private

@@ -1,11 +1,19 @@
+console.log('🔥 FIRST LINE OF APPLICATION.JS 🔥')
+
 import '../stylesheets/application.css'
+import Alpine from 'alpinejs'
+
+window.Alpine = Alpine
+Alpine.start()
+
+
 import { initializeThemeSwitcher } from '../scripts/theme_switcher'
 import { initializeNavbar } from '../scripts/navbar'
 
 import { Application } from "@hotwired/stimulus"
 import { registerControllers } from 'stimulus-vite-helpers'
 import "@hotwired/turbo-rails"
-
+console.log('🔥 ALPINE INITIALIZED 🔥')
 console.log('Vite ⚡️ Rails')
 
 // Initialize Stimulus application
@@ -18,6 +26,8 @@ registerControllers(application, controllers)
 // Turbo
 import * as Turbo from '@hotwired/turbo'
 Turbo.start()
+
+
 
 // Event listeners
 document.addEventListener('turbo:load', () => {

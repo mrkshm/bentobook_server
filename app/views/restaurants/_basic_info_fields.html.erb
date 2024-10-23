@@ -1,0 +1,59 @@
+<div class="space-y-6 bg-base-200 px-2 py-4">
+  <div>
+    <%= form.label :name, t("restaurants.form.name"), class: "label" %>
+    <%= form.text_field :name, class: "input input-bordered w-full bg-base-200" %>
+  </div>
+
+  <div>
+    <%= form.label :address, t("restaurants.form.address"), class: "label" %>
+    <%= form.text_field :address, class: "input input-bordered w-full bg-base-200" %>
+  </div>
+
+  <div class="grid grid-cols-5 gap-4">
+    <div class="col-span-2">
+      <%= form.label :street_number, t("restaurants.form.street_number"), class: "label" %>
+      <%= form.text_field :street_number, class: "input input-bordered w-full bg-base-200" %>
+    </div>
+    <div class="col-span-3">
+      <%= form.label :street, t("restaurants.form.street"), class: "label" %>
+      <%= form.text_field :street, class: "input input-bordered w-full bg-base-200" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-5 gap-4">
+    <div class="col-span-2">
+      <%= form.label :postal_code, t("restaurants.form.postal_code"), class: "label" %>
+      <%= form.text_field :postal_code, class: "input input-bordered w-full bg-base-200" %>
+    </div>
+    <div class="col-span-3">
+      <%= form.label :city, t("restaurants.form.city"), class: "label" %>
+      <%= form.text_field :city, class: "input input-bordered w-full bg-base-200" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-5 gap-4">
+    <div class="col-span-2">
+      <%= form.label :state, t("restaurants.form.state"), class: "label" %>
+      <%= form.text_field :state, class: "input input-bordered w-full bg-base-200" %>
+    </div>
+    <div class="col-span-3">
+      <%= form.label :country, t("restaurants.form.country"), class: "label" %>
+      <%= form.text_field :country, class: "input input-bordered w-full bg-base-200" %>
+    </div>
+  </div>
+
+  <div>
+    <%= form.label :phone_number, t("restaurants.form.phone_number"), class: "label" %>
+    <%= form.text_field :phone_number, class: "input input-bordered w-full bg-base-200" %>
+  </div>
+
+  <div>
+    <%= form.label :url, t("restaurants.form.url"), class: "label" %>
+    <%= form.text_field :url, class: "input input-bordered w-full bg-base-200" %>
+  </div>
+
+  <div>
+    <%= form.label :business_status, t("restaurants.form.business_status"), class: "label" %>
+    <%= form.text_field :business_status, class: "input input-bordered w-full bg-base-200" %>
+  </div>
+</div>

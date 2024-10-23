@@ -58,19 +58,12 @@ class RestaurantsController < ApplicationController
     end
   
     def create
-      ActiveRecord::Base.transaction do
-        @restaurant = current_user.restaurants.new(restaurant_params.except(:google_place_id))
-        @restaurant.cuisine_type = CuisineType.find_or_create_by(name: params[:restaurant][:cuisine_type])
-        
-        @google_restaurant = GoogleRestaurant.find_or_create_by!(google_place_id: params[:restaurant][:google_place_id]) do |gr|
-          gr.name = @restaurant.name
-          gr.address = @restaurant.address
-          gr.city = params[:restaurant][:city]
-          gr.latitude = params[:restaurant][:latitude]
-          gr.longitude = params[:restaurant][:longitude]
-        end
+      Rails.logger.info "Restaurant params received: #{params.inspect}"
+      Rails.logger.info "Permitted params: #{restaurant_params.inspect}"
 
-        @restaurant.google_restaurant = @google_restaurant
+      ActiveRecord::Base.transaction do
+        @restaurant = current_user.restaurants.new(restaurant_params)
+        @restaurant.cuisine_type = CuisineType.find_or_create_by(name: params[:restaurant][:cuisine_type])
 
         if @restaurant.save
           redirect_to({ action: :show, id: @restaurant.id }, notice: 'Restaurant was successfully created.')
@@ -152,7 +145,17 @@ class RestaurantsController < ApplicationController
     end
   
     def restaurant_params
-      params.require(:restaurant).permit(:name, :address, :google_place_id)
+      params.require(:restaurant).permit(
+        :name, :address, :notes, :cuisine_type, :rating, :price_level,
+        :street_number, :street, :postal_code, :city, :state, :country,
+        :phone_number, :url, :business_status, :tag_list,
+        google_restaurant_attributes: [
+          :google_place_id, :name, :address, :latitude, :longitude,
+          :street_number, :street, :postal_code, :city, :state, :country,
+          :phone_number, :url, :business_status, :google_rating,
+          :google_ratings_total, :price_level, :opening_hours, :google_updated_at
+        ]
+      )
     end
   
     def build_restaurant

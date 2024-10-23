@@ -2,16 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["input", "hiddenInput", "tagList", "suggestions"]
+  static values = { availableTags: Array }
 
   connect() {
     this.tags = new Set(this.hiddenInputTarget.value.split(',').map(tag => tag.trim()).filter(Boolean))
     this.renderTags()
-    this.fetchAllTags()
-  }
-
-  async fetchAllTags() {
-    const response = await fetch('/tags.json')
-    this.allTags = await response.json()
   }
 
   handleKeyDown(event) {
@@ -57,7 +52,7 @@ export default class extends Controller {
       this.suggestionsTarget.innerHTML = ''
       return
     }
-    const suggestions = this.allTags.filter(tag => 
+    const suggestions = this.availableTagsValue.filter(tag => 
       tag.toLowerCase().startsWith(input) && !this.tags.has(tag)
     ).slice(0, 5)
     this.suggestionsTarget.innerHTML = suggestions.map(tag => `
