@@ -1,2 +1,22 @@
 <h1><%= t("restaurants.new.title") %></h1>
-<%= render "form", restaurant: @restaurant %>
+
+<div id="restaurant-search" class="max-w-xl mx-auto mb-6">
+  <%= label_tag :restaurant_search, t("restaurants.form.search"), class: "block text-sm font-medium text-gray-700 mb-1" %>
+  <%= text_field_tag :restaurant_search, nil, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50", data: { controller: "places-autocomplete" } %>
+</div>
+
+<div id="restaurant-form" class="hidden">
+  <%= render 'form' %>
+</div>
+
+<%= javascript_tag do %>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchContainer = document.getElementById('restaurant-search');
+    const formContainer = document.getElementById('restaurant-form');
+    
+    document.addEventListener('place-selected', function() {
+      searchContainer.classList.add('hidden');
+      formContainer.classList.remove('hidden');
+    });
+  });
+<% end %>

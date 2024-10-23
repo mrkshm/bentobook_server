@@ -52,7 +52,7 @@ export default class extends Controller {
 
   placeSelected() {
     const place = this.autocomplete.getPlace();
-    const form = this.element.closest('form');
+    const form = document.querySelector('#restaurant-form form'); // Target the form directly
 
     if (!place.geometry) {
       console.error('No details available for input: ' + place.name);
@@ -98,5 +98,9 @@ export default class extends Controller {
 
     console.log('Place selected:', place);
     console.log('Extracted address:', extractedAddress);
+
+    // Dispatch the event to show the form
+    const event = new CustomEvent('place-selected', { bubbles: true });
+    this.element.dispatchEvent(event);
   }
 }
