@@ -1,0 +1,26 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  <div>
+    <h2 class="text-xl font-semibold mb-3">Address</h2>
+    <p><%= "#{@restaurant.street_number} #{@restaurant.street}" %></p>
+    <p><%= "#{@restaurant.postal_code} #{@restaurant.city}" %></p>
+    <% if @restaurant.state.present? %>
+          <p><%= @restaurant.state %></p>
+        <% end %>
+    <p><%= @restaurant.country %></p>
+  </div>
+  <div>
+    <h2 class="text-xl font-semibold mb-3">Contact</h2>
+    <% if @restaurant.phone_number.present? %>
+      <p class="flex items-center">
+        <%= heroicon "phone", options: { class: "w-5 h-5 mr-2" } %>
+        <%= @restaurant.phone_number %>
+      </p>
+    <% end %>
+    <% if @restaurant.url.present? %>
+      <p class="flex items-center mt-2">
+        <%= heroicon "globe-alt", options: { class: "w-5 h-5 mr-2" } %>
+        <%= link_to @restaurant.url, @restaurant.url, target: "_blank", class: "link link-primary no-underline" %>
+      </p>
+    <% end %>
+  </div>
+</div>

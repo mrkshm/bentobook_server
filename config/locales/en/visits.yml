@@ -1,5 +1,9 @@
 en:
   visits:
+    back_to_visits: "Back to Visits"
+    create_visit: "Create Visit"
+    price_paid: "Price Paid"
+    rate_visit: "Rate this Visit"
     index:
       title: "Your Visits"
     new:

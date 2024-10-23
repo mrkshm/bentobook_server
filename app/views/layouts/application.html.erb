@@ -8,6 +8,7 @@
     <%= javascript_tag nonce: true do %>
       window.googleMapsApiKey = "<%= Rails.application.credentials.google_maps_api_key %>";
     <% end %>
+    <%= javascript_include_tag "turbo", type: "module" %>
     <style>
       /* Inline critical CSS */
       body { opacity: 0; transition: opacity 0.3s ease-in; }

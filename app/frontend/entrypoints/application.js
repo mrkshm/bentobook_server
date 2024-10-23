@@ -4,6 +4,7 @@ import { initializeNavbar } from '../scripts/navbar'
 
 import { Application } from "@hotwired/stimulus"
 import { registerControllers } from 'stimulus-vite-helpers'
+import "@hotwired/turbo-rails"
 
 console.log('Vite ⚡️ Rails')
 

@@ -29,15 +29,32 @@
 
 en:
   all_rights_reserved: "All rights reserved."
+  choose_files: "Choose Files"
+  date: "Date"
+  delete: "Delete"
   search: "Search"
+  no_files_selected: "No files selected"
+  notes: "Notes"
   reset: "Reset"
+  select_contacts: "Select Contacts"
+  select_restaurant: "Select Restaurant"
+  select_restaurant_placeholder: "Select a restaurant"
   sign_in: "Log In"
   sign_up: "Sign Up"
   sign_out: "Log Out"
   submit: "Submit"
+  title: "Title"
   cancel: "Cancel"
+  add_image: "Add Image"
+  add_images: "Add Images"
   add_tags_placeholder: "Add Tags..."
   nav:
     restaurants: "Restaurants"
     visits: "Visits"
     profile: "My Profile"
+  pagy:
+    nav:
+      previous: "« Previous"
+      next: "Next »"
+      page: "Page %{number}"
+      gap: "…"

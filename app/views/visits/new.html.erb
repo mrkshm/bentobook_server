@@ -1,6 +1,6 @@
 <div class="card bg-base-100 shadow-xl max-w-5xl mx-auto mt-8">
   <div class="card-body">
-    <h1 class="card-title text-3xl mb-6">New Visit</h1>
+    <h1 class="card-title text-3xl mb-6"><%= t("visits.new.title") %></h1>
 
     <%= form_with(model: @visit, local: true, class: "space-y-8") do |form| %>
       <%= render 'form_errors', object: @visit %>
@@ -10,13 +10,13 @@
       </div>
 
       <div class="form-control mt-8">
-        <h2 class="text-xl font-semibold mb-4">Add Images</h2>
+        <h2 class="text-xl font-semibold mb-4"><%= t("add_images") %></h2>
         <%= render(ImageUploadComponent.new(form, @visit, self)) %>
       </div>
 
       <div class="flex justify-between items-center mt-8">
-        <%= form.submit 'Create Visit', class: 'btn btn-primary' %>
-        <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
+        <%= form.submit t("visits.create_visit"), class: 'btn btn-primary' %>
+        <%= link_to t('visits.back_to_visits'), visits_path, class: 'btn btn-ghost' %>
       </div>
     <% end %>
   </div>
