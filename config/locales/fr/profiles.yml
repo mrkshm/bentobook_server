@@ -1,0 +1,17 @@
+fr:
+  profiles:
+    about: "À propos"
+    first_name: "Prénom"
+    full_name: "Nom"
+    last_name: "Nom"
+    username: "Nom d'utilisateur"
+    edit_profile: "Modifier le profil"
+    index:
+      title: "Votre profil"
+    edit:
+      title: "Modifier votre profil"
+      update_button: "Mettre à jour"
+      back_button: "Retour à votre profil"
+    show:
+      title: "Votre profil"
+

@@ -1,6 +1,6 @@
 <div class="card bg-base-100 shadow-xl">
   <div class="card-body">
-    <h2 class="card-title text-2xl mb-4"><%= t('profile.title') %></h2>
+    <h2 class="card-title text-2xl mb-4"><%= t('profiles.show.title') %></h2>
 
     <div class="flex flex-col md:flex-row items-start md:items-center mb-6">
       <% if @profile.avatar.attached? %>
@@ -23,7 +23,7 @@
 
     <% if @profile.about.present? %>
       <div class="mb-6">
-        <h4 class="font-semibold mb-2">About</h4>
+        <h4 class="font-semibold mb-2"><%= t('profiles.about') %></h4>
         <p><%= @profile.about %></p>
       </div>
     <% end %>
@@ -31,14 +31,14 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <% if @profile.full_name.present? %>
         <div>
-          <h4 class="font-semibold mb-2">Full Name</h4>
+          <h4 class="font-semibold mb-2"><%= t('profiles.full_name') %></h4>
           <p><%= @profile.full_name %></p>
         </div>
       <% end %>
     </div>
 
     <div class="card-actions justify-end mt-6">
-      <%= link_to 'Edit Profile', edit_profile_path, class: "btn btn-primary" %>
+      <%= link_to t("profiles.edit_profile"), edit_profile_path, class: "btn btn-primary" %>
     </div>
   </div>
 </div>

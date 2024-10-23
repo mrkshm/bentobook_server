@@ -1,3 +1,14 @@
 fr:
-  hello: "Bonjour le monde"
-
+  all_rights_reserved: "Tous droits réservés."
+  search: "Rechercher "
+  reset: "Réinitialiser"
+  sign_in: "Se connecter"
+  sign_up: "S'inscrire"
+  sign_out: "Se déconnecter"
+  submit: "Soumettre"
+  cancel: "Annuler"
+  add_tags_placeholder: "Ajouter des tags..."
+  nav:
+    restaurants: "Restaurants"
+    visits: "Visites"
+    profile: "Mon profil"

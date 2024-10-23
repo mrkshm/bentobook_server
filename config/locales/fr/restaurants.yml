@@ -1,0 +1,32 @@
+fr:
+  restaurants:
+    create_restaurant_button: "Créer un nouveau restaurant"
+    select_price_level: "Sélectionner le niveau de prix"
+    search_by:
+      name: "Nom"
+      created_at: "Créé le"
+      updated_at: "Modifié le"
+      distance: "Distance"
+    form:
+      name: "Nom"
+      address: "Adresse"
+      street_number: "Numéro de rue"
+      street: "Rue"
+      postal_code: "Code postal"
+      city: "Ville"
+      state: "État"
+      country: "Pays"
+      phone_number: "Numéro de téléphone"
+      url: "URL"
+      business_status: "Statut commercial"
+      rating: "Votre note"
+      price_level: "Niveau de prix"
+      notes: "Notes"
+      tag_list: "Tags"
+    index:
+      title: "Mes Restaurants"
+      sort_by: "Trier par :"
+      no_restaurants_found: "Pas de restaurants trouvés."
+      search_restaurants_placeholder: "Rechercher..."
+    new:
+      title: "Créer un nouveau restaurant"

@@ -11,81 +11,81 @@
     <% end %>
   
     <div>
-      <%= form.label :name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :name, t("restaurants.form.name"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_field :name, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50", data: { controller: "places-autocomplete" } %>
     </div>
   
     <div>
-      <%= form.label :address, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :address, t("restaurants.form.address"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_field :address, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
     </div>
   
     <div class="grid grid-cols-5 gap-4">
       <div class="col-span-2">
-        <%= form.label :street_number, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :street_number, t("restaurants.form.street_number"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :street_number, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
       <div class="col-span-3">
-        <%= form.label :street, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :street, t("restaurants.form.street"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :street, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
     </div>
   
     <div class="grid grid-cols-5 gap-4">
       <div class="col-span-2">
-        <%= form.label :postal_code, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :postal_code, t("restaurants.form.postal_code"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :postal_code, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
       <div class="col-span-3">
-        <%= form.label :city, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :city, t("restaurants.form.city"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :city, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
     </div>
   
     <div class="grid grid-cols-5 gap-4">
       <div class="col-span-2">
-        <%= form.label :state, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :state, t("restaurants.form.state"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :state, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
       <div class="col-span-3">
-        <%= form.label :country, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :country, t("restaurants.form.country"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :country, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
     </div>
   
     <div>
-      <%= form.label :phone_number, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :phone_number, t("restaurants.form.phone_number"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_field :phone_number, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
     </div>
   
     <div>
-      <%= form.label :url, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :url, t("restaurants.form.url"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_field :url, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
     </div>
   
     <div>
-      <%= form.label :business_status, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :business_status, t("restaurants.form.business_status"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_field :business_status, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
     </div>
   
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <%= form.label :rating, "Your Rating", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.label :rating, t("restaurants.form.rating"), class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= render(RatingsComponent.new(rating: @restaurant.rating, form: form)) %>
       </div>
       <div>
-        <%= form.label :price_level, class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= form.number_field :price_level, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
+        <%= form.label :price_level, t("restaurants.form.price_level"), class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.select :price_level, price_level_options, { include_blank: true }, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
       </div>
     </div>
   
     <div>
-      <%= form.label :notes, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :notes, t("restaurants.form.notes"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= form.text_area :notes, rows: 3, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" %>
     </div>
   
     <div>
-      <%= form.label :tag_list, "Tags", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.label :tag_list, t("restaurants.form.tag_list"), class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= render(TagInputComponent.new(tags: @restaurant.tag_list, input_name: "restaurant[tag_list]")) %>
     </div>
   
@@ -112,7 +112,7 @@
     <% end %>
   
     <div class="flex items-center justify-between mt-6">
-      <%= form.submit class: "px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300", data: { turbo: false } %>
-      <%= link_to "Cancel", restaurants_path, class: "px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300" %>
+      <%= form.submit t("submit"), class: "px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300", data: { turbo: false } %>
+      <%= link_to t("cancel"), restaurants_path, class: "px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition duration-300" %>
     </div>
   <% end %>

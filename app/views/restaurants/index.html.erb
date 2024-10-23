@@ -1,4 +1,4 @@
-<h1 class="text-4xl mb-4">Restaurants</h1>
+<h1 class="text-4xl mb-4"><%= t('restaurants.index.title') %></h1>
 
 <% flash.each do |type, message| %>
   <div class="alert alert-<%= type %>">
@@ -13,7 +13,7 @@
 <% end %>
 
 <div class="mb-4">
-  <%= render(ButtonComponent.new(text: 'Create New Restaurant', path: new_restaurant_path, method: :get)) %>
+  <%= link_to t('restaurants.create_restaurant_button'), new_restaurant_path, class: 'btn btn-primary' %>
 </div>
 
 <div class="mb-4 flex flex-col md:flex-row justify-between items-end gap-4">
@@ -21,11 +21,14 @@
     <%= hidden_field_tag :search, params[:search] %>
     <div class="form-control w-full">
       <label for="sort-select" class="label">
-        <span class="label-text">Sort by:</span>
+        <span class="label-text"><%= t('restaurants.index.sort_by') %></span>
       </label>
       <div class="flex gap-2 items-center">
         <select id="sort-select" name="order_by" class="select select-bordered w-full md:w-64" onchange="this.form.submit()">
-          <% [['name', 'Name'], ['created_at', 'Created At'], ['updated_at', 'Updated At'], ['distance', 'Distance']].each do |value, label| %>
+          <% [['name', t("restaurants.search_by.name")], 
+          ['created_at', t("restaurants.search_by.created_at")], 
+          ['updated_at', t("restaurants.search_by.updated_at")], 
+          ['distance', t("restaurants.search_by.distance")]].each do |value, label| %>
             <option value="<%= value %>" <%= 'selected' if params[:order_by] == value %>><%= label %></option>
           <% end %>
         </select>
@@ -45,12 +48,12 @@
     <div class="flex flex-col md:flex-row items-end gap-2">
       <div class="form-control w-full">
         <label for="search-input" class="label">
-          <span class="label-text">Search:</span>
+          <span class="label-text"><%= t('search') %>:</span>
         </label>
         <div class="flex gap-2">
-          <input type="text" id="search-input" name="search" value="<%= params[:search] %>" class="input input-bordered w-full" placeholder="Search restaurants...">
-          <%= submit_tag 'Search', class: 'btn btn-primary whitespace-nowrap' %>
-          <%= button_tag 'Reset', type: 'button', class: 'btn btn-ghost whitespace-nowrap', onclick: "window.location='#{restaurants_path}'" %>
+          <input type="text" id="search-input" name="search" value="<%= params[:search] %>" class="input input-bordered w-full" placeholder=<%= t('restaurants.index.search_restaurants_placeholder') %>>
+          <%= submit_tag t("search"), class: 'btn btn-primary whitespace-nowrap' %>
+          <%= button_tag t("reset"), type: 'button', class: 'btn btn-ghost whitespace-nowrap', onclick: "window.location='#{restaurants_path}'" %>
         </div>
       </div>
     </div>
@@ -58,7 +61,7 @@
 </div>
 
 <% if @restaurants.empty? %>
-  <p class="no-restaurants-message">No restaurants found.</p>
+    <p class="no-restaurants-message"><%= t('restaurants.index.no_restaurants_found') %></p>
 <% else %>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <% @restaurants.each do |restaurant| %>

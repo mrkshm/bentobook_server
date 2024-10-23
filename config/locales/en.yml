@@ -28,4 +28,16 @@
 #       enabled: "ON"
 
 en:
-  hello: "Hello world"
+  all_rights_reserved: "All rights reserved."
+  search: "Search"
+  reset: "Reset"
+  sign_in: "Log In"
+  sign_up: "Sign Up"
+  sign_out: "Log Out"
+  submit: "Submit"
+  cancel: "Cancel"
+  add_tags_placeholder: "Add Tags..."
+  nav:
+    restaurants: "Restaurants"
+    visits: "Visits"
+    profile: "My Profile"

@@ -1,0 +1,17 @@
+en:
+  profiles:
+    about: "About"
+    first_name: "First Name"
+    last_name: "Last Name"
+    username: "Username"
+    edit_profile: "Edit Profile"
+    index:
+      title: "Your Profile"
+    edit:
+      title: "Edit Your Profile"
+      update_button: "Update Profile"
+      back_button: "Back to Your Profile"
+    show:
+      title: "Your Profile"
+      full_name: "Full Name"
+

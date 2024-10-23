@@ -1,0 +1,32 @@
+en:
+  restaurants:
+    create_restaurant_button: "Create New Restaurant"
+    select_price_level: "Select price level"
+    form:
+      name: "Name"
+      address: "Address"
+      street_number: "Street Number"
+      street: "Street"
+      postal_code: "Postal Code"
+      city: "City"
+      state: "State"
+      country: "Country"
+      phone_number: "Phone Number"
+      url: "URL"
+      business_status: "Business Status"
+      rating: "Your Rating"
+      price_level: "Price Level"
+      notes: "Notes"
+      tag_list: "Tags"
+    search_by:
+      name: "Name"
+      created_at: "Created At"
+      updated_at: "Updated At"
+      distance: "Distance"
+    index:
+      title: "My Restaurants"
+      sort_by: "Sort by:"
+      no_restaurants_found: "No restaurants found."
+      search_restaurants_placeholder: "Search restaurants..."
+    new:
+      title: "Create a new restaurant"

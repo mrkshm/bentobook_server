@@ -17,4 +17,12 @@ module RestaurantsHelper
         restaurant.send("combined_#{attribute}")
       end
     end
+    def price_level_options
+      [
+        ["$", 1],
+        ["$$", 2],
+        ["$$$", 3],
+        ["$$$$", 4]
+      ]
+    end
 end

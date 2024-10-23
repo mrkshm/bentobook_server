@@ -4,7 +4,7 @@
          class="input input-bordered w-full" 
          data-tag-input-target="input"
          data-action="keydown->tag-input#handleKeyDown input->tag-input#filterSuggestions"
-         placeholder="Add tags...">
+         placeholder="<%= t("add_tags_placeholder") %>">
   <div class="mt-1" data-tag-input-target="suggestions"></div>
   <input type="hidden" 
          name="<%= input_name %>" 
