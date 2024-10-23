@@ -1,8 +1,9 @@
-<h1><%= t("restaurants.new.title") %></h1>
+<h1 class="card-title text-3xl mb-6"><%= t("restaurants.new.title") %></h1>
 
-<div id="restaurant-search" class="max-w-xl mx-auto mb-6">
+<div id="restaurant-search" class="max-w-xl mb-6">
   <%= label_tag :restaurant_search, t("restaurants.form.search"), class: "block text-sm font-medium text-gray-700 mb-1" %>
-  <%= text_field_tag :restaurant_search, nil, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50", data: { controller: "places-autocomplete" } %>
+  <%= text_field_tag :restaurant_search, nil, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 py-2 px-3", data: { controller: "places-autocomplete" } %>
+  <div class="text-sm text-gray-500 p-3">Please search for a restaurant here. Start with the name, if you do not see it add the city.</div>
 </div>
 
 <div id="restaurant-form" class="hidden">
