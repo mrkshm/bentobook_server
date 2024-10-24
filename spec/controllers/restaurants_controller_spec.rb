@@ -3,16 +3,21 @@ require 'rails_helper'
 RSpec.describe RestaurantsController, type: :controller do
   let(:user) { create(:user) }
   let(:restaurant) { create(:restaurant, user: user) }
+  let(:italian_cuisine) { create(:cuisine_type, name: 'italian') }
   let(:valid_attributes) do
     attributes_for(:restaurant, :for_create).merge(
-      cuisine_type: "Italian",
-      google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
-      city: "Test City",
-      latitude: 40.7128,
-      longitude: -74.0060
+      cuisine_type_name: "italian",
+      google_restaurant_attributes: {
+        google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
+        name: "Test Restaurant",
+        address: "123 Test St",
+        city: "Test City",
+        latitude: 40.7128,
+        longitude: -74.0060
+      }
     )
   end
-  let(:invalid_attributes) { { name: '' } }  # or some other invalid attribute
+  let(:invalid_attributes) { { rating: 'dongus' } }  # or some other invalid attribute
 
   before { sign_in user }
 
@@ -112,6 +117,10 @@ RSpec.describe RestaurantsController, type: :controller do
   end
 
   describe "POST #create" do
+    before do
+      italian_cuisine # ensure cuisine type exists
+    end
+
     context "with valid params" do
       it "creates a new Restaurant" do
         expect {
@@ -125,13 +134,58 @@ RSpec.describe RestaurantsController, type: :controller do
         }.to change(GoogleRestaurant, :count).by(1)
       end
 
+      it "creates or finds the correct cuisine type" do
+        post :create, params: { restaurant: valid_attributes }
+        expect(Restaurant.last.cuisine_type.name).to eq("italian")
+      end
+
       it "redirects to the created restaurant" do
         post :create, params: { restaurant: valid_attributes }
-        expect(response).to redirect_to(action: :show, id: Restaurant.last.id)
+        expect(response).to redirect_to(Restaurant.last)
+      end
+    end
+
+    context "with invalid cuisine type" do
+      let(:valid_google_restaurant_attributes) do
+        {
+          google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
+          name: "Test Restaurant",
+          address: "123 Test St",
+          city: "Test City",
+          latitude: 40.7128,
+          longitude: -74.0060
+        }
+      end
+
+      it "renders new template with error" do
+        post :create, params: { 
+          restaurant: valid_attributes.merge(
+            cuisine_type_name: "invalid_cuisine",
+            google_restaurant_attributes: valid_google_restaurant_attributes
+          )
+        }
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to render_template(:new)
+        expect(flash.now[:alert]).to eq("Invalid cuisine type: invalid_cuisine. Available types: italian")
       end
     end
 
     context "with invalid params" do
+      let(:invalid_attributes) do
+        {
+          name: "",  # Invalid because name is blank
+          google_restaurant_attributes: {
+            google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
+            name: "Test Restaurant",
+            address: "123 Test St",
+            city: "Test City",
+            latitude: 40.7128,
+            longitude: -74.0060
+          }
+        }
+      end
+
       it "assigns a newly created but unsaved restaurant as @restaurant" do
         post :create, params: { restaurant: invalid_attributes }
         expect(assigns(:restaurant)).to be_a_new(Restaurant)
@@ -312,14 +366,17 @@ RSpec.describe RestaurantsController, type: :controller do
 
   describe "#build_restaurant" do
     let(:restaurant_params) do
-      {
-        name: "Test Restaurant",
-        address: "123 Test St",
-        cuisine_type: "Italian"
-      }
+      ActionController::Parameters.new(
+        restaurant: {
+          name: "Test Restaurant",
+          address: "123 Test St",
+          cuisine_type_name: "italian"
+        }
+      ).require(:restaurant).permit!
     end
 
     before do
+      create(:cuisine_type, name: "italian") # Ensure the cuisine type exists
       allow(controller).to receive(:restaurant_params).and_return(restaurant_params)
     end
 
@@ -329,17 +386,11 @@ RSpec.describe RestaurantsController, type: :controller do
       expect(restaurant).to be_a_new(Restaurant)
       expect(restaurant.name).to eq("Test Restaurant")
       expect(restaurant.address).to eq("123 Test St")
-      expect(restaurant.cuisine_type.name).to eq("Italian")
-    end
-
-    it "creates a new cuisine type if it doesn't exist" do
-      expect {
-        controller.send(:build_restaurant)
-      }.to change(CuisineType, :count).by(1)
+      expect(restaurant.cuisine_type.name).to eq("italian")
     end
 
     it "uses an existing cuisine type if it exists" do
-      existing_cuisine = create(:cuisine_type, name: "Italian")
+      existing_cuisine = CuisineType.find_or_create_by(name: "italian")
       expect {
         restaurant = controller.send(:build_restaurant)
         expect(restaurant.cuisine_type).to eq(existing_cuisine)

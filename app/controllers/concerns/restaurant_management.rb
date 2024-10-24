@@ -87,18 +87,15 @@ module RestaurantManagement
       latitude = restaurant_params[:latitude]
       longitude = restaurant_params[:longitude]
 
-      puts "Google Place ID: #{google_place_id}"
-
       return nil if google_place_id.blank?
 
       # Ensure latitude and longitude are present
       if latitude.blank? || longitude.blank?
-        puts "Latitude or longitude is missing"
-        return nil
+        Rails.logger.error "Latitude or longitude is missing for Google Place ID: #{google_place_id}"
+        raise ArgumentError, "Latitude or longitude is required"
       end
 
       google_restaurant = GoogleRestaurant.find_or_create_by(google_place_id: google_place_id) do |gr|
-        puts "Creating new GoogleRestaurant"
         gr.name = name
         gr.address = address
         gr.city = city
@@ -106,19 +103,15 @@ module RestaurantManagement
         gr.longitude = longitude
       end
 
-      if google_restaurant.persisted?
-        puts "GoogleRestaurant persisted: #{google_restaurant.persisted?}"
-      else
-        puts "Failed to create GoogleRestaurant: #{google_restaurant.errors.full_messages}"
+      unless google_restaurant.persisted?
+        Rails.logger.error "Failed to create GoogleRestaurant: #{google_restaurant.errors.full_messages}"
       end
 
       unless google_restaurant.valid?
-        puts "GoogleRestaurant is invalid: #{google_restaurant.errors.full_messages}"
+        Rails.logger.warn "GoogleRestaurant is invalid: #{google_restaurant.errors.full_messages}"
       end
 
-      puts "GoogleRestaurant after find_or_create_by: #{google_restaurant.inspect}"
-      puts "GoogleRestaurant persisted?: #{google_restaurant.persisted?}"
-      puts "GoogleRestaurant errors: #{google_restaurant.errors.full_messages}"
+      Rails.logger.info "GoogleRestaurant after find_or_create_by: #{google_restaurant.inspect}"
 
       google_restaurant
     end

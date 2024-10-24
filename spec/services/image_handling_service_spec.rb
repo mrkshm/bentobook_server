@@ -110,8 +110,8 @@ RSpec.describe ImageHandlingService do
       it 'catches the error and returns a failure result' do
         allow(visit.images).to receive(:new).and_raise(StandardError.new("Unexpected error"))
         
-        expect(Rails.logger).to receive(:error).with("Error in process_images: Unexpected error")
-        
+        expect(Rails.logger).to receive(:error).with(/Error in process_images: Unexpected error/)
+
         result = ImageHandlingService.process_images(visit, image_params)
         
         expect(result).to eq({ success: false, error: "Unexpected error" })

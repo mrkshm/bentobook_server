@@ -2,6 +2,10 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["deleteButton"]
+  static values = {
+    imageableType: String,
+    imageableId: String
+  }
 
   connect() {
     console.log("Image Deletion controller connected")
@@ -10,9 +14,11 @@ export default class extends Controller {
   deleteImage(event) {
     console.log("deleteImage method called")
     event.preventDefault()
+    
     if (confirm("Are you sure you want to delete this image?")) {
       const imageId = event.currentTarget.dataset.imageId
-      const visitId = event.currentTarget.dataset.visitId
+      const imageableType = this.imageableTypeValue.toLowerCase()
+      const imageableId = this.imageableIdValue
 
       const headers = {
         'Accept': 'application/json'
@@ -25,7 +31,7 @@ export default class extends Controller {
         console.warn('CSRF token not found')
       }
 
-      fetch(`/visits/${visitId}/images/${imageId}`, {
+      fetch(`/${imageableType}s/${imageableId}/images/${imageId}`, {
         method: 'DELETE',
         headers: headers
       })

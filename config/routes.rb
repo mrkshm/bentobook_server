@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       collection do
         get 'tagged/:tag', to: 'restaurants#index', as: :tagged
       end
+      resources :images, only: [:create, :destroy]
     end
 
     resources :visits do
@@ -20,6 +21,8 @@ Rails.application.routes.draw do
     end
 
     resources :contacts
+
+    resources :images, only: [:destroy]
 
     resource :profile, only: [:show, :edit, :update] do
       post 'change_locale', on: :collection

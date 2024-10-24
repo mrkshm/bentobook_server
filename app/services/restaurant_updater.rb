@@ -7,93 +7,78 @@ class RestaurantUpdater
   end
 
   def update
-    Rails.logger.info "Starting update for restaurant #{restaurant.id}"
-    changes_made = false
-    changes_made |= update_comparable_attributes
-    changes_made |= update_cuisine_type
-    changes_made |= update_non_comparable_attributes
-    changes_made |= update_images
-
-    Rails.logger.info "Changes made: #{changes_made}"
-
-    if changes_made
-      if restaurant.save
-        Rails.logger.info "Restaurant #{restaurant.id} updated successfully"
-        true
+    ActiveRecord::Base.transaction do
+      # Store original values before any updates
+      original_name = @restaurant.name
+      original_address = @restaurant.address
+      original_cuisine_type = @restaurant.cuisine_type
+      original_tags = @restaurant.tag_list.to_a
+      original_rating = @restaurant.rating
+      original_price_level = @restaurant.price_level
+      
+      update_basic_attributes
+      update_cuisine_type
+      update_tags
+      
+      # Check if anything changed by comparing with original values
+      changed = @restaurant.name != original_name ||
+                @restaurant.address != original_address ||
+                @restaurant.cuisine_type != original_cuisine_type ||
+                @restaurant.tag_list.to_a != original_tags ||
+                @restaurant.rating != original_rating ||
+                @restaurant.price_level != original_price_level ||
+                @params[:images].present?
+      
+      if changed
+        @restaurant.save
       else
-        Rails.logger.error "Failed to save restaurant #{restaurant.id}: #{restaurant.errors.full_messages}"
         false
       end
-    else
-      Rails.logger.info "No changes detected for restaurant #{restaurant.id}"
+    rescue => e
+      @restaurant.errors.add(:base, e.message)
       false
     end
   end
 
   private
 
-  def update_comparable_attributes
-    changes_made = false
-    (RestaurantManagement::COMPARABLE_ATTRIBUTES + [:name]).each do |attr|
-      new_value = params[attr.to_s] || params[attr]
-      current_value = restaurant.send(attr)
-
-      if new_value.present? && new_value.to_s != current_value.to_s
-        restaurant.send("#{attr}=", new_value)
-        changes_made = true
-      end
-    end
-    changes_made
+  def update_basic_attributes
+    @restaurant.assign_attributes(
+      @params.except(:cuisine_type_name, :images, :tag_list)
+    )
   end
 
   def update_cuisine_type
-    if params[:cuisine_type_name].present?
-      cuisine_type_name = params[:cuisine_type_name].downcase
-      cuisine_type = nil
-      CuisineType.transaction do
-        cuisine_type = CuisineType.find_or_create_by!(name: cuisine_type_name)
-      end
-      if restaurant.cuisine_type != cuisine_type
-        restaurant.cuisine_type = cuisine_type
-        restaurant.save!  # Save the restaurant to persist the cuisine_type change
-        true
+    if @params[:cuisine_type_name].present?
+      name = @params[:cuisine_type_name].downcase
+      cuisine_type = CuisineType.find_by(name: name)
+      
+      if cuisine_type
+        if @restaurant.cuisine_type != cuisine_type
+          @restaurant.cuisine_type = cuisine_type
+          @restaurant.save! # Save immediately to handle foreign key constraints
+        end
       else
-        false
+        raise ActiveRecord::RecordNotFound, "Cuisine type '#{name}' is not valid"
       end
-    elsif params[:cuisine_type_id].present?
-      new_cuisine_type = CuisineType.find_by(id: params[:cuisine_type_id])
-      if restaurant.cuisine_type != new_cuisine_type
-        restaurant.cuisine_type = new_cuisine_type
-        restaurant.save!  # Save the restaurant to persist the cuisine_type change
-        true
-      else
-        false
-      end
-    else
-      false
     end
   end
 
-  def update_non_comparable_attributes
-    changes_made = false
-    [:rating, :notes, :cuisine_type_id, :tag_list, :price_level].each do |attr|
-      if params[attr].present? && params[attr] != restaurant.send(attr)
-        restaurant.send("#{attr}=", params[attr])
-        changes_made = true
-      end
-    end
-    changes_made
+  def update_tags
+    @restaurant.tag_list = @params[:tag_list] if @params[:tag_list].present?
   end
 
   def update_images
-    if params[:images].present?
-      params[:images].each do |image|
-        restaurant.images.build(file: image) if image.respond_to?(:tempfile)
+    Array(@params[:images]).each do |image|
+      next unless image.respond_to?(:content_type) && image.content_type.start_with?('image/')
+      
+      Rails.logger.info "Processing image: #{image.original_filename}"
+      new_image = @restaurant.images.build(file: image)
+      
+      unless new_image.save
+        Rails.logger.error "Failed to save image: #{new_image.errors.full_messages}"
+        raise ActiveRecord::RecordInvalid.new(new_image)
       end
-      restaurant.save  # Save the restaurant to persist the images
-      true
-    else
-      false
     end
   end
 end

@@ -2,83 +2,79 @@ import { Controller } from "@hotwired/stimulus";
 
 // Connects to data-controller="image-preview"
 export default class extends Controller {
-  static targets = ["input", "preview", "hiddenInput"];
+  static targets = ["input", "preview", "noFileMessage", "inputContainer"];
 
   connect() {
-    console.log("ImagePreviewController connected");
-    this.selectedFiles = [];
-    this.inputTarget.addEventListener("change", this.previewImages.bind(this));
+    console.log("Image preview controller connected");
   }
 
-  previewImages() {
+  triggerFileInput(event) {
+    event.preventDefault();
+    this.inputTarget.click();
+  }
+
+  handleFiles() {
+    console.log("Handling files");
     const files = this.inputTarget.files;
-    this.selectedFiles = [...this.selectedFiles, ...files];
-    this.renderPreviews();
-    this.updateHiddenInput();
+    console.log("Files selected:", files?.length);
+    
+    if (files?.length > 0) {
+      if (this.hasNoFileMessageTarget) {
+        this.noFileMessageTarget.classList.add('hidden');
+      }
+      this.previewTarget.innerHTML = '';
+      Array.from(files).forEach(file => this.createPreview(file));
+    } else {
+      this.reset();
+    }
   }
 
-  renderPreviews() {
-    this.previewTarget.innerHTML = "";
-    this.selectedFiles.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imgContainer = document.createElement("div");
-        imgContainer.style.position = "relative";
-        imgContainer.style.display = "inline-block";
-        imgContainer.style.marginRight = "10px";
+  createPreview(file) {
+    console.log("Creating preview for file:", file.name);
+    if (!file.type.startsWith('image/')) {
+      console.log("Not an image file:", file.type);
+      return;
+    }
 
-        const img = document.createElement("img");
-        img.src = event.target.result;
-        img.style.width = "100px";
-        img.style.marginRight = "10px";
-        imgContainer.appendChild(img);
+    const reader = new FileReader();
+    const preview = document.createElement('div');
+    preview.className = 'relative image-thumbnail';
+    
+    const img = document.createElement('img');
+    img.className = 'rounded-lg shadow-md w-full h-48 object-cover';
+    
+    reader.onload = (e) => {
+      console.log("File read complete");
+      img.src = e.target.result;
+      preview.appendChild(img);
+      
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md text-red-600 hover:text-red-800';
+      removeBtn.innerHTML = '×';
+      removeBtn.onclick = () => {
+        preview.remove();
+        if (this.previewTarget.children.length === 0) {
+          this.reset();
+        }
+      }
+      preview.appendChild(removeBtn);
+    }
 
-        const deleteButton = document.createElement("button");
-        deleteButton.innerText = "X";
-        deleteButton.style.position = "absolute";
-        deleteButton.style.top = "40px";
-        deleteButton.style.right = "16px";
-        deleteButton.style.width = "20px";
-        deleteButton.style.height = "20px";
-        deleteButton.style.backgroundColor = "red";
-        deleteButton.style.color = "white";
-        deleteButton.style.border = "none";
-        deleteButton.style.cursor = "pointer";
-        deleteButton.style.padding = "0";
-        deleteButton.style.borderRadius = "50%";
-        deleteButton.style.fontSize = "12px";
-        deleteButton.title = "Remove this image";
-        deleteButton.onclick = () => {
-          this.removeFile(index);
-        };
+    reader.onerror = (e) => {
+      console.error("Error reading file:", e);
+    }
 
-        imgContainer.appendChild(deleteButton);
-        this.previewTarget.appendChild(imgContainer);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  updateHiddenInput() {
-    const dataTransfer = new DataTransfer();
-    this.selectedFiles.forEach(file => dataTransfer.items.add(file));
-    this.hiddenInputTarget.files = dataTransfer.files;
-  }
-
-  removeFile(index) {
-    this.selectedFiles.splice(index, 1);
-    this.renderPreviews();
-    this.updateHiddenInput();
+    reader.readAsDataURL(file);
+    this.previewTarget.appendChild(preview);
   }
 
   reset() {
-    this.selectedFiles = [];
-    this.inputTarget.value = "";
-    this.hiddenInputTarget.value = "";
-    this.previewTarget.innerHTML = "";
-  }
-
-  triggerFileInput() {
-    this.inputTarget.click();
+    console.log("Reset called");
+    this.inputTarget.value = '';
+    this.previewTarget.innerHTML = '';
+    if (this.hasNoFileMessageTarget) {
+      this.noFileMessageTarget.classList.remove('hidden');
+    }
   }
 }

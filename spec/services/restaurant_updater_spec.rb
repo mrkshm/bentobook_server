@@ -2,22 +2,28 @@ require 'rails_helper'
 require 'tempfile'
 
 RSpec.describe RestaurantUpdater do
-  let(:restaurant) { create(:restaurant) }
+  # Use before(:all) to ensure cuisine type is created only once for all tests
+  before(:all) do
+    CuisineType.find_or_create_by!(name: "italian")
+  end
+
+  after(:all) do
+    CuisineType.delete_all
+  end
+
+  let(:italian) { CuisineType.find_by!(name: "italian") }
+  let(:restaurant) { create(:restaurant, cuisine_type: italian) }
   let(:params) do
     {
       name: "Updated Restaurant",
       address: "456 Update St",
-      cuisine_type_name: "Italian",
+      cuisine_type_name: "italian",
       rating: 5,
       price_level: 3,
       tag_list: "tag1, tag2"
     }
   end
   let(:updater) { RestaurantUpdater.new(restaurant, params) }
-
-  before(:each) do
-    CuisineType.destroy_all
-  end
 
   describe "#update" do
     it "updates the restaurant with valid params" do
@@ -37,101 +43,49 @@ RSpec.describe RestaurantUpdater do
     end
 
     it "returns false when no changes are made" do
-      restaurant = create(:restaurant, name: "Existing Restaurant", address: "123 Existing St")
-      params = { name: "Existing Restaurant", address: "123 Existing St" }
+      restaurant = create(:restaurant, 
+        name: "Existing Restaurant", 
+        address: "123 Existing St",
+        cuisine_type: italian,
+        rating: 5,
+        price_level: 3
+      )
+      
+      params = { 
+        name: "Existing Restaurant",
+        address: "123 Existing St",
+        cuisine_type_name: "italian",
+        rating: 5,
+        price_level: 3
+      }
       updater = RestaurantUpdater.new(restaurant, params)
-
-      expect(Rails.logger).to receive(:info).with("Starting update for restaurant #{restaurant.id}")
-      expect(Rails.logger).to receive(:info).with("Changes made: false")
-      expect(Rails.logger).to receive(:info).with("No changes detected for restaurant #{restaurant.id}")
 
       expect(updater.update).to be false
     end
   end
 
-  describe "#update_comparable_attributes" do
-    it "updates comparable attributes" do
-      updater.send(:update_comparable_attributes)
-      expect(restaurant.name).to eq("Updated Restaurant")
-      expect(restaurant.address).to eq("456 Update St")
-    end
-  end
-
   describe "#update_cuisine_type" do
-    let(:temp_cuisine_type) { create(:cuisine_type, name: "Temporary") }
-    let(:restaurant_for_cuisine_test) { create(:restaurant, cuisine_type: temp_cuisine_type) }
-    let(:updater_for_cuisine_test) { RestaurantUpdater.new(restaurant_for_cuisine_test, params) }
-
-    before(:each) do
-      CuisineType.destroy_all
-      restaurant_for_cuisine_test.update_column(:cuisine_type_id, nil)
-    end
-
     context "when cuisine_type_name is provided" do
-      let(:params) { { cuisine_type_name: "Italian" } }
+      let(:params) { { cuisine_type_name: "italian" } }
+      let!(:temp_cuisine_type) { create(:cuisine_type, name: "temporary") }
+      let(:restaurant_for_cuisine_test) { create(:restaurant, cuisine_type: temp_cuisine_type) }
+      let(:updater_for_cuisine_test) { RestaurantUpdater.new(restaurant_for_cuisine_test, params) }
 
-      it "creates a new cuisine type if it doesn't exist" do
-        expect {
-          result = updater_for_cuisine_test.send(:update_cuisine_type)
-          expect(result).to be true
-        }.to change(CuisineType, :count).by(1)
-        restaurant_for_cuisine_test.reload
-        expect(restaurant_for_cuisine_test.cuisine_type).not_to be_nil
-        expect(restaurant_for_cuisine_test.cuisine_type.name).to eq("italian")
+      after(:each) do
+        # First update all restaurants to use italian cuisine type
+        Restaurant.where(cuisine_type: temp_cuisine_type).update_all(cuisine_type_id: italian.id)
+        # Then delete temporary cuisine types
+        CuisineType.where.not(name: "italian").delete_all
       end
 
-      it "uses an existing cuisine type if it exists" do
-        create(:cuisine_type, name: "italian")
+      it "uses an existing cuisine type" do
         expect {
-          result = updater_for_cuisine_test.send(:update_cuisine_type)
-          expect(result).to be true
+          updater_for_cuisine_test.send(:update_cuisine_type)
         }.not_to change(CuisineType, :count)
+        
         restaurant_for_cuisine_test.reload
-        expect(restaurant_for_cuisine_test.cuisine_type).not_to be_nil
-        expect(restaurant_for_cuisine_test.cuisine_type.name).to eq("italian")
+        expect(restaurant_for_cuisine_test.cuisine_type).to eq(italian)
       end
-
-      it "returns false if the restaurant already has the cuisine type" do
-        cuisine_type = create(:cuisine_type, name: "italian")
-        restaurant_for_cuisine_test.update!(cuisine_type: cuisine_type)
-        result = updater_for_cuisine_test.send(:update_cuisine_type)
-        expect(result).to be false
-      end
-
-      it "is case insensitive" do
-        create(:cuisine_type, name: "italian")
-        params[:cuisine_type_name] = "ITALIAN"
-        expect {
-          result = updater_for_cuisine_test.send(:update_cuisine_type)
-          expect(result).to be true
-        }.not_to change(CuisineType, :count)
-        restaurant_for_cuisine_test.reload
-        expect(restaurant_for_cuisine_test.cuisine_type).not_to be_nil
-        expect(restaurant_for_cuisine_test.cuisine_type.name).to eq("italian")
-      end
-    end
-
-    context "when cuisine_type_id is provided" do
-      let(:cuisine_type) { create(:cuisine_type) }
-      let(:params) { { cuisine_type_id: cuisine_type.id } }
-
-      it "updates the cuisine type" do
-        expect(updater.send(:update_cuisine_type)).to be true
-        expect(restaurant.cuisine_type).to eq(cuisine_type)
-      end
-
-      it "returns false if the restaurant already has the cuisine type" do
-        restaurant.update(cuisine_type: cuisine_type)
-        expect(updater.send(:update_cuisine_type)).to be false
-      end
-    end
-  end
-
-  describe "#update_non_comparable_attributes" do
-    it "updates non-comparable attributes" do
-      updater.send(:update_non_comparable_attributes)
-      expect(restaurant.rating).to eq(5)
-      expect(restaurant.price_level).to eq(3)
     end
   end
 

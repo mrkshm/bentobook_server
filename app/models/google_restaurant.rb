@@ -22,5 +22,13 @@ class GoogleRestaurant < ApplicationRecord
     google_updated_at.nil? || google_updated_at < 30.days.ago
   end
 
+  validate :google_place_id_not_undefined
 
+  private
+
+  def google_place_id_not_undefined
+    if google_place_id == "undefined"
+      errors.add(:google_place_id, "cannot be undefined")
+    end
+  end
 end

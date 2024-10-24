@@ -7,6 +7,9 @@ RSpec.describe DaisyUiPagyHelper, type: :helper do
 
   before do
     allow(helper).to receive(:pagy_url_for).and_return('#')
+    allow(I18n).to receive(:t).with('pagy.nav.previous').and_return('« Previous')
+    allow(I18n).to receive(:t).with('pagy.nav.next').and_return('Next »')
+    allow(I18n).to receive(:t).with('pagy.nav.gap').and_return('…')
   end
 
   describe '#pagy_daisy_ui_nav' do
@@ -20,13 +23,13 @@ RSpec.describe DaisyUiPagyHelper, type: :helper do
     it 'renders disabled previous button when on first page' do
       allow(pagy).to receive_messages(prev: nil, next: 2, series: [1])
       result = helper.pagy_daisy_ui_nav(pagy)
-      expect(result).to include('<button class="join-item btn btn-disabled">«</button>')
+      expect(result).to include('<button class="join-item btn btn-disabled">« Previous</button>')
     end
 
     it 'renders active previous button when not on first page' do
       allow(pagy).to receive_messages(prev: 1, next: 3, series: [2])
       result = helper.pagy_daisy_ui_nav(pagy, link_extra: link_extra)
-      expect(result).to include('<a class="join-item btn" href="#" aria-label="previous" data-turbo-frame="_top">«</a>')
+      expect(result).to include('<a class="join-item btn" href="#" aria-label="previous" data-turbo-frame="_top">« Previous</a>')
     end
 
     it 'renders page numbers correctly' do
@@ -53,13 +56,13 @@ RSpec.describe DaisyUiPagyHelper, type: :helper do
     it 'renders disabled next button when on last page' do
       allow(pagy).to receive_messages(prev: 9, next: nil, series: [10])
       result = helper.pagy_daisy_ui_nav(pagy)
-      expect(result).to include('<button class="join-item btn btn-disabled">»</button>')
+      expect(result).to include('<button class="join-item btn btn-disabled">Next »</button>')
     end
 
     it 'renders active next button when not on last page' do
       allow(pagy).to receive_messages(prev: 1, next: 3, series: [2])
       result = helper.pagy_daisy_ui_nav(pagy, link_extra: link_extra)
-      expect(result).to include('<a class="join-item btn" href="#" aria-label="next" data-turbo-frame="_top">»</a>')
+      expect(result).to include('<a class="join-item btn" href="#" aria-label="next" data-turbo-frame="_top">Next »</a>')
     end
 
     it 'raises an error for unexpected series item' do

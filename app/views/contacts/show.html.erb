@@ -1,41 +1,61 @@
-<h1>Contact Details</h1>
+<div class="max-w-2xl mx-auto p-4">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex items-center gap-6 mb-6">
+        <%= render(AvatarComponent.new(user: @contact, size: :large)) %>
+        
+        <div>
+          <h1 class="card-title text-2xl mb-2"><%= @contact.name %></h1>
+          <div class="badge badge-primary"><%= @contact.email %></div>
+        </div>
+      </div>
 
-<% if @contact.avatar.attached? %>
-  <%= image_tag @contact.avatar, class: "avatar" %>
-<% end %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="stats shadow">
+          <div class="stat">
+            <div class="stat-title"><%= t("location") %></div>
+            <div class="stat-value text-lg"><%= @contact.city %>, <%= @contact.country %></div>
+          </div>
+        </div>
 
-<p>
-  <strong>Name:</strong>
-  <%= @contact.name %>
-</p>
+        <div class="stats shadow">
+          <div class="stat">
+            <div class="stat-title"><%= t("phone") %></div>
+            <div class="stat-value text-lg"><%= @contact.phone %></div>
+          </div>
+        </div>
+      </div>
 
-<p>
-  <strong>Email:</strong>
-  <%= @contact.email %>
-</p>
+      <% if @contact.notes.present? %>
+        <div class="mt-6">
+          <h2 class="text-xl font-medium mb-2"><%= t("notes") %></h2>
+          <div class="bg-base-200 p-4 rounded-lg">
+            <p class="text-base-content"><%= @contact.notes %></p>
+          </div>
+        </div>
+      <% end %>
 
-<p>
-  <strong>City:</strong>
-  <%= @contact.city %>
-</p>
+      <div class="card-actions justify-end mt-6 space-x-2">
+        <%= link_to contacts_path, class: "btn btn-ghost" do %>
+          <%= heroicon "arrow-left", options: { class: "h-6 w-6" } %>
+          <%= t("back") %>
+        <% end %>
+        
+        <%= link_to edit_contact_path(@contact), class: "btn btn-warning" do %>
+          <%= heroicon "pencil-square", options: { class: "h-6 w-6" } %>
+          <%= t("edit") %>
+        <% end %>
 
-<p>
-  <strong>Country:</strong>
-  <%= @contact.country %>
-</p>
-
-<p>
-  <strong>Phone:</strong>
-  <%= @contact.phone %>
-</p>
-
-<p>
-  <strong>Notes:</strong>
-  <%= @contact.notes %>
-</p>
-
-<div class="actions mt-6">
-  <%= link_to 'Edit', edit_contact_path(@contact), class: 'btn btn-warning' %>
-  <%= link_to 'Delete', contact_path(@contact), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
-  <%= link_to 'Back to Contacts', contacts_path, class: 'btn btn-secondary' %>
+        <%= link_to contact_path(@contact),
+            class: "btn btn-error", 
+            data: { 
+              turbo_method: :delete,
+              turbo_confirm: t("contacts.confirm_delete") 
+            } do %>
+          <%= heroicon "trash", options: { class: "h-6 w-6" } %>
+          <%= t("delete") %>
+        <% end %>
+      </div>
+    </div>
+  </div>
 </div>

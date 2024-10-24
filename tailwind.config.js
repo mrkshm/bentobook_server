@@ -5,6 +5,7 @@ export default {
     './app/helpers/**/*.rb',
     './app/javascript/**/*.js',
     './app/frontend/**/*.{js,ts,jsx,tsx}',
+    './app/components/**/*.{html,erb}',
   ],
   theme: {
     extend: {},

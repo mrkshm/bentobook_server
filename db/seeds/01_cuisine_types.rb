@@ -1,31 +1,46 @@
 cuisine_types = [
-  "African",
-  "American",
-  "Bar",
-  "Brazilian",
-  "Caribbean",
-  "Chinese",
-  "Ethiopian",
-  "French",
-  "German",
-  "Greek",
-  "Indian",
-  "Italian",
-  "Japanese",
-  "Korean",
-  "Lebanese",
-  "Mediterranean",
-  "Mexican",
-  "Middle Eastern",
-  "Moroccan",
-  "Other",
-  "Russian",
-  "Seafood",
-  "Spanish",
-  "Thai",
-  "Turkish",
-  "Vietnamese",
-  "Wine Bar"
+  "african",
+  "american",
+  "asian_fusion",
+  "bakery",
+  "bar",
+  "bbq",
+  "brazilian",
+  "british",
+  "brunch",
+  "burger",
+  "cafe",
+  "caribbean",
+  "chinese",
+  "dim_sum",
+  "ethiopian",
+  "french",
+  "fusion",
+  "german",
+  "greek",
+  "indian",
+  "italian",
+  "japanese",
+  "korean",
+  "mediterranean",
+  "mexican",
+  "middle_eastern",
+  "moroccan",
+  "noodles",
+  "other",
+  "peruvian",
+  "portuguese",
+  "pub",
+  "ramen",
+  "seafood",
+  "spanish",
+  "steakhouse",
+  "taiwanese",
+  "thai",
+  "turkish",
+  "vegan",
+  "vegetarian",
+  "vietnamese"
 ]
 
 ActiveRecord::Base.transaction do
@@ -36,7 +51,7 @@ ActiveRecord::Base.transaction do
   puts "Created #{CuisineType.count} cuisine types"
 
   # Get the "Other" cuisine type
-  other_cuisine = CuisineType.find_by!(name: "Other")
+  other_cuisine = CuisineType.find_by!(name: "other")
 
   # Update existing restaurants without a cuisine type
   restaurants_updated = Restaurant.where(cuisine_type_id: nil).update_all(cuisine_type_id: other_cuisine.id)

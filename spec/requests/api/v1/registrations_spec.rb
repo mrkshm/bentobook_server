@@ -27,7 +27,6 @@ RSpec.describe 'Api::V1::Registrations', type: :request do
         run_test! do |response|
           expect(response.status).to eq(200)
           json_response = JSON.parse(response.body)
-          puts json_response # Debugging: Inspect the response
           expect(json_response['status']['message']).to eq('Signed up successfully.')
 
           # Parse the 'data' field separately

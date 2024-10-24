@@ -44,7 +44,6 @@ module Api
       end
 
       def create
-        puts "Incoming parameters: #{params.inspect}"
         ActiveRecord::Base.transaction do
           # Exclude :cuisine_type and :google_place_id from restaurant_params
           restaurant_attributes = restaurant_params.except(:cuisine_type, :google_place_id)
@@ -53,19 +52,16 @@ module Api
           @restaurant.cuisine_type = CuisineType.find_or_create_by(name: params[:restaurant][:cuisine_type])
           
           @google_restaurant = find_or_create_google_restaurant
-          puts "Google Restaurant after find_or_create: #{@google_restaurant.inspect}"
 
           @restaurant.google_restaurant = @google_restaurant
 
           if @restaurant.save
             render json: RestaurantSerializer.new(@restaurant).serialize, status: :created
           else
-            puts "Restaurant save failed: #{@restaurant.errors.full_messages}"
             render json: { errors: @restaurant.errors.full_messages }, status: :unprocessable_entity
           end
         end
       rescue ActiveRecord::RecordInvalid => e
-        puts "Record Invalid: #{e.message}"
         render json: { errors: [e.message] }, status: :unprocessable_entity
       end
 

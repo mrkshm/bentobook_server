@@ -55,10 +55,6 @@ RSpec.describe "Api::V1::Sessions", type: :request do
                headers: { 'Authorization' => "Bearer #{token}" },
                as: :json
 
-        # Debugging: Output response body and headers
-        puts "Response Body: #{response.body}"
-        puts "Response Headers: #{response.headers.to_h}"
-
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
         expect(json_response['status']).to eq(200)

@@ -79,7 +79,8 @@ export default class extends Controller {
           'user_ratings_total',
           'geometry',
           'opening_hours',
-          'address_components'
+          'address_components',
+          'place_id'
         ]
       },
       (detailedPlace, status) => {
@@ -91,7 +92,6 @@ export default class extends Controller {
             weekday_text: detailedPlace.opening_hours.weekday_text
           } : null;
 
-          // Populate all the form fields
           form.querySelector('#restaurant_name').value = detailedPlace.name;
           form.querySelector('#restaurant_address').value = detailedPlace.formatted_address;
           form.querySelector('#restaurant_street_number').value = extractedAddress.street_number || '';
@@ -105,8 +105,7 @@ export default class extends Controller {
           form.querySelector('#restaurant_business_status').value = detailedPlace.business_status || '';
           form.querySelector('#restaurant_price_level').value = detailedPlace.price_level || '';
 
-          // Populate google_restaurant_attributes fields
-          form.querySelector('#restaurant_google_restaurant_attributes_google_place_id').value = detailedPlace.place_id;
+          form.querySelector('#restaurant_google_restaurant_attributes_google_place_id').value = detailedPlace.place_id || '';
           form.querySelector('#restaurant_google_restaurant_attributes_name').value = detailedPlace.name;
           form.querySelector('#restaurant_google_restaurant_attributes_address').value = detailedPlace.formatted_address;
           form.querySelector('#restaurant_google_restaurant_attributes_latitude').value = detailedPlace.geometry.location.lat();

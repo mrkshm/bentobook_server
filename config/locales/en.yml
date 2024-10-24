@@ -28,14 +28,19 @@
 #       enabled: "ON"
 
 en:
+  add_contact: "Add a Contact"
   all_rights_reserved: "All rights reserved."
+  back: "Back"
   choose_files: "Choose Files"
+  edit: "Edit"
   date: "Date"
   delete: "Delete"
-  search: "Search"
+  location: "Location"
   no_files_selected: "No files selected"
   notes: "Notes"
+  phone: "Phone"
   reset: "Reset"
+  search: "Search"
   select_contacts: "Select Contacts"
   select_restaurant: "Select Restaurant"
   select_restaurant_placeholder: "Select a restaurant"
@@ -51,7 +56,8 @@ en:
   nav:
     restaurants: "Restaurants"
     visits: "Visits"
-    profile: "My Profile"
+    profile: "Profile"
+    contacts: "Contacts"
   pagy:
     nav:
       previous: "« Previous"

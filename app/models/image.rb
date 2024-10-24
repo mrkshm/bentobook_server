@@ -11,8 +11,9 @@ class Image < ApplicationRecord
   private
 
   def set_filename
-      return unless file.attached?
+    return unless file.attached?
 
+    begin
       original_filename = file.blob.filename.to_s
       extension = File.extname(original_filename).downcase
       basename = File.basename(original_filename, extension)
@@ -20,12 +21,32 @@ class Image < ApplicationRecord
       timestamp = Time.current.strftime("%Y%m%d%H%M%S")
       new_filename = "#{timestamp}_#{truncated_name}#{extension}"
 
-      # Update both filename and key
-      file.blob.update(filename: new_filename)
-      file.blob.update(key: new_filename)
+      # Store the original key before updating
+      original_key = file.blob.key
+
+      # Update the blob attributes
+      file.blob.update!(
+        filename: new_filename,
+        key: new_filename
+      )
+
+      # Verify the file exists in storage
+      unless file.blob.service.exist?(file.blob.key)
+        Rails.logger.error "File not found in storage after rename: #{file.blob.key}"
+        # Try to copy from original key if it exists
+        if file.blob.service.exist?(original_key)
+          file.blob.service.copy(original_key, file.blob.key)
+        end
+      end
+    rescue => e
+      Rails.logger.error "Error in set_filename: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+    end
   end
 
   def purge_file
-      file.purge if file.attached?
+    file.purge if file.attached?
+  rescue => e
+    Rails.logger.error "Error purging file: #{e.message}"
   end
 end

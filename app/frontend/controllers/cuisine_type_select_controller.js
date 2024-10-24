@@ -7,7 +7,9 @@ export default class extends Controller {
   connect() {
     if (!this.hasCuisineTypesValue) {
       console.error("Cuisine types data is missing")
+      return
     }
+    console.log("Cuisine types:", this.cuisineTypesValue)  // Add this line
     this.hideResultsTimeout = null
   }
 

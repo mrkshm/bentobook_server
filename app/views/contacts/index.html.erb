@@ -1,37 +1,60 @@
-<h1 class="flex justify-between items-center">
-  Your Contacts
-  <%= render(ButtonComponent.new(text: 'Add a Contact', path: new_contact_path, style: :primary, size: :normal, extra_classes: 'ml-4')) %>
-</h1>
-
-<table class="min-w-full divide-y divide-gray-200">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>City</th>
-      <th>Country</th>
-      <th>Phone</th>
-      <th>Notes</th>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% @contacts.each do |contact| %>
-      <tr>
-        <td><%= contact.name %></td>
-        <td><%= contact.email %></td>
-        <td><%= contact.city %></td>
-        <td><%= contact.country %></td>
-        <td><%= contact.phone %></td>
-        <td><%= contact.notes %></td>
-        <td><%= link_to 'Show', contact %></td>
-        <td><%= link_to 'Edit', edit_contact_path(contact) %></td>
-        <td><%= render(ButtonComponent.new(text: 'Destroy', path: contact_path(contact), method: :delete, style: :secondary, size: :small, extra_classes: 'ml-4')) %></td>
-      </tr>
+<div class="container mx-auto p-4">
+  <div class="flex w-full justify-between items-center mb-6">
+    <h1 class="text-4xl mb-4"><%= t("contacts.index.title") %></h1>
+    <%= link_to new_contact_path, class: "btn btn-primary" do %>
+      <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
+      <%= t("add_contact") %>
     <% end %>
-  </tbody>
-</table>
+  </div>
 
-<%== pagy_nav(@pagy) %>
-<%== pagy_info(@pagy) %>
+  <% if @contacts.empty? %>
+    <p class="text-center text-gray-500 my-8"><%= t("contacts.index.no_contacts") %></p>
+  <% else %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% @contacts.each do |contact| %>
+        <%= link_to contact_path(contact), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
+          <div class="card-body">
+            <div class="flex items-center gap-4">
+              <%= render(AvatarComponent.new(user: contact, size: :large)) %>
+              
+              <div>
+                <h2 class="card-title"><%= contact.name %></h2>
+                <p class="text-sm text-base-content/70"><%= contact.email %></p>
+              </div>
+            </div>
+
+            <div class="mt-4 space-y-2">
+              <% if contact.city.present? || contact.country.present? %>
+                <div class="flex items-center gap-2">
+                  <%= heroicon "map-pin", options: { class: "w-5 h-5 text-base-content/70" } %>
+                  <span><%= [contact.city, contact.country].compact.join(", ") %></span>
+                </div>
+              <% end %>
+
+              <% if contact.phone.present? %>
+                <div class="flex items-center gap-2">
+                  <%= heroicon "phone", options: { class: "w-5 h-5 text-base-content/70" } %>
+                  <span><%= contact.phone %></span>
+                </div>
+              <% end %>
+
+              <% if contact.notes.present? %>
+                <div class="flex items-start gap-2 mt-2">
+                  <%= heroicon "document-text", options: { class: "w-5 h-5 text-base-content/70" } %>
+                  <p class="text-sm"><%= truncate(contact.notes, length: 100) %></p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="flex flex-col items-center space-y-4 mt-8">
+      <%== pagy_daisy_ui_nav(@pagy) %>
+      <div class="text-sm text-gray-600 bg-base-200 p-2 rounded-lg">
+        <%== pagy_info(@pagy) %>
+      </div>
+    </div>
+  <% end %>
+</div>

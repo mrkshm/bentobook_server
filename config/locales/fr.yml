@@ -1,12 +1,17 @@
 fr:
+  add_contact: "Ajouter un contact"
   all_rights_reserved: "Tous droits réservés."
+  back: "Retour"
   choose_files: "Choisir des fichiers"
   date: "Date"
   delete: "Supprimer"
-  search: "Rechercher "
+  location: "Lieu"
+  edit: "Modifier"
   no_files_selected: "Aucun fichier sélectionné"
   notes: "Notes"
+  phone: "Téléphone"
   reset: "Réinitialiser"
+  search: "Rechercher "
   select_contacts: "Sélectionner des contacts"
   select_restaurant: "Sélectionner un restaurant"
   select_restaurant_placeholder: "Sélectionner un restaurant"
@@ -23,6 +28,7 @@ fr:
     restaurants: "Restaurants"
     visits: "Visites"
     profile: "Mon profil"
+    contacts: "Contacts"
   pagy:
     nav:
       previous: "« Précédent"

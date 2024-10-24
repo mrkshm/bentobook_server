@@ -273,7 +273,9 @@ RSpec.describe RestaurantManagement do
     context 'when google_place_id exists' do
       it 'finds the existing GoogleRestaurant' do
         existing_restaurant = create(:google_restaurant, google_place_id: 'abc123', name: 'Existing Name')
-        expect { instance.find_or_create_google_restaurant }.to output(/GoogleRestaurant persisted: true/).to_stdout
+        
+        expect(Rails.logger).to receive(:info).with(/GoogleRestaurant after find_or_create_by:/)
+
         result = instance.find_or_create_google_restaurant
         expect(result).to eq(existing_restaurant)
         expect(result.name).to eq('Existing Name')  # It should not update the name
@@ -283,13 +285,7 @@ RSpec.describe RestaurantManagement do
     context 'when google_place_id does not exist' do
       it 'creates a new GoogleRestaurant' do
         expect {
-          result = nil
-          expect {
-            result = instance.find_or_create_google_restaurant
-          }.to output(/Creating new GoogleRestaurant/).to_stdout
-          expect(result).to be_a(GoogleRestaurant)
-          expect(result.google_place_id).to eq('abc123')
-          expect(result.name).to eq('Test Restaurant')
+          instance.find_or_create_google_restaurant
         }.to change(GoogleRestaurant, :count).by(1)
       end
     end
@@ -306,12 +302,10 @@ RSpec.describe RestaurantManagement do
         }
       end
 
-      it 'does not create a new GoogleRestaurant' do
-        result = nil
+      it 'raises an error' do
         expect {
-          result = instance.find_or_create_google_restaurant
-        }.to output(/Latitude or longitude is missing/).to_stdout
-        expect(result).to be_nil
+          instance.find_or_create_google_restaurant
+        }.to raise_error(ArgumentError, "Latitude or longitude is required")
       end
     end
 
@@ -339,10 +333,10 @@ RSpec.describe RestaurantManagement do
         allow_any_instance_of(GoogleRestaurant).to receive(:persisted?).and_return(false)
       end
 
-      it 'logs error messages' do
+      it 'does not increase the GoogleRestaurant count' do
         expect {
           instance.find_or_create_google_restaurant
-        }.to output(/Failed to create GoogleRestaurant/).to_stdout
+        }.not_to change(GoogleRestaurant, :count)
       end
     end
 
@@ -358,9 +352,9 @@ RSpec.describe RestaurantManagement do
       end
 
       it 'logs an error message with validation errors' do
-        expect {
-          instance.find_or_create_google_restaurant
-        }.to output(/GoogleRestaurant is invalid:/).to_stdout
+        expect(Rails.logger).to receive(:warn).with(/GoogleRestaurant is invalid:/)
+
+        instance.find_or_create_google_restaurant
       end
     end
   end

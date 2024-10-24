@@ -25,17 +25,14 @@ module Api
 
       def destroy
         token = request.headers['Authorization']&.split(' ')&.last
-        puts "Token: #{token}" # Debug token
 
         if token
           begin
             decoded_token = JWT.decode(token, Rails.application.credentials.devise_jwt_secret_key!, true, { algorithm: 'HS256' })
-            puts "Decoded Token: #{decoded_token}" # Debug decoded token
             
             # Manually find the user based on the JWT payload
             user_id = decoded_token.first['sub']
             user = User.find_by(id: user_id)
-            puts "Found User: #{user.inspect}"
 
             if user
               sign_out(user)
@@ -50,7 +47,6 @@ module Api
               }, status: :unauthorized
             end
           rescue JWT::DecodeError => e
-            puts "JWT Decode Error: #{e.message}" # Debug JWT decode errors
             render json: {
               status: 401,
               message: "Invalid token."

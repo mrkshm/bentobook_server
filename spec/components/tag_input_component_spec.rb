@@ -56,7 +56,7 @@ RSpec.describe TagInputComponent, type: :component do
   describe 'accessibility' do
     it 'has a placeholder for the input field' do
       render_inline(component)
-      expect(page).to have_css('input[placeholder="Add tags..."]')
+      expect(page).to have_css('input[placeholder="Add Tags..."]')
     end
   end
 

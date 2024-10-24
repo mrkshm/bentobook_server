@@ -1,50 +1,68 @@
-<div class="image-upload" data-controller="image-preview">
+<div class="image-upload" 
+     data-controller="image-preview image-deletion"
+     data-image-deletion-imageable-type-value="<%= imageable.class.name %>"
+     data-image-deletion-imageable-id-value="<%= imageable.id %>">
   <div data-image-preview-target="inputContainer">
     <%= form.file_field :images, 
                         multiple: true, 
-                        direct_upload: true, 
-                        data: { image_preview_target: "input" }, 
+                        direct_upload: true,
+                        accept: 'image/*',
+                        data: { 
+                          image_preview_target: "input",
+                          action: "change->image-preview#handleFiles"
+                        }, 
                         class: 'hidden' %>
+    
     <button type="button" 
             class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300 ease-in-out"
             data-action="click->image-preview#triggerFileInput">
-      <%= t("choose_files") %>
+      Choose Files
     </button>
-    <div data-image-preview-target="noFileMessage" class="mt-2 text-sm text-gray-600"><%= t("no_files_selected") %></div>
   </div>
   
-  <div data-image-preview-target="preview" class="image-preview mt-4 flex flex-wrap gap-4"></div>
+  <div data-image-preview-target="preview" class="image-preview mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
   
-  <button type="button" 
-          data-action="click->image-preview#reset" 
-          class="mt-4 px-4 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75 transition duration-300 ease-in-out">
-    <%= t("reset") %>
-  </button>
-
-  <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-    <% imageable.images.each do |image| %>
-      <div class="image-thumbnail relative">
-        <% if image.file.attached? %>
-          <% if image.file.variable? %>
-            <% begin %>
-              <%= image_tag image.file.variant(resize_to_limit: [100, 100]), class: "rounded-lg shadow-md w-full h-full object-cover" %>
-            <% rescue StandardError => e %>
-              <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">Error loading image</div>
-            <% end %>
-          <% else %>
-            <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">Non-variable image</div>
+  <% if imageable.images.any? %>
+    <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      <% imageable.images.each do |image| %>
+        <% if image.file.attached? && image.file.blob.present? %>
+          <% begin %>
+            <div class="image-thumbnail relative aspect-w-3 aspect-h-2">
+              <%= image_tag(url_for(image.file), 
+                          class: "w-full h-full object-contain rounded-lg shadow-md") %>
+              
+              <%= link_to "×",
+                          "#",
+                          data: { 
+                            action: "image-deletion#deleteImage",
+                            image_id: image.id
+                          },
+                          class: "absolute top-0 right-0 z-10 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors duration-200 flex items-center justify-center text-xl font-bold" %>
+            </div>
+          <% rescue StandardError => e %>
+            <% Rails.logger.error("Error displaying image #{image.id}: #{e.message}") %>
           <% end %>
-        <% else %>
-          <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">No image attached</div>
         <% end %>
-        <% if image.persisted? %>
-          <div class="mt-2">
-            <%= form.check_box :is_cover, checked: image.is_cover?, id: "image_#{image.id}_is_cover", class: "mr-2" %>
-            <%= form.label :is_cover, 'Set as cover', for: "image_#{image.id}_is_cover", class: "text-sm text-gray-700" %>
-          </div>
-          <%= link_to t("delete"), template.image_path(image), method: :delete, data: { confirm: 'Are you sure?' }, class: "mt-2 text-sm text-red-600 hover:text-red-800 absolute top-0 right-0 bg-white rounded-full p-1" %>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Debug information %>
+  <% if Rails.env.development? %>
+    <div class="mt-4 p-4 bg-gray-100 rounded">
+      <h3 class="font-bold">Debug Info:</h3>
+      <p>Number of images: <%= imageable.images.count %></p>
+      <% imageable.images.each_with_index do |image, index| %>
+        <div class="mt-2">
+          <p>Image <%= index + 1 %>:</p>
+          <ul class="list-disc ml-4">
+            <li>Attached?: <%= image.file.attached? %></li>
+            <li>Blob present?: <%= image.file.blob.present? rescue 'Error checking blob' %></li>
+            <li>Content type: <%= image.file.content_type rescue 'Unknown' %></li>
+            <li>Filename: <%= image.file.filename rescue 'Unknown' %></li>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>

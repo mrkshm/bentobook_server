@@ -29,6 +29,7 @@ class RestaurantsController < ApplicationController
     def edit
       @restaurant = current_user.restaurants.with_google.includes(:images).find(params[:id])
       @cuisine_types = CuisineType.all
+      Rails.logger.debug "Cuisine types: #{@cuisine_types.inspect}"
     end
     
     def new
@@ -40,42 +41,50 @@ class RestaurantsController < ApplicationController
     def update
       @restaurant = current_user.restaurants.with_google.find(params[:id])
       
-      Rails.logger.info "Updating restaurant #{@restaurant.id} with params: #{restaurant_update_params.inspect}"
-      
-      updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
-
-      if updater.update
-        Rails.logger.info "Restaurant #{@restaurant.id} updated successfully"
-        redirect_to restaurant_path(@restaurant), notice: 'Restaurant was successfully updated.'
-      else
-        Rails.logger.error "Failed to update restaurant #{@restaurant.id}: #{@restaurant.errors.full_messages}"
+      begin
+        # Log the parameters for debugging
+        Rails.logger.info "Update params: #{restaurant_update_params.inspect}"
+        
+        updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
+        
+        if updater.update
+          redirect_to restaurant_path(@restaurant), notice: 'Restaurant was successfully updated.'
+        else
+          @cuisine_types = CuisineType.all
+          flash.now[:alert] = @restaurant.errors.full_messages.join(', ')
+          render :edit, status: :unprocessable_entity
+        end
+      rescue => e
+        Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}\n#{e.backtrace.join("\n")}"
+        flash.now[:alert] = "Error updating the restaurant: #{e.message}"
+        @cuisine_types = CuisineType.all
         render :edit, status: :unprocessable_entity
       end
-    rescue => e
-      Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}"
-      flash.now[:alert] = "Error updating the restaurant: #{e.message}"
-      render :edit, status: :unprocessable_entity
     end
   
     def create
-      Rails.logger.info "Restaurant params received: #{params.inspect}"
-      Rails.logger.info "Permitted params: #{restaurant_params.inspect}"
-
+      
       ActiveRecord::Base.transaction do
-        @restaurant = current_user.restaurants.new(restaurant_params)
-        @restaurant.cuisine_type = CuisineType.find_or_create_by(name: params[:restaurant][:cuisine_type])
-
-        if @restaurant.save
-          redirect_to({ action: :show, id: @restaurant.id }, notice: 'Restaurant was successfully created.')
-        else
-          Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
-          render :new, status: :unprocessable_entity
+        begin
+          @restaurant = build_restaurant
+          
+          if restaurant_params.dig(:google_restaurant_attributes, :google_place_id) == "undefined"
+            @restaurant.errors.add(:base, "Invalid Google Place ID")
+            handle_failed_save
+            return
+          end
+          
+          if @restaurant.save
+            redirect_to({ action: :show, id: @restaurant.id }, notice: 'Restaurant was successfully created.')
+          else
+            Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
+            handle_failed_save
+          end
+        rescue ActiveRecord::RecordNotFound => e
+          @restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name))
+          handle_invalid_cuisine_type
         end
       end
-    rescue ActiveRecord::RecordInvalid => e
-      Rails.logger.error "Failed to create restaurant: #{e.message}"
-      flash.now[:alert] = e.message
-      render :new, status: :unprocessable_entity
     end
   
     def destroy
@@ -146,9 +155,10 @@ class RestaurantsController < ApplicationController
   
     def restaurant_params
       params.require(:restaurant).permit(
-        :name, :address, :notes, :cuisine_type, :rating, :price_level,
-        :street_number, :street, :postal_code, :city, :state, :country,
-        :phone_number, :url, :business_status, :tag_list,
+        :name, :address, :notes, :cuisine_type_name, :cuisine_type_id,
+        :rating, :price_level, :street_number, :street, :postal_code,
+        :city, :state, :country, :phone_number, :url, :business_status,
+        :tag_list,
         google_restaurant_attributes: [
           :google_place_id, :name, :address, :latitude, :longitude,
           :street_number, :street, :postal_code, :city, :state, :country,
@@ -159,21 +169,44 @@ class RestaurantsController < ApplicationController
     end
   
     def build_restaurant
-      restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type))
-      cuisine_type_name = restaurant_params[:cuisine_type]
-      if cuisine_type_name.present?
-        restaurant.cuisine_type = CuisineType.find_or_create_by(name: cuisine_type_name)
+      cuisine_type_name = restaurant_params[:cuisine_type_name]&.downcase
+      
+      unless cuisine_type_name.present?
+        raise ActiveRecord::RecordNotFound, "Cuisine type is required"
       end
+
+      cuisine_type = CuisineType.find_by(name: cuisine_type_name)
+      unless cuisine_type
+        Rails.logger.error "Invalid cuisine type: #{cuisine_type_name}"
+        raise ActiveRecord::RecordNotFound, "Invalid cuisine type: #{cuisine_type_name}"
+      end
+
+      restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name))
+      restaurant.cuisine_type = cuisine_type
       restaurant
     end
   
     def restaurant_update_params
       params.require(:restaurant).permit(
-        :name, :address, :notes, :cuisine_type_id, :cuisine_type_name, :rating, :price_level,
-        :street_number, :street, :postal_code, :city, :state, :country,
-        :phone_number, :url, :business_status, :tag_list,
-        images: []
-      )
+        :name, :address, :notes, :cuisine_type_id, :cuisine_type_name, 
+        :rating, :price_level, :street_number, :street, :postal_code, 
+        :city, :state, :country, :phone_number, :url, :business_status, 
+        :tag_list, images: []
+      ).tap do |whitelisted|
+        Rails.logger.info "Whitelisted params: #{whitelisted.inspect}"
+      end
+    end
+  
+    def handle_failed_save
+      @cuisine_types = CuisineType.all
+      flash.now[:alert] = @restaurant.errors.full_messages.join(', ')
+      render :new, status: :unprocessable_entity
+    end
+  
+    def handle_invalid_cuisine_type
+      @cuisine_types = CuisineType.all
+      flash.now[:alert] = "Invalid cuisine type: #{restaurant_params[:cuisine_type_name]}. Available types: #{@cuisine_types.pluck(:name).join(', ')}"
+      render :new, status: :unprocessable_entity
     end
   
   end
