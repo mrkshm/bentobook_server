@@ -68,12 +68,6 @@ class RestaurantsController < ApplicationController
         begin
           @restaurant = build_restaurant
           
-          if restaurant_params.dig(:google_restaurant_attributes, :google_place_id) == "undefined"
-            @restaurant.errors.add(:base, "Invalid Google Place ID")
-            handle_failed_save
-            return
-          end
-          
           if @restaurant.save
             redirect_to({ action: :show, id: @restaurant.id }, notice: 'Restaurant was successfully created.')
           else

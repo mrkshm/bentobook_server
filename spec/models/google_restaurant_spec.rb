@@ -74,4 +74,12 @@ RSpec.describe GoogleRestaurant, type: :model do
       expect(restaurant.needs_update?).to be false
     end
   end
+
+  describe 'custom validations' do
+    it 'adds an error if google_place_id is "undefined"' do
+      google_restaurant = GoogleRestaurant.new(google_place_id: 'undefined')
+      expect(google_restaurant).not_to be_valid
+      expect(google_restaurant.errors[:google_place_id]).to include("cannot be undefined")
+    end
+  end
 end

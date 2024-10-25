@@ -62,6 +62,19 @@ RSpec.describe RestaurantUpdater do
 
       expect(updater.update).to be false
     end
+
+    context "when an error occurs during update" do
+      let(:error_message) { "Something went wrong" }
+      
+      before do
+        allow(restaurant).to receive(:save).and_raise(StandardError.new(error_message))
+      end
+
+      it "adds the error message and returns false" do
+        expect(updater.update).to be false
+        expect(restaurant.errors[:base]).to include(error_message)
+      end
+    end
   end
 
   describe "#update_cuisine_type" do
@@ -86,6 +99,15 @@ RSpec.describe RestaurantUpdater do
         restaurant_for_cuisine_test.reload
         expect(restaurant_for_cuisine_test.cuisine_type).to eq(italian)
       end
+
+      it "raises RecordNotFound when cuisine type doesn't exist" do
+        invalid_params = { cuisine_type_name: "nonexistent_cuisine" }
+        invalid_updater = RestaurantUpdater.new(restaurant_for_cuisine_test, invalid_params)
+
+        expect {
+          invalid_updater.send(:update_cuisine_type)
+        }.to raise_error(ActiveRecord::RecordNotFound, "Cuisine type 'nonexistent_cuisine' is not valid")
+      end
     end
   end
 
@@ -108,6 +130,37 @@ RSpec.describe RestaurantUpdater do
 
       temp_file.close
       temp_file.unlink
+    end
+
+    context "when image fails to save" do
+      let(:error_messages) { ["File can't be blank"] }
+      
+      before do
+        temp_file = Tempfile.new(['test_image', '.jpg'])
+        temp_file.write('dummy image content')
+        temp_file.rewind
+
+        uploaded_file = ActionDispatch::Http::UploadedFile.new(
+          tempfile: temp_file,
+          filename: 'test_image.jpg',
+          type: 'image/jpeg'
+        )
+
+        params[:images] = [uploaded_file]
+        
+        # Create a real Image instance instead of a double
+        invalid_image = Image.new
+        invalid_image.errors.add(:file, "can't be blank")
+        
+        # Mock the build behavior to return our invalid image
+        allow(restaurant.images).to receive(:build).and_return(invalid_image)
+        allow(invalid_image).to receive(:save).and_return(false)
+      end
+
+      it "logs error and raises RecordInvalid" do
+        expect(Rails.logger).to receive(:error).with("Failed to save image: #{error_messages}")
+        expect { updater.send(:update_images) }.to raise_error(ActiveRecord::RecordInvalid)
+      end
     end
   end
 end

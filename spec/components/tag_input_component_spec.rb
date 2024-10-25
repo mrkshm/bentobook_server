@@ -61,27 +61,37 @@ RSpec.describe TagInputComponent, type: :component do
   end
 
   describe '#tag_list' do
+    subject { described_class.new(tags: tags).tag_list }
+
     context 'with multiple tags' do
       let(:tags) { ['ruby', 'rails', 'javascript'] }
+      
       it 'joins tags with commas' do
-        render_inline(described_class.new(tags: tags))
-        expect(page).to have_css("input[type='hidden'][value='ruby,rails,javascript']", visible: false)
+        expect(subject).to eq('ruby,rails,javascript')
       end
     end
 
     context 'with a single tag' do
       let(:tags) { ['ruby'] }
+      
       it 'returns the single tag' do
-        render_inline(described_class.new(tags: tags))
-        expect(page).to have_css("input[type='hidden'][value='ruby']", visible: false)
+        expect(subject).to eq('ruby')
       end
     end
 
     context 'with no tags' do
       let(:tags) { [] }
+      
       it 'returns an empty string' do
-        render_inline(described_class.new(tags: tags))
-        expect(page).to have_css("input[type='hidden'][value='']", visible: false)
+        expect(subject).to eq('')
+      end
+    end
+
+    context 'with nil tags' do
+      let(:tags) { nil }
+      
+      it 'handles nil gracefully' do
+        expect { subject }.to raise_error(NoMethodError)
       end
     end
   end

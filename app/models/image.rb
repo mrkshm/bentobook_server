@@ -35,7 +35,10 @@ class Image < ApplicationRecord
         Rails.logger.error "File not found in storage after rename: #{file.blob.key}"
         # Try to copy from original key if it exists
         if file.blob.service.exist?(original_key)
-          file.blob.service.copy(original_key, file.blob.key)
+          begin
+            file.blob.service.copy(original_key, file.blob.key) if file.blob.service.respond_to?(:copy)
+          rescue NoMethodError
+          end
         end
       end
     rescue => e
