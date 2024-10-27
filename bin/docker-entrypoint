@@ -6,6 +6,19 @@ if [ -z "${LD_PRELOAD+x}" ]; then
     export LD_PRELOAD
 fi
 
+# Print environment variables for debugging
+echo "DB_HOST: $DB_HOST"
+echo "POSTGRES_DB: $POSTGRES_DB"
+echo "POSTGRES_USER: $POSTGRES_USER"
+
+# Wait for database
+until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c '\q' 2>/dev/null; do
+  echo >&2 "Postgres is unavailable - sleeping"
+  sleep 1
+done
+
+echo >&2 "Postgres is up - executing command"
+
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
