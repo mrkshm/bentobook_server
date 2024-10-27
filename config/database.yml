@@ -19,7 +19,6 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-
 development:
   <<: *default
   database: bentobook_development
@@ -82,8 +81,10 @@ production:
   primary: &primary_production
     <<: *default
     database: bentobook_production
-    username: bentobook
-    password: <%= ENV["BENTOBOOK_DATABASE_PASSWORD"] %>
+    username: <%= ENV['POSTGRES_USER'] %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    host: db
+    port: 5432
   cache:
     <<: *primary_production
     database: bentobook_production_cache

@@ -2,7 +2,7 @@
 service: bentobook
 
 # Name of the container image.
-image: your-user/bentobook
+image: mrkshm/bentobook
 
 # Deploy to these servers.
 servers:
@@ -17,7 +17,7 @@ servers:
 # Set ssl: false if using something like Cloudflare to terminate SSL (but keep host!).
 proxy:
   ssl: true
-  host: app.example.com
+  host: bentobook.app
 
 # Credentials for your image host.
 registry:
@@ -33,6 +33,9 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
+    - DEVISE_JWT_SECRET_KEY
+    - POSTGRES_USER
+    - POSTGRES_PASSWORD
   clear:
     # Run the Solid Queue Supervisor inside the web server's Puma process to do jobs.
     # When you start using multiple servers, you should split out job processing to a dedicated machine.
@@ -58,12 +61,10 @@ aliases:
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole"
 
-
 # Use a persistent storage volume for sqlite database files and local Active Storage files.
 # Recommended to change this to a mounted volume path that is backed up off server.
 volumes:
   - "bentobook_storage:/rails/storage"
-
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old
@@ -83,13 +84,24 @@ builder:
   # secrets:
   #   - GITHUB_TOKEN
   #   - RAILS_MASTER_KEY
-
 # Use a different ssh user than root
 # ssh:
 #   user: app
 
 # Use accessory services (secrets come from .kamal/secrets).
-# accessories:
+accessories:
+  db:
+    image: postgres:16
+    host: 192.168.0.1
+    port: 5432
+    env:
+      clear:
+        POSTGRES_DB: bentobook-production
+      secret:
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
 #   db:
 #     image: mysql:8.0
 #     host: 192.168.0.2

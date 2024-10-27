@@ -22,7 +22,7 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
-gem 'turbo-rails'
+gem "turbo-rails"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
@@ -30,35 +30,36 @@ gem "bootsnap", require: false
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", ">= 2.1.0", require: false
 
-gem 'vite_rails'
+gem "vite_rails"
 
-gem 'pagy'
+gem "pagy"
 
-gem 'alba'
+gem "alba"
 
-gem 'pg_search'
+gem "pg_search"
 
-gem 'heroicon'
+gem "heroicon"
 
 gem "view_component"
 
-gem 'money-rails'
+gem "money-rails"
 
-gem 'geocoder'
+gem "geocoder"
 
-gem 'devise'
+gem "devise"
 
-gem 'acts-as-taggable-on'
+gem "acts-as-taggable-on"
 
-gem 'rswag-api'
-gem 'rswag-ui'
+gem "rswag-api"
+gem "rswag-ui"
 
-gem 'devise-jwt'
+gem "devise-jwt"
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
+gem "aws-sdk-s3", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -77,18 +78,18 @@ group :development do
 end
 
 group :development, :test do
-  gem 'rspec-rails'
-  gem 'factory_bot_rails'
-  gem 'rswag-specs'
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "rswag-specs"
 end
 
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
-  gem 'simplecov', require: false
-  gem 'shoulda-matchers'
-  gem 'rails-controller-testing'
-  gem 'database_cleaner-active_record'
-  gem 'timecop'
+  gem "simplecov", require: false
+  gem "shoulda-matchers"
+  gem "rails-controller-testing"
+  gem "database_cleaner-active_record"
+  gem "timecop"
 end
