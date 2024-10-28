@@ -15,7 +15,9 @@
     </style>
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'application' %>
+    <%= vite_stylesheet_tag '~/stylesheets/application.css' unless ViteRuby.instance.dev_server_running? %>
     <script>
+      document.body.style.opacity = '1';
       // Apply theme from localStorage immediately
       const storedTheme = localStorage.getItem('theme');
       if (storedTheme) {

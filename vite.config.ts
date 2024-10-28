@@ -25,7 +25,10 @@ export default defineConfig({
     outDir: 'public/vite',
     emptyOutDir: true,
     rollupOptions: {
-      input: 'app/frontend/entrypoints/application.js'
+      input: {
+        application: 'app/frontend/entrypoints/application.js',
+        styles: 'app/frontend/stylesheets/application.css'
+      }
     },
   },
 })
