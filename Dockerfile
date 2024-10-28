@@ -61,13 +61,12 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
-# Build Vite assets directly with Bun
-RUN bun run build
-
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 # This will also run vite:build through the asset pipeline integration
 RUN SECRET_KEY_BASE_DUMMY=1 \
     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
+    RAILS_ENV=production \
+    NODE_ENV=production \
     ./bin/rails assets:precompile
 
 # Final stage for app image

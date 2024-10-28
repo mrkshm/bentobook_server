@@ -13,7 +13,6 @@
       /* Inline critical CSS */
       body { opacity: 0; transition: opacity 0.3s ease-in; }
     </style>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload", media: "print", onload: "this.media='all'; document.body.style.opacity = '1';" %>
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'application' %>
     <script>

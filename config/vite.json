@@ -15,7 +15,8 @@
   },
   "production": {
     "autoBuild": true,
-    "publicOutputDir": "vite"
+    "publicOutputDir": "vite",
+    "manifestPath": "manifest.json"
   }
 }
 
