@@ -98,9 +98,6 @@ accessories:
     image: postgres:16
     host: 159.69.177.123
     port: 5432
-    network_aliases:
-      - db
-      - bentobook-db
     env:
       clear:
         DB_HOST: bentobook-db
