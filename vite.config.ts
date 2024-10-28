@@ -22,9 +22,16 @@ export default defineConfig({
     },
   },
   build: {
-    manifest: true,
+    outDir: 'public/vite',
+    emptyOutDir: true,
+    cssCodeSplit: false,
     rollupOptions: {
-      input: 'app/frontend/entrypoints/application.js'
-    }
-  }
+      input: 'app/frontend/entrypoints/application.js',
+      output: {
+        entryFileNames: '[name]-[hash].js',
+        chunkFileNames: '[name]-[hash].js',
+        assetFileNames: '[name]-[hash][extname]'
+      }
+    },
+  },
 })

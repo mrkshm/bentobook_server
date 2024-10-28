@@ -1,5 +1,3 @@
-console.log('🔥 FIRST LINE OF APPLICATION.JS 🔥')
-
 import '../stylesheets/application.css'
 import Alpine from 'alpinejs'
 
