@@ -17,7 +17,10 @@ ENV RAILS_ENV="production" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
     NODE_ENV="production" \
-    VITE_RUBY_ENV="production"
+    VITE_RUBY_ENV="production" \
+    VITE_RUBY_AUTO_BUILD="true" \
+    RAILS_SERVE_STATIC_FILES="true" \
+    VITE_RUBY_SKIP_COMPATIBILITY_CHECK="true"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build

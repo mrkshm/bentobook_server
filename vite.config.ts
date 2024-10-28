@@ -22,16 +22,9 @@ export default defineConfig({
     },
   },
   build: {
-    // This ensures that CSS is extracted into a separate file
-    cssCodeSplit: false,
-  },
-  // Add this section
-  // server: {
-  //   hmr: true,
-  //   watch: {
-  //     usePolling: true,
-  //   },
-  // },
-  // Add this for debugging
-  logLevel: 'info',
+    manifest: true,
+    rollupOptions: {
+      input: 'app/frontend/entrypoints/application.js'
+    }
+  }
 })
