@@ -1,0 +1,41 @@
+<div class="menu bg-base-200 w-full rounded-box">
+  <%- if controller_name != 'sessions' %>
+    <%= link_to new_session_path(resource_name), 
+        class: "menu-item hover:bg-base-300 p-4 rounded-lg" do %>
+      <i class="fa-solid fa-right-to-bracket"></i>
+      Log in
+    <% end %>
+  <% end %>
+
+  <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+    <%= link_to new_registration_path(resource_name), 
+        class: "menu-item hover:bg-base-300 p-4 rounded-lg" do %>
+      <i class="fa-solid fa-user-plus"></i>
+      Sign up
+    <% end %>
+  <% end %>
+
+  <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+    <%= link_to new_password_path(resource_name), 
+        class: "menu-item hover:bg-base-300 p-4 rounded-lg" do %>
+      <i class="fa-solid fa-key"></i>
+      Forgot your password?
+    <% end %>
+  <% end %>
+
+  <%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
+    <%= link_to new_confirmation_path(resource_name), 
+        class: "menu-item hover:bg-base-300 p-4 rounded-lg" do %>
+      <i class="fa-solid fa-envelope"></i>
+      Didn't receive confirmation instructions?
+    <% end %>
+  <% end %>
+
+  <%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'unlocks' %>
+    <%= link_to new_unlock_path(resource_name), 
+        class: "menu-item hover:bg-base-300 p-4 rounded-lg" do %>
+      <i class="fa-solid fa-unlock"></i>
+      Didn't receive unlock instructions?
+    <% end %>
+  <% end %>
+</div>

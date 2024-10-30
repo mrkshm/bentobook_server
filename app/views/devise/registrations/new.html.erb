@@ -1,0 +1,56 @@
+<div class="max-w-md mx-auto mt-8">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Sign up</h2>
+
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
+          data: { turbo: true }) do |f| %>
+
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <div class="form-control w-full">
+          <%= f.label :email, class: "label" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :password, class: "label" %>
+          <%= f.password_field :password, autocomplete: "new-password",
+              class: "input input-bordered w-full" %>
+          <% if @minimum_password_length %>
+            <label class="label">
+              <span class="label-text-alt">
+                <%= @minimum_password_length %> characters minimum
+              </span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :password_confirmation, class: "label" %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password",
+              class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="text-sm text-base-content/70 mt-6">
+          You will receive an email to confirm your account.
+        </div>
+
+        <div class="text-sm text-base-content/70 mt-6">
+          By signing up, you agree to our <%= link_to "Terms and Conditions", terms_path, class: "link link-primary" %>.
+        </div>
+
+        <div class="card-actions justify-end mt-4">
+          <%= f.submit "Sign up", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <div class="divider">OR</div>
+
+      <div class="space-y-2">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>
