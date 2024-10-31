@@ -3,7 +3,9 @@ Rails.application.routes.draw do
   mount Rswag::Api::Engine => '/api-docs'
   # Set up a constraint for all locales, including default
   scope "(:locale)", locale: /fr/ do
-    devise_for :users
+    devise_for :users, controllers: {
+      confirmations: 'users/confirmations'
+    }
     
     resources :restaurants do
       member do
@@ -28,7 +30,9 @@ Rails.application.routes.draw do
       post 'change_locale', on: :collection
     end
 
+    get "pages/terms", as: :terms
     get "pages/home"
+
     root "pages#home"
   end
 
@@ -39,7 +43,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       devise_for :users, controllers: {
           sessions: 'api/v1/sessions',
-          registrations: 'api/v1/registrations'
+          registrations: 'api/v1/registrations',
         }, defaults: { format: :json }
       resource :profile, only: [:show, :update]
       resources :contacts, only: [:index, :show, :create, :update, :destroy]

@@ -1,0 +1,42 @@
+<div class="max-w-md mx-auto mt-8">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Sign in</h2>
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name),
+          data: { turbo: true }) do |f| %>
+
+        <div class="form-control w-full">
+          <%= f.label :email, class: "label" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :password, class: "label" %>
+          <%= f.password_field :password, autocomplete: "current-password",
+              class: "input input-bordered w-full" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="form-control">
+            <label class="label cursor-pointer">
+              <%= f.check_box :remember_me, class: "checkbox checkbox-primary" %>
+              <span class="label-text ml-2">Remember me</span>
+            </label>
+          </div>
+        <% end %>
+
+        <div class="card-actions justify-end mt-6">
+          <%= f.submit "Sign in", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <div class="divider">OR</div>
+
+      <div class="space-y-2">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>
