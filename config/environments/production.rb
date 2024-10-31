@@ -61,14 +61,15 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "bentobook.app" }
   config.action_mailer.default_options = { from: 'confirmation@bentobook.app' }
-
+  config.action_mailer.delivery_method = :smtp
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   config.action_mailer.smtp_settings = {
     user_name: Rails.application.credentials.dig(:smtp, :ses_smtp_user),
     password: Rails.application.credentials.dig(:smtp, :ses_smtp_password),
     address: "email-smtp.eu-north-1.amazonaws.com",
     port: 587,
-    authentication: :plain
+    authentication: :plain,
+    enable_starttls_auto: true
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
