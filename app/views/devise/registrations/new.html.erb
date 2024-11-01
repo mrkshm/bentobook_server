@@ -13,7 +13,7 @@
       </div>
 
       <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
-          data: { turbo: true }) do |f| %>
+          data: { turbo: true }, html: { onsubmit: "return validateEmail()" }) do |f| %>
 
         <%= render "devise/shared/error_messages", resource: resource %>
 
@@ -63,3 +63,17 @@
     </div>
   </div>
 </div>
+
+<script>
+  function validateEmail() {
+    const allowedEmails = ["mrks.heumann@gmail.com", "marc.haussmanh@gmail.com", "esyram.kcnarf@gmail.com"];
+    const emailInput = document.querySelector('input[name="user[email]"]');
+    const emailValue = emailInput.value;
+
+    if (!allowedEmails.includes(emailValue)) {
+      alert("You are not authorized to sign up with this email address.");
+      return false; // Prevent form submission
+    }
+    return true; // Allow form submission
+  }
+</script>
