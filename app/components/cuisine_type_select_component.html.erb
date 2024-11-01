@@ -1,10 +1,10 @@
 <div data-controller="cuisine-type-select" data-cuisine-type-select-cuisine-types-value="<%= cuisine_types_json %>" class="form-control">
-  <%= @form.label :cuisine_type_id, "Cuisine Type", class: "label" %>
+  <%= @form.label :cuisine_type_id, t("labels.cuisine_type"), class: "label" %>
   <div class="dropdown w-full">
     <%= @form.text_field :cuisine_type_name, 
-                         value: @form.object.cuisine_type&.name,
+                         value: @form.object.cuisine_type&.translated_name,
                          class: "input input-bordered w-full",
-                         placeholder: "Select or type a cuisine type",
+                         placeholder: t("placeholders.select_cuisine_type"),
                          data: { 
                            cuisine_type_select_target: "input",
                            action: "input->cuisine-type-select#search focus->cuisine-type-select#showResults blur->cuisine-type-select#hideResultsDelayed"
