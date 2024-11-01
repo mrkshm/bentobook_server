@@ -7,7 +7,16 @@
   <div class="form-control">
     <%= form.label :date, t("date"), class: "label" %>
     <div class="flex flex-wrap gap-2">
-      <%= form.date_select :date %>
+      <%= form.date_select :date, 
+                          default: visit.date || Date.current,
+                          order: [:day, :month, :year],
+                          use_month_names: t('date.month_names').compact,
+                          prompt: { 
+                            day: t('date.day'),
+                            month: t('date.month'),
+                            year: t('date.year')
+                          },
+                          class: "select select-bordered" %>
     </div>
   </div>
 

@@ -10,7 +10,10 @@ class ProfilesController < ApplicationController
     end
   
     def update
-      if @profile.update(profile_params)
+      if @profile.update(profile_params_without_avatar)
+        if params[:profile][:avatar].present?
+          ImageHandlingService.process_images(@profile, params, compress: true)
+        end
         redirect_to profile_path, notice: I18n.t('notices.profile.updated')
       else
         flash.now[:alert] = I18n.t('errors.profile.update_failed')
@@ -35,7 +38,7 @@ class ProfilesController < ApplicationController
       @profile = current_user.profile || current_user.create_profile!
     end
   
-    def profile_params
-      params.require(:profile).permit(:username, :first_name, :last_name, :about, :avatar)
+    def profile_params_without_avatar
+      params.require(:profile).permit(:username, :first_name, :last_name, :about)
     end
   end

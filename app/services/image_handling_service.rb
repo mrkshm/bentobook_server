@@ -1,42 +1,66 @@
 require 'securerandom'
 
 class ImageHandlingService
-  def self.process_images(imageable, params)
-    Rails.logger.info "Starting process_images for #{imageable.class.name} #{imageable.id}"
-    return { success: false, message: "No image params" } unless params && params[:images]
+  DEFAULT_COMPRESSION_OPTIONS = {
+    resize_to_limit: [1200, 1200],
+    format: :jpg,
+    saver: { 
+      quality: 73,
+      strip: true
+    }
+  }
 
-    results = []
-    success = true
+  def self.process_images(imageable, params, compress: false)
+    if avatar_present?(params)
+      image = get_avatar_from_params(params)
+      process_single_attachment(imageable, image, :avatar, compress)
+      { success: true }
+    else
+      { success: false, message: "No image params" }
+    end
+  end
 
-    params[:images].each_with_index do |image, index|
-      Rails.logger.info "Processing image #{index + 1}"
-      if image.respond_to?(:tempfile) && image.respond_to?(:original_filename)
-        new_image = imageable.images.new
-        new_image.file.attach(
-          io: image.tempfile,
-          filename: image.original_filename,
-          content_type: image.content_type
-        )
-        
-        if new_image.save
-          Rails.logger.info "Image created successfully: #{new_image.id}"
-          results << { success: true, image_id: new_image.id }
-        else
-          error_message = "Failed to create image: #{new_image.errors.full_messages.join(', ')}"
-          Rails.logger.error error_message
-          results << { success: false, error: error_message }
-        end
-      else
-        Rails.logger.warn "Skipping non-file object in images array: #{image.class}"
-        results << { success: false, error: "Invalid file object: #{image.class}" }
-      end
+  private
+
+  def self.avatar_present?(params)
+    (params[:contact] && params[:contact][:avatar].present?) ||
+    (params[:profile] && params[:profile][:avatar].present?)
+  end
+
+  def self.get_avatar_from_params(params)
+    params[:contact]&.[](:avatar) || params[:profile]&.[](:avatar)
+  end
+
+  def self.process_single_attachment(imageable, image, attachment_name, compress)
+    if imageable.send(attachment_name).attached?
+      imageable.send(attachment_name).purge
     end
 
-    imageable.save!
-    Rails.logger.info "Finished processing images for #{imageable.class.name} #{imageable.id}"
-    { success: true, results: results }
-  rescue StandardError => e
-    Rails.logger.error "Error in process_images: #{e.message}\n#{e.backtrace.join("\n")}"
-    { success: false, error: e.message }
+    if compress
+      processed_blob = compress_image(image)
+      imageable.send(attachment_name).attach(processed_blob)
+    else
+      imageable.send(attachment_name).attach(image)
+    end
+  end
+
+  def self.compress_image(image)
+    temp_blob = ActiveStorage::Blob.create_and_upload!(
+      io: image.tempfile,
+      filename: image.original_filename,
+      content_type: image.content_type
+    )
+
+    variant = temp_blob.variant(DEFAULT_COMPRESSION_OPTIONS).processed
+
+    compressed_blob = ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new(variant.download),
+      filename: "#{File.basename(image.original_filename, '.*')}.jpg",
+      content_type: 'image/jpeg'
+    )
+
+    temp_blob.purge
+
+    compressed_blob
   end
 end

@@ -12,8 +12,11 @@ class ContactsController < ApplicationController
     end
   
     def create
-      @contact = current_user.contacts.build(contact_params)
+      @contact = current_user.contacts.build(contact_params_without_avatar)
       if @contact.save
+        if params[:contact][:avatar].present?
+          ImageHandlingService.process_images(@contact, params, compress: true)
+        end
         redirect_to @contact, notice: 'Contact was successfully created.'
       else
         Rails.logger.error "Failed to create contact: #{@contact.errors.full_messages}"
@@ -28,7 +31,10 @@ class ContactsController < ApplicationController
     end
   
     def update
-      if @contact.update(contact_params)
+      if @contact.update(contact_params_without_avatar)
+        if params[:contact][:avatar].present?
+          ImageHandlingService.process_images(@contact, params, compress: true)
+        end
         redirect_to contacts_path, notice: 'Contact was successfully updated.'
       else
         Rails.logger.error "Failed to update contact: #{@contact.errors.full_messages}"
@@ -54,8 +60,8 @@ class ContactsController < ApplicationController
         redirect_to contacts_path, alert: 'Contact not found.'
     end
   
-    def contact_params
-      params.require(:contact).permit(:name, :email, :city, :country, :phone, :notes, :avatar)
+    def contact_params_without_avatar
+      params.require(:contact).permit(:name, :email, :city, :country, :phone, :notes)
     end
   end
   

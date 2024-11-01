@@ -53,6 +53,11 @@ en:
   add_image: "Add Image"
   add_images: "Add Images"
   add_tags_placeholder: "Add Tags..."
+  date:
+    month_names: [~, January, February, March, April, May, June, July, August, September, October, November, December]
+    day: Day
+    month: Month
+    year: Year
   nav:
     restaurants: "Restaurants"
     visits: "Visits"

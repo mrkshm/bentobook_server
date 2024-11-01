@@ -1,9 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe ProfilesController, type: :controller do
+  include ActionDispatch::TestProcess
   let(:user) { create(:user) }
-  let(:profile) { user.profile }
-  let!(:other_profile) { create(:profile, username: 'existing_username') }
+  let!(:profile) { user.create_profile!(first_name: "John", last_name: "Doe") }
+  let!(:other_user) { create(:user) }
+  let!(:other_profile) { other_user.create_profile!(username: 'existing_username') }
+  let(:test_image) { fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg') }
 
   before do
     sign_in user
@@ -36,6 +39,13 @@ RSpec.describe ProfilesController, type: :controller do
       it "redirects to the profile" do
         put :update, params: { profile: new_attributes }
         expect(response).to redirect_to(profile_path)
+      end
+
+      it "handles avatar upload" do
+        expect {
+          put :update, params: { profile: new_attributes.merge(avatar: test_image) }
+          profile.reload
+        }.to change { profile.avatar.attached? }.from(false).to(true)
       end
     end
 
