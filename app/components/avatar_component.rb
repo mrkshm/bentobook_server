@@ -24,7 +24,14 @@ class AvatarComponent < ViewComponent::Base
       content_tag :div, class: avatar_classes do
         if has_avatar?
           avatar_image = @profile.is_a?(Contact) ? @profile.avatar : @profile.avatar
-          image_tag avatar_image, alt: "Avatar of #{avatar_name}"
+          render(S3ImageComponent.new(
+            image: avatar_image,
+            size: { width: avatar_size, height: avatar_size },
+            format: :webp,
+            quality: 75,
+            fit: "cover",
+            html_class: "rounded-full"
+          ))
         else
           placeholder_content
         end
@@ -97,5 +104,13 @@ class AvatarComponent < ViewComponent::Base
 
   def fallback_name
     "Unknown"
+  end
+
+  def avatar_size
+    case @size
+    when :small then 32
+    when :large then 96
+    else 96
+    end
   end
 end
