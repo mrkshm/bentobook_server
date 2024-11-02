@@ -25,6 +25,10 @@ class ContactsController < ApplicationController
     end
   
     def show
+      @contact = current_user.contacts.includes(visits: [:restaurant, :images, :contacts]).find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      Rails.logger.error "Attempted to access invalid contact #{params[:id]} for user #{current_user.id}"
+      redirect_to contacts_path, alert: 'Contact not found.'
     end
   
     def edit
