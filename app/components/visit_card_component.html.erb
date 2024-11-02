@@ -32,13 +32,15 @@
         <%= render(RatingsComponent.new(rating: visit.rating, readonly: true)) %>
   
         <% if visit.contacts.any? %>
-          <div class="flex -space-x-2 overflow-hidden">
+          <div class="flex -space-x-2 overflow-visible relative z-50">
             <% visit.contacts.each do |contact| %>
-              <%= render(AvatarComponent.new(
-                user: contact, 
-                size: :large, 
-                tooltip: contact.name
-              )) %>
+              <div class="relative">
+                <%= render(AvatarComponent.new(
+                  user: contact, 
+                  size: :large, 
+                  tooltip: contact.name
+                )) %>
+              </div>
             <% end %>
           </div>
         <% end %>
@@ -47,7 +49,7 @@
   <% end %>
   
   <% if link_to_show %>
-    <%= link_to visit_path(visit), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200" do %>
+    <%= link_to visit_path(visit), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200 relative" do %>
       <%= content %>
     <% end %>
   <% else %>

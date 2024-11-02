@@ -9,7 +9,7 @@ class AvatarComponent < ViewComponent::Base
 
   def call
     if @tooltip
-      content_tag :div, class: "tooltip", data: { tip: @tooltip } do
+      content_tag :div, class: "tooltip tooltip-top z-50", data: { tip: @tooltip } do
         avatar_content
       end
     else
@@ -23,7 +23,8 @@ class AvatarComponent < ViewComponent::Base
     content_tag :div, class: "avatar #{'placeholder' unless has_avatar?}" do
       content_tag :div, class: avatar_classes do
         if has_avatar?
-          image_tag @profile.avatar, alt: "Avatar of #{avatar_name}"
+          avatar_image = @profile.is_a?(Contact) ? @profile.avatar : @profile.avatar
+          image_tag avatar_image, alt: "Avatar of #{avatar_name}"
         else
           placeholder_content
         end
@@ -32,7 +33,11 @@ class AvatarComponent < ViewComponent::Base
   end
 
   def has_avatar?
-    @profile.respond_to?(:avatar) && @profile.avatar.attached?
+    if @profile.is_a?(Contact)
+      @profile.avatar.attached?
+    else
+      @profile.respond_to?(:avatar) && @profile.avatar.attached?
+    end
   end
 
   def avatar_classes
@@ -79,7 +84,9 @@ class AvatarComponent < ViewComponent::Base
   end
 
   def avatar_name
-    if @profile.respond_to?(:display_name)
+    if @profile.is_a?(Contact)
+      @profile.name
+    elsif @profile.respond_to?(:display_name)
       @profile.display_name
     elsif @profile.respond_to?(:name)
       @profile.name

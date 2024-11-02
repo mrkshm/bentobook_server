@@ -84,8 +84,33 @@
           <% end %>
         </div>
       </div>
+    <% end %>
+
+    <% if @visits.any? %>
+      <div class="divider"></div>
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold">Visits</h2>
+          <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: 'btn btn-sm btn-ghost' do %>
+            <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
+            Add Visit
+          <% end %>
+        </div>
+        <div class="grid grid-cols-1 gap-4">
+          <% @visits.order(date: :desc).each do |visit| %>
+            <%= render(VisitCardComponent.new(visit: visit)) %>
+          <% end %>
+        </div>
+      </div>
     <% else %>
-      <p class="mt-6">No images for this restaurant.</p>
+      <div class="divider"></div>
+      <div class="text-center py-8">
+        <p class="text-base-content/70 mb-4">No visits recorded yet</p>
+        <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: 'btn btn-primary' do %>
+          <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
+          Add Your First Visit
+        <% end %>
+      </div>
     <% end %>
   </div>
 </div>
