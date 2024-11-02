@@ -1,0 +1,57 @@
+<% content = capture do %>
+    <div class="card-body">
+      <div class="mb-4">
+        <h2 class="card-title text-primary"><%= visit.restaurant.name %></h2>
+        <p class="text-base-content/60"><%= visit.date.strftime("%B %d, %Y") %></p>
+      </div>
+  
+      <% if visit.title.present? || visit.notes.present? %>
+        <div class="mb-4 prose prose-sm">
+          <% if visit.title.present? %>
+            <h3 class="font-medium mb-1"><%= visit.title %></h3>
+          <% end %>
+          <% if visit.notes.present? %>
+            <p class="text-base-content/70"><%= visit.notes %></p>
+          <% end %>
+        </div>
+      <% end %>
+  
+      <% if visit.images.any? %>
+        <div class="grid grid-cols-2 gap-2 mb-4">
+          <% visit.images.each do |image| %>
+            <div class="mask mask-squircle">
+              <%= image_tag image.file, class: "w-full h-32 object-cover" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+  
+      <div class="mt-2 divider"></div>
+  
+      <div class="flex items-center justify-between">
+        <%= render(RatingsComponent.new(rating: visit.rating, readonly: true)) %>
+  
+        <% if visit.contacts.any? %>
+          <div class="flex -space-x-2 overflow-hidden">
+            <% visit.contacts.each do |contact| %>
+              <%= render(AvatarComponent.new(
+                user: contact, 
+                size: :large, 
+                tooltip: contact.name
+              )) %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  
+  <% if link_to_show %>
+    <%= link_to visit_path(visit), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200" do %>
+      <%= content %>
+    <% end %>
+  <% else %>
+    <div class="card card-compact bg-base-100 shadow-xl">
+      <%= content %>
+    </div>
+  <% end %>

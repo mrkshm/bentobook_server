@@ -14,13 +14,17 @@
       <% @contacts.each do |contact| %>
         <%= link_to contact_path(contact), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
           <div class="card-body">
-            <div class="flex items-center gap-4">
-              <%= render(AvatarComponent.new(user: contact, size: :large)) %>
-              
-              <div>
-                <h2 class="card-title"><%= contact.name %></h2>
-                <p class="text-sm text-base-content/70"><%= contact.email %></p>
+            <div class="flex items-center justify-between w-full">
+              <div class="flex items-center gap-4">
+                <%= render(AvatarComponent.new(user: contact, size: :large)) %>
+                
+                <div>
+                  <h2 class="card-title"><%= contact.name %></h2>
+                  <p class="text-sm text-base-content/70"><%= contact.email %></p>
+                </div>
               </div>
+
+              <div class="badge badge-secondary"><%= contact.visits_count %></div>
             </div>
 
             <div class="mt-4 space-y-2">
