@@ -20,7 +20,13 @@
         <div class="grid grid-cols-2 gap-2 mb-4">
           <% visit.images.each do |image| %>
             <div class="mask mask-squircle">
-              <%= image_tag image.file, class: "w-full h-32 object-cover" %>
+              <%= render(S3ImageComponent.new(
+                image: image.file,
+                size: :small,
+                quality: 80,
+                fit: "cover",
+                html_class: "w-full h-32 object-cover"
+              )) %>
             </div>
           <% end %>
         </div>

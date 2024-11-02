@@ -60,7 +60,13 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <% @visit.images.each do |image| %>
               <div class="card bg-base-200">
-                <%= image_tag url_for(image.file), class: "w-full h-48 object-cover rounded-t-lg" %>
+                <%= render(S3ImageComponent.new(
+                  image: image.file,
+                  size: :small,
+                  quality: 80,
+                  fit: "cover",
+                  html_class: "w-full h-48 object-cover rounded-t-lg"
+                )) %>
                 <div class="card-body p-2">
                   <p class="text-sm"><%= image.file.filename %></p>
                 </div>
