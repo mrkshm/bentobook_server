@@ -7,11 +7,25 @@
     <% end %>
   </div>
 
-  <%= render(SearchFormComponent.new(
-    url: contacts_path,
-    placeholder: t('contacts.index.search_placeholder'),
-    search_value: params[:search]
-  )) %>
+  <div class="mb-4 flex flex-col md:flex-row justify-between items-end gap-4">
+    <%= render(SortFormComponent.new(
+      url: contacts_path,
+      fields: [
+        ['created_at', t('contacts.sort_by.created_at')],
+        ['name', t('contacts.sort_by.name')],
+        ['email', t('contacts.sort_by.email')],
+        ['visits', t('contacts.sort_by.visits')]
+      ],
+      current_order: params[:order_by],
+      current_direction: params[:order_direction]
+    )) %>
+
+    <%= render(SearchFormComponent.new(
+      url: contacts_path,
+      placeholder: t('contacts.index.search_placeholder'),
+      search_value: params[:search]
+    )) %>
+  </div>
 
   <% if @contacts.empty? %>
     <% if params[:search].present? %>

@@ -6,7 +6,21 @@ class ContactsController < ApplicationController
     def index
       contacts = current_user.contacts
       contacts = contacts.search(params[:search]) if params[:search].present?
-      @pagy, @contacts = pagy(contacts.order(created_at: :desc))
+      
+      contacts = case params[:order_by]
+        when 'name'
+          contacts.order(name: params[:order_direction] || :asc)
+        when 'email'
+          contacts.order(email: params[:order_direction] || :asc)
+        when 'visits'
+          contacts.left_joins(:visits)
+                 .group(:id)
+                 .order("COUNT(visits.id) #{params[:order_direction] || 'desc'}")
+        else
+          contacts.order(created_at: params[:order_direction] || :desc)
+        end
+      
+      @pagy, @contacts = pagy(contacts)
     end
   
     def new

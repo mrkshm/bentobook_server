@@ -1,5 +1,10 @@
 fr:
   contacts:
+    sort_by:
+      created_at: "Date ajouté"
+      name: "Nom"
+      email: "Email"
+      visits: "Nombre de visites"
     index:
       title: "Mes contacts"
       search_placeholder: "Rechercher par nom, email, ville, pays ou notes..."
