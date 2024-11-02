@@ -1,6 +1,7 @@
 cuisine_types = [
   "african",
   "american",
+  "asian",
   "asian_fusion",
   "bakery",
   "bar",

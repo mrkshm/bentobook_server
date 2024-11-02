@@ -1,5 +1,5 @@
 class ImageUploadComponent < ViewComponent::Base
-    def initialize(form, imageable, template)
+    def initialize(form, imageable, template = nil)
       @form = form
       @imageable = imageable
       @template = template

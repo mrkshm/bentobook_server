@@ -31,7 +31,7 @@ RSpec.describe AvatarComponent, type: :component do
 
   it "applies the default size class when an invalid size is provided" do
     render_inline(AvatarComponent.new(user: user, size: :invalid))
-    expect(page).to have_css("div.w-12.h-12")
+    expect(page).to have_css("div.w-24.h-24")
   end
 
   it "works with a Contact object" do

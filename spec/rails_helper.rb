@@ -12,7 +12,7 @@ require 'spec_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
 
-# Prevent database truncation if the environment is production
+# Prevent database truncation if the environment is running in production mode
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 
 require 'rspec/rails'
@@ -73,12 +73,15 @@ RSpec.configure do |config|
   config.include ActionView::RecordIdentifier
   config.include ActionDispatch::Routing::PolymorphicRoutes
   config.include AuthHelpers, type: :request
-  
+  config.include Warden::Test::Helpers
+
   # If you're using DatabaseCleaner, make sure to clean the test database after each test
   config.use_transactional_fixtures = false
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    # Clean up Active Storage blobs and attachments before suite
+    FileUtils.rm_rf(Rails.root.join('tmp', 'storage'))
   end
 
   config.before(:each) do
@@ -95,6 +98,8 @@ RSpec.configure do |config|
 
   config.after(:each) do
     DatabaseCleaner.clean
+    # Clean up Active Storage test files after each test
+    ActiveStorage::Blob.all.each(&:purge)
   end
 
   config.before(:each) do
@@ -112,7 +117,10 @@ RSpec.configure do |config|
   config.after(:each) do
     Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
   end
-
+  DatabaseCleaner.clean
+  ActiveStorage::Blob.unattached.find_each(&:purge)
+  FileUtils.rm_rf(Dir["#{Rails.root}/tmp/storage/*"])
+  RSpec::Mocks.space.reset_all
 end
 
 require 'shoulda/matchers'

@@ -10,8 +10,8 @@ class User < ApplicationRecord
 
   # Skip confirmation emails in development
   def confirmation_required?
-    # Rails.env.production?
-    true
+    Rails.env.production?
+    # true
   end
 
   has_many :restaurants

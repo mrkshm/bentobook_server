@@ -1,72 +1,85 @@
-<div class="card bg-base-100 shadow-xl max-w-4xl mx-auto mt-8">
-  <div class="card-body">
-    <h1 class="card-title text-3xl mb-6"><%= t("profiles.show.title") %></h1>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <h2 class="text-xl font-semibold mb-2">Visit Details</h2>
-        <div class="space-y-2">
-          <p><strong>Date:</strong> <%= @visit.date.strftime("%B %d, %Y") %></p>
-          <p><strong>Restaurant:</strong> <%= @visit.restaurant&.name || "N/A" %></p>
-          <% if @visit.price_paid.present? %>
-            <p><strong>Price Paid:</strong> <%= @visit.price_paid.format %></p>
-          <% end %>
-        </div>
-      </div>
-
-      <div>
-        <h2 class="text-xl font-semibold mb-2">Rating</h2>
+<div class="max-w-4xl mx-auto mt-8">
+  <h1 class="text-4xl font-bold mb-6"><%= t("visits.show.title") %></h1>
+  
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="card-title text-3xl"><%= @visit.restaurant.name %></h2>
         <%= render(RatingsComponent.new(rating: @visit.rating, readonly: true)) %>
       </div>
-    </div>
 
-    <div class="divider"></div>
-
-    <div class="space-y-4">
-      <h2 class="text-xl font-semibold">Notes</h2>
-      <div class="bg-base-200 p-4 rounded-lg">
-        <%= simple_format(@visit.notes) %>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="space-y-4">
-      <h2 class="text-xl font-semibold">Contacts</h2>
-      <% if @visit.contacts.any? %>
-        <div class="flex flex-wrap gap-4">
-          <% @visit.contacts.each do |contact| %>
-            <%= link_to contact_path(contact), class: "flex items-center space-x-2 hover:bg-base-200 p-2 rounded-lg transition-colors duration-200" do %>
-              <%= render(AvatarComponent.new(user: contact, size: :medium)) %>
-              <span class="font-medium"><%= contact.name %></span>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <div class="space-y-2">
+            <p><strong>Date:</strong> <%= @visit.date.strftime("%B %d, %Y") %></p>
+            <% if @visit.price_paid.present? %>
+              <p><strong>Price Paid:</strong> <%= @visit.price_paid.format %></p>
             <% end %>
-          <% end %>
-        </div>
-      <% else %>
-        <p>No contacts associated with this visit.</p>
-      <% end %>
-    </div>
-
-    <% if @visit.images.any? %>
-      <div class="divider"></div>
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold">Attached Images</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <% @visit.images.each do |image| %>
-            <div class="card bg-base-200">
-              <%= image_tag url_for(image.file), class: "w-full h-48 object-cover rounded-t-lg" %>
-              <div class="card-body p-2">
-                <p class="text-sm"><%= image.file.filename %></p>
-              </div>
-            </div>
-          <% end %>
+          </div>
         </div>
       </div>
-    <% end %>
 
-    <div class="card-actions justify-end mt-6">
-      <%= link_to 'Edit', edit_visit_path(@visit), class: 'btn btn-primary' %>
-      <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
+      <% if @visit.notes.present? %>
+        <div class="divider"></div>
+        <div class="space-y-4">
+          <h3 class="text-xl font-semibold">Notes</h3>
+          <div class="bg-base-200 p-4 rounded-lg">
+            <%= simple_format(@visit.notes) %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="divider"></div>
+
+      <div class="space-y-4">
+        <h3 class="text-xl font-semibold">Contacts</h3>
+        <% if @visit.contacts.any? %>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <% @visit.contacts.each do |contact| %>
+              <%= link_to contact_path(contact), class: "group flex flex-col items-center p-4 hover:bg-base-200 rounded-lg transition-colors duration-200" do %>
+                <div class="relative z-10">
+                  <%= render(AvatarComponent.new(
+                    user: contact,
+                    size: :large,
+                    tooltip: contact.name
+                  )) %>
+                </div>
+                <span class="mt-2 text-center font-medium group-hover:text-primary"><%= contact.name %></span>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <p>No contacts associated with this visit.</p>
+        <% end %>
+      </div>
+
+      <% if @visit.images.any? %>
+        <div class="divider"></div>
+        <div class="space-y-4">
+          <h2 class="text-xl font-semibold">Photos</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <% @visit.images.each do |image| %>
+              <div class="card bg-base-200">
+                <%= render(S3ImageComponent.new(
+                  image: image.file,
+                  size: :small,
+                  quality: 80,
+                  fit: "cover",
+                  html_class: "w-full h-48 object-cover rounded-t-lg"
+                )) %>
+                <div class="card-body p-2">
+                  <p class="text-sm"><%= image.file.filename %></p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="card-actions justify-end mt-6">
+        <%= link_to 'Edit', edit_visit_path(@visit), class: 'btn btn-primary' %>
+        <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
+      </div>
     </div>
   </div>
 </div>

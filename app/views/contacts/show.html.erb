@@ -58,4 +58,15 @@
       </div>
     </div>
   </div>
+
+  <% if @contact.visits.any? %>
+    <div class="mt-8">
+      <h2 class="text-2xl font-bold mb-4"><%= t("contacts.show.visits") %></h2>
+      <div class="grid grid-cols-1 gap-6">
+        <% @contact.visits.order(date: :desc).each do |visit| %>
+          <%= render(VisitCardComponent.new(visit: visit)) %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 </div>

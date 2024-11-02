@@ -10,11 +10,11 @@
                         data: { 
                           image_preview_target: "input",
                           action: "change->image-preview#handleFiles"
-                        }, 
+                        },
                         class: 'hidden' %>
     
     <button type="button" 
-            class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300 ease-in-out"
+            class="btn btn-secondary"
             data-action="click->image-preview#triggerFileInput">
       Choose Files
     </button>
@@ -26,42 +26,21 @@
     <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       <% imageable.images.each do |image| %>
         <% if image.file.attached? && image.file.blob.present? %>
-          <% begin %>
-            <div class="image-thumbnail relative aspect-w-3 aspect-h-2">
-              <%= image_tag(url_for(image.file), 
-                          class: "w-full h-full object-contain rounded-lg shadow-md") %>
-              
-              <%= link_to "×",
-                          "#",
-                          data: { 
-                            action: "image-deletion#deleteImage",
-                            image_id: image.id
-                          },
-                          class: "absolute top-0 right-0 z-10 w-8 h-8 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors duration-200 flex items-center justify-center text-xl font-bold" %>
-            </div>
-          <% rescue StandardError => e %>
-            <% Rails.logger.error("Error displaying image #{image.id}: #{e.message}") %>
-          <% end %>
+          <div class="image-thumbnail relative aspect-w-3 aspect-h-2">
+            <%= image_tag(url_for(image.file), 
+                        class: "w-full h-full object-contain rounded-lg shadow-md") %>
+            
+            <%= button_to "#",
+                        method: :delete,
+                        data: { 
+                          action: "image-deletion#deleteImage",
+                          image_id: image.id
+                        },
+                        class: "btn btn-error btn-circle btn-sm absolute -top-2 -right-2" do %>
+              ×
+            <% end %>
+          </div>
         <% end %>
-      <% end %>
-    </div>
-  <% end %>
-
-  <%# Debug information %>
-  <% if Rails.env.development? %>
-    <div class="mt-4 p-4 bg-gray-100 rounded">
-      <h3 class="font-bold">Debug Info:</h3>
-      <p>Number of images: <%= imageable.images.count %></p>
-      <% imageable.images.each_with_index do |image, index| %>
-        <div class="mt-2">
-          <p>Image <%= index + 1 %>:</p>
-          <ul class="list-disc ml-4">
-            <li>Attached?: <%= image.file.attached? %></li>
-            <li>Blob present?: <%= image.file.blob.present? rescue 'Error checking blob' %></li>
-            <li>Content type: <%= image.file.content_type rescue 'Unknown' %></li>
-            <li>Filename: <%= image.file.filename rescue 'Unknown' %></li>
-          </ul>
-        </div>
       <% end %>
     </div>
   <% end %>

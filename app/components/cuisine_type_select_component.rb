@@ -7,7 +7,13 @@ class CuisineTypeSelectComponent < ViewComponent::Base
     end
   
     def cuisine_types_json
-      @cuisine_types.map { |ct| { id: ct.id, name: ct.name } }.to_json
+      @cuisine_types.map do |ct| 
+        { 
+          id: ct.id, 
+          name: ct.name,
+          translated_name: ct.translated_name 
+        }
+      end.to_json
     end
   end
   

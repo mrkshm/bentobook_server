@@ -21,8 +21,8 @@ export default class extends Controller {
     
     this.resultsTarget.innerHTML = matches.map(ct => `
       <li>
-        <a href="#" data-action="mousedown->cuisine-type-select#select" data-id="${ct.id}" data-name="${ct.name}">
-          ${ct.name}
+        <a href="#" data-action="mousedown->cuisine-type-select#select" data-id="${ct.id}" data-name="${ct.translated_name}">
+          ${ct.translated_name}
         </a>
       </li>
     `).join('')
