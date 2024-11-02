@@ -7,8 +7,18 @@
     <% end %>
   </div>
 
+  <%= render(SearchFormComponent.new(
+    url: contacts_path,
+    placeholder: t('contacts.index.search_placeholder'),
+    search_value: params[:search]
+  )) %>
+
   <% if @contacts.empty? %>
-    <p class="text-center text-gray-500 my-8"><%= t("contacts.index.no_contacts") %></p>
+    <% if params[:search].present? %>
+      <p class="text-center text-gray-500 my-8"><%= t("contacts.index.no_contacts_found") %></p>
+    <% else %>
+      <p class="text-center text-gray-500 my-8"><%= t("contacts.index.no_contacts") %></p>
+    <% end %>
   <% else %>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <% @contacts.each do |contact| %>

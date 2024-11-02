@@ -4,7 +4,9 @@ class ContactsController < ApplicationController
     before_action :set_contact, only: [:show, :edit, :update, :destroy]
   
     def index
-      @pagy, @contacts = pagy(current_user.contacts.order(created_at: :desc))
+      contacts = current_user.contacts
+      contacts = contacts.search(params[:search]) if params[:search].present?
+      @pagy, @contacts = pagy(contacts.order(created_at: :desc))
     end
   
     def new

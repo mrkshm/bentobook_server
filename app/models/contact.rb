@@ -6,6 +6,19 @@ class Contact < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
 
+  scope :search, ->(query) {
+    return all unless query.present?
+    
+    where(
+      "name ILIKE :query OR 
+       email ILIKE :query OR 
+       city ILIKE :query OR 
+       country ILIKE :query OR 
+       notes ILIKE :query",
+      query: "%#{sanitize_sql_like(query)}%"
+    )
+  }
+
   def visits_count
     visits.count
   end
