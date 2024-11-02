@@ -1,7 +1,4 @@
-<div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300 relative">
-  <%= link_to restaurant_path(restaurant), class: "absolute inset-0 z-10", "aria-label": "View details for #{restaurant.name}", data: { turbo: false } do %>
-    <span class="sr-only">View details for <%= restaurant.name %></span>
-  <% end %>
+<%= link_to restaurant_path(id: restaurant.id), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
   <div class="card-body">
     <h2 class="card-title flex items-center">
       <%= restaurant.name %>
@@ -41,4 +38,4 @@
       </div>
     <% end %>
   </div>
-</div>
+<% end %>

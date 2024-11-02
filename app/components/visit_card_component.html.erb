@@ -55,7 +55,7 @@
   <% end %>
   
   <% if link_to_show %>
-    <%= link_to visit_path(visit), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200 relative" do %>
+    <%= link_to visit_path(id: visit.id), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200 relative" do %>
       <%= content %>
     <% end %>
   <% else %>

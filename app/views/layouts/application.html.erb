@@ -5,26 +5,25 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    
+    <!-- Inline critical CSS -->
+    <style>
+      html { visibility: hidden; }
+      body { 
+        background-color: #1d232a; /* Match your dark theme background */
+        margin: 0;
+      }
+    </style>
+    
     <%= javascript_tag nonce: true do %>
       window.googleMapsApiKey = "<%= Rails.application.credentials.google_maps_api_key %>";
     <% end %>
+    
     <%= javascript_include_tag "turbo", type: "module" %>
-    <style>
-      /* Inline critical CSS */
-      body { opacity: 0; transition: opacity 0.3s ease-in; }
-    </style>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload", media: "print", onload: "this.media='all'; document.body.style.opacity = '1';" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'application' %>
     <%= vite_stylesheet_tag '~/stylesheets/application.css' unless ViteRuby.instance.dev_server_running? %>
-    <script>
-      document.body.style.opacity = '1';
-      // Apply theme from localStorage immediately
-      const storedTheme = localStorage.getItem('theme');
-      if (storedTheme) {
-        document.documentElement.setAttribute('data-theme', storedTheme);
-      }
-    </script>
   </head>
   <body class="bg-base-100">
     <!-- loading indicator -->
@@ -104,15 +103,27 @@
 
     <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_maps_api_key}&libraries=places", async: true, defer: true %>
     <script>
+      // Make the page visible once CSS is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        document.documentElement.style.visibility = 'visible';
+      });
+
+      // Handle Turbo navigation
       document.addEventListener("turbo:before-render", function() {
-        document.body.style.opacity = '0';
+        document.documentElement.style.visibility = 'hidden';
         document.getElementById('loading-indicator').style.display = 'flex';
       });
 
       document.addEventListener("turbo:render", function() {
-        document.body.style.opacity = '1';
+        document.documentElement.style.visibility = 'visible';
         document.getElementById('loading-indicator').style.display = 'none';
       });
+
+      // Apply theme from localStorage immediately
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme) {
+        document.documentElement.setAttribute('data-theme', storedTheme);
+      }
     </script>
   </body>
 </html>
