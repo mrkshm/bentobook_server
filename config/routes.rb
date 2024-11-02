@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
+  # This MUST be before the locale scope
+  post "/profile/change_locale", to: "profiles#change_locale", as: :change_locale_profile
+
   # Set up a constraint for all locales, including default
   scope "(:locale)", locale: /fr/ do
     devise_for :users, controllers: {
@@ -26,9 +29,7 @@ Rails.application.routes.draw do
 
     resources :images, only: [:destroy]
 
-    resource :profile, only: [:show, :edit, :update] do
-      post 'change_locale', on: :collection
-    end
+    resource :profile, only: [:show, :edit, :update]
 
     get "pages/terms", as: :terms
     get "pages/home"

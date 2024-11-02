@@ -3,7 +3,6 @@ class ProfilesController < ApplicationController
     before_action :set_profile, except: :change_locale
   
     def show
-      Rails.logger.debug "ProfilesController#show, current locale: #{I18n.locale}"
     end
   
     def edit
@@ -26,12 +25,12 @@ class ProfilesController < ApplicationController
       if I18n.available_locales.map(&:to_s).include?(new_locale)
         session[:locale] = new_locale
         I18n.locale = new_locale
-        redirect_to profile_path, notice: I18n.t('notices.locale.changed', locale: new_locale)
+        redirect_to profile_path
       else
-        redirect_to profile_path, alert: I18n.t('errors.locale.invalid')
+        redirect_to profile_path
       end
     end
-  
+
     private
   
     def set_profile

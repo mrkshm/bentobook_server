@@ -6,14 +6,16 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
-  private
-
   def set_locale
-    I18n.locale = extract_locale || I18n.default_locale
+    locale = extract_locale || I18n.default_locale
+    I18n.locale = locale
   end
+
+  private
 
   def switch_locale(&action)
     locale = params[:locale] || session[:locale] || I18n.default_locale
+    
     if I18n.available_locales.include?(locale.to_sym)
       session[:locale] = locale
       I18n.with_locale(locale, &action)
@@ -23,7 +25,8 @@ class ApplicationController < ActionController::Base
   end
 
   def default_url_options
-    { locale: I18n.locale == I18n.default_locale ? nil : I18n.locale }
+    return {} if I18n.locale == :en
+    { locale: I18n.locale }
   end
 
   def after_sign_in_path_for(resource)

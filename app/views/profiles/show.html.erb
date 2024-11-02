@@ -53,14 +53,16 @@
   </select>
 
   <div class="flex justify-center">
-    <%= button_to profile_path(locale: nil), method: :get, 
+    <%= button_to "/profile/change_locale", method: :post,
+        params: { locale: 'en' },
         class: "btn btn-ghost #{I18n.locale.to_s == 'en' ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}", 
         disabled: I18n.locale.to_s == 'en' do %>
       <span class="text-2xl">🇬🇧</span>
       <span class="ml-2">EN</span>
     <% end %>
 
-    <%= button_to profile_path(locale: 'fr'), method: :get, 
+    <%= button_to change_locale_profile_path, method: :post,
+        params: { locale: 'fr' },
         class: "btn btn-ghost #{I18n.locale.to_s == 'fr' ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}", 
         disabled: I18n.locale.to_s == 'fr' do %>
       <span class="text-2xl">🇫🇷</span>
