@@ -60,7 +60,6 @@
                 <%= link_to t("nav.visits"), visits_path, class: "btn btn-ghost" %>
                 <%= link_to t("nav.contacts"), contacts_path, class: "btn btn-ghost" %>
                 <%= link_to t("nav.profile"), profile_path, class: "btn btn-ghost" %>
-                <%= link_to t("sign_out"), destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "btn btn-ghost" %>
               <% else %>
                 <%= link_to t("sign_in"), new_user_session_path, class: "btn btn-ghost" %>
                 <%= link_to t("sign_up"), new_user_registration_path, class: "btn btn-ghost" %>
@@ -77,7 +76,6 @@
               <li><%= link_to 'Visits', visits_path %></li>
               <li><%= link_to 'Contacts', contacts_path %></li>
               <li><%= link_to 'My Profile', profile_path %></li>
-              <li><%= link_to 'Sign Out', destroy_user_session_path, method: :delete, data: { turbo_method: :delete } %></li>
             <% else %>
               <li><%= link_to 'Sign In', new_user_session_path %></li>
               <li><%= link_to 'Sign Up', new_user_registration_path %></li>
