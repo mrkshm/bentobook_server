@@ -1,5 +1,5 @@
-<h1>Edit Contact</h1>
+<h1><%= t('contacts.edit.title') %></h1>
 
-<%= render 'form', contact: @contact, submit_text: 'Update Contact' %>
+<%= render 'form', contact: @contact, submit_text: t('update') %>
 
-<%= link_to 'Back to Contacts', contacts_path, class: 'btn btn-secondary' %>
+<%= link_to t('back_to_contacts'), contacts_path, class: 'btn btn-secondary' %>

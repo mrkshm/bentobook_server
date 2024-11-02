@@ -9,3 +9,6 @@ en:
       title: "My Contacts"
       search_placeholder: "Search by name, email, city, country or notes..."
       no_contacts_found: "No contacts found matching your search"
+    new:
+      title: "Add a Contact"
+      create_contact: "Create Contact"

@@ -17,7 +17,7 @@
             <div class="relative group">
               <% if image.file.attached? %>
                 <%= image_tag image.file, class: "w-full h-48 object-cover rounded-lg shadow-md" %>
-                <%= link_to image_path(image), 
+                <%= link_to image_path(id: image.id), 
                             method: :delete, 
                             data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, 
                             class: "btn btn-circle btn-xs btn-error absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" do %>
@@ -38,7 +38,7 @@
       <div class="flex justify-between items-center mt-8">
         <%= form.submit 'Update Visit', class: 'btn btn-primary' %>
         <div>
-          <%= link_to 'Show', @visit, class: 'btn btn-ghost mr-2' %>
+          <%= link_to 'Show', visit_path(id: @visit.id), class: 'btn btn-ghost mr-2' %>
           <%= link_to 'Back to Visits', visits_path, class: 'btn btn-ghost' %>
         </div>
       </div>

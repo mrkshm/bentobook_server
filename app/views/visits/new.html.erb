@@ -2,7 +2,10 @@
   <div class="card-body">
     <h1 class="card-title text-3xl mb-6"><%= t("visits.new.title") %></h1>
 
-    <%= form_with(model: @visit, local: true, class: "space-y-8") do |form| %>
+    <%= form_with(model: @visit, 
+                  url: visits_path,
+                  local: true, 
+                  class: "space-y-8") do |form| %>
       <%= render 'form_errors', object: @visit %>
 
       <div class="grid grid-cols-1 gap-8">
