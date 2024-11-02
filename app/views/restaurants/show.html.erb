@@ -65,7 +65,7 @@
 
     <div class="flex space-x-4 mb-6">
       <% if @restaurant.user == current_user %>
-        <%= link_to 'Edit', edit_restaurant_path(@restaurant), class: 'btn btn-primary', data: { turbo: false } %>
+        <%= link_to 'Edit', edit_restaurant_path(id: @restaurant.id), class: 'btn btn-primary', data: { turbo: false } %>
       <% end %>
       <%= link_to 'Back to all restaurants', restaurants_path, class: 'btn btn-ghost', data: { turbo: false } %>
     </div>

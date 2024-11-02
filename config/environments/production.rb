@@ -90,7 +90,4 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
-
-  config.active_storage.resolve_model_to_route = :rails_storage_proxy
-  Rails.application.routes.default_url_options[:host] = 'your-domain.com'  # Replace with your actual domain
 end

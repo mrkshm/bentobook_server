@@ -41,7 +41,7 @@
           <%= t("back") %>
         <% end %>
         
-        <%= link_to edit_contact_path(@contact), class: "btn btn-warning" do %>
+        <%= link_to edit_contact_path(id: @contact.id), class: "btn btn-warning" do %>
           <%= heroicon "pencil-square", options: { class: "h-6 w-6" } %>
           <%= t("edit") %>
         <% end %>
