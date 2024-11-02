@@ -3,51 +3,64 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <% @visits.each do |visit| %>
-      <div class="card bg-base-100 shadow-xl">
+      <%= link_to visit_path(visit), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200" do %>
         <div class="card-body">
-          <h2 class="card-title"><%= visit.title %></h2>
-          <p class="text-sm text-gray-500"><%= visit.date.strftime("%B %d, %Y") %></p>
-          
-          <% if visit.contacts.any? %>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <% visit.contacts.each do |contact| %>
-                <%= render(AvatarComponent.new(
-                  user: contact, 
-                  size: :large, 
-                  tooltip: contact.name
-                )) %>
+          <div class="mb-4">
+            <h2 class="card-title text-primary"><%= visit.restaurant.name %></h2>
+            <p class="text-base-content/60"><%= visit.date.strftime("%B %d, %Y") %></p>
+          </div>
+
+          <% if visit.title.present? || visit.notes.present? %>
+            <div class="mb-4 prose prose-sm">
+              <% if visit.title.present? %>
+                <h3 class="font-medium mb-1"><%= visit.title %></h3>
+              <% end %>
+              <% if visit.notes.present? %>
+                <p class="text-base-content/70"><%= visit.notes %></p>
               <% end %>
             </div>
           <% end %>
 
-          <div class="mt-2">
-            <%= render(RatingsComponent.new(rating: visit.rating, readonly: true)) %>
-          </div>
+          <% if visit.images.any? %>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+              <% visit.images.each do |image| %>
+                <div class="mask mask-squircle">
+                  <%= image_tag image.file, class: "w-full h-32 object-cover" %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
 
-          <div class="card-actions justify-end mt-4">
-            <%= link_to visit_path(visit), class: "btn btn-primary btn-sm" do %>
-              <%= heroicon "eye", options: { class: "w-4 h-4 mr-1" } %>
-              View
-            <% end %>
-            <%= link_to edit_visit_path(visit), class: "btn btn-ghost btn-sm" do %>
-              <%= heroicon "pencil", options: { class: "w-4 h-4 mr-1" } %>
-              Edit
+          <div class="mt-2 divider"></div>
+
+          <div class="flex items-center justify-between">
+            <%= render(RatingsComponent.new(rating: visit.rating, readonly: true)) %>
+
+            <% if visit.contacts.any? %>
+              <div class="flex -space-x-2 overflow-hidden">
+                <% visit.contacts.each do |contact| %>
+                  <%= render(AvatarComponent.new(
+                    user: contact, 
+                    size: :large, 
+                    tooltip: contact.name
+                  )) %>
+                <% end %>
+              </div>
             <% end %>
           </div>
         </div>
-      </div>
+      <% end %>
     <% end %>
   </div>
 
   <div class="flex flex-col items-center space-y-4 mt-8">
     <%== pagy_daisy_ui_nav(@pagy) %>
-    <div class="text-sm text-gray-600 bg-base-200 p-2 rounded-lg">
+    <div class="badge badge-lg badge-ghost">
       <%== pagy_info(@pagy) %>
     </div>
   </div>
 
-  <%= link_to new_visit_path, class: "btn btn-primary fixed bottom-4 right-4" do %>
-    <%= heroicon "plus", options: { class: "w-5 h-5 mr-1" } %>
-    New Visit
+  <%= link_to new_visit_path, class: "btn btn-primary btn-circle fixed bottom-4 right-4" do %>
+    <%= heroicon "plus", options: { class: "w-6 h-6" } %>
   <% end %>
 </div>

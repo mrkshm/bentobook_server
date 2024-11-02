@@ -38,7 +38,23 @@ export default class extends Controller {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          event.target.closest('.image-thumbnail').remove()
+          // Remove from both preview and main display
+          const imageContainer = event.target.closest('.image-thumbnail')
+          if (imageContainer) {
+            imageContainer.remove()
+          }
+          
+          // Also remove from the main display if it exists
+          const mainDisplay = document.querySelector(`[data-image-id="${imageId}"]`)?.closest('.relative.group')
+          if (mainDisplay) {
+            mainDisplay.remove()
+          }
+          
+          // Refresh the form state
+          const form = document.querySelector('form')
+          if (form) {
+            form.dataset.changed = 'false'
+          }
         } else {
           alert('Failed to delete image: ' + (data.errors ? data.errors.join(', ') : 'Unknown error'))
         }

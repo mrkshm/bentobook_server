@@ -51,6 +51,10 @@ class VisitsController < ApplicationController
   
     def update
       if @visit.update(visit_params)
+        if params[:visit][:images].present?
+          process_images
+        end
+
         redirect_to visits_path, notice: I18n.t("notices.visits.updated")
       else
         render :edit, status: :unprocessable_entity
@@ -72,15 +76,20 @@ class VisitsController < ApplicationController
     end
   
     def visit_params
-      params.require(:visit).permit(:date, :title, :notes, :restaurant_id, :rating, :price_paid, :price_paid_currency, contact_ids: []).tap do |whitelisted|
+      params.require(:visit).permit(
+        :date, 
+        :title, 
+        :notes, 
+        :restaurant_id, 
+        :rating, 
+        :price_paid, 
+        :price_paid_currency,
+        contact_ids: []
+      ).tap do |whitelisted|
         if whitelisted[:price_paid].present?
           whitelisted[:price_paid] = Money.from_amount(whitelisted[:price_paid].to_f, whitelisted[:price_paid_currency] || 'USD')
         end
       end
-    end
-  
-    def image_params
-      params.require(:visit).permit(images: [])
     end
   
     def valid_restaurant?(restaurant_id)
@@ -88,11 +97,17 @@ class VisitsController < ApplicationController
     end
   
     def process_images
-      return unless params[:images].present?
-      ImageHandlingService.process_images(@visit, params[:images])
+      return unless params[:visit][:images].present?
+      
+      # Filter out any empty strings that might be in the array
+      images = Array(params[:visit][:images]).reject(&:blank?)
+      
+      images.each do |image|
+        @visit.images.create(file: image)
+      end
     rescue StandardError => e
-      @visit.destroy # rollback the visit creation
-      raise e # re-raise the exception to be caught in the create action
+      Rails.logger.error "Image processing failed: #{e.message}"
+      flash[:alert] = I18n.t('errors.visits.image_processing_failed')
     end
   
     def ensure_valid_restaurant
