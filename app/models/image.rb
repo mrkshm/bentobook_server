@@ -1,4 +1,5 @@
 class Image < ApplicationRecord
+
   belongs_to :imageable, polymorphic: true
 
   validates :file, presence: true
@@ -7,8 +8,13 @@ class Image < ApplicationRecord
 
   after_create :set_filename
   before_destroy :purge_file
+  after_commit :process_file_variants, if: -> { saved_change_to_attribute?('file_id') }
 
   private
+
+  def process_file_variants
+    generate_image_variants(:file)
+  end
 
   def set_filename
     return unless file.attached?

@@ -30,3 +30,4 @@ fr:
       search_restaurants_placeholder: "Rechercher..."
     new:
       title: "Créer un nouveau restaurant"
+      short_description: "Veuillez rechercher un restaurant ici. Commencez avec le nom, si vous ne le trouvez pas, ajoutez la ville et d'autres détails."

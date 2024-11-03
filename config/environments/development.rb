@@ -87,4 +87,7 @@ Rails.application.configure do
 
   # Prevent emails from being sent in development
   config.action_mailer.perform_deliveries = true
+
+  # Set default URL host for Active Storage
+  config.active_storage.default_url_options = { host: "localhost", port: 5100 }  # Match your mailer port
 end

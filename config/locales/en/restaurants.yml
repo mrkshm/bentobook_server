@@ -30,3 +30,4 @@ en:
       search_restaurants_placeholder: "Search restaurants..."
     new:
       title: "Create a new restaurant"
+      short_description: "Please search for a restaurant here. Start with the name, if you do not see it add the city and other details."

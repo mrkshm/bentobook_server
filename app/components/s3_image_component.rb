@@ -1,20 +1,39 @@
 # frozen_string_literal: true
 
 class S3ImageComponent < ViewComponent::Base
-    attr_reader :image, :size, :format, :quality, :fit, :html_class
+    attr_reader :image, :size, :html_class
   
-    def initialize(image:, size: :medium, format: :webp, quality: 80, fit: "cover", html_class: nil)
+    def initialize(image:, size: :medium, html_class: nil)
       @image = image
       @size = size
-      @format = format
-      @quality = quality
-      @fit = fit
       @html_class = html_class
     end
   
     def call
+      return unless image&.attached?
+
+      # Return original image if size is :original
+      if size == :original
+        return image_tag(
+          image,
+          class: html_class,
+          alt: "Image",
+          loading: "lazy"
+        )
+      end
+
+      # Find existing variant record
+      variant_key = variant_options
+      variant_record = ActiveStorage::VariantRecord.find_by(
+        blob: image.blob,
+        variation_digest: ActiveStorage::Variation.wrap(variant_key).digest
+      )
+
+      # Use existing variant or wait for it to be processed
+      variant = variant_record ? variant_record.image : image.variant(variant_key)
+      
       image_tag(
-        cloudflare_url,
+        variant,
         class: html_class,
         alt: "Image",
         loading: "lazy"
@@ -23,38 +42,15 @@ class S3ImageComponent < ViewComponent::Base
   
     private
   
-    def image_dimensions
+    # Define variant options for different sizes
+    # These will be used to generate variants on-demand when first requested
+    def variant_options
       case size
-      when :original then nil
-      when :thumbnail then { width: 100, height: 100 }
-      when :small then { width: 300, height: 200 }
-      when :medium then { width: 600, height: 400 }
-      when :large then { width: 1200, height: 800 }
-      else
-        size.is_a?(Hash) ? size : { width: size }
+      when :thumbnail then { resize_to_fill: [100, 100], format: :webp, saver: { quality: 80 } }
+      when :small then { resize_to_limit: [300, 200], format: :webp, saver: { quality: 80 } }
+      when :medium then { resize_to_limit: [600, 400], format: :webp, saver: { quality: 80 } }
+      when :large then { resize_to_limit: [1200, 800], format: :webp, saver: { quality: 80 } }
+      else {}
       end
-    end
-  
-    def cloudflare_url
-      original_url = url_for(image)
-      return original_url if size == :original || Rails.env.development?
-  
-      dimensions = image_dimensions
-      params = []
-      
-      params << "width=#{dimensions[:width]}" if dimensions&.dig(:width)
-      params << "height=#{dimensions[:height]}" if dimensions&.dig(:height)
-      params << "format=#{format}" if format
-      params << "quality=#{quality}" if quality
-      params << "fit=#{fit}" if fit
-  
-      uri = URI(original_url)
-      path_parts = uri.path.split('/')
-      path_parts.insert(1, "cdn-cgi/image/#{params.join(',')}")
-      uri.path = path_parts.join('/')
-      
-      transformed_url = uri.to_s
-      Rails.logger.info "Transformed URL: #{transformed_url}"
-      transformed_url
     end
   end

@@ -24,20 +24,24 @@ class VisitsController < ApplicationController
         flash.now[:alert] = I18n.t('errors.visits.restaurant_required')
         @visit.errors.add(:restaurant_id, :blank)
         render :new, status: :unprocessable_entity
-      elsif @visit.valid?
-        begin
-          if @visit.save
-            process_images
+      elsif @visit.save
+        if params[:visit][:images].present?
+          begin
+            # Filter out empty strings before processing
+            images = Array(params[:visit][:images]).reject(&:blank?)
+            if images.any?
+              process_images
+              if flash[:alert].present? # Check if process_images set an error
+                raise StandardError, "Image processing failed"
+              end
+            end
             redirect_to visits_path, notice: I18n.t("notices.visits.created")
-          else
-            flash.now[:alert] = I18n.t('errors.visits.save_failed')
+          rescue StandardError => e
+            @visit.destroy # Clean up the visit if image processing fails
             render :new, status: :unprocessable_entity
           end
-        rescue StandardError => e
-          flash.now[:alert] = I18n.t('errors.visits.image_processing_failed')
-          Rails.logger.error "Image processing failed: #{e.message}"
-          @visit.destroy if @visit.persisted?
-          render :new, status: :unprocessable_entity
+        else
+          redirect_to visits_path, notice: I18n.t("notices.visits.created")
         end
       else
         flash.now[:alert] = I18n.t('errors.visits.save_failed')
@@ -52,10 +56,22 @@ class VisitsController < ApplicationController
     def update
       if @visit.update(visit_params)
         if params[:visit][:images].present?
-          process_images
+          begin
+            # Filter out empty strings before processing
+            images = Array(params[:visit][:images]).reject(&:blank?)
+            if images.any?
+              process_images
+              if flash[:alert].present? # Check if process_images set an error
+                raise StandardError, "Image processing failed"
+              end
+            end
+            redirect_to visits_path, notice: I18n.t("notices.visits.updated")
+          rescue StandardError => e
+            render :edit, status: :unprocessable_entity
+          end
+        else
+          redirect_to visits_path, notice: I18n.t("notices.visits.updated")
         end
-
-        redirect_to visits_path, notice: I18n.t("notices.visits.updated")
       else
         render :edit, status: :unprocessable_entity
       end
@@ -102,12 +118,27 @@ class VisitsController < ApplicationController
       # Filter out any empty strings that might be in the array
       images = Array(params[:visit][:images]).reject(&:blank?)
       
+      Rails.logger.info "Processing #{images.length} images"
+      
       images.each do |image|
-        @visit.images.create(file: image)
+        Rails.logger.info "Processing image: #{image.class} - #{image.inspect}"
+        
+        unless image.respond_to?(:content_type)
+          Rails.logger.error "Image failed content_type check: #{image.class}"
+          flash[:alert] = I18n.t('errors.visits.image_processing_failed')
+          return false
+        end
+        
+        new_image = @visit.images.create!(file: image)
+        Rails.logger.info "Successfully created image: #{new_image.id}"
       end
+      
+      true # Return true if all images were processed successfully
     rescue StandardError => e
-      Rails.logger.error "Image processing failed: #{e.message}"
+      Rails.logger.error "Image processing failed with error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
       flash[:alert] = I18n.t('errors.visits.image_processing_failed')
+      false # Return false to indicate failure
     end
   
     def ensure_valid_restaurant

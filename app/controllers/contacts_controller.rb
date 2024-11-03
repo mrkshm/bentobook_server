@@ -83,5 +83,17 @@ class ContactsController < ApplicationController
     def contact_params_without_avatar
       params.require(:contact).permit(:name, :email, :city, :country, :phone, :notes)
     end
+  
+    def contact_params
+      params.require(:contact).permit(
+        :name, 
+        :email, 
+        :city, 
+        :country, 
+        :phone, 
+        :notes,
+        :avatar
+      )
+    end
   end
   

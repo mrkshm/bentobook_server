@@ -4,7 +4,7 @@ class Restaurant < ApplicationRecord
     belongs_to :user
     belongs_to :google_restaurant
     accepts_nested_attributes_for :google_restaurant
-    has_many :visits
+    has_many :visits, dependent: :restrict_with_error
     has_many :images, as: :imageable, dependent: :destroy
     belongs_to :cuisine_type
   

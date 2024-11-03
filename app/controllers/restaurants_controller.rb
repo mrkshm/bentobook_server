@@ -42,33 +42,41 @@ class RestaurantsController < ApplicationController
       @restaurant = current_user.restaurants.with_google.find(params[:id])
       
       begin
-        # Log the parameters for debugging
-        Rails.logger.info "Update params: #{restaurant_update_params.inspect}"
-        
         updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
         
         if updater.update
-          redirect_to restaurant_path(@restaurant), notice: 'Restaurant was successfully updated.'
+          if params[:restaurant][:images].present?
+            process_images
+            if flash[:alert].present?
+              raise StandardError, "Image processing failed"
+            end
+          end
+          redirect_to restaurant_path, notice: 'Restaurant was successfully updated.'
         else
           @cuisine_types = CuisineType.all
           flash.now[:alert] = @restaurant.errors.full_messages.join(', ')
           render :edit, status: :unprocessable_entity
         end
-      rescue => e
-        Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}\n#{e.backtrace.join("\n")}"
-        flash.now[:alert] = "Error updating the restaurant: #{e.message}"
+      rescue StandardError => e
+        Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}"
         @cuisine_types = CuisineType.all
+        flash.now[:alert] = "Error updating the restaurant: #{e.message}"
         render :edit, status: :unprocessable_entity
       end
     end
   
     def create
-      
       ActiveRecord::Base.transaction do
         begin
           @restaurant = build_restaurant
           
           if @restaurant.save
+            if params[:restaurant][:images].present?
+              process_images
+              if flash[:alert].present?
+                raise StandardError, "Image processing failed"
+              end
+            end
             redirect_to({ action: :show, id: @restaurant.id }, notice: 'Restaurant was successfully created.')
           else
             Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
@@ -77,6 +85,11 @@ class RestaurantsController < ApplicationController
         rescue ActiveRecord::RecordNotFound => e
           @restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name))
           handle_invalid_cuisine_type
+        rescue StandardError => e
+          Rails.logger.error "Error creating restaurant: #{e.message}"
+          @restaurant.destroy if @restaurant&.persisted?
+          flash.now[:alert] = e.message
+          handle_failed_save
         end
       end
     end
@@ -201,6 +214,30 @@ class RestaurantsController < ApplicationController
       @cuisine_types = CuisineType.all
       flash.now[:alert] = "Invalid cuisine type: #{restaurant_params[:cuisine_type_name]}. Available types: #{@cuisine_types.pluck(:name).join(', ')}"
       render :new, status: :unprocessable_entity
+    end
+  
+    def process_images
+      return unless params[:restaurant][:images].present?
+      
+      images = Array(params[:restaurant][:images]).reject(&:blank?)
+      
+      Rails.logger.info "Processing #{images.length} images"
+      
+      images.each do |image|
+        unless image.respond_to?(:content_type)
+          Rails.logger.error "Image failed content_type check: #{image.class}"
+          flash[:alert] = t('errors.restaurants.image_processing_failed')
+          return false
+        end
+        
+        @restaurant.images.create!(file: image)
+      end
+      
+      true
+    rescue StandardError => e
+      Rails.logger.error "Image processing failed: #{e.message}"
+      flash[:alert] = t('errors.restaurants.image_processing_failed')
+      false
     end
   
   end

@@ -23,16 +23,25 @@ class AvatarComponent < ViewComponent::Base
     content_tag :div, class: "avatar #{'placeholder' unless has_avatar?}" do
       content_tag :div, class: avatar_classes do
         if has_avatar?
+          Rails.logger.info "\n=== AvatarComponent Debugging ==="
+          Rails.logger.info "Profile type: #{@profile.class}"
+          Rails.logger.info "Avatar attached?: #{has_avatar?}"
           avatar_image = @profile.is_a?(Contact) ? @profile.avatar : @profile.avatar
+          Rails.logger.info "Raw avatar URL: #{avatar_image.url}"
+          
+          variant_size = case @size
+            when :small then :thumbnail 
+            when :large then :medium  
+            else :medium
+          end
+
           render(S3ImageComponent.new(
             image: avatar_image,
-            size: { width: avatar_size, height: avatar_size },
-            format: :webp,
-            quality: 75,
-            fit: "cover",
+            size: variant_size,
             html_class: "rounded-full"
           ))
         else
+          Rails.logger.info "Using placeholder for #{@profile.class}"
           placeholder_content
         end
       end
@@ -40,11 +49,13 @@ class AvatarComponent < ViewComponent::Base
   end
 
   def has_avatar?
-    if @profile.is_a?(Contact)
+    result = if @profile.is_a?(Contact)
       @profile.avatar.attached?
     else
       @profile.respond_to?(:avatar) && @profile.avatar.attached?
     end
+    Rails.logger.info "AvatarComponent: has_avatar? for #{@profile.class}: #{result}"
+    result
   end
 
   def avatar_classes
@@ -104,13 +115,5 @@ class AvatarComponent < ViewComponent::Base
 
   def fallback_name
     "Unknown"
-  end
-
-  def avatar_size
-    case @size
-    when :small then 32
-    when :large then 96
-    else 96
-    end
   end
 end
