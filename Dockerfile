@@ -6,10 +6,18 @@ FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
 
 WORKDIR /rails
 
-# Install base packages
+# Install base packages including PostGIS runtime dependencies
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips postgresql-client netcat-openbsd && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+    apt-get install --no-install-recommends -y \
+    curl \
+    libjemalloc2 \
+    libvips \
+    postgresql-client \
+    netcat-openbsd \
+    postgis \
+    postgresql-16-postgis-3 \
+    libgeos-c1v5 \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
 ENV RAILS_ENV="production" \
@@ -35,8 +43,11 @@ RUN apt-get update -qq && \
     unzip \
     nodejs \
     npm \
-    curl && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+    curl \
+    libgeos-dev \
+    libproj-dev \
+    libgdal-dev \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./

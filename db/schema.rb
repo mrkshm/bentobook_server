@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_10_05_155941) do
+ActiveRecord::Schema[8.0].define(version: 2024_11_03_172330) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "postgis"
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
@@ -62,33 +63,9 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_05_155941) do
     t.index ["name"], name: "index_cuisine_types_on_name", unique: true
   end
 
-  create_table "google_restaurants", force: :cascade do |t|
-    t.string "name"
-    t.string "google_place_id"
-    t.text "address"
-    t.decimal "latitude", precision: 10, scale: 8
-    t.decimal "longitude", precision: 11, scale: 8
-    t.string "street"
-    t.string "street_number"
-    t.string "postal_code"
-    t.string "city"
-    t.string "state"
-    t.string "country"
-    t.string "phone_number"
-    t.string "url"
-    t.string "business_status"
-    t.float "google_rating"
-    t.integer "google_ratings_total"
-    t.integer "price_level"
-    t.json "opening_hours"
-    t.datetime "google_updated_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["address"], name: "index_google_restaurants_on_address"
-    t.index ["city"], name: "index_google_restaurants_on_city"
-    t.index ["google_place_id"], name: "index_google_restaurants_on_google_place_id", unique: true
-    t.index ["name"], name: "index_google_restaurants_on_name"
-  end
+# Could not dump table "google_restaurants" because of following StandardError
+#   Unknown type 'geometry(Point,4326)' for column 'location'
+
 
   create_table "images", force: :cascade do |t|
     t.string "imageable_type", null: false
@@ -169,6 +146,14 @@ ActiveRecord::Schema[8.0].define(version: 2024_10_05_155941) do
     t.index ["notes"], name: "index_restaurants_on_notes"
     t.index ["user_id", "google_restaurant_id"], name: "index_restaurants_on_user_id_and_google_restaurant_id", unique: true
     t.index ["user_id"], name: "index_restaurants_on_user_id"
+  end
+
+  create_table "spatial_ref_sys", primary_key: "srid", id: :integer, default: nil, force: :cascade do |t|
+    t.string "auth_name", limit: 256
+    t.integer "auth_srid"
+    t.string "srtext", limit: 2048
+    t.string "proj4text", limit: 2048
+    t.check_constraint "srid > 0 AND srid <= 998999", name: "spatial_ref_sys_srid_check"
   end
 
   create_table "taggings", force: :cascade do |t|
