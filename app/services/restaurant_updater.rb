@@ -15,6 +15,7 @@ class RestaurantUpdater
       original_tags = @restaurant.tag_list.to_a
       original_rating = @restaurant.rating
       original_price_level = @restaurant.price_level
+      original_notes = @restaurant.notes
       
       update_basic_attributes
       update_cuisine_type
@@ -27,14 +28,20 @@ class RestaurantUpdater
                 @restaurant.tag_list.to_a != original_tags ||
                 @restaurant.rating != original_rating ||
                 @restaurant.price_level != original_price_level ||
-                @params[:images].present?
+                @restaurant.notes != original_notes
       
-      if changed
+      # Always save if attributes were assigned
+      result = if changed
         @restaurant.save
       else
-        false
+        true
       end
+
+      Rails.logger.debug "Update result: #{result}, Changed: #{changed}, Notes before: #{original_notes}, Notes after: #{@restaurant.notes}"
+      
+      result
     rescue => e
+      Rails.logger.error "Update error: #{e.message}"
       @restaurant.errors.add(:base, e.message)
       false
     end
@@ -43,6 +50,7 @@ class RestaurantUpdater
   private
 
   def update_basic_attributes
+    Rails.logger.debug "Updating basic attributes with: #{@params.except(:cuisine_type_name, :images, :tag_list).inspect}"
     @restaurant.assign_attributes(
       @params.except(:cuisine_type_name, :images, :tag_list)
     )
