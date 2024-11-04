@@ -31,6 +31,7 @@
             
             <%= button_to "#",
                         method: :delete,
+                        format: :json,
                         data: { 
                           action: "image-deletion#deleteImage",
                           image_id: image.id
