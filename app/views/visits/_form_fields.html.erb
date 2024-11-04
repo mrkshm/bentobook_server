@@ -8,7 +8,7 @@
     <%= form.label :date, t("date"), class: "label" %>
     <div class="flex flex-wrap gap-2">
       <%= form.date_select :date, 
-                          default: visit.date || Date.current,
+                          selected: visit.date || Date.current,
                           order: [:day, :month, :year],
                           use_month_names: t('date.month_names').compact,
                           prompt: { 
