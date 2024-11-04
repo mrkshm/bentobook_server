@@ -96,4 +96,10 @@ class Restaurant < ApplicationRecord
       '$' * price_level if price_level
     end  
 
+    scope :order_by_visits, -> (direction = :desc) {
+      left_joins(:visits)
+        .group(:id)
+        .order(Arel.sql("COUNT(visits.id) #{direction}"))
+    }
+
 end

@@ -1,9 +1,14 @@
 <%= link_to restaurant_path(id: restaurant.id), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
   <div class="card-body">
-    <h2 class="card-title flex items-center">
-      <%= restaurant.name %>
-      <% if restaurant.cuisine_type %>
-        <span class="ml-2 text-sm font-normal text-gray-500"><%= restaurant.cuisine_type.name %></span>
+    <h2 class="card-title flex items-center justify-between">
+      <div class="flex items-center">
+        <%= restaurant.name %>
+        <% if restaurant.cuisine_type %>
+          <span class="ml-2 text-sm font-normal text-gray-500"><%= restaurant.cuisine_type.name %></span>
+        <% end %>
+      </div>
+      <% if visit_count.positive? %>
+        <div class="badge badge-secondary"><%= visit_count %></div>
       <% end %>
     </h2>
     <div class="mt-2">
