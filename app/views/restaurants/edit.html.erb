@@ -1,6 +1,7 @@
 <div class="card bg-base-100 shadow-xl max-w-2xl mx-auto mt-4">
   <div class="card-body">
     <%= form_with(model: @restaurant, 
+    id: "restaurant-edit-form",
                   local: true, 
                   url: restaurant_path,
                   multipart: true,
@@ -134,6 +135,7 @@
 
       <div class="flex items-center justify-between mt-6">
         <%= form.submit "Update Restaurant", 
+        form: "restaurant-edit-form",
                        class: "btn btn-primary",
                        data: { 
                          turbo: false
