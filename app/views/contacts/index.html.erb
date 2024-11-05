@@ -48,7 +48,9 @@
                 </div>
               </div>
 
-              <div class="badge badge-secondary"><%= contact.visits_count %></div>
+              <% if contact.visits_count.positive? %>
+                <div class="badge badge-secondary"><%= contact.visits_count %></div>
+              <% end %>
             </div>
 
             <div class="mt-4 space-y-2">

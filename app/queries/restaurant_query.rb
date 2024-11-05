@@ -53,8 +53,10 @@ class RestaurantQuery
   
     def sort_by_distance(scoped)
       if params[:latitude].present? && params[:longitude].present?
-        user_location = [params[:latitude].to_f, params[:longitude].to_f]
-        scoped.order_by_distance_from(user_location)
+        point = "POINT(#{params[:longitude]} #{params[:latitude]})"
+        scoped
+          .joins(:google_restaurant)
+          .order(Arel.sql("ST_Distance(google_restaurants.location, ST_SetSRID(ST_MakePoint(#{params[:longitude]}, #{params[:latitude]}), 4326))"))
       else
         scoped
       end

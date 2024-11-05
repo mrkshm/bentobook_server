@@ -10,7 +10,7 @@ class Restaurant < ApplicationRecord
   
     acts_as_taggable_on :tags
   
-    delegate :latitude, :longitude, to: :google_restaurant, allow_nil: true
+    delegate :latitude, :longitude, :location, to: :google_restaurant, allow_nil: true
   
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
     validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
@@ -60,15 +60,16 @@ class Restaurant < ApplicationRecord
                 ', restaurants.price_level AS restaurant_price_level, restaurants.rating AS restaurant_rating')
     end
   
-    def self.near(center, distance, options = {})
-      with_google.merge(GoogleRestaurant.near(center, distance, options))
-    end
-  
-    def self.order_by_distance_from(location)
+    def self.near(center_lat, center_lon, distance_in_meters = 50000)
       with_google
         .joins(:google_restaurant)
-        .merge(GoogleRestaurant.near(location, 20_000, units: :km))
-        .select('restaurants.*, restaurants.name AS restaurant_name, google_restaurants.name AS google_restaurant_name')
+        .merge(GoogleRestaurant.nearby(center_lat, center_lon, distance_in_meters))
+    end
+  
+    def self.order_by_distance_from(lat, lon)
+      with_google
+        .joins(:google_restaurant)
+        .merge(GoogleRestaurant.order_by_distance_from(lat, lon))
     end
 
     def visit_count
@@ -82,15 +83,23 @@ class Restaurant < ApplicationRecord
     end
   
     def distance_to(lat, lon)
-      return nil unless combined_latitude && combined_longitude
+      return nil unless google_restaurant&.location
       
-      origin = [combined_latitude, combined_longitude]
-      destination = [lat, lon]
-      Geocoder::Calculations.distance_between(origin, destination)
+      point = "POINT(#{lon} #{lat})"
+      GoogleRestaurant
+        .select("ST_Distance(location, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)::geography) as distance")
+        .find(google_restaurant_id)
+        .distance
     end
   
     def price_level_display
       '$' * price_level if price_level
     end  
+
+    scope :order_by_visits, -> (direction = :desc) {
+      left_joins(:visits)
+        .group(:id)
+        .order(Arel.sql("COUNT(visits.id) #{direction}"))
+    }
 
 end

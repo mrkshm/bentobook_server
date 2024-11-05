@@ -17,5 +17,9 @@ class RestaurantCardComponent < ApplicationComponent
         restaurant.country
       ].compact.reject(&:empty?).join(', ')
     end
+  
+    def visit_count
+      restaurant.visit_count
+    end
   end
   

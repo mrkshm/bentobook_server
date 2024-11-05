@@ -1,4 +1,6 @@
 class Profile < ApplicationRecord
+  VALID_THEMES = %w[light dark cupcake black].freeze
+  VALID_LANGUAGES = %w[en fr].freeze
 
   belongs_to :user
 
@@ -6,6 +8,8 @@ class Profile < ApplicationRecord
 
   validates :username, uniqueness: true, allow_blank: true
   validates :first_name, :last_name, length: { maximum: 50 }
+  validates :preferred_theme, inclusion: { in: %w[light dark cupcake black] }
+  validates :preferred_language, inclusion: { in: %w[en fr] }
 
   after_commit :process_avatar_variants, if: :avatar_changed?
 

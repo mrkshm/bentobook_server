@@ -29,15 +29,12 @@
             <%= image_tag(url_for(image.file), 
                         class: "w-full h-full object-contain rounded-lg shadow-md") %>
             
-            <%= button_to "#",
-                        method: :delete,
-                        data: { 
-                          action: "image-deletion#deleteImage",
-                          image_id: image.id
-                        },
-                        class: "btn btn-error btn-circle btn-sm absolute -top-2 -right-2" do %>
+            <button type="button"
+                    data-action="click->image-deletion#deleteImage"
+                    data-image-id="<%= image.id %>"
+                    class="btn btn-error btn-circle btn-sm absolute -top-2 -right-2">
               ×
-            <% end %>
+            </button>
           </div>
         <% end %>
       <% end %>
