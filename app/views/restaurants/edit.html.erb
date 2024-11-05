@@ -140,7 +140,7 @@
                        data: { 
                          turbo: false
                        } %>
-        <%= link_to "Cancel", restaurant_path(@restaurant), class: "btn btn-ghost" %>
+        <%= link_to "Cancel", restaurant_path, class: "btn btn-ghost" %>
       </div>
     <% end %>
   </div>
@@ -150,6 +150,6 @@
   <div class="card-body">
     <h2 class="card-title text-xl mb-4">Delete this restaurant</h2>
     <p class="mb-4">If you no longer want to track this restaurant, you can remove it from your list.</p>
-    <%= button_to "Delete Restaurant", restaurant_path(@restaurant), method: :delete, data: { turbo_confirm: "Are you sure you want to remove this restaurant from your list?" }, class: "btn btn-error" %>
+    <%= button_to "Delete Restaurant", restaurant_path, method: :delete, data: { turbo_confirm: "Are you sure you want to remove this restaurant from your list?" }, class: "btn btn-error" %>
   </div>
 </div>

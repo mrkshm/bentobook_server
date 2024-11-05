@@ -1,26 +1,25 @@
 <h1 class="card-title text-3xl mb-6"><%= t("restaurants.new.title") %></h1>
 
-<div id="restaurant-search" class="max-w-xl mb-6" x-data x-init="console.log('Alpine.js is loaded!')">
-  <%= label_tag :restaurant_search, t("restaurants.form.search"), class: "block text-sm font-medium text-gray-700 mb-1" %>
-  <%= text_field_tag :restaurant_search, nil, class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 py-2 px-3", data: { controller: "places-autocomplete" } %>
-  <div class="text-sm text-gray-500 p-3"><%= t("restaurants.new.short_description") %></div>
-</div>
+<div id="restaurant-search" class="max-w-xl mb-6" 
+     x-data="{ showForm: false }" 
+     @place-selected.window="showForm = true">
+  <div x-show="!showForm">
+    <%= label_tag :restaurant_search, t("restaurants.form.search"), 
+        class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= text_field_tag :restaurant_search, nil, 
+        class: "w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 py-2 px-3", 
+        data: { 
+          controller: "places-autocomplete"
+        } %>
+    <div class="text-sm text-gray-500 p-3">
+      <%= t("restaurants.new.short_description") %>
+    </div>
+  </div>
 
-<div id="restaurant-form" class="hidden" x-data="{ editing: false }" x-init="$watch('editing', value => console.log('editing:', value))">
-  <%= render 'form' %>
+  <div id="restaurant-form" x-show="showForm" x-cloak>
+    <%= render 'form' %>
+  </div>
 </div>
-
-<%= javascript_tag do %>
-  document.addEventListener('DOMContentLoaded', function() {
-    const searchContainer = document.getElementById('restaurant-search');
-    const formContainer = document.getElementById('restaurant-form');
-    
-    document.addEventListener('place-selected', function() {
-      searchContainer.classList.add('hidden');
-      formContainer.classList.remove('hidden');
-    });
-  });
-<% end %>
 
 <% content_for :google_maps do %>
   <!-- Nothing needed here, just marking that this page needs Google Maps -->

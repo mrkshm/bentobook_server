@@ -2,7 +2,7 @@
   <div class="card-body">
     <div class="flex justify-between items-center mb-4">
       <h2 class="card-title text-2xl" id="name-display"></h2>
-      <button @click="editing = !editing" class="btn btn-sm btn-ghost">
+      <button type="button" @click.prevent="editing = !editing" class="btn btn-sm btn-ghost">
         <template x-if="!editing">
           <%= heroicon "pencil-square", options: { class: "w-4 h-4 mr-1" } %>
           Edit

@@ -145,9 +145,12 @@ export default class extends Controller {
           const event = new Event('input', { bubbles: true });
           form.querySelector('#restaurant_name').dispatchEvent(event);
 
-          // Show the form
-          const placeSelectedEvent = new CustomEvent('place-selected', { bubbles: true });
-          this.element.dispatchEvent(placeSelectedEvent);
+          // Dispatch the event to window instead of the element
+          const placeSelectedEvent = new CustomEvent('place-selected', { 
+            bubbles: true,
+            detail: { place }
+          });
+          window.dispatchEvent(placeSelectedEvent);
         }
       }
     );
