@@ -15,7 +15,6 @@ RUN apt-get update -qq && \
     postgresql-client \
     netcat-openbsd \
     postgis \
-    postgresql-16-postgis-3 \
     libgeos-c1v5 \
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
