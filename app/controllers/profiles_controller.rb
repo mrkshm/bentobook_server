@@ -13,10 +13,22 @@ class ProfilesController < ApplicationController
         if params[:profile][:avatar].present?
           ImageHandlingService.process_images(@profile, params, compress: true)
         end
-        redirect_to profile_path, notice: I18n.t('notices.profile.updated')
+        if params[:profile][:preferred_language].present?
+          session[:locale] = @profile.preferred_language
+          I18n.locale = @profile.preferred_language
+        end
+        respond_to do |format|
+          format.html { redirect_to profile_path, notice: I18n.t('notices.profile.updated') }
+          format.json { render json: { status: :ok } }
+        end
       else
-        flash.now[:alert] = I18n.t('errors.profile.update_failed')
-        render :edit, status: :unprocessable_entity
+        respond_to do |format|
+          format.html do
+            flash.now[:alert] = I18n.t('errors.profile.update_failed')
+            render :edit, status: :unprocessable_entity
+          end
+          format.json { render json: { errors: @profile.errors }, status: :unprocessable_entity }
+        end
       end
     end
   
@@ -38,6 +50,9 @@ class ProfilesController < ApplicationController
     end
   
     def profile_params_without_avatar
-      params.require(:profile).permit(:username, :first_name, :last_name, :about)
+      params.require(:profile).permit(
+        :username, :first_name, :last_name, :about,
+        :preferred_language, :preferred_theme
+      )
     end
   end

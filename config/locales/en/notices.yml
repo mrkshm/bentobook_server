@@ -1,5 +1,7 @@
 en:
   notices:
+    profile:
+      updated: "Profile was successfully updated."
     visits:
       created: "Visit was successfully created."
       updated: "Visit was successfully updated."

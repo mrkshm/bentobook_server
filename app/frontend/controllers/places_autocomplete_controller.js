@@ -36,14 +36,16 @@ function extractAddressFromGooglePlace(place) {
 
 export default class extends Controller {
   connect() {
-    if (window.google && window.google.maps) {
-      this.initAutocomplete();
-    } else {
-      window.addEventListener('load', () => this.initAutocomplete());
+    if (typeof google === 'undefined') {
+      console.warn('Google Maps not loaded yet');
+      return;
     }
+    
+    // Initialize Google Maps components
+    this.initializeAutocomplete();
   }
 
-  initAutocomplete() {
+  initializeAutocomplete() {
     this.autocomplete = new google.maps.places.Autocomplete(this.element, {
       types: ['establishment']
     });

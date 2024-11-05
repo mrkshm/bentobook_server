@@ -99,11 +99,20 @@
       </footer>
     </div>
 
-    <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_maps_api_key}&libraries=places", async: true, defer: true %>
+    <% if content_for?(:google_maps) %>
+      <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_maps_api_key}&libraries=places", 
+          defer: true,
+          "data-turbo-track": "reload" %>
+    <% end %>
     <script>
       // Make the page visible once CSS is loaded
       document.addEventListener('DOMContentLoaded', function() {
         document.documentElement.style.visibility = 'visible';
+        
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+          document.documentElement.setAttribute('data-theme', storedTheme);
+        }
       });
 
       // Handle Turbo navigation
@@ -116,12 +125,6 @@
         document.documentElement.style.visibility = 'visible';
         document.getElementById('loading-indicator').style.display = 'none';
       });
-
-      // Apply theme from localStorage immediately
-      const storedTheme = localStorage.getItem('theme');
-      if (storedTheme) {
-        document.documentElement.setAttribute('data-theme', storedTheme);
-      }
     </script>
   </body>
 </html>

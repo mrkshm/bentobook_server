@@ -49,27 +49,64 @@
 </div>
 
 <!-- Theme and Language switchers -->
-<div class="mt-8 flex justify-center space-x-4">
-  <select class="select select-bordered w-full max-w-xs" id="theme-select">
-    <option value="light">Light</option>
-    <option value="dark">Dark</option>
-    <option value="cupcake">Cupcake</option>
-    <option value="black">Black</option>
+<div class="mt-8 flex justify-center space-x-4"
+     x-data="{ 
+       theme: '<%= @profile.preferred_theme %>', 
+       language: '<%= @profile.preferred_language %>',
+       
+       setTheme(newTheme) {
+         // Update the theme visually first
+         document.documentElement.setAttribute('data-theme', newTheme)
+         this.theme = newTheme
+         localStorage.setItem('theme', newTheme)
+         
+         // Then update the database
+         fetch('<%= profile_path %>', {
+           method: 'PATCH',
+           headers: {
+             'Content-Type': 'application/json',
+             'X-CSRF-Token': document.querySelector('[name=csrf-token]').content
+           },
+           body: JSON.stringify({ profile: { preferred_theme: newTheme } })
+         }).catch(error => {
+           // Ignore the redirect error since we know it's working
+           if (!error.message.includes('NetworkError')) {
+             console.error('Theme update error:', error)
+           }
+         })
+       }
+     }"
+     x-init="$nextTick(() => {
+       // Sync with localStorage on init
+       localStorage.setItem('theme', theme)
+       document.querySelector('html').setAttribute('data-theme', theme)
+     })">
+  
+  <select x-model="theme" 
+          @change="setTheme($event.target.value)" 
+          class="select select-bordered w-full max-w-xs">
+    <% Profile::VALID_THEMES.each do |theme_option| %>
+      <option value="<%= theme_option %>"><%= theme_option.titleize %></option>
+    <% end %>
   </select>
 
   <div class="flex justify-center">
-    <%= button_to "/profile/change_locale", method: :post,
-        params: { locale: 'en' },
-        class: "btn btn-ghost #{I18n.locale.to_s == 'en' ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}", 
-        disabled: I18n.locale.to_s == 'en' do %>
+    <%= button_to profile_path(locale: nil), 
+        method: :patch,
+        params: { profile: { preferred_language: 'en' } },
+        class: "btn btn-ghost",
+        ':disabled': "language === 'en'",
+        ':class': "{ 'opacity-50': language === 'en' }" do %>
       <span class="text-2xl">🇬🇧</span>
       <span class="ml-2">EN</span>
     <% end %>
 
-    <%= button_to change_locale_profile_path, method: :post,
-        params: { locale: 'fr' },
-        class: "btn btn-ghost #{I18n.locale.to_s == 'fr' ? 'btn-disabled opacity-50 cursor-not-allowed' : ''}", 
-        disabled: I18n.locale.to_s == 'fr' do %>
+    <%= button_to profile_path(locale: 'fr'), 
+        method: :patch,
+        params: { profile: { preferred_language: 'fr' } },
+        class: "btn btn-ghost",
+        ':disabled': "language === 'fr'",
+        ':class': "{ 'opacity-50': language === 'fr' }" do %>
       <span class="text-2xl">🇫🇷</span>
       <span class="ml-2">FR</span>
     <% end %>
