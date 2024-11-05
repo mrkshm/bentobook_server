@@ -36,20 +36,33 @@ function extractAddressFromGooglePlace(place) {
 
 export default class extends Controller {
   connect() {
-    if (typeof google === 'undefined') {
-      console.warn('Google Maps not loaded yet');
-      return;
+    // If Google is already loaded, initialize immediately
+    if (window.google && window.google.maps && window.google.maps.places) {
+      this.initializeAutocomplete()
+    } else {
+      // If not loaded yet, set up the callback
+      window.initGooglePlaces = () => {
+        // Initialize all places-autocomplete controllers
+        document.querySelectorAll('[data-controller="places-autocomplete"]').forEach(element => {
+          const controller = this.application.getControllerForElementAndIdentifier(element, 'places-autocomplete')
+          if (controller) {
+            controller.initializeAutocomplete()
+          }
+        })
+      }
     }
-    
-    // Initialize Google Maps components
-    this.initializeAutocomplete();
   }
 
   initializeAutocomplete() {
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      console.warn('Google Maps API not loaded yet')
+      return
+    }
+
     this.autocomplete = new google.maps.places.Autocomplete(this.element, {
       types: ['establishment']
-    });
-    this.autocomplete.addListener("place_changed", this.placeSelected.bind(this));
+    })
+    this.autocomplete.addListener("place_changed", this.placeSelected.bind(this))
   }
 
   placeSelected() {
