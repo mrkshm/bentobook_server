@@ -75,11 +75,8 @@ export default class extends Controller {
     }
 
     const extractedAddress = extractAddressFromGooglePlace(place);
-    
-    // Create a PlacesService instance
     const service = new google.maps.places.PlacesService(document.createElement('div'));
     
-    // Get detailed place information with all required fields
     service.getDetails(
       {
         placeId: place.place_id,
@@ -141,16 +138,17 @@ export default class extends Controller {
             openingHours ? JSON.stringify(openingHours) : '';
           form.querySelector('#restaurant_google_restaurant_attributes_google_updated_at').value = new Date().toISOString();
 
-          // Trigger an update of the display values
-          const event = new Event('input', { bubbles: true });
-          form.querySelector('#restaurant_name').dispatchEvent(event);
-
-          // Dispatch the event to window instead of the element
+          // Dispatch the place-selected event
           const placeSelectedEvent = new CustomEvent('place-selected', { 
             bubbles: true,
             detail: { place }
           });
           window.dispatchEvent(placeSelectedEvent);
+
+          // Update display values immediately
+          if (typeof updateDisplayValues === 'function') {
+            updateDisplayValues();
+          }
         }
       }
     );

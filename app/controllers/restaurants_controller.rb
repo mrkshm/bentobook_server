@@ -36,6 +36,7 @@ class RestaurantsController < ApplicationController
       @restaurant = current_user.restaurants.new
       @restaurant.build_google_restaurant
       @cuisine_types = CuisineType.all
+      @restaurant.cuisine_type = CuisineType.find_by(name: 'other')
     end
   
     def update
