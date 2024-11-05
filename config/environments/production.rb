@@ -64,8 +64,8 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   config.action_mailer.smtp_settings = {
-    user_name: Rails.application.credentials.dig(:smtp, :ses_smtp_user),
-    password: Rails.application.credentials.dig(:smtp, :ses_smtp_password),
+    user_name: Rails.application.credentials.dig(:ses_smtp_user),
+    password: Rails.application.credentials.dig(:ses_smtp_password),
     address: "email-smtp.eu-north-1.amazonaws.com",
     port: 587,
     authentication: :plain,
