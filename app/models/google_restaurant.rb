@@ -8,20 +8,16 @@ class GoogleRestaurant < ApplicationRecord
   validates :google_rating, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
   validates :google_ratings_total, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
-  # Business statuses as defined by Google Places API
   validates :business_status, inclusion: { in: ['OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY'] }, allow_nil: true
 
-  # Keep Geocoder with PostGIS
-  reverse_geocoded_by :latitude, :longitude
-  after_validation :reverse_geocode, if: ->(obj){ obj.latitude_changed? || obj.longitude_changed? }
-
-  # These PostGIS scopes can work alongside Geocoder
+  # PostGIS scopes
   scope :order_by_distance_from, ->(lat, lon) { 
-    near([lat, lon]).order("distance")
+    select("#{table_name}.*, ST_Distance(#{table_name}.location, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)) as distance")
+    .order('distance')
   }
 
   scope :nearby, ->(lat, lon, distance_in_meters = 50000) {
-    near([lat, lon], distance_in_meters / 1000.0)
+    where("ST_DWithin(#{table_name}.location::geography, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)::geography, #{distance_in_meters})")
   }
 
   # Scope to preload location data
@@ -49,8 +45,11 @@ class GoogleRestaurant < ApplicationRecord
   end
 
   def update_location
-    return unless latitude.present? && longitude.present?
-    self.location = "POINT(#{longitude} #{latitude})"
+    if latitude.present? && longitude.present?
+      self.location = "POINT(#{longitude} #{latitude})"
+    else
+      self.location = nil
+    end
   rescue StandardError => e
     Rails.logger.error "Failed to update location: #{e.message}"
     errors.add(:location, "could not be updated")

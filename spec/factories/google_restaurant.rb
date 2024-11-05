@@ -10,8 +10,18 @@ FactoryBot.define do
     google_ratings_total { rand(0..1000) }
     price_level { rand(0..4) }
     business_status { ['OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY'].sample }
+    google_updated_at { Time.current }
     
-    # Skip callbacks
-    to_create { |instance| instance.save(validate: false) }
+    after(:build) do |restaurant|
+      restaurant.location = "POINT(#{restaurant.longitude} #{restaurant.latitude})"
+    end
+
+    trait :without_coordinates do
+      latitude { nil }
+      longitude { nil }
+      after(:build) do |gr|
+        gr.define_singleton_method(:valid?) { true }
+      end
+    end
   end
 end

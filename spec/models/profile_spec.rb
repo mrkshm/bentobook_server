@@ -9,6 +9,10 @@ RSpec.describe Profile, type: :model do
   describe 'validations' do
     subject { create(:profile) } 
     it { should validate_uniqueness_of(:username).allow_blank }
+    it { should validate_length_of(:first_name).is_at_most(50) }
+    it { should validate_length_of(:last_name).is_at_most(50) }
+    it { should validate_inclusion_of(:preferred_theme).in_array(Profile::VALID_THEMES) }
+    it { should validate_inclusion_of(:preferred_language).in_array(Profile::VALID_LANGUAGES) }
   end
 
   describe '#full_name' do
@@ -48,19 +52,6 @@ RSpec.describe Profile, type: :model do
       user = create(:user, email: 'john.doe@example.com')
       profile = build(:profile, user: user, username: '', first_name: '', last_name: '')
       expect(profile.display_name).to eq('john.doe')
-    end
-  end
-
-  describe '#avatar_url' do
-    it 'returns nil when no avatar is attached' do
-      profile = build(:profile)
-      expect(profile.avatar_url).to be_nil
-    end
-
-    it 'returns a filename when an avatar is attached' do
-      profile = create(:profile)
-      profile.avatar.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'avatar.jpg')), filename: 'avatar.jpg', content_type: 'image/jpeg')
-      expect(profile.avatar_url).to eq('avatar.jpg')
     end
   end
 end

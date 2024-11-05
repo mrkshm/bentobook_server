@@ -12,10 +12,6 @@ class Image < ApplicationRecord
 
   private
 
-  def process_file_variants
-    generate_image_variants(:file)
-  end
-
   def set_filename
     return unless file.attached?
 

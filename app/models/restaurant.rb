@@ -60,7 +60,14 @@ class Restaurant < ApplicationRecord
                 ', restaurants.price_level AS restaurant_price_level, restaurants.rating AS restaurant_rating')
     end
   
-    def self.near(center_lat, center_lon, distance_in_meters = 50000)
+    def self.near(center_lat, center_lon, distance = 50000, options = {})
+      # Convert km to meters if units option is provided
+      distance_in_meters = if options[:units] == :km
+        distance * 1000
+      else
+        distance
+      end
+
       with_google
         .joins(:google_restaurant)
         .merge(GoogleRestaurant.nearby(center_lat, center_lon, distance_in_meters))

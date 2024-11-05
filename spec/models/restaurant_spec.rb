@@ -54,28 +54,87 @@ RSpec.describe Restaurant, type: :model do
         near_restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: 40.7128, longitude: -74.0060))
         far_restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: 34.0522, longitude: -118.2437))
 
-        near_results = Restaurant.near([40.7128, -74.0060], 10)
+        near_results = Restaurant.near(40.7128, -74.0060, 10000)
+        
         expect(near_results).to include(near_restaurant)
         expect(near_results).not_to include(far_restaurant)
+      end
+
+      it 'accepts a custom distance' do
+        restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: 40.7128, longitude: -74.0060))
+        
+        results = Restaurant.near(40.7128, -74.0060, 50000)
+        
+        expect(results).to include(restaurant)
       end
     end
 
     describe '.order_by_distance_from' do
       it 'orders restaurants by distance from a given location' do
-        closer_restaurant = create(:restaurant, name: "Closer Restaurant", google_restaurant: create(:google_restaurant, latitude: 40.7128, longitude: -74.0060))
-        farther_restaurant = create(:restaurant, name: "Farther Restaurant", google_restaurant: create(:google_restaurant, latitude: 40.7489, longitude: -73.9680))
+        closer_restaurant = create(:restaurant,
+          google_restaurant: create(:google_restaurant, 
+            name: "Closer Restaurant",
+            latitude: 40.7128, 
+            longitude: -74.0060
+          )
+        )
+        farther_restaurant = create(:restaurant,
+          google_restaurant: create(:google_restaurant, 
+            name: "Farther Restaurant",
+            latitude: 40.7489, 
+            longitude: -73.9680
+          )
+        )
 
-        ordered_results = Restaurant.order_by_distance_from([40.7300, -74.0000]).to_a
+        ordered_results = Restaurant.order_by_distance_from(40.7300, -74.0000).to_a
 
         expect(ordered_results.size).to eq(2)
-        expect(ordered_results.first.name).to eq("Closer Restaurant")
-        expect(ordered_results.last.name).to eq("Farther Restaurant")
+        expect(ordered_results.first.combined_name).to eq("Closer Restaurant")
+        expect(ordered_results.last.combined_name).to eq("Farther Restaurant")
+      end
+    end
 
-        # Check if the first result is closer than the second
-        first_distance = Geocoder::Calculations.distance_between([40.7300, -74.0000], [closer_restaurant.latitude, closer_restaurant.longitude])
-        second_distance = Geocoder::Calculations.distance_between([40.7300, -74.0000], [farther_restaurant.latitude, farther_restaurant.longitude])
+    describe '.order_by_visits' do
+      it 'orders restaurants by visit count in descending order by default' do
+        restaurant_many = create(:restaurant)
+        create_list(:visit, 3, restaurant: restaurant_many)
         
-        expect(first_distance).to be < second_distance
+        restaurant_few = create(:restaurant)
+        create_list(:visit, 1, restaurant: restaurant_few)
+        
+        restaurant_none = create(:restaurant)
+
+        ordered = Restaurant.order_by_visits.to_a
+
+        expect(ordered.map(&:visit_count)).to eq([3, 1, 0])
+        expect(ordered).to eq([restaurant_many, restaurant_few, restaurant_none])
+      end
+
+      it 'can order restaurants by visit count in ascending order' do
+        restaurant_many = create(:restaurant)
+        create_list(:visit, 3, restaurant: restaurant_many)
+        
+        restaurant_few = create(:restaurant)
+        create_list(:visit, 1, restaurant: restaurant_few)
+        
+        restaurant_none = create(:restaurant)
+
+        ordered = Restaurant.order_by_visits(:asc).to_a
+
+        expect(ordered.map(&:visit_count)).to eq([0, 1, 3])
+        expect(ordered).to eq([restaurant_none, restaurant_few, restaurant_many])
+      end
+
+      it 'includes restaurants with no visits' do
+        restaurant_with_visits = create(:restaurant)
+        create_list(:visit, 2, restaurant: restaurant_with_visits)
+        
+        restaurant_no_visits = create(:restaurant)
+
+        ordered = Restaurant.order_by_visits.to_a
+
+        expect(ordered).to include(restaurant_no_visits)
+        expect(ordered.map(&:visit_count)).to eq([2, 0])
       end
     end
   end
@@ -144,13 +203,19 @@ RSpec.describe Restaurant, type: :model do
         
         distance = restaurant.distance_to(dc_lat, dc_lon)
         
-        expect(distance).to be_within(1).of(203.55) # Use the actual calculated distance
-        expect(distance).to be > 200 # Ensure it's a reasonable distance
-        expect(distance).to be < 210 # Ensure it's a reasonable distance
+        # PostGIS returns distance in meters
+        expect(distance).to be_within(1000).of(328000) # ~328km between NYC and DC
       end
 
       it 'returns nil if restaurant coordinates are not set' do
-        restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: nil, longitude: nil))
+        google_restaurant = create(:google_restaurant)
+        google_restaurant.update_columns(
+          latitude: nil,
+          longitude: nil,
+          location: nil
+        )
+        restaurant = create(:restaurant, google_restaurant: google_restaurant)
+        
         expect(restaurant.distance_to(40.7489, -73.9680)).to be_nil
       end
     end
@@ -279,7 +344,7 @@ RSpec.describe Restaurant, type: :model do
       near_restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: 40.7128, longitude: -74.0060))
       far_restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: 34.0522, longitude: -118.2437))
 
-      near_results = Restaurant.near([40.7128, -74.0060], 10)
+      near_results = Restaurant.near(40.7128, -74.0060, 10000)
       
       expect(near_results).to include(near_restaurant)
       expect(near_results).not_to include(far_restaurant)
@@ -288,7 +353,7 @@ RSpec.describe Restaurant, type: :model do
     it 'accepts additional options' do
       restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: 40.7128, longitude: -74.0060))
       
-      results = Restaurant.near([40.7128, -74.0060], 10, units: :km)
+      results = Restaurant.near(40.7128, -74.0060, 10, units: :km)
       
       expect(results).to include(restaurant)
     end
@@ -296,14 +361,26 @@ RSpec.describe Restaurant, type: :model do
 
   describe '.order_by_distance_from' do
     it 'orders restaurants by distance from a given location' do
-      closer_restaurant = create(:restaurant, name: "Closer Restaurant", google_restaurant: create(:google_restaurant, latitude: 40.7128, longitude: -74.0060))
-      farther_restaurant = create(:restaurant, name: "Farther Restaurant", google_restaurant: create(:google_restaurant, latitude: 40.7489, longitude: -73.9680))
+      closer_restaurant = create(:restaurant,
+        google_restaurant: create(:google_restaurant, 
+          name: "Closer Restaurant",
+          latitude: 40.7128, 
+          longitude: -74.0060
+        )
+      )
+      farther_restaurant = create(:restaurant,
+        google_restaurant: create(:google_restaurant, 
+          name: "Farther Restaurant",
+          latitude: 40.7489, 
+          longitude: -73.9680
+        )
+      )
 
-      ordered_results = Restaurant.order_by_distance_from([40.7300, -74.0000]).to_a
+      ordered_results = Restaurant.order_by_distance_from(40.7300, -74.0000).to_a
 
       expect(ordered_results.size).to eq(2)
-      expect(ordered_results.first.name).to eq("Closer Restaurant")
-      expect(ordered_results.last.name).to eq("Farther Restaurant")
+      expect(ordered_results.first.combined_name).to eq("Closer Restaurant")
+      expect(ordered_results.last.combined_name).to eq("Farther Restaurant")
     end
   end
 
@@ -334,13 +411,19 @@ RSpec.describe Restaurant, type: :model do
       
       distance = restaurant.distance_to(dc_lat, dc_lon)
       
-      expect(distance).to be_within(1).of(203.55) # Use the actual calculated distance
-      expect(distance).to be > 200 # Ensure it's a reasonable distance
-      expect(distance).to be < 210 # Ensure it's a reasonable distance
+      # PostGIS returns distance in meters
+      expect(distance).to be_within(1000).of(328000) # ~328km between NYC and DC
     end
 
     it 'returns nil if restaurant coordinates are not set' do
-      restaurant = create(:restaurant, google_restaurant: create(:google_restaurant, latitude: nil, longitude: nil))
+      google_restaurant = create(:google_restaurant)
+      google_restaurant.update_columns(
+        latitude: nil,
+        longitude: nil,
+        location: nil
+      )
+      restaurant = create(:restaurant, google_restaurant: google_restaurant)
+      
       expect(restaurant.distance_to(40.7489, -73.9680)).to be_nil
     end
   end

@@ -15,9 +15,25 @@ FactoryBot.define do
       end
     end
 
+    trait :with_contact do
+      after(:create) do |visit|
+        create(:visit_contact, visit: visit)
+      end
+    end
+
+    trait :without_rating do
+      rating { nil }
+    end
+
     trait :without_price do
       price_paid_cents { nil }
       price_paid_currency { nil }
+    end
+
+    trait :with_multiple_contacts do
+      after(:create) do |visit|
+        create_list(:visit_contact, 3, visit: visit)
+      end
     end
   end
 end
