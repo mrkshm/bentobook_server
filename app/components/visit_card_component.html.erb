@@ -34,20 +34,7 @@
   
       <div class="flex items-center justify-between">
         <%= render(RatingsComponent.new(rating: visit.rating, readonly: true)) %>
-  
-        <% if visit.contacts.any? %>
-          <div class="flex -space-x-2 overflow-visible relative z-50">
-            <% visit.contacts.each do |contact| %>
-              <div class="relative">
-                <%= render(AvatarComponent.new(
-                  user: contact, 
-                  size: :large, 
-                  tooltip: contact.name
-                )) %>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
+        <%= render_contacts %>
       </div>
     </div>
   <% end %>

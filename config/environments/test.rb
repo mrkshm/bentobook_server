@@ -55,4 +55,7 @@ Rails.application.configure do
   # config.log_level = :debug
 
   Geocoder.configure(lookup: :test)
+
+  # Disable image processing during tests unless specifically needed
+  config.active_storage.variant_processor = nil
 end

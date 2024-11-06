@@ -40,4 +40,30 @@ RSpec.describe RestaurantsHelper, type: :helper do
       expect(helper.restaurant_attribute(restaurant, :name)).to eq('Combined Name')
     end
   end
+
+  describe '#price_level_options' do
+    it 'returns an array of price level options with symbols and values' do
+      expected_options = [
+        ['$', 1],
+        ['$$', 2],
+        ['$$$', 3],
+        ['$$$$', 4]
+      ]
+      
+      expect(helper.price_level_options).to eq(expected_options)
+    end
+
+    it 'returns options in ascending order of price' do
+      options = helper.price_level_options
+      values = options.map { |option| option[1] }
+      expect(values).to eq(values.sort)
+    end
+
+    it 'returns correct symbol count for each level' do
+      options = helper.price_level_options
+      options.each do |symbol, value|
+        expect(symbol.count('$')).to eq(value)
+      end
+    end
+  end
 end

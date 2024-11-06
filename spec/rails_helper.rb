@@ -92,6 +92,9 @@ RSpec.configure do |config|
         'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]')
       ON CONFLICT (srid) DO NOTHING;
     SQL
+
+    # Configure Active Storage to use the test service
+    ActiveStorage::Current.url_options = { host: "localhost:3000" }
   end
 
   config.before(:each) do

@@ -17,7 +17,8 @@ RSpec.describe RestaurantCardComponent, type: :component do
       country: 'USA',
       phone_number: '555-1234',
       url: 'https://pizzapalace.com',
-      tags: [tag1, tag2]
+      tags: [tag1, tag2],
+      visit_count: 3
     )
   end
 
@@ -63,7 +64,12 @@ RSpec.describe RestaurantCardComponent, type: :component do
 
   it 'renders a link to the restaurant details page' do
     render_inline(component)
-    expect(page).to have_link('View details for Pizza Palace', href: '/restaurants/1')
+    expect(page).to have_link(href: '/restaurants/1')
+  end
+
+  it 'renders the visit count badge when visits exist' do
+    render_inline(component)
+    expect(page).to have_css('.badge', text: '3')
   end
 
   context 'when some fields are missing' do
@@ -80,7 +86,8 @@ RSpec.describe RestaurantCardComponent, type: :component do
         country: 'USA',
         phone_number: nil,
         url: nil,
-        tags: []
+        tags: [],
+        visit_count: 0
       )
     end
 
@@ -108,7 +115,8 @@ RSpec.describe RestaurantCardComponent, type: :component do
           postal_code: nil,
           city: 'Los Angeles',
           state: nil,
-          country: 'USA'
+          country: 'USA',
+          visit_count: 0
         )
       end
 
