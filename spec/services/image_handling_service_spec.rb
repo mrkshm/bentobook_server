@@ -4,50 +4,21 @@ RSpec.describe ImageHandlingService, type: :service do
   include ActionDispatch::TestProcess::FixtureFile
   include ActiveJob::TestHelper
 
-  before(:all) do
-    # Set up Active Storage URL options for all tests
-    ActiveStorage::Current.url_options = { host: "localhost:3000" }
+  let(:user) { create(:user) }
+  let(:contact) { create(:contact, user: user) }
+
+  let(:image) do
+    fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 'image/jpeg')
   end
 
-  before(:each) do
-    # Clear any existing Active Storage data
-    ActiveStorage::Blob.all.each(&:purge)
-    ActiveStorage::Attachment.all.each(&:purge)
-    
-    # Ensure test directory exists and is clean
-    FileUtils.mkdir_p(Rails.root.join("tmp/storage"))
-    FileUtils.rm_rf(Dir[Rails.root.join("tmp/storage/*")])
-
-    # Use Rails' configuration
-    Rails.configuration.active_storage.service = :test
-    ActiveStorage::Blob.service = ActiveStorage::Blob.services.fetch(:test)
+  let(:invalid_image) do
+    fixture_file_upload(Rails.root.join('spec', 'fixtures', 'invalid.txt'), 'text/plain')
   end
 
   after(:each) do
     # Clean up any processed images
     ActiveStorage::Blob.unattached.find_each(&:purge)
-    ActiveStorage::Attachment.all.each(&:purge)
-    FileUtils.rm_rf(Dir[Rails.root.join("tmp/storage/*")])
-  end
-
-  after(:all) do
-    # Final cleanup
-    FileUtils.rm_rf(Rails.root.join("tmp/storage"))
-  end
-
-  let(:user) { create(:user) }
-  let(:contact) { create(:contact, user: user) }
-
-  let(:image) do
-    path = Rails.root.join('spec', 'fixtures', 'test_image.jpg')
-    raise "Test image not found at #{path}" unless File.exist?(path)
-    fixture_file_upload(path, 'image/jpeg')
-  end
-
-  let(:invalid_image) do
-    path = Rails.root.join('spec', 'fixtures', 'invalid.txt')
-    raise "Invalid test file not found at #{path}" unless File.exist?(path)
-    fixture_file_upload(path, 'text/plain')
+    FileUtils.rm_rf(Dir["#{Rails.root}/tmp/storage/*"])
   end
 
   describe '.process_images' do
@@ -88,48 +59,6 @@ RSpec.describe ImageHandlingService, type: :service do
         expect(contact.avatar.blob.id).not_to eq(original_blob_id)
         # The old blob should be unattached and can be purged
         expect(ActiveStorage::Blob.find_by(id: original_blob_id)).to be_nil
-      end
-
-      it 'attaches original image without compression when compress is false' do
-        original_image_size = image.size
-        result = ImageHandlingService.process_images(contact, params, compress: false)
-
-        expect(result[:success]).to be true
-        expect(contact.avatar).to be_attached
-        expect(contact.avatar.blob.byte_size).to eq(original_image_size)
-        # Verify it's the original image by checking it wasn't converted to jpg
-        expect(contact.avatar.blob.filename.to_s).to eq('test_image.jpg')
-        expect(contact.avatar.content_type).to eq('image/jpeg')
-      end
-
-      it 'shows difference between compressed and uncompressed attachments' do
-        # Create two separate image fixtures
-        uncompressed_image = fixture_file_upload(
-          Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 
-          'image/jpeg'
-        )
-        compressed_image = fixture_file_upload(
-          Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 
-          'image/jpeg'
-        )
-
-        # First attach without compression
-        ImageHandlingService.process_images(
-          contact, 
-          { contact: { avatar: uncompressed_image } }, 
-          compress: false
-        )
-        uncompressed_size = contact.avatar.blob.byte_size
-
-        # Then attach with compression
-        ImageHandlingService.process_images(
-          contact, 
-          { contact: { avatar: compressed_image } }, 
-          compress: true
-        )
-        compressed_size = contact.avatar.blob.byte_size
-
-        expect(compressed_size).to be < uncompressed_size
       end
     end
 

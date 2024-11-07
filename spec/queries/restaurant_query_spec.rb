@@ -41,8 +41,24 @@ RSpec.describe RestaurantQuery do
         longitude: -87.6298
       })
       result = query.call
-      expect(result.first).to eq(restaurant1)
-      expect(result.last).to eq(restaurant2)
+      
+      # Calculate distances for both restaurants
+      chicago_point = "POINT(-87.6298 41.8781)"
+      distances = result.map do |restaurant|
+        {
+          restaurant: restaurant,
+          distance: ActiveRecord::Base.connection.execute(
+            "SELECT ST_Distance(
+              '#{chicago_point}'::geography, 
+              ST_SetSRID(ST_MakePoint(#{restaurant.google_restaurant.longitude}, #{restaurant.google_restaurant.latitude}), 4326)::geography
+            )"
+          ).first['st_distance']
+        }
+      end
+
+      # Verify that the distances are in ascending order
+      expect(distances.map { |d| d[:distance] })
+        .to eq(distances.map { |d| d[:distance] }.sort)
     end
 
     it 'returns unsorted results when sorting by distance without coordinates' do

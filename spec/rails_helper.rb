@@ -76,7 +76,7 @@ RSpec.configure do |config|
   config.include Warden::Test::Helpers
 
   # If you're using DatabaseCleaner, make sure to clean the test database after each test
-  config.use_transactional_fixtures = false
+  config.use_transactional_fixtures = true
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
@@ -112,7 +112,7 @@ RSpec.configure do |config|
   config.after(:each) do
     DatabaseCleaner.clean
     # Clean up Active Storage test files after each test
-    ActiveStorage::Blob.all.each(&:purge)
+    ActiveStorage::Blob.unattached.find_each(&:purge)
   end
 
   config.before(:each) do
@@ -130,10 +130,6 @@ RSpec.configure do |config|
   config.after(:each) do
     Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
   end
-  DatabaseCleaner.clean
-  ActiveStorage::Blob.unattached.find_each(&:purge)
-  FileUtils.rm_rf(Dir["#{Rails.root}/tmp/storage/*"])
-  RSpec::Mocks.space.reset_all
 end
 
 require 'shoulda/matchers'
