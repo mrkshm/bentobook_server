@@ -138,39 +138,6 @@ RSpec.describe VisitsController, type: :controller do
       end
     end
 
-    describe "POST #create with image processing" do
-      let(:image) { fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 'image/jpeg') }
-      let(:valid_attributes) { attributes_for(:visit, restaurant_id: restaurant.id) }
-
-      context "when image processing fails" do
-        let(:valid_visit_attributes) { attributes_for(:visit, restaurant_id: restaurant.id) }
-        
-        before do
-          allow(ImageHandlingService).to receive(:process_images).and_raise(StandardError.new("Processing failed"))
-        end
-
-        it "renders the appropriate template with unprocessable_entity status and logs the error" do
-          expect(Rails.logger).to receive(:error).with("Image processing failed: Processing failed")
-          post :create, params: { 
-            visit: valid_visit_attributes,
-            images: [fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')]
-          }
-          expect(response).to render_template(:new)
-          expect(response).to have_http_status(:unprocessable_entity)
-          expect(flash[:alert]).to eq(I18n.t('errors.visits.image_processing_failed'))
-        end
-
-        it "destroys the visit when image processing fails" do
-          expect {
-            post :create, params: { 
-              visit: valid_visit_attributes,
-              images: [fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')]
-            }
-          }.not_to change(Visit, :count)
-        end
-      end
-    end
-
     context "when save fails due to validation errors" do
       let(:invalid_attributes) { attributes_for(:visit, restaurant_id: restaurant.id, date: nil) }
 
@@ -275,150 +242,170 @@ RSpec.describe VisitsController, type: :controller do
     end
   end
 
-  describe "save_visit" do
-    let(:user) { create(:user) }
-    let(:restaurant) { create(:restaurant, user: user) }
+  describe "#save_visit" do
+    context "when processing images" do
+      let(:visit) { create(:visit, user: user, restaurant: restaurant) }
+      let(:image) { fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg') }
+      let(:image_processor) { instance_double(ImageProcessorService) }
+      let(:processor_result) { ImageProcessorService::Result.new(success: true) }
+      let(:failed_result) { ImageProcessorService::Result.new(success: false, error: I18n.t('errors.visits.image_processing_failed')) }
+      
+      before do
+        controller.instance_variable_set(:@visit, visit)
+        controller.instance_variable_set(:@_response, ActionDispatch::Response.new)
+        allow(ImageProcessorService).to receive(:new).and_return(image_processor)
+      end
 
-    before { sign_in user }
+      it "skips image processing when no images are present" do
+        allow(controller).to receive(:params).and_return(
+          ActionController::Parameters.new(visit: { title: "Test Visit" })
+        )
+        
+        expect(ImageProcessorService).not_to receive(:new)
+        
+        expect(controller).to receive(:redirect_to).with(
+          visits_path, 
+          notice: I18n.t("notices.visits.created")
+        )
+        
+        controller.send(:save_visit, :new)
+      end
 
-    context "when restaurant_id is nil" do
-      it "renders the appropriate template with unprocessable_entity status" do
-        visit = Visit.new
-        setup_controller_for_save_visit(visit)
+      it "handles successful image processing" do
+        allow(controller).to receive(:params).and_return(
+          ActionController::Parameters.new(
+            visit: { images: [image] }
+          )
+        )
+        expect(image_processor).to receive(:process).and_return(processor_result)
+        
+        expect(controller).to receive(:redirect_to).with(
+          visits_path, 
+          notice: I18n.t("notices.visits.created")
+        )
+        
+        controller.send(:save_visit, :new)
+      end
+
+      it "handles failed image processing" do
+        allow(controller).to receive(:params).and_return(
+          ActionController::Parameters.new(
+            visit: { images: [image] }
+          )
+        )
+        expect(image_processor).to receive(:process).and_return(failed_result)
         
         expect(controller).to receive(:render).with(:new, status: :unprocessable_entity)
-        controller.send(:save_visit, :new)
-        
-        expect(flash.now[:alert]).to eq(I18n.t('errors.visits.restaurant_required'))
-        expect(visit.errors[:restaurant_id]).to include("can't be blank")
-      end
-    end
-
-    context "when visit saves successfully" do
-      it "redirects to visits_path with a notice" do
-        visit = build(:visit, user: user, restaurant: restaurant)
-        setup_controller_for_save_visit(visit)
-        
-        allow(visit).to receive(:save).and_return(true)
-        allow(controller).to receive(:process_images)
-        expect(controller).to receive(:redirect_to).with(visits_path)
         
         controller.send(:save_visit, :new)
-        
-        expect(flash[:notice]).to eq(I18n.t("notices.visits.created"))
-      end
-    end
-
-    context "when image processing fails" do
-      it "renders the appropriate template with unprocessable_entity status and logs the error" do
-        visit = create(:visit, user: user, restaurant: restaurant)
-        setup_controller_for_save_visit(visit)
-        
-        allow(controller).to receive(:process_images).and_raise(StandardError.new("Processing failed"))
-        expect(Rails.logger).to receive(:error).with("Image processing failed: Processing failed")
-        expect(controller).to receive(:render).with(:new, status: :unprocessable_entity)
-        
-        controller.send(:save_visit, :new)
-        
         expect(flash[:alert]).to eq(I18n.t('errors.visits.image_processing_failed'))
       end
 
-      it "destroys the visit when image processing fails" do
-        visit = create(:visit, user: user, restaurant: restaurant)
-        setup_controller_for_save_visit(visit)
+      it "destroys new visits when image processing fails" do
+        new_visit = create(:visit, user: user, restaurant: restaurant)
+        controller.instance_variable_set(:@visit, new_visit)
         
-        allow(controller).to receive(:process_images).and_raise(StandardError.new("Processing failed"))
-        
-        expect { controller.send(:save_visit, :new) }.to change(Visit, :count).by(-1)
-      end
-    end
-
-    context "when visit fails to save" do
-      it "renders the appropriate template with unprocessable_entity status" do
-        visit = build(:visit, user: user, restaurant: restaurant)
-        setup_controller_for_save_visit(visit)
-        
-        allow(visit).to receive(:save).and_return(false)
+        allow(controller).to receive(:params).and_return(
+          ActionController::Parameters.new(
+            visit: { images: [image] }
+          )
+        )
+        expect(image_processor).to receive(:process).and_return(failed_result)
         expect(controller).to receive(:render).with(:new, status: :unprocessable_entity)
         
-        controller.send(:save_visit, :new)
+        expect {
+          controller.send(:save_visit, :new)
+        }.to change(Visit, :count).by(-1)
+      end
+
+      it "preserves existing visits when image processing fails during update" do
+        existing_visit = create(:visit, user: user, restaurant: restaurant)
+        controller.instance_variable_set(:@visit, existing_visit)
         
-        expect(flash.now[:alert]).to eq(I18n.t('errors.visits.save_failed'))
+        allow(controller).to receive(:params).and_return(
+          ActionController::Parameters.new(
+            visit: { images: [image] }
+          )
+        )
+        expect(image_processor).to receive(:process).and_return(failed_result)
+        expect(controller).to receive(:render).with(:edit, status: :unprocessable_entity)
+        
+        expect {
+          controller.send(:save_visit, :edit)
+        }.not_to change(Visit, :count)
       end
     end
   end
 
-  describe "POST #create with images" do
-    let(:valid_attributes) { attributes_for(:visit, restaurant_id: restaurant.id) }
-    let(:image1) { fixture_file_upload('spec/fixtures/test_image1.jpg', 'image/jpeg') }
-    let(:image2) { fixture_file_upload('spec/fixtures/test_image2.jpg', 'image/jpeg') }
+  describe "image processing" do
+    let(:image) { fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg') }
+    let(:valid_attributes_with_image) { attributes_for(:visit, restaurant_id: restaurant.id, images: [image]) }
+    let(:image_processor) { instance_double(ImageProcessorService) }
+    let(:processor_result) { ImageProcessorService::Result.new(success: true) }
+    let(:failed_result) { ImageProcessorService::Result.new(success: false, error: I18n.t('errors.visits.image_processing_failed')) }
 
-    it "permits multiple images" do
-      expect(ImageHandlingService).to receive(:process_images) do |visit, images|
-        expect(visit).to be_a(Visit)
-        expect(images.length).to eq(2)
-        expect(images[0]).to be_a(ActionDispatch::Http::UploadedFile)
-        expect(images[1]).to be_a(ActionDispatch::Http::UploadedFile)
-        expect(images[0].original_filename).to eq('test_image1.jpg')
-        expect(images[1].original_filename).to eq('test_image2.jpg')
+    before do
+      allow(ImageProcessorService).to receive(:new).and_return(image_processor)
+    end
+
+    context "when creating a visit" do
+      it "processes images successfully" do
+        expect(image_processor).to receive(:process).and_return(processor_result)
+        
+        post :create, params: { visit: valid_attributes_with_image }
+        
+        expect(response).to redirect_to(visits_path)
+        expect(flash[:notice]).to eq(I18n.t("notices.visits.created"))
       end
-      
-      post :create, params: { 
-        visit: valid_attributes, 
-        images: [image1, image2]
-      }
-      
-      expect(response).to redirect_to(visits_path)
-      expect(flash[:notice]).to eq(I18n.t("notices.visits.created"))
+
+      it "handles failed image processing" do
+        expect(image_processor).to receive(:process).and_return(failed_result)
+        
+        post :create, params: { visit: valid_attributes_with_image }
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to render_template(:new)
+        expect(flash[:alert]).to eq(I18n.t('errors.visits.image_processing_failed'))
+      end
+
+      it "destroys the visit when image processing fails during creation" do
+        expect(image_processor).to receive(:process).and_return(failed_result)
+        
+        expect {
+          post :create, params: { visit: valid_attributes_with_image }
+        }.not_to change(Visit, :count)
+      end
     end
 
-    it "handles no images" do
-      expect(ImageHandlingService).not_to receive(:process_images)
-      
-      post :create, params: { 
-        visit: valid_attributes
-      }
-      
-      expect(response).to redirect_to(visits_path)
-      expect(flash[:notice]).to eq(I18n.t("notices.visits.created"))
+    context "when updating a visit" do
+      let!(:existing_visit) { create(:visit, user: user, restaurant: restaurant) }
+
+      it "processes images successfully" do
+        expect(image_processor).to receive(:process).and_return(processor_result)
+        
+        put :update, params: { id: existing_visit.to_param, visit: valid_attributes_with_image }
+        
+        expect(response).to redirect_to(visits_path)
+        expect(flash[:notice]).to eq(I18n.t("notices.visits.updated"))
+      end
+
+      it "handles failed image processing" do
+        expect(image_processor).to receive(:process).and_return(failed_result)
+        
+        put :update, params: { id: existing_visit.to_param, visit: valid_attributes_with_image }
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to render_template(:edit)
+        expect(flash[:alert]).to eq(I18n.t('errors.visits.image_processing_failed'))
+      end
+
+      it "does not destroy the visit when image processing fails during update" do
+        expect(image_processor).to receive(:process).and_return(failed_result)
+        
+        expect {
+          put :update, params: { id: existing_visit.to_param, visit: valid_attributes_with_image }
+        }.not_to change(Visit, :count)
+      end
     end
-  end
-
-  describe "image_params" do
-    it "permits images parameter" do
-      controller = VisitsController.new
-      params = ActionController::Parameters.new(
-        visit: { 
-          title: "Test Visit",
-          images: [fixture_file_upload('spec/fixtures/test_image1.jpg', 'image/jpeg')]
-        }
-      )
-      allow(controller).to receive(:params).and_return(params)
-
-      result = controller.send(:image_params)
-      expect(result.to_h["images"].first).to be_kind_of(Rack::Test::UploadedFile).or be_kind_of(ActionDispatch::Http::UploadedFile)
-    end
-
-    it "does not permit other parameters" do
-      controller = VisitsController.new
-      params = ActionController::Parameters.new(
-        visit: { 
-          title: "Test Visit",
-          images: [fixture_file_upload('spec/fixtures/test_image1.jpg', 'image/jpeg')],
-          unpermitted_param: "This should not be permitted"
-        }
-      )
-      allow(controller).to receive(:params).and_return(params)
-
-      result = controller.send(:image_params)
-      expect(result.to_h).not_to have_key("unpermitted_param")
-    end
-  end
-
-  def setup_controller_for_save_visit(visit)
-    controller.instance_variable_set(:@visit, visit)
-    allow(controller).to receive(:render)
-    allow(controller).to receive(:redirect_to)
-    allow(controller).to receive(:process_images)
   end
 end

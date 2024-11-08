@@ -8,8 +8,20 @@ class Profile < ApplicationRecord
 
   validates :username, uniqueness: true, allow_blank: true
   validates :first_name, :last_name, length: { maximum: 50 }
-  validates :preferred_theme, inclusion: { in: %w[light dark cupcake black] }
-  validates :preferred_language, inclusion: { in: %w[en fr] }
+  validates :preferred_theme, inclusion: { in: VALID_THEMES }
+  validates :preferred_language, inclusion: { in: VALID_LANGUAGES }
+
+  def avatar_url
+    return nil unless avatar.attached?
+    
+    Rails.application.routes.url_helpers.rails_blob_url(
+      avatar,
+      host: Rails.application.config.action_mailer.default_url_options[:host]
+    )
+  rescue StandardError => e
+    Rails.logger.error "Error generating avatar URL: #{e.message}"
+    nil
+  end
 
   def full_name
     "#{first_name} #{last_name}".strip.presence

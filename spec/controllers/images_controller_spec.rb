@@ -23,7 +23,7 @@ RSpec.describe ImagesController, type: :controller do
           it 'destroys the image and redirects with success notice' do
             delete :destroy, params: { id: image.id }
             
-            expect(response).to redirect_to(edit_restaurant_path(restaurant))
+            expect(response).to redirect_to("/restaurants/#{restaurant.id}/edit")
             expect(flash[:notice]).to eq('Image was successfully deleted.')
             expect(Image.exists?(image.id)).to be false
           end
@@ -32,7 +32,7 @@ RSpec.describe ImagesController, type: :controller do
             allow_any_instance_of(Image).to receive(:destroy).and_return(false)
             delete :destroy, params: { id: image.id }
             
-            expect(response).to redirect_to(edit_restaurant_path(restaurant))
+            expect(response).to redirect_to("/restaurants/#{restaurant.id}/edit")
             expect(flash[:alert]).to eq('Failed to delete image.')
             expect(Image.exists?(image.id)).to be true
           end
@@ -92,7 +92,7 @@ RSpec.describe ImagesController, type: :controller do
 
         it 'redirects to correct path for Visit' do
           delete :destroy, params: { id: visit_image.id }
-          expect(response).to redirect_to(edit_visit_path(visit))
+          expect(response).to redirect_to("/visits/#{visit.id}/edit")
         end
 
         it 'redirects to root for unknown imageable type' do
@@ -108,12 +108,9 @@ RSpec.describe ImagesController, type: :controller do
 
   describe '#edit_polymorphic_path' do
     context 'with unsupported imageable type' do
-      let(:unsupported_imageable) { create(:user) } # Using User as an unsupported type
+      let(:unsupported_imageable) { create(:user) }
       
       it 'returns root_path' do
-        # Set up request environment
-        @request.host = 'test.host'
-        
         path = controller.send(:edit_polymorphic_path, unsupported_imageable)
         expect(path).to eq(root_path)
       end
@@ -123,18 +120,14 @@ RSpec.describe ImagesController, type: :controller do
       let(:restaurant) { create(:restaurant, user: user) }
       let(:visit) { create(:visit, user: user) }
       
-      before do
-        @request.host = 'test.host'
-      end
-      
       it 'returns correct path for Restaurant' do
         path = controller.send(:edit_polymorphic_path, restaurant)
-        expect(path).to eq(edit_restaurant_path(restaurant))
+        expect(path).to eq(edit_restaurant_path(id: restaurant.id))
       end
 
       it 'returns correct path for Visit' do
         path = controller.send(:edit_polymorphic_path, visit)
-        expect(path).to eq(edit_visit_path(visit))
+        expect(path).to eq(edit_visit_path(id: visit.id))
       end
     end
   end

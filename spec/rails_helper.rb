@@ -1,10 +1,17 @@
 require 'simplecov'
 
 SimpleCov.start 'rails' do
+  enable_coverage :branch
+
   add_filter '/test/'
   add_filter '/config/'
   add_filter '/vendor/'
   add_filter '/spec/'
+
+  minimum_coverage line: 90
+  minimum_coverage_by_file 80
+
+  track_files "{app,lib}/**/*.rb"
 end
 
 # This file is copied to spec/ when you run 'rails generate rspec:install'

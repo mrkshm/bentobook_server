@@ -5,6 +5,11 @@ RSpec.describe 'Profiles API', type: :request do
   let(:user) { create(:user) }
   let(:token) { generate_jwt_token(user) }
 
+  before do
+    # Set host for URL generation
+    Rails.application.config.action_mailer.default_url_options = { host: 'example.com' }
+  end
+
   path '/api/v1/profile' do
     get 'Retrieves the user profile' do
       tags 'Profiles'
@@ -17,6 +22,7 @@ RSpec.describe 'Profiles API', type: :request do
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(data['id']).to eq(user.profile.id)
+          expect(data).to have_key('avatar_url')
         end
       end
 
@@ -50,6 +56,7 @@ RSpec.describe 'Profiles API', type: :request do
           data = JSON.parse(response.body)
           expect(data['first_name']).to eq('John')
           expect(data['last_name']).to eq('Doe')
+          expect(data).to have_key('avatar_url')
         end
       end
 

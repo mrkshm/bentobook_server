@@ -1,7 +1,7 @@
 FactoryBot.define do
     factory :contact do
       sequence(:name) { |n| "Contact #{n}" }
-      email { "example@example.com" }
+      sequence(:email) { |n| "example#{n}@example.com" }
       city { "City" }
       country { "Country" }
       phone { "1234567890" }

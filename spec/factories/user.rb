@@ -23,6 +23,10 @@ FactoryBot.define do
       end
     end
 
+    trait :unconfirmed do
+      confirmed_at { nil }  # This makes the user unconfirmed
+    end
+
     trait :with_contacts do
       after(:create) do |user|
         create_list(:contact, 2, user: user)

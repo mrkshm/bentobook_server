@@ -33,7 +33,8 @@ class ContactsController < ApplicationController
         if params[:contact][:avatar].present?
           ImageHandlingService.process_images(@contact, params, compress: true)
         end
-        redirect_to @contact, notice: 'Contact was successfully created.'
+        redirect_to contact_path(id: @contact.id, locale: I18n.locale), 
+                    notice: 'Contact was successfully created.'
       else
         Rails.logger.error "Failed to create contact: #{@contact.errors.full_messages}"
         render :new, status: :unprocessable_entity
@@ -84,16 +85,5 @@ class ContactsController < ApplicationController
       params.require(:contact).permit(:name, :email, :city, :country, :phone, :notes)
     end
   
-    def contact_params
-      params.require(:contact).permit(
-        :name, 
-        :email, 
-        :city, 
-        :country, 
-        :phone, 
-        :notes,
-        :avatar
-      )
-    end
   end
   

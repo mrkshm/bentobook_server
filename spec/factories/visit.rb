@@ -35,5 +35,13 @@ FactoryBot.define do
         create_list(:visit_contact, 3, visit: visit)
       end
     end
+
+    trait :with_full_associations do
+      after(:create) do |visit|
+        create(:image, imageable: visit)
+        create(:contact)
+        visit.contacts << Contact.last
+      end
+    end
   end
 end
