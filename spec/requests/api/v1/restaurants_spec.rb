@@ -149,4 +149,66 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
       end
     end
   end
+
+  path '/api/v1/restaurants/{id}/add_tag' do
+    post 'Adds a tag to a restaurant' do
+      tags 'Restaurants'
+      security [bearer_auth: []]
+      parameter name: :id, in: :path, type: :string
+      parameter name: :tag, in: :query, type: :string
+
+      let(:restaurant) { create(:restaurant, user: user) }
+      let(:id) { restaurant.id }
+
+      response '200', 'tag added successfully' do
+        let(:tag) { 'italian' }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['message']).to eq('Tag added successfully.')
+          expect(data['tags']).to include('italian')
+        end
+
+        it 'does not duplicate existing tags' do
+          # First add the tag
+          post "/api/v1/restaurants/#{id}/add_tag", params: { tag: 'italian' }, 
+            headers: { 'Authorization' => "Bearer #{token}" }
+          
+          # Try to add the same tag again
+          post "/api/v1/restaurants/#{id}/add_tag", params: { tag: 'italian' }, 
+            headers: { 'Authorization' => "Bearer #{token}" }
+          
+          data = JSON.parse(response.body)
+          expect(data['tags'].count('italian')).to eq(1)
+        end
+      end
+    end
+  end
+
+  path '/api/v1/restaurants/{id}/remove_tag' do
+    delete 'Removes a tag from a restaurant' do
+      tags 'Restaurants'
+      security [bearer_auth: []]
+      parameter name: :id, in: :path, type: :string
+      parameter name: :tag, in: :query, type: :string
+
+      let(:restaurant) { create(:restaurant, user: user) }
+      let(:id) { restaurant.id }
+
+      response '200', 'tag removed successfully' do
+        let(:tag) { 'italian' }
+
+        before do
+          restaurant.tag_list.add('italian')
+          restaurant.save!
+        end
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['message']).to eq('Tag removed successfully.')
+          expect(data['tags']).not_to include('italian')
+        end
+      end
+    end
+  end
 end

@@ -49,10 +49,11 @@ Rails.application.routes.draw do
       resource :profile, only: [:show, :update]
       resources :contacts, only: [:index, :show, :create, :update, :destroy]
       resources :visits, only: [:index, :show, :create, :update, :destroy] do
-        resources :images, only: [:destroy]
+        resources :images, only: [:create, :destroy]
       end
       resources :images, only: [:destroy]
       resources :restaurants do
+        resources :images, only: [:create, :destroy]
         member do
           post "add_tag"
           delete "remove_tag"
