@@ -73,16 +73,7 @@
     <% if @restaurant.images.any? %>
       <div class="mt-6">
         <h2 class="text-xl font-semibold mb-4">Restaurant Images</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <% @restaurant.images.each do |image| %>
-            <div class="card bg-base-100 shadow-xl">
-              <%= image_tag url_for(image.file), class: "w-full h-auto rounded-t-box" %>
-              <div class="card-body p-2">
-                <p class="text-sm"><%= image.file.filename %></p>
-              </div>
-            </div>
-          <% end %>
-        </div>
+        <%= render(GalleryComponent.new(images: @restaurant.images.map(&:file))) %>
       </div>
     <% end %>
 

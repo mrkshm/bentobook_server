@@ -19,7 +19,12 @@ FactoryBot.define do
 
     trait :with_images do
       after(:create) do |restaurant|
-        create_list(:image, 2, imageable: restaurant)
+        include ActionDispatch::TestProcess
+        2.times do
+          restaurant.images.create!(
+            file: File.open(Rails.root.join('spec', 'fixtures', 'test_image.jpg'))
+          )
+        end
       end
     end
 
