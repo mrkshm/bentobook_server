@@ -210,7 +210,11 @@ class RestaurantsController < ApplicationController
   
     def handle_failed_save
       @cuisine_types = CuisineType.all
-      flash[:alert] = @restaurant.errors.full_messages.join(', ')
+      flash[:alert] = if @restaurant&.errors&.any?
+                        @restaurant.errors.full_messages.join(', ')
+                      else
+                        flash[:alert] # Keep existing flash message if no restaurant errors
+                      end
       render :new, status: :unprocessable_entity
     end
   
