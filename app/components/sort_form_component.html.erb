@@ -1,5 +1,10 @@
 <%= form_tag @url, method: :get, class: 'w-full md:w-auto', id: 'sort-form' do %>
   <%= hidden_field_tag :search, params[:search] %>
+  
+  <% @additional_fields.each do |name, value| %>
+    <%= hidden_field_tag name, value %>
+  <% end %>
+  
   <div class="form-control w-full">
     <label for="sort-select" class="label">
       <span class="label-text"><%= t('common.sort_by') %></span>

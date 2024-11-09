@@ -9,6 +9,10 @@ RSpec.describe Profile, type: :model do
   describe 'validations' do
     subject { create(:profile) } 
     it { should validate_uniqueness_of(:username).allow_blank }
+    it { should validate_length_of(:first_name).is_at_most(50) }
+    it { should validate_length_of(:last_name).is_at_most(50) }
+    it { should validate_inclusion_of(:preferred_theme).in_array(Profile::VALID_THEMES) }
+    it { should validate_inclusion_of(:preferred_language).in_array(Profile::VALID_LANGUAGES) }
   end
 
   describe '#full_name' do
@@ -52,15 +56,39 @@ RSpec.describe Profile, type: :model do
   end
 
   describe '#avatar_url' do
-    it 'returns nil when no avatar is attached' do
-      profile = build(:profile)
-      expect(profile.avatar_url).to be_nil
+    let(:profile) { create(:profile) }
+    let(:host) { 'example.com' }
+
+    before do
+      Rails.application.config.action_mailer.default_url_options = { host: host }
     end
 
-    it 'returns a filename when an avatar is attached' do
-      profile = create(:profile)
-      profile.avatar.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'avatar.jpg')), filename: 'avatar.jpg', content_type: 'image/jpeg')
-      expect(profile.avatar_url).to eq('avatar.jpg')
+    context 'when avatar is attached' do
+      before do
+        profile.avatar.attach(
+          io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+          filename: 'test_image.jpg',
+          content_type: 'image/jpeg'
+        )
+      end
+
+      it 'returns the avatar url' do
+        expect(profile.avatar_url).to include(host)
+        expect(profile.avatar_url).to include('test_image.jpg')
+      end
+
+      it 'returns nil when url generation fails' do
+        allow(Rails.application.routes.url_helpers).to receive(:rails_blob_url).and_raise(StandardError.new('Test error'))
+        
+        expect(Rails.logger).to receive(:error).with(/Error generating avatar URL: Test error/)
+        expect(profile.avatar_url).to be_nil
+      end
+    end
+
+    context 'when avatar is not attached' do
+      it 'returns nil' do
+        expect(profile.avatar_url).to be_nil
+      end
     end
   end
 end

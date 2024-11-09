@@ -75,6 +75,71 @@ RSpec.describe RestaurantsController, type: :controller do
         })
       end
     end
+
+    context "when performed? is true" do
+      before do
+        allow(controller).to receive(:performed?).and_return(true)
+      end
+
+      it "returns early without executing the rest of the action" do
+        expect(controller).not_to receive(:pagy)
+        expect(RestaurantQuery).not_to receive(:new)  # Also shouldn't create a query
+        expect(controller).not_to receive(:search_params)  # Shouldn't process search params
+        
+        get :index
+        
+        # Verify that none of the instance variables were set
+        expect(assigns(:restaurants)).to be_nil
+        expect(assigns(:pagy)).to be_nil
+        expect(assigns(:tags)).to be_nil
+      end
+    end
+
+    context "items_per_page parameter" do
+      it "uses the provided per_page value when positive" do
+        get :index, params: { per_page: 5 }
+        expect(assigns(:pagy).vars[:items]).to eq(5)
+      end
+
+      it "uses default value (10) when per_page is zero" do
+        get :index, params: { per_page: 0 }
+        expect(assigns(:pagy).vars[:items]).to eq(10)
+      end
+
+      it "uses default value (10) when per_page is negative" do
+        get :index, params: { per_page: -5 }
+        expect(assigns(:pagy).vars[:items]).to eq(10)
+      end
+
+      it "uses default value (10) when per_page is not provided" do
+        get :index
+        expect(assigns(:pagy).vars[:items]).to eq(10)
+      end
+    end
+
+    context "performed? check" do
+      it "returns early when performed? is true" do
+        allow(controller).to receive(:performed?).and_return(true)
+        
+        get :index
+        
+        expect(assigns(:restaurants)).to be_nil
+        expect(assigns(:pagy)).to be_nil
+        expect(assigns(:tags)).to be_nil
+        expect(response.body).to be_blank
+      end
+
+      it "continues processing when performed? is false" do
+        restaurant # ensure restaurant exists
+        allow(controller).to receive(:performed?).and_return(false)
+        
+        get :index
+        
+        expect(assigns(:restaurants)).to eq([restaurant])
+        expect(assigns(:pagy)).to be_present
+        expect(assigns(:tags)).to eq(ActsAsTaggableOn::Tag.most_used(10))
+      end
+    end
   end
 
   describe "GET #show" do
@@ -141,7 +206,19 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "redirects to the created restaurant" do
         post :create, params: { restaurant: valid_attributes }
-        expect(response).to redirect_to(Restaurant.last)
+        expect(response).to redirect_to(action: :show, id: Restaurant.last.id)
+      end
+
+      it "handles image upload successfully" do
+        image = fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')
+        valid_params = valid_attributes.merge(images: [image])
+        
+        expect(ImageProcessorService).to receive(:new).and_return(
+          instance_double(ImageProcessorService, process: ImageProcessorService::Result.new(success: true))
+        )
+        
+        post :create, params: { restaurant: valid_params }
+        expect(response).to redirect_to(action: :show, id: Restaurant.last.id)
       end
     end
 
@@ -217,6 +294,84 @@ RSpec.describe RestaurantsController, type: :controller do
         expect(response).to have_http_status(:unprocessable_entity)
       end
     end
+
+    context "when a StandardError occurs" do
+      let(:error_message) { "Something went wrong" }
+      
+      it "logs the error message" do
+        test_restaurant = build(:restaurant, user: user)
+        
+        allow(controller).to receive(:build_restaurant) do
+          controller.instance_variable_set(:@restaurant, test_restaurant)
+          raise StandardError.new(error_message)
+        end
+
+        expect(Rails.logger).to receive(:error).with("Error creating restaurant: Something went wrong")
+        
+        post :create, params: { restaurant: valid_attributes }
+      end
+
+      it "destroys the restaurant if it was persisted" do
+        # Create a persisted restaurant
+        test_restaurant = create(:restaurant, user: user)
+        test_restaurant.errors.add(:base, error_message)
+        
+        # Expect destroy to be called
+        expect(test_restaurant).to receive(:destroy)
+        
+        allow(controller).to receive(:build_restaurant) do
+          controller.instance_variable_set(:@restaurant, test_restaurant)
+          raise StandardError.new(error_message)
+        end
+        
+        post :create, params: { restaurant: valid_attributes }
+      end
+
+      it "doesn't destroy the restaurant if it wasn't persisted" do
+        # Create a non-persisted restaurant
+        test_restaurant = build(:restaurant, user: user)
+        test_restaurant.errors.add(:base, error_message)
+        
+        # Expect destroy NOT to be called
+        expect(test_restaurant).not_to receive(:destroy)
+        
+        allow(controller).to receive(:build_restaurant) do
+          controller.instance_variable_set(:@restaurant, test_restaurant)
+          raise StandardError.new(error_message)
+        end
+        
+        post :create, params: { restaurant: valid_attributes }
+      end
+
+      it "handles nil @restaurant" do
+        allow(controller).to receive(:build_restaurant) do
+          # Initialize an empty restaurant to avoid nil errors in handle_failed_save
+          controller.instance_variable_set(:@restaurant, Restaurant.new)
+          raise StandardError.new(error_message)
+        end
+
+        expect(Rails.logger).to receive(:error).with("Error creating restaurant: Something went wrong")
+        
+        post :create, params: { restaurant: valid_attributes }
+
+        expect(flash[:alert]).to eq(error_message)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to render_template(:new)
+      end
+
+      it "handles complete failure with nil @restaurant" do
+        allow(controller).to receive(:build_restaurant).and_raise(StandardError.new(error_message))
+        
+        expect(Rails.logger).to receive(:error).with("Error creating restaurant: Something went wrong")
+        
+        post :create, params: { restaurant: valid_attributes }
+
+        expect(flash[:alert]).to eq(error_message)
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to render_template(:new)
+        expect(assigns(:cuisine_types)).to eq(CuisineType.all)
+      end
+    end
   end
 
   describe "PUT #update" do
@@ -233,45 +388,129 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "redirects to the restaurant" do
         put :update, params: { id: restaurant.to_param, restaurant: new_attributes }
-        expect(response).to redirect_to(restaurant)
+        expect(response).to redirect_to(restaurant_path)
+      end
+
+      it "handles image upload successfully" do
+        image = fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')
+        valid_params = new_attributes.merge(images: [image])
+        
+        expect(ImageProcessorService).to receive(:new).and_return(
+          instance_double(ImageProcessorService, process: ImageProcessorService::Result.new(success: true))
+        )
+        
+        put :update, params: { id: restaurant.to_param, restaurant: valid_params }
+        expect(response).to redirect_to(restaurant_path)
       end
     end
 
     context "with invalid params" do
-      it "assigns the restaurant as @restaurant" do
-        put :update, params: { id: restaurant.to_param, restaurant: invalid_attributes }
-        expect(assigns(:restaurant)).to eq(restaurant)
+      let(:invalid_attributes) do
+        { 
+          price_level: "not_a_number",
+          cuisine_type_name: "italian"
+        }
       end
 
       it "re-renders the 'edit' template" do
+        create(:cuisine_type, name: 'italian')
+        
+        # Mock the RestaurantUpdater service
+        updater = instance_double(RestaurantUpdater)
+        allow(RestaurantUpdater).to receive(:new).and_return(updater)
+        
+        # Make update add an error to the @restaurant instance variable
+        allow(updater).to receive(:update) do
+          controller.instance_variable_get(:@restaurant).errors.add(:price_level, :not_a_number)
+          false
+        end
+        
         put :update, params: { id: restaurant.to_param, restaurant: invalid_attributes }
-        expect(response).to render_template("edit")
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to render_template(:edit)
+        expect(flash[:alert]).to eq('Price level is not a number')
       end
     end
 
     context "when an unexpected error occurs" do
       before do
-        allow_any_instance_of(RestaurantUpdater).to receive(:update).and_raise(StandardError.new("Unexpected error"))
+        allow_any_instance_of(Restaurant).to receive(:update).and_raise(StandardError.new("Unexpected error"))
       end
 
-      it "logs the error" do
-        expect(Rails.logger).to receive(:error).with(/Error updating restaurant/)
+      it "logs the error and handles the failure" do
+        expect(Rails.logger).to receive(:error).with(/Update error:/)
+        
         put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
-      end
-
-      it "sets a flash alert" do
-        put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
-        expect(flash.now[:alert]).to match(/Error updating the restaurant/)
-      end
-
-      it "renders the edit template" do
-        put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
-        expect(response).to render_template("edit")
-      end
-
-      it "returns unprocessable_entity status" do
-        put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
+        
         expect(response).to have_http_status(:unprocessable_entity)
+        expect(flash.now[:alert]).to eq("Cuisine type 'italian' is not valid")
+        expect(response).to render_template(:edit)
+      end
+    end
+
+    context "when a StandardError occurs during update" do
+      let(:error_message) { "Test error message" }
+      
+      before do
+        allow_any_instance_of(RestaurantUpdater).to receive(:update).and_raise(StandardError.new(error_message))
+      end
+
+      it "handles the error correctly" do
+        expect(Rails.logger).to receive(:error).with("Error updating restaurant #{restaurant.id}: #{error_message}")
+        
+        begin
+          put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
+        rescue ActiveRecord::Rollback
+          # Expected to raise Rollback, now check our expectations
+          expect(assigns(:cuisine_types)).to eq(CuisineType.all)
+          expect(flash[:alert]).to eq("Error updating the restaurant: #{error_message}")
+          expect(response).to render_template(:edit)
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+      end
+
+      it "raises ActiveRecord::Rollback" do
+        expect {
+          put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
+        }.to raise_error(ActiveRecord::Rollback)
+      end
+    end
+
+    context "when image processing fails" do
+      let(:failed_result) { double(success?: false, error: "Image processing error message") }
+      let(:image_file) { fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg') }
+      let(:update_params) { valid_attributes.merge(images: [image_file]) }
+      
+      before do
+        allow_any_instance_of(RestaurantUpdater).to receive(:update).and_return(true)
+        allow(ImageProcessorService).to receive(:new)
+          .and_return(double(process: failed_result))
+      end
+
+      it "raises ActiveRecord::Rollback and sets flash alert" do
+        expect {
+          put :update, params: { 
+            id: restaurant.to_param, 
+            restaurant: update_params
+          }
+        }.to raise_error(ActiveRecord::Rollback)
+
+        expect(flash[:alert]).to eq("Error updating the restaurant: Image processing failed")
+      end
+
+      it "prevents the update from being saved" do
+        begin
+          put :update, params: { 
+            id: restaurant.to_param, 
+            restaurant: update_params
+          }
+        rescue ActiveRecord::Rollback
+          # Expected
+        end
+
+        restaurant.reload
+        expect(restaurant.images).to be_empty
       end
     end
   end
@@ -292,8 +531,25 @@ RSpec.describe RestaurantsController, type: :controller do
 
   describe "POST #add_tag" do
     context "when tag is successfully added" do
-      it "redirects to the restaurant page with a success notice" do
-        post :add_tag, params: { id: restaurant.to_param, tag: "newtag" }
+      it "adds the tag when it doesn't exist" do
+        expect {
+          post :add_tag, params: { id: restaurant.to_param, tag: "newtag" }
+        }.to change { restaurant.reload.tag_list.count }.by(1)
+        
+        expect(restaurant.tag_list).to include("newtag")
+        expect(response).to redirect_to(restaurant_path(restaurant))
+        expect(flash[:notice]).to eq('Tag added successfully.')
+      end
+
+      it "doesn't duplicate the tag when it already exists" do
+        restaurant.tag_list.add("existingtag")
+        restaurant.save
+        
+        expect {
+          post :add_tag, params: { id: restaurant.to_param, tag: "existingtag" }
+        }.not_to change { restaurant.reload.tag_list.count }
+        
+        expect(restaurant.tag_list).to include("existingtag")
         expect(response).to redirect_to(restaurant_path(restaurant))
         expect(flash[:notice]).to eq('Tag added successfully.')
       end

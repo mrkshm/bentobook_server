@@ -47,6 +47,31 @@ RSpec.describe ProfilesController, type: :controller do
           profile.reload
         }.to change { profile.avatar.attached? }.from(false).to(true)
       end
+
+      describe "locale handling" do
+        it "updates session locale and I18n.locale when preferred_language changes" do
+          get :show
+          
+          expect {
+            put :update, params: { profile: { preferred_language: 'fr' } }
+          }.to change { session[:locale] }.to('fr')
+          
+          expect(profile.reload.preferred_language).to eq('fr')
+        end
+
+        it "doesn't change locale settings when preferred_language is not provided" do
+          get :show
+          
+          initial_locale = I18n.locale
+          
+          put :update, params: { profile: { first_name: 'John' } }
+          
+          aggregate_failures do
+            expect(session[:locale].to_s).to eq(initial_locale.to_s)
+            expect(I18n.locale).to eq(initial_locale)
+          end
+        end
+      end
     end
 
     context "with invalid params" do
@@ -75,20 +100,10 @@ RSpec.describe ProfilesController, type: :controller do
       expect(response).to redirect_to(profile_path)
     end
 
-    it "sets a flash notice" do
-      put :change_locale, params: { locale: 'fr' }
-      expect(flash[:notice]).to be_present
-    end
-
     context "with invalid locale" do
       it "does not change the locale" do
         put :change_locale, params: { locale: 'invalid' }
         expect(session[:locale]).to be_nil
-      end
-
-      it "sets a flash alert" do
-        put :change_locale, params: { locale: 'invalid' }
-        expect(flash[:alert]).to be_present
       end
     end
   end

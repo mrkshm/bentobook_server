@@ -47,9 +47,9 @@ class ImagesController < ApplicationController
   def edit_polymorphic_path(imageable)
     case imageable
     when Restaurant
-      edit_restaurant_path(imageable)
+      edit_restaurant_path(id: imageable.id)
     when Visit
-      edit_visit_path(imageable)
+      edit_visit_path(id: imageable.id)
     else
       root_path
     end

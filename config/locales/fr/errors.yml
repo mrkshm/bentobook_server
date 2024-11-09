@@ -1,7 +1,15 @@
 fr:
   errors:
+    images:
+      processing_failed: "Échec du traitement de l'image"
     visits:
       restaurant_required: "Un restaurant doit être sélectionné."
       update_failed: "Restaurant invalide sélectionné ou la mise à jour a échoué. Veuillez vérifier vos informations."
       not_found: "Visite non trouvée."
+      image_processing_failed: "Image processing failed. Please try again."
+      save_failed: "Échec de la sauvegarde de la visite. Veuillez vérifier le formulaire pour les erreurs."
+    restaurants:
+      image_processing_failed: "Image processing failed. Please try again."
+      create_failed: "Error creating restaurant: Image processing failed"
+      update_failed: "Error updating the restaurant: Image processing failed"
 

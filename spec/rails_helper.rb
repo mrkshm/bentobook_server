@@ -1,10 +1,17 @@
 require 'simplecov'
 
 SimpleCov.start 'rails' do
+  enable_coverage :branch
+
   add_filter '/test/'
   add_filter '/config/'
   add_filter '/vendor/'
   add_filter '/spec/'
+
+  minimum_coverage line: 90
+  minimum_coverage_by_file 80
+
+  track_files "{app,lib}/**/*.rb"
 end
 
 # This file is copied to spec/ when you run 'rails generate rspec:install'
@@ -76,12 +83,25 @@ RSpec.configure do |config|
   config.include Warden::Test::Helpers
 
   # If you're using DatabaseCleaner, make sure to clean the test database after each test
-  config.use_transactional_fixtures = false
+  config.use_transactional_fixtures = true
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
     # Clean up Active Storage blobs and attachments before suite
     FileUtils.rm_rf(Rails.root.join('tmp', 'storage'))
+
+    # Add PostGIS setup
+    ActiveRecord::Base.connection.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) 
+      VALUES (4326, 'EPSG', 4326, 
+        '+proj=longlat +datum=WGS84 +no_defs', 
+        'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]')
+      ON CONFLICT (srid) DO NOTHING;
+    SQL
+
+    # Configure Active Storage to use the test service
+    ActiveStorage::Current.url_options = { host: "localhost:3000" }
   end
 
   config.before(:each) do
@@ -99,7 +119,7 @@ RSpec.configure do |config|
   config.after(:each) do
     DatabaseCleaner.clean
     # Clean up Active Storage test files after each test
-    ActiveStorage::Blob.all.each(&:purge)
+    ActiveStorage::Blob.unattached.find_each(&:purge)
   end
 
   config.before(:each) do
@@ -117,10 +137,6 @@ RSpec.configure do |config|
   config.after(:each) do
     Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
   end
-  DatabaseCleaner.clean
-  ActiveStorage::Blob.unattached.find_each(&:purge)
-  FileUtils.rm_rf(Dir["#{Rails.root}/tmp/storage/*"])
-  RSpec::Mocks.space.reset_all
 end
 
 require 'shoulda/matchers'

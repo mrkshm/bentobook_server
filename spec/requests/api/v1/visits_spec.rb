@@ -1,13 +1,16 @@
 require 'rails_helper'
 require 'swagger_helper'
 
-RSpec.configure do |config|
-    config.before(:each) do
-      allow(ImageHandlingService).to receive(:process_images).and_return(true)
-    end
+RSpec.shared_context "visit image processing stub" do
+  before(:each) do
+    allow(ImageHandlingService).to receive(:process_images).and_return(true)
+  end
 end
 
 RSpec.describe 'Visits API', type: :request do
+  # Include the shared context only for this describe block
+  include_context "visit image processing stub"
+
   let(:user) { create(:user) }
   let(:token) { generate_jwt_token(user) }
   let(:restaurant) { create(:restaurant, user: user) }

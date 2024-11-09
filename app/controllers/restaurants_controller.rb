@@ -47,22 +47,24 @@ class RestaurantsController < ApplicationController
         
         if updater.update
           if params[:restaurant][:images].present?
-            process_images
-            if flash[:alert].present?
+            result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
+            unless result.success?
+              flash[:alert] = result.error
               raise StandardError, "Image processing failed"
             end
           end
           redirect_to restaurant_path, notice: 'Restaurant was successfully updated.'
         else
           @cuisine_types = CuisineType.all
-          flash.now[:alert] = @restaurant.errors.full_messages.join(', ')
+          flash[:alert] = @restaurant.errors.full_messages.join(', ')
           render :edit, status: :unprocessable_entity
         end
       rescue StandardError => e
         Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}"
         @cuisine_types = CuisineType.all
-        flash.now[:alert] = "Error updating the restaurant: #{e.message}"
+        flash[:alert] = "Error updating the restaurant: #{e.message}"
         render :edit, status: :unprocessable_entity
+        raise ActiveRecord::Rollback
       end
     end
   
@@ -73,8 +75,9 @@ class RestaurantsController < ApplicationController
           
           if @restaurant.save
             if params[:restaurant][:images].present?
-              process_images
-              if flash[:alert].present?
+              result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
+              unless result.success?
+                flash[:alert] = result.error
                 raise StandardError, "Image processing failed"
               end
             end
@@ -89,7 +92,7 @@ class RestaurantsController < ApplicationController
         rescue StandardError => e
           Rails.logger.error "Error creating restaurant: #{e.message}"
           @restaurant.destroy if @restaurant&.persisted?
-          flash.now[:alert] = e.message
+          flash[:alert] = e.message
           handle_failed_save
         end
       end
@@ -107,7 +110,7 @@ class RestaurantsController < ApplicationController
         if @restaurant.save
           redirect_to restaurant_path(@restaurant), notice: 'Tag added successfully.'
         else
-          flash.now[:alert] = 'Failed to add tag.'
+          flash[:alert] = 'Failed to add tag.'
           render :show
         end
       else
@@ -122,7 +125,7 @@ class RestaurantsController < ApplicationController
         if @restaurant.save
           redirect_to restaurant_path(@restaurant), notice: 'Tag removed successfully.'
         else
-          flash.now[:alert] = 'Failed to remove tag.'
+          flash[:alert] = 'Failed to remove tag.'
           render :show
         end
       else
@@ -137,12 +140,12 @@ class RestaurantsController < ApplicationController
       order_direction = params[:order_direction] || RestaurantQuery::DEFAULT_ORDER[:direction]
 
       unless RestaurantQuery::ALLOWED_ORDER_FIELDS.include?(order_field)
-        flash.now[:alert] = 'Invalid order_by parameter. Using default sorting.'
+        flash[:alert] = 'Invalid order_by parameter. Using default sorting.'
         order_field = RestaurantQuery::DEFAULT_ORDER[:field]
       end
 
       unless valid_order_direction?(order_direction)
-        flash.now[:alert] = 'Invalid order_direction parameter. Using default direction.'
+        flash[:alert] = 'Invalid order_direction parameter. Using default direction.'
         order_direction = RestaurantQuery::DEFAULT_ORDER[:direction]
       end
 
@@ -207,38 +210,22 @@ class RestaurantsController < ApplicationController
   
     def handle_failed_save
       @cuisine_types = CuisineType.all
-      flash.now[:alert] = @restaurant.errors.full_messages.join(', ')
+      flash[:alert] = if @restaurant&.errors&.any?
+                        @restaurant.errors.full_messages.join(', ')
+                      else
+                        flash[:alert] # Keep existing flash message if no restaurant errors
+                      end
       render :new, status: :unprocessable_entity
     end
   
     def handle_invalid_cuisine_type
       @cuisine_types = CuisineType.all
-      flash.now[:alert] = "Invalid cuisine type: #{restaurant_params[:cuisine_type_name]}. Available types: #{@cuisine_types.pluck(:name).join(', ')}"
+      flash[:alert] = "Invalid cuisine type: #{restaurant_params[:cuisine_type_name]}. Available types: #{@cuisine_types.pluck(:name).join(', ')}"
       render :new, status: :unprocessable_entity
     end
   
-    def process_images
-      return unless params[:restaurant][:images].present?
-      
-      images = Array(params[:restaurant][:images]).reject(&:blank?)
-      
-      Rails.logger.info "Processing #{images.length} images"
-      
-      images.each do |image|
-        unless image.respond_to?(:content_type)
-          Rails.logger.error "Image failed content_type check: #{image.class}"
-          flash[:alert] = t('errors.restaurants.image_processing_failed')
-          return false
-        end
-        
-        @restaurant.images.create!(file: image)
-      end
-      
-      true
-    rescue StandardError => e
-      Rails.logger.error "Image processing failed: #{e.message}"
-      flash[:alert] = t('errors.restaurants.image_processing_failed')
-      false
+    def set_restaurant
+      @restaurant = current_user.restaurants.find(params[:id])
     end
   
   end

@@ -7,7 +7,6 @@ class Contact < ApplicationRecord
 
   validates :name, presence: true, uniqueness: { scope: :user_id }
 
-  after_commit :process_avatar_variants, if: :avatar_changed?
 
   scope :search, ->(query) {
     return all unless query.present?
@@ -30,10 +29,5 @@ class Contact < ApplicationRecord
   def avatar_changed?
     saved_changes.key?('avatar_attachment_id') || 
       attachment_changes['avatar'].present?
-  end
-
-  def process_avatar_variants
-    Rails.logger.info "Processing avatar variants for Contact #{id}"
-    generate_image_variants(:avatar)
   end
 end

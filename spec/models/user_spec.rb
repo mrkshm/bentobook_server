@@ -75,5 +75,27 @@ RSpec.describe User, type: :model do
         expect { user.lock_access! }.to change { user.access_locked? }.from(false).to(true)
       end
     end
+
+    describe '#jwt_revoked?' do
+      let(:user) { create(:user) }
+      let(:payload) { { 'jti' => SecureRandom.uuid, 'exp' => 1.hour.from_now.to_i } }
+
+      it 'returns false for any token (no revocation)' do
+        expect(user.send(:jwt_revoked?, payload, user)).to be false
+      end
+
+      it 'accepts payload and user parameters' do
+        expect { user.send(:jwt_revoked?, payload, user) }.not_to raise_error
+      end
+
+      it 'handles different payload formats' do
+        different_payload = { 'sub' => user.id, 'iat' => Time.current.to_i }
+        expect(user.send(:jwt_revoked?, different_payload, user)).to be false
+      end
+
+      it 'handles nil payload' do
+        expect(user.send(:jwt_revoked?, nil, user)).to be false
+      end
+    end
   end
 end

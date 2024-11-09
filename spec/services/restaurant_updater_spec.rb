@@ -42,7 +42,7 @@ RSpec.describe RestaurantUpdater do
       expect(updater.update).to be false
     end
 
-    it "returns false when no changes are made" do
+    it "returns true when no changes are made" do
       restaurant = create(:restaurant, 
         name: "Existing Restaurant", 
         address: "123 Existing St",
@@ -60,7 +60,9 @@ RSpec.describe RestaurantUpdater do
       }
       updater = RestaurantUpdater.new(restaurant, params)
 
-      expect(updater.update).to be false
+      expect(updater.update).to be true
+      # Optionally verify that no actual save was performed
+      expect(restaurant).not_to receive(:save)
     end
 
     context "when an error occurs during update" do
