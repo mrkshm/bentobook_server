@@ -68,45 +68,99 @@ RSpec.describe AvatarComponent, type: :component do
   end
 
   describe "variant size mapping" do
+    let(:model_name) do
+      double("ActiveModel::Name").tap do |name|
+        allow(name).to receive(:param_key).and_return("blob")
+        allow(name).to receive(:name).and_return("ActiveStorage::Blob")
+      end
+    end
+
+    let(:mock_blob) do
+      double("ActiveStorage::Blob").tap do |blob|
+        allow(blob).to receive(:signed_id).and_return("blob_123")
+        allow(blob).to receive(:filename).and_return("test.jpg")
+        allow(blob).to receive(:content_type).and_return("image/jpeg")
+        allow(blob).to receive(:to_i).and_return(123)
+        allow(blob).to receive(:to_model).and_return(blob)
+        allow(blob).to receive(:model_name).and_return(model_name)
+      end
+    end
+
+    let(:mock_variant) do
+      double("ActiveStorage::Variant").tap do |variant|
+        allow(variant).to receive(:processed).and_return(true)
+        allow(variant).to receive(:url).and_return("https://example.com/variant.jpg")
+        allow(variant).to receive(:to_model).and_return(variant)
+        allow(variant).to receive(:model_name).and_return(model_name)
+        allow(variant).to receive(:filename).and_return("test.jpg")
+        allow(variant).to receive(:blob).and_return(mock_blob)
+        allow(variant).to receive(:representation).and_return(variant)
+        allow(variant).to receive(:variation).and_return(variant)
+        allow(variant).to receive(:key).and_return("variant_key_123")
+      end
+    end
+
+    let(:mock_avatar) do
+      double("ActiveStorage::Attachment").tap do |avatar|
+        allow(avatar).to receive(:attached?).and_return(true)
+        allow(avatar).to receive(:blob).and_return(mock_blob)
+        allow(avatar).to receive(:variant).and_return(mock_variant)
+        allow(avatar).to receive(:url).and_return("https://example.com/test.jpg")
+      end
+    end
+
+    let(:mock_profile) do
+      double("Profile").tap do |profile|
+        allow(profile).to receive(:is_a?).with(Contact).and_return(false)
+        allow(profile).to receive(:avatar).and_return(mock_avatar)
+        allow(profile).to receive(:respond_to?).with(:avatar).and_return(true)
+      end
+    end
+
+    let(:mock_user) do
+      double("User").tap do |user|
+        allow(user).to receive(:is_a?).with(User).and_return(true)
+        allow(user).to receive(:profile).and_return(mock_profile)
+      end
+    end
+
     before do
-      profile.avatar.attach(
-        io: File.open(Rails.root.join("spec", "fixtures", "avatar.jpg")),
-        filename: "avatar.jpg",
-        content_type: "image/jpeg"
-      )
-      
-      # Stub the render method to prevent actual rendering
-      allow_any_instance_of(AvatarComponent).to receive(:render) do |_, component|
-        # Store the component for verification
-        @rendered_component = component
+      allow(mock_avatar).to receive(:variant) do |options|
+        @last_variant_options = options
+        mock_variant
       end
     end
 
     it "maps :small size to :thumbnail variant" do
-      render_inline(AvatarComponent.new(user: user, size: :small))
-      
-      expect(@rendered_component).to be_a(S3ImageComponent)
-      expect(@rendered_component.size).to eq(:thumbnail)
-      expect(@rendered_component.html_class).to eq("rounded-full")
-      expect(@rendered_component.image).to eq(profile.avatar)
+      render_inline(AvatarComponent.new(user: mock_user, size: :small))
+      expect(@last_variant_options).to eq(
+        resize_to_fill: [100, 100],
+        format: :webp,
+        saver: { quality: 80 }
+      )
     end
 
     it "maps :large size to :medium variant" do
-      render_inline(AvatarComponent.new(user: user, size: :large))
-      
-      expect(@rendered_component).to be_a(S3ImageComponent)
-      expect(@rendered_component.size).to eq(:medium)
-      expect(@rendered_component.html_class).to eq("rounded-full")
-      expect(@rendered_component.image).to eq(profile.avatar)
+      render_inline(AvatarComponent.new(user: mock_user, size: :large))
+      expect(@last_variant_options).to eq(
+        resize_to_limit: [600, 400],
+        format: :webp,
+        saver: { quality: 80 }
+      )
     end
 
     it "uses :medium variant for default size" do
-      render_inline(AvatarComponent.new(user: user))
-      
-      expect(@rendered_component).to be_a(S3ImageComponent)
-      expect(@rendered_component.size).to eq(:medium)
-      expect(@rendered_component.html_class).to eq("rounded-full")
-      expect(@rendered_component.image).to eq(profile.avatar)
+      render_inline(AvatarComponent.new(user: mock_user))
+      expect(@last_variant_options).to eq(
+        resize_to_limit: [600, 400],
+        format: :webp,
+        saver: { quality: 80 }
+      )
+    end
+
+    it "applies rounded-full class to the image" do
+      render_inline(AvatarComponent.new(user: mock_user))
+      expect(page).to have_css("img.rounded-full")
     end
   end
 

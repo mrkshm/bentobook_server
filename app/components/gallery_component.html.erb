@@ -1,11 +1,21 @@
-<div class="<%= grid_classes %>">
-  <% @images.each do |image| %>
+<div class="<%= grid_classes %>" data-controller="gallery">
+  <% @images.each_with_index do |image, index| %>
     <div class="aspect-w-3 aspect-h-2">
       <%= render(S3ImageComponent.new(
         image: image,
         size: :medium,
-        html_class: image_classes
+        html_class: image_classes,
+        data: { 
+          action: "click->gallery#openModal",
+          gallery_index_param: index
+        }
       )) %>
     </div>
+
+    <%= render(GalleryModalComponent.new(
+      image: image,
+      total_count: @images.size,
+      current_index: index
+    )) %>
   <% end %>
 </div>

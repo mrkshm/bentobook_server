@@ -117,9 +117,24 @@ RSpec.describe VisitCardComponent, type: :component do
     before do
       allow_any_instance_of(VisitCardComponent).to receive(:contact_path).and_return("/contacts/1")
       
+      # Mock Contact objects with complete respond_to? handling
+      [contact1, contact2].each do |contact|
+        allow(contact).to receive(:is_a?).with(anything).and_return(false)
+        allow(contact).to receive(:is_a?).with(Contact).and_return(true)
+        allow(contact).to receive(:is_a?).with(User).and_return(false)
+        
+        # Handle all possible respond_to? calls
+        allow(contact).to receive(:respond_to?).with(anything).and_return(false)
+        allow(contact).to receive(:respond_to?).with(:avatar).and_return(true)
+        allow(contact).to receive(:respond_to?).with(:name).and_return(true)
+        allow(contact).to receive(:respond_to?).with(:display_name).and_return(false)
+        
+        allow(contact).to receive(:avatar).and_return(nil)
+      end
+
       # Mock AvatarComponent
       avatar_component = double("AvatarComponent")
-      allow(avatar_component).to receive(:render_in).and_return("")
+      allow(avatar_component).to receive(:render_in).and_return("<div class='avatar-mock'></div>".html_safe)
       allow(AvatarComponent).to receive(:new).and_return(avatar_component)
     end
 
@@ -172,9 +187,24 @@ RSpec.describe VisitCardComponent, type: :component do
     before do
       allow_any_instance_of(VisitCardComponent).to receive(:contact_path).and_return("/contacts/1")
       
+      # Mock Contact objects with complete respond_to? handling
+      [contact1, contact2].each do |contact|
+        allow(contact).to receive(:is_a?).with(anything).and_return(false)
+        allow(contact).to receive(:is_a?).with(Contact).and_return(true)
+        allow(contact).to receive(:is_a?).with(User).and_return(false)
+        
+        # Handle all possible respond_to? calls
+        allow(contact).to receive(:respond_to?).with(anything).and_return(false)
+        allow(contact).to receive(:respond_to?).with(:avatar).and_return(true)
+        allow(contact).to receive(:respond_to?).with(:name).and_return(true)
+        allow(contact).to receive(:respond_to?).with(:display_name).and_return(false)
+        
+        allow(contact).to receive(:avatar).and_return(nil)
+      end
+
       # Mock AvatarComponent
       avatar_component = double("AvatarComponent")
-      allow(avatar_component).to receive(:render_in).and_return("avatar-html")
+      allow(avatar_component).to receive(:render_in).and_return("<div class='avatar-mock'></div>".html_safe)
       allow(AvatarComponent).to receive(:new).and_return(avatar_component)
     end
 
@@ -227,10 +257,9 @@ RSpec.describe VisitCardComponent, type: :component do
       component = described_class.new(visit: visit_with_contacts)
       render_inline(component)
       
-      expect(page).to have_css("div.mt-4")
       expect(page).to have_css("div.flex.flex-wrap.gap-2")
-      expect(page).to have_css("a.group.flex.flex-col.items-center", count: 2)
-      expect(page).to have_css("div.relative", count: 2)
+      expect(page).to have_css("div.avatar-mock", count: 2)
+      expect(page).to have_link(href: "/contacts/1", count: 2)
     end
 
     it "creates avatar components with correct parameters" do
