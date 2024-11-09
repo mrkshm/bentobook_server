@@ -36,19 +36,92 @@ RSpec.describe GalleryComponent, type: :component do
       allow(image).to receive(:attached?).and_return(true)
       allow(image).to receive(:blob).and_return(mock_blob)
       allow(image).to receive(:variant).and_return(mock_variant)
+      allow(image).to receive(:file).and_return(image)
     end
   end
 
   let(:images) { [mock_image] }
 
+  before do
+    allow_any_instance_of(S3ImageComponent).to receive(:render_in).and_wrap_original do |method, context|
+      puts "Rendering S3ImageComponent with class: #{method.receiver.instance_variable_get(:@html_class)}"
+      puts "Rendering S3ImageComponent with data: #{method.receiver.instance_variable_get(:@data)}"
+      
+      context.tag.img(
+        src: "https://example.com/test.jpg",
+        class: method.receiver.instance_variable_get(:@html_class),
+        data: method.receiver.instance_variable_get(:@data)
+      )
+    end
+  end
+
   it "renders a single image in a grid" do
-    render_inline(GalleryComponent.new(images: images))
+    result = render_inline(GalleryComponent.new(images: images))
+    
     expect(page).to have_css("div.grid")
-    expect(page).to have_css("img", count: 1)
+    expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 1)
   end
 
   it "handles empty images array" do
     render_inline(GalleryComponent.new(images: []))
     expect(page).to have_css("div.grid")
+  end
+
+  it "renders with custom column count" do
+    render_inline(GalleryComponent.new(images: images, columns: 4))
+    expect(page).to have_css(".grid-cols-1")
+    expect(page).to have_css(".lg\\:grid-cols-4")
+  end
+
+  describe "modal integration" do
+    before do
+      render_inline(GalleryComponent.new(images: images))
+    end
+
+    it "includes clickable images with modal trigger" do
+      expect(page).to have_css("img[data-action='click->gallery#openModal']")
+      expect(page).to have_css("img[data-gallery-index-param='0']")
+    end
+
+    it "renders modal component for each image" do
+      expect(page).to have_css("[data-controller='modal']")
+      expect(page).to have_css("#gallery-modal-0")
+    end
+
+    it "applies correct classes to images" do
+      expect(page).to have_css(".aspect-w-3.aspect-h-2")
+      expect(page).to have_css("img.cursor-pointer")
+      expect(page).to have_css("img.hover\\:shadow-md")
+    end
+  end
+
+  describe "with multiple images" do
+    let(:images) { [mock_image, mock_image, mock_image] }
+
+    it "renders multiple images with corresponding modals" do
+      render_inline(GalleryComponent.new(images: images))
+      
+      expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 3)
+      expect(page).to have_css("[data-controller='modal']", count: 3)
+      
+      3.times do |i|
+        expect(page).to have_css("#gallery-modal-#{i}")
+        expect(page).to have_css("img[data-gallery-index-param='#{i}']")
+      end
+    end
+
+    it "renders both grid and modal images" do
+      render_inline(GalleryComponent.new(images: images))
+      
+      # Grid images (with cursor-pointer class)
+      expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 3)
+      # Modal images (with object-contain class)
+      expect(page).to have_css("img.object-contain[src='https://example.com/test.jpg']", count: 3)
+      # Total
+      expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 3)
+      # Modal images (with object-contain class)
+      expect(page).to have_css("img.object-contain[src='https://example.com/test.jpg']", count: 3)
+      # Total
+    end
   end
 end

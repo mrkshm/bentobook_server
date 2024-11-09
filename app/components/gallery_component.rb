@@ -11,6 +11,6 @@ class GalleryComponent < ViewComponent::Base
   end
   
   def image_classes
-    "w-full h-64 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+    "w-full h-64 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
   end
 end

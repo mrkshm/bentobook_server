@@ -1,0 +1,39 @@
+<div id="<%= modal_id %>"
+     data-controller="modal"
+     data-action="keydown@window->modal#closeWithKeyboard"
+     class="fixed inset-0 z-50 hidden transition-opacity duration-300"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="<%= modal_id %>-title">
+  
+  <!-- Backdrop with click handler -->
+  <div class="fixed inset-0 bg-black/75 cursor-pointer transition-opacity duration-300 ease-in-out opacity-0"
+       data-modal-target="overlay"
+       data-action="click->modal#close">
+  </div>
+
+  <!-- Modal content -->
+  <div class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[52] transition-all duration-300 ease-in-out opacity-0 scale-95"
+       data-modal-target="content">
+    <div class="relative transform overflow-hidden rounded-lg bg-black shadow-xl max-w-7xl">
+      <!-- Close button -->
+      <button type="button"
+              class="absolute right-4 top-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white z-[60]"
+              data-action="click->modal#close">
+        <span class="sr-only">Close</span>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Image -->
+      <div class="relative">
+        <%= render(S3ImageComponent.new(
+          image: @image,
+          size: :large,
+          html_class: "w-full h-auto max-h-[80vh] object-contain"
+        )) %>
+      </div>
+    </div>
+  </div>
+</div>
