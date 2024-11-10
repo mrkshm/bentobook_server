@@ -1,12 +1,21 @@
 class GalleryModalComponent < ViewComponent::Base
-  def initialize(image:, total_count:, current_index:)
+  def initialize(image:, images:, total_count:, current_index:)
     @image = image
+    @images = images
     @total_count = total_count
     @current_index = current_index
+    @preload_images = calculate_preload_images
   end
   
   private
   
+  def calculate_preload_images
+    indices = [@current_index - 1, @current_index + 1].select do |i|
+      i >= 0 && i < @total_count
+    end
+    indices
+  end
+
   def modal_id
     "gallery-modal-#{@current_index}"
   end

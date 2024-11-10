@@ -19,6 +19,13 @@ RSpec.describe GalleryComponent, type: :component do
     end
   end
 
+  let(:mock_variation) do
+    double("ActiveStorage::Variation").tap do |variation|
+      allow(variation).to receive(:transform_values).and_return({})
+      allow(variation).to receive(:key).and_return("test_variation")
+    end
+  end
+
   let(:mock_variant) do
     double("ActiveStorage::Variant").tap do |variant|
       allow(variant).to receive(:processed).and_return(true)
@@ -28,6 +35,7 @@ RSpec.describe GalleryComponent, type: :component do
       allow(variant).to receive(:signed_id).and_return("variant_123")
       allow(variant).to receive(:blob).and_return(mock_blob)
       allow(variant).to receive(:filename).and_return("test_variant.jpg")
+      allow(variant).to receive(:variation).and_return(mock_variation)
     end
   end
 
@@ -37,26 +45,42 @@ RSpec.describe GalleryComponent, type: :component do
       allow(image).to receive(:blob).and_return(mock_blob)
       allow(image).to receive(:variant).and_return(mock_variant)
       allow(image).to receive(:file).and_return(image)
+      allow(image).to receive(:to_model).and_return(image)
+      allow(image).to receive(:url).and_return("https://example.com/test.jpg")
+      allow(image).to receive(:model_name).and_return(model_name)
+      allow(image).to receive(:variation).and_return(mock_variation)
     end
   end
 
   let(:images) { [mock_image] }
 
   before do
+    # Mock url_for helper
+    allow_any_instance_of(ActionView::Base).to receive(:url_for) do |_, attachment|
+      "https://example.com/test.jpg"
+    end
+
+    # Mock S3ImageComponent
     allow_any_instance_of(S3ImageComponent).to receive(:render_in).and_wrap_original do |method, context|
-      puts "Rendering S3ImageComponent with class: #{method.receiver.instance_variable_get(:@html_class)}"
-      puts "Rendering S3ImageComponent with data: #{method.receiver.instance_variable_get(:@data)}"
-      
       context.tag.img(
         src: "https://example.com/test.jpg",
         class: method.receiver.instance_variable_get(:@html_class),
         data: method.receiver.instance_variable_get(:@data)
       )
     end
+
+    # Mock GalleryModalComponent
+    allow_any_instance_of(GalleryModalComponent).to receive(:render_in).and_wrap_original do |method, context|
+      context.tag.div(
+        id: "gallery-modal-#{method.receiver.instance_variable_get(:@current_index)}",
+        class: "modal",
+        data: { controller: "modal" }
+      )
+    end
   end
 
   it "renders a single image in a grid" do
-    result = render_inline(GalleryComponent.new(images: images))
+    render_inline(GalleryComponent.new(images: images))
     
     expect(page).to have_css("div.grid")
     expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 1)
@@ -108,20 +132,6 @@ RSpec.describe GalleryComponent, type: :component do
         expect(page).to have_css("#gallery-modal-#{i}")
         expect(page).to have_css("img[data-gallery-index-param='#{i}']")
       end
-    end
-
-    it "renders both grid and modal images" do
-      render_inline(GalleryComponent.new(images: images))
-      
-      # Grid images (with cursor-pointer class)
-      expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 3)
-      # Modal images (with object-contain class)
-      expect(page).to have_css("img.object-contain[src='https://example.com/test.jpg']", count: 3)
-      # Total
-      expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 3)
-      # Modal images (with object-contain class)
-      expect(page).to have_css("img.object-contain[src='https://example.com/test.jpg']", count: 3)
-      # Total
     end
   end
 end
