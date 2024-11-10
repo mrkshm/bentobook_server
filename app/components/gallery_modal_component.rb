@@ -10,4 +10,12 @@ class GalleryModalComponent < ViewComponent::Base
   def modal_id
     "gallery-modal-#{@current_index}"
   end
+
+  def can_go_previous?
+    @current_index > 0
+  end
+
+  def can_go_next?
+    @current_index < @total_count - 1
+  end
 end

@@ -11,10 +11,8 @@ class ImageProcessorService
     @logger.info "Processing #{@images.length} images"
     
     @images.each do |image|
-      unless image.respond_to?(:content_type) && image.respond_to?(:original_filename)
-        @logger.error "Image failed content_type check: #{image.class}"
-        return Result.new(success: false, error: I18n.t('errors.images.processing_failed'))
-      end
+      # Skip if image is not a proper file upload
+      next unless valid_image?(image)
       
       @record.images.create!(file: image)
     end
@@ -23,6 +21,23 @@ class ImageProcessorService
   rescue StandardError => e
     @logger.error "Image processing failed: #{e.message}"
     Result.new(success: false, error: I18n.t('errors.images.processing_failed'))
+  end
+
+  private
+
+  def valid_image?(image)
+    puts "\nValidating image: #{image.inspect}"
+    puts "Image responds to content_type? #{image.respond_to?(:content_type)}"
+    puts "Image responds to original_filename? #{image.respond_to?(:original_filename)}"
+    
+    return false unless image.respond_to?(:content_type) && image.respond_to?(:original_filename)
+    return false unless image.content_type&.start_with?('image/')
+    
+    true
+  rescue StandardError => e
+    puts "\nValidation error occurred: #{e.message}"
+    @logger.error "Image validation failed: #{e.message} for image: #{image.inspect}"
+    false
   end
 
   class Result

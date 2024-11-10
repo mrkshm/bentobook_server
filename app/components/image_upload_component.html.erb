@@ -6,6 +6,7 @@
     <%= form.file_field :images, 
                         multiple: true, 
                         accept: 'image/*',
+                        name: "#{form.object_name}[images][]",
                         data: { 
                           image_preview_target: "input",
                           action: "change->image-preview#handleFiles"

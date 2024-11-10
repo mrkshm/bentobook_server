@@ -46,13 +46,18 @@ class RestaurantsController < ApplicationController
         updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
         
         if updater.update
-          if params[:restaurant][:images].present?
+          if params[:restaurant]&.dig(:images)&.any? { |img| img.respond_to?(:content_type) }
+            Rails.logger.info "Processing new images"
             result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
             unless result.success?
+              Rails.logger.error "Image processing failed: #{result.error}"
               flash[:alert] = result.error
               raise StandardError, "Image processing failed"
             end
+          else
+            Rails.logger.info "No valid image files found in params"
           end
+          
           redirect_to restaurant_path, notice: 'Restaurant was successfully updated.'
         else
           @cuisine_types = CuisineType.all

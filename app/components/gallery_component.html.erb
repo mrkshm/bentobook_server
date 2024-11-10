@@ -1,4 +1,4 @@
-<div class="<%= grid_classes %>" data-controller="gallery">
+<div class="<%= grid_classes %>" data-controller="gallery" data-gallery-total-count-value="<%= @images.size %>">
   <% @images.each_with_index do |image, index| %>
     <div class="aspect-w-3 aspect-h-2">
       <%= render(S3ImageComponent.new(
