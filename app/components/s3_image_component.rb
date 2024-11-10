@@ -63,7 +63,8 @@ class S3ImageComponent < ViewComponent::Base
       class: html_class,
       alt: "Image",
       loading: "lazy",
-      data: @data
+      data: @data,
+      decoding: "async"
     }
   end
 end

@@ -1,0 +1,8 @@
+[data-gallery-target="loader"][data-state="loaded"],
+[data-gallery-target="loader"][data-state="error"] {
+  display: none;
+}
+
+[data-gallery-target="loader"][data-state="loading"] {
+  display: flex;
+}
