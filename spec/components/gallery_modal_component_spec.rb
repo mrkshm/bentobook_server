@@ -105,4 +105,37 @@ RSpec.describe GalleryModalComponent, type: :component do
     expect(page).to have_css(".hidden")
     expect(page).to have_css(".opacity-0")
   end
+
+  it "renders navigation buttons when appropriate" do
+    render_inline(GalleryModalComponent.new(
+      image: mock_image,
+      total_count: 3,
+      current_index: 1
+    ))
+
+    expect(page).to have_css("[data-action='click->gallery#previous']")
+    expect(page).to have_css("[data-action='click->gallery#next']")
+  end
+
+  it "doesn't render previous button on first image" do
+    render_inline(GalleryModalComponent.new(
+      image: mock_image,
+      total_count: 3,
+      current_index: 0
+    ))
+
+    expect(page).not_to have_css("[data-action='click->gallery#previous']")
+    expect(page).to have_css("[data-action='click->gallery#next']")
+  end
+
+  it "doesn't render next button on last image" do
+    render_inline(GalleryModalComponent.new(
+      image: mock_image,
+      total_count: 3,
+      current_index: 2
+    ))
+
+    expect(page).to have_css("[data-action='click->gallery#previous']")
+    expect(page).not_to have_css("[data-action='click->gallery#next']")
+  end
 end
