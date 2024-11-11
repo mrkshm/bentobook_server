@@ -32,24 +32,24 @@
         <p><%= t('.cuisine', type: restaurant.cuisine_type.name) %></p>
       <% end %>
       
-      <% if restaurant.price %>
-        <p><%= t('.price', range: '$' * restaurant.price) %></p>
+      <% if restaurant.price_level %>
+        <p><%= t('.price', range: '$' * restaurant.price_level) %></p>
       <% end %>
       
-      <% if restaurant.address %>
+      <% if restaurant.address.present? %>
         <p><%= t('.address', address: restaurant.address) %></p>
       <% end %>
       
-      <% if restaurant.phone %>
-        <p><%= t('.phone', number: restaurant.phone) %></p>
+      <% if restaurant.phone_number.present? %>
+        <p><%= t('.phone', number: restaurant.phone_number) %></p>
       <% end %>
       
       <% if restaurant.notes.present? %>
         <p><%= restaurant.notes %></p>
       <% end %>
       
-      <% if restaurant.website %>
-        <p><%= link_to restaurant.website, restaurant.website %></p>
+      <% if restaurant.url.present? %>
+        <p><%= link_to restaurant.url, restaurant.url %></p>
       <% end %>
     </div>
   <% end %>
