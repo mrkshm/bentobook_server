@@ -1,0 +1,4 @@
+fr:
+  list_mailer:
+    export:
+      subject: "Liste de Restaurants: %{list}"

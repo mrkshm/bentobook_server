@@ -40,6 +40,9 @@ fr:
       title: "Partager la Liste par Email"
       email_label: "Email du Destinataire"
       email_placeholder: "Entrez l'adresse email"
+      include_stats: "Inclure les statistiques de la liste"
+      include_notes: "Inclure les notes des restaurants"
       send: "Envoyer la Liste"
     export:
-      email_sent: "La liste a été envoyée à %{email}"
+      email_sent: "La liste '%{list}' a été envoyée à %{email}"
+      markdown_exported: "La liste a été exportée en markdown"

@@ -1,13 +1,11 @@
 class ListMailer < ApplicationMailer
-  def export(list, recipient_email)
+  def export(list, recipient_email, options = {})
     @list = list
-    @content = ListMarkdownExporter.new(list).generate
-    @sender = list.owner
+    @options = options
     
     mail(
       to: recipient_email,
-      subject: t('.subject', list: list.name),
-      reply_to: @sender.email
+      subject: t('.subject', list: list.name)
     )
   end
 end

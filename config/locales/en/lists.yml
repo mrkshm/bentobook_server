@@ -39,6 +39,9 @@ en:
       title: "Share List via Email"
       email_label: "Recipient Email"
       email_placeholder: "Enter email address"
+      include_stats: "Include list statistics"
+      include_notes: "Include restaurant notes"
       send: "Send List"
     export:
-      email_sent: "List has been sent to %{email}"
+      email_sent: "List '%{list}' has been sent to %{email}"
+      markdown_exported: "List has been exported to markdown"

@@ -9,6 +9,49 @@
   </style>
 </head>
 <body>
-  <%= simple_format(@content.gsub(/^#+ /, '')) %>
+  <h1><%= @list.name %></h1>
+
+  <% if @list.description.present? %>
+    <p><%= @list.description %></p>
+  <% end %>
+
+  <h2><%= t('.list_info') %></h2>
+  <ul>
+    <li><%= t('.total_restaurants', count: @list.total_restaurants) %></li>
+    <li><%= t('.visited_count', visited: @list.visited_count, total: @list.total_restaurants, percentage: @list.visited_percentage) %></li>
+    <li><%= t('.last_updated', date: l(@list.last_updated_at, format: :long)) %></li>
+    <li><%= t('.visibility', visibility: t("lists.show.#{@list.visibility}")) %></li>
+  </ul>
+
+  <h2><%= t('.restaurants') %></h2>
+
+  <% @list.restaurants.order(:name).each do |restaurant| %>
+    <h3><%= restaurant.name %></h3>
+    <div class="restaurant-info">
+      <% if restaurant.cuisine_type %>
+        <p><%= t('.cuisine', type: restaurant.cuisine_type.name) %></p>
+      <% end %>
+      
+      <% if restaurant.price %>
+        <p><%= t('.price', range: '$' * restaurant.price) %></p>
+      <% end %>
+      
+      <% if restaurant.address %>
+        <p><%= t('.address', address: restaurant.address) %></p>
+      <% end %>
+      
+      <% if restaurant.phone %>
+        <p><%= t('.phone', number: restaurant.phone) %></p>
+      <% end %>
+      
+      <% if restaurant.notes.present? %>
+        <p><%= restaurant.notes %></p>
+      <% end %>
+      
+      <% if restaurant.website %>
+        <p><%= link_to restaurant.website, restaurant.website %></p>
+      <% end %>
+    </div>
+  <% end %>
 </body>
 </html>

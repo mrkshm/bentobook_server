@@ -1,4 +1,9 @@
 <div class="container mx-auto px-4 py-8">
+  <div id="flash">
+    <%= render 'shared/flash' %>
+  </div>
+  <div id="download"></div>
+
   <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
       <div class="flex justify-between items-center">
@@ -96,7 +101,13 @@
   </label>
   <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
     <li>
-      <%= link_to list_path(id: @list.id, format: :text) do %>
+      <%= link_to export_list_path(id: @list.id, format: :text),
+          data: { 
+            turbo: false,
+            controller: "flash",
+            action: "click->flash#showMessage",
+            message: t('.markdown_exported')
+          } do %>
         <%= heroicon "document", options: { class: "w-4 h-4 mr-2" } %>
         <%= t('.export_markdown') %>
       <% end %>

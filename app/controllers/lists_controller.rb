@@ -19,15 +19,6 @@ class ListsController < ApplicationController
       'cuisine_types.name' => t('restaurants.attributes.cuisine_type'),
       'created_at' => t('common.sort.recently_added'),
     }
-
-    respond_to do |format|
-      format.html
-      format.text do
-        send_data ListMarkdownExporter.new(@list).generate,
-                  filename: "#{@list.name.parameterize}-restaurants.md",
-                  type: 'text/markdown'
-      end
-    end
   end
 
   def new
@@ -65,15 +56,34 @@ class ListsController < ApplicationController
     
     respond_to do |format|
       format.text do
-        send_data ListMarkdownExporter.new(@list).generate,
-                  filename: "#{@list.name.parameterize}-restaurants.md",
-                  type: 'text/markdown'
+        content = ListMarkdownExporter.new(@list).generate
+        response.headers['Content-Type'] = 'text/markdown'
+        response.headers['Content-Disposition'] = "attachment; filename=\"#{@list.name.parameterize}-restaurants.md\""
+        render plain: content
+      end
+      
+      format.turbo_stream do
+        if params[:email].present?
+          options = {
+            include_stats: params[:include_stats] == '1',
+            include_notes: params[:include_notes] == '1'
+          }
+          
+          ListMailer.export(@list, params[:email], options).deliver_later
+          
+          render turbo_stream: [
+            turbo_stream.update("modal", ""),
+            turbo_stream.append("flash", 
+              partial: "shared/flash", 
+              locals: { flash: { success: t('.email_sent', email: params[:email], list: @list.name) } })
+          ]
+        end
       end
       
       format.html do
         if params[:email].present?
-          ListMailer.export(@list, params[:email]).deliver_later
-          redirect_to @list, notice: t('.email_sent', email: params[:email])
+          redirect_to list_path(@list), 
+                      success: t('.email_sent', email: params[:email], list: @list.name)
         else
           render :export_modal, layout: false
         end
