@@ -24,6 +24,8 @@ class User < ApplicationRecord
   has_one :profile, dependent: :destroy
   after_create :ensure_profile
 
+  has_many :lists, as: :owner, dependent: :destroy
+
   def all_tags
     Restaurant.where(user_id: id).tag_counts_on(:tags)
   end

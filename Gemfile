@@ -38,6 +38,8 @@ gem "alba"
 
 gem "pg_search"
 
+gem 'acts_as_list'
+
 gem "heroicon"
 
 gem "view_component"

@@ -1,0 +1,32 @@
+fr:
+  lists:
+    name_placeholder: "Nom de la liste"
+    form:
+      name: "Nom"
+      name_placeholder: "Nom de la liste"
+      description: "Description"
+      description_placeholder: "Description de la liste"
+      visibility: "Visibilité"
+    index:
+      title: "Mes Listes"
+      new_list: "Nouvelle Liste"
+    new:
+      title: "Nouvelle Liste"
+    edit:
+      title: "Modifier la Liste"
+    form:
+      personal: "Personnel"
+      restricted: "Restreint"
+      discoverable: "Découvrable"
+      manage_restaurants: "Gérer les Restaurants"
+    show:
+      restaurants: "Restaurants dans cette Liste"
+      personal: "Personnel"
+      restricted: "Restreint"
+      discoverable: "Découvrable"
+    create:
+      success: "La liste a été créée avec succès."
+    update:
+      success: "La liste a été mise à jour avec succès."
+    destroy:
+      success: "La liste a été supprimée avec succès."

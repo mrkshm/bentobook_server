@@ -1,0 +1,43 @@
+<%= form_with(model: list, url: list_path, class: "card bg-base-100 shadow-xl") do |f| %>
+  <div class="card-body">
+    <% if list.errors.any? %>
+      <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <div>
+          <h3 class="font-bold"><%= pluralize(list.errors.count, "error") %> prohibited this list from being saved:</h3>
+          <ul class="list-disc list-inside">
+            <% list.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="form-control w-full">
+      <%= f.label :name, class: "label" %>
+      <%= f.text_field :name, class: "input input-bordered w-full", placeholder: t('lists.name_placeholder') %>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :description, class: "label" %>
+      <%= f.text_area :description, 
+          class: "textarea textarea-bordered w-full", 
+          rows: 4,
+          placeholder: t('.description_placeholder') %>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :visibility, class: "label" %>
+      <%= f.select :visibility, 
+          List.visibilities.keys.map { |v| [t(".#{v}"), v] }, 
+          {}, 
+          class: "select select-bordered w-full" %>
+    </div>
+
+    <div class="card-actions justify-end mt-6">
+      <%= link_to t('common.back'), lists_path, class: "btn btn-ghost" %>
+      <%= f.submit t('common.save'), class: "btn btn-primary" %>
+    </div>
+  </div>
+<% end %>

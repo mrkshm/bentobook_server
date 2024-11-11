@@ -109,4 +109,7 @@ class Restaurant < ApplicationRecord
         .order(Arel.sql("COUNT(visits.id) #{direction}"))
     }
 
+    has_many :list_restaurants, class_name: 'ListRestaurant', dependent: :destroy
+    has_many :lists, through: :list_restaurants
+
 end
