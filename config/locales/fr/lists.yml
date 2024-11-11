@@ -24,9 +24,22 @@ fr:
       personal: "Personnel"
       restricted: "Restreint"
       discoverable: "Découvrable"
+      manage_restaurants: "Gérer les Restaurants"
+      stats:
+        total_restaurants: "Total de Restaurants"
+        visited_percentage: "Visited"
+        visited_desc: "%{visited} de %{total} restaurants"
+        last_updated: "Dernière mise à jour"
     create:
       success: "La liste a été créée avec succès."
     update:
       success: "La liste a été mise à jour avec succès."
     destroy:
       success: "La liste a été supprimée avec succès."
+    export_modal:
+      title: "Partager la Liste par Email"
+      email_label: "Email du Destinataire"
+      email_placeholder: "Entrez l'adresse email"
+      send: "Envoyer la Liste"
+    export:
+      email_sent: "La liste a été envoyée à %{email}"

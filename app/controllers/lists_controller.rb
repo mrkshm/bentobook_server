@@ -7,7 +7,27 @@ class ListsController < ApplicationController
   end
 
   def show
-    @restaurants = @list.restaurants.includes(:cuisine_type)
+    @order_by = params[:order_by] || 'name'
+    @order_direction = params[:order_direction] || 'asc'
+
+    @restaurants = @list.restaurants
+      .includes(:cuisine_type)
+      .order(@order_by => @order_direction)
+
+    @sort_fields = {
+      'name' => t('restaurants.attributes.name'),
+      'cuisine_types.name' => t('restaurants.attributes.cuisine_type'),
+      'created_at' => t('common.sort.recently_added'),
+    }
+
+    respond_to do |format|
+      format.html
+      format.text do
+        send_data ListMarkdownExporter.new(@list).generate,
+                  filename: "#{@list.name.parameterize}-restaurants.md",
+                  type: 'text/markdown'
+      end
+    end
   end
 
   def new
@@ -38,6 +58,27 @@ class ListsController < ApplicationController
   def destroy
     @list.destroy
     redirect_to lists_path, notice: t('.success'), status: :see_other
+  end
+
+  def export
+    @list = current_user.lists.find(params[:id])
+    
+    respond_to do |format|
+      format.text do
+        send_data ListMarkdownExporter.new(@list).generate,
+                  filename: "#{@list.name.parameterize}-restaurants.md",
+                  type: 'text/markdown'
+      end
+      
+      format.html do
+        if params[:email].present?
+          ListMailer.export(@list, params[:email]).deliver_later
+          redirect_to @list, notice: t('.email_sent', email: params[:email])
+        else
+          render :export_modal, layout: false
+        end
+      end
+    end
   end
 
   private

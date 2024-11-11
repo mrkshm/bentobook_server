@@ -24,9 +24,21 @@ en:
       restricted: "Restricted"
       discoverable: "Discoverable"
       manage_restaurants: "Manage Restaurants"
+      stats:
+        total_restaurants: "Total Restaurants"
+        visited_percentage: "Visited"
+        visited_desc: "%{visited} of %{total} restaurants"
+        last_updated: "Last Updated"
     create:
       success: "List was successfully created."
     update:
       success: "List was successfully updated."
     destroy:
       success: "List was successfully deleted."
+    export_modal:
+      title: "Share List via Email"
+      email_label: "Recipient Email"
+      email_placeholder: "Enter email address"
+      send: "Send List"
+    export:
+      email_sent: "List has been sent to %{email}"

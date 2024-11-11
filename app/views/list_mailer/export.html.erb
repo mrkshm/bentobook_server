@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; line-height: 1.5; }
+    h1 { color: #1a1a1a; }
+    h2 { color: #2a2a2a; margin-top: 2em; }
+    h3 { color: #3a3a3a; }
+  </style>
+</head>
+<body>
+  <%= simple_format(@content.gsub(/^#+ /, '')) %>
+</body>
+</html>

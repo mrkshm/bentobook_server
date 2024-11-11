@@ -4,3 +4,5 @@ en:
     edit: "Edit"
     finished: "Done"
     save: "Save"
+    sort:
+      recently_added: "Recently Added"
