@@ -6,6 +6,10 @@ class Restaurant < ApplicationRecord
     accepts_nested_attributes_for :google_restaurant
     has_many :visits, dependent: :restrict_with_error
     has_many :images, as: :imageable, dependent: :destroy
+    has_many :list_restaurants, class_name: 'ListRestaurant', dependent: :destroy
+    has_many :lists, through: :list_restaurants
+    has_many :copies, class_name: 'Restaurant', foreign_key: :original_restaurant_id
+    belongs_to :original_restaurant, class_name: 'Restaurant', optional: true
     belongs_to :cuisine_type
   
     acts_as_taggable_on :tags
@@ -109,7 +113,30 @@ class Restaurant < ApplicationRecord
         .order(Arel.sql("COUNT(visits.id) #{direction}"))
     }
 
-    has_many :list_restaurants, class_name: 'ListRestaurant', dependent: :destroy
-    has_many :lists, through: :list_restaurants
+    def copy_for_user(user)
+      return self if user == self.user
+      
+      transaction do
+        # Check if a copy already exists
+        existing_copy = RestaurantCopy.find_by(user: user, restaurant: self)
+        return existing_copy.copied_restaurant if existing_copy
+        
+        copy = self.dup
+        copy.user = user
+        copy.original_restaurant = self
+        copy.save!
+        
+        RestaurantCopy.create!(
+          user: user,
+          restaurant: self,
+          copied_restaurant: copy
+        )
+        
+        copy
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # If we hit a race condition, try to find the existing copy
+      RestaurantCopy.find_by!(user: user, restaurant: self).copied_restaurant
+    end
 
 end

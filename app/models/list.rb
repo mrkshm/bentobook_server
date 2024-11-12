@@ -3,6 +3,8 @@ class List < ApplicationRecord
   
   has_many :list_restaurants, class_name: 'ListRestaurant', dependent: :destroy
   has_many :restaurants, through: :list_restaurants
+  has_many :shares, as: :shareable, dependent: :destroy
+  has_many :shared_users, through: :shares, source: :recipient
   
   validates :name, presence: true
   
