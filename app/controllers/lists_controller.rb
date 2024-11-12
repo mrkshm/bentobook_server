@@ -29,7 +29,7 @@ class ListsController < ApplicationController
     @list = current_user.lists.build(list_params)
     
     if @list.save
-      redirect_to @list, notice: t('.success')
+      redirect_to list_path(id: @list.id), notice: t('.success')
     else
       render :new, status: :unprocessable_entity
     end
@@ -82,7 +82,7 @@ class ListsController < ApplicationController
       
       format.html do
         if params[:email].present?
-          redirect_to list_path(@list), 
+          redirect_to list_path(id: @list.id), 
                       success: t('.email_sent', email: params[:email], list: @list.name)
         else
           render :export_modal, layout: false

@@ -1,4 +1,6 @@
-<%= form_with(model: list, url: list_path, class: "card bg-base-100 shadow-xl") do |f| %>
+<%= form_with(model: list, 
+             url: list.persisted? ? list_path(id: list.id) : lists_path, 
+             class: "card bg-base-100 shadow-xl") do |f| %>
   <div class="card-body">
     <% if list.errors.any? %>
       <div class="alert alert-error">
