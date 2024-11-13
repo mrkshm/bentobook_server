@@ -29,6 +29,19 @@ Rails.application.routes.draw do
 
     resources :images, only: [:destroy]
 
+    resources :lists do
+      member do
+        get 'export', to: 'lists#export'
+        post 'export', to: 'lists#export'
+      end
+      resources :list_restaurants, only: [:new, :create, :index] do
+        collection do
+          get :edit
+          delete :destroy
+        end
+      end
+    end
+
     resource :profile, only: [:show, :edit, :update]
 
     get "pages/terms", as: :terms

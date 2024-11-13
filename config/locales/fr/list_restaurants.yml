@@ -1,0 +1,9 @@
+fr:
+  list_restaurants:
+    create:
+      success: "Liste de restaurants mise à jour avec succès"
+    edit:
+      title: "Gérer les Restaurants dans %{list}"
+      confirm_remove: "Êtes-vous sûr de vouloir retirer ce restaurant de la liste ?"
+    destroy:
+      success: "Restaurant retiré de la liste"

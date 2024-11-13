@@ -31,3 +31,8 @@ fr:
     new:
       title: "Créer un nouveau restaurant"
       short_description: "Veuillez rechercher un restaurant ici. Commencez avec le nom, si vous ne le trouvez pas, ajoutez la ville et d'autres détails."
+    attributes:
+      name: "Nom"
+      cuisine_type: "Type de cuisine"
+      rating: "Note"
+      price_range: "Prix"

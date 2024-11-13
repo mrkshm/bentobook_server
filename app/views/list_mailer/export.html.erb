@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; line-height: 1.5; }
+    h1 { color: #1a1a1a; }
+    h2 { color: #2a2a2a; margin-top: 2em; }
+    h3 { color: #3a3a3a; }
+  </style>
+</head>
+<body>
+  <h1><%= @list.name %></h1>
+
+  <% if @list.description.present? %>
+    <p><%= @list.description %></p>
+  <% end %>
+
+  <h2><%= t('.list_info') %></h2>
+  <ul>
+    <li><%= t('.total_restaurants', count: @list.total_restaurants) %></li>
+    <li><%= t('.visited_count', visited: @list.visited_count, total: @list.total_restaurants, percentage: @list.visited_percentage) %></li>
+    <li><%= t('.last_updated', date: l(@list.last_updated_at, format: :long)) %></li>
+    <li><%= t('.visibility', visibility: t("lists.show.#{@list.visibility}")) %></li>
+  </ul>
+
+  <h2><%= t('.restaurants') %></h2>
+
+  <% @list.restaurants.order(:name).each do |restaurant| %>
+    <h3><%= restaurant.name %></h3>
+    <div class="restaurant-info">
+      <% if restaurant.cuisine_type %>
+        <p><%= t('.cuisine', type: restaurant.cuisine_type.name) %></p>
+      <% end %>
+      
+      <% if restaurant.price_level %>
+        <p><%= t('.price', range: '$' * restaurant.price_level) %></p>
+      <% end %>
+      
+      <% if restaurant.address.present? %>
+        <p><%= t('.address', address: restaurant.address) %></p>
+      <% end %>
+      
+      <% if restaurant.phone_number.present? %>
+        <p><%= t('.phone', number: restaurant.phone_number) %></p>
+      <% end %>
+      
+      <% if restaurant.notes.present? %>
+        <p><%= restaurant.notes %></p>
+      <% end %>
+      
+      <% if restaurant.url.present? %>
+        <p><%= link_to restaurant.url, restaurant.url %></p>
+      <% end %>
+    </div>
+  <% end %>
+</body>
+</html>

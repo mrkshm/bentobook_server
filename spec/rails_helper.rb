@@ -137,6 +137,15 @@ RSpec.configure do |config|
   config.after(:each) do
     Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
   end
+
+  config.include ActiveJob::TestHelper
+  config.include Devise::Test::IntegrationHelpers, type: :request
+  
+  # Clear enqueued jobs between tests
+  config.before(:each) do
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+  end
 end
 
 require 'shoulda/matchers'

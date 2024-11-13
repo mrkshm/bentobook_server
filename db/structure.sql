@@ -292,6 +292,76 @@ ALTER SEQUENCE public.images_id_seq OWNED BY public.images.id;
 
 
 --
+-- Name: list_restaurants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.list_restaurants (
+    id bigint NOT NULL,
+    list_id bigint NOT NULL,
+    restaurant_id bigint NOT NULL,
+    "position" integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: list_restaurants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.list_restaurants_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: list_restaurants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.list_restaurants_id_seq OWNED BY public.list_restaurants.id;
+
+
+--
+-- Name: lists; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.lists (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    description text,
+    owner_type character varying NOT NULL,
+    owner_id bigint NOT NULL,
+    visibility integer DEFAULT 0,
+    premium boolean DEFAULT false,
+    "position" integer,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: lists_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.lists_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: lists_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.lists_id_seq OWNED BY public.lists.id;
+
+
+--
 -- Name: memberships; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -425,6 +495,39 @@ ALTER SEQUENCE public.profiles_id_seq OWNED BY public.profiles.id;
 
 
 --
+-- Name: restaurant_copies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.restaurant_copies (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    restaurant_id bigint NOT NULL,
+    copied_restaurant_id bigint NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: restaurant_copies_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.restaurant_copies_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: restaurant_copies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.restaurant_copies_id_seq OWNED BY public.restaurant_copies.id;
+
+
+--
 -- Name: restaurants; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -452,7 +555,8 @@ CREATE TABLE public.restaurants (
     opening_hours json,
     favorite boolean DEFAULT false,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    original_restaurant_id bigint
 );
 
 
@@ -482,6 +586,42 @@ ALTER SEQUENCE public.restaurants_id_seq OWNED BY public.restaurants.id;
 CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
+
+
+--
+-- Name: shares; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shares (
+    id bigint NOT NULL,
+    creator_id bigint NOT NULL,
+    recipient_id bigint NOT NULL,
+    shareable_type character varying NOT NULL,
+    shareable_id bigint NOT NULL,
+    permission integer DEFAULT 0,
+    status integer DEFAULT 0,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: shares_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.shares_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: shares_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.shares_id_seq OWNED BY public.shares.id;
 
 
 --
@@ -720,6 +860,20 @@ ALTER TABLE ONLY public.images ALTER COLUMN id SET DEFAULT nextval('public.image
 
 
 --
+-- Name: list_restaurants id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.list_restaurants ALTER COLUMN id SET DEFAULT nextval('public.list_restaurants_id_seq'::regclass);
+
+
+--
+-- Name: lists id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lists ALTER COLUMN id SET DEFAULT nextval('public.lists_id_seq'::regclass);
+
+
+--
 -- Name: memberships id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -748,10 +902,24 @@ ALTER TABLE ONLY public.profiles ALTER COLUMN id SET DEFAULT nextval('public.pro
 
 
 --
+-- Name: restaurant_copies id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_copies ALTER COLUMN id SET DEFAULT nextval('public.restaurant_copies_id_seq'::regclass);
+
+
+--
 -- Name: restaurants id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.restaurants ALTER COLUMN id SET DEFAULT nextval('public.restaurants_id_seq'::regclass);
+
+
+--
+-- Name: shares id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares ALTER COLUMN id SET DEFAULT nextval('public.shares_id_seq'::regclass);
 
 
 --
@@ -854,6 +1022,22 @@ ALTER TABLE ONLY public.images
 
 
 --
+-- Name: list_restaurants list_restaurants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.list_restaurants
+    ADD CONSTRAINT list_restaurants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lists lists_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lists
+    ADD CONSTRAINT lists_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: memberships memberships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -886,6 +1070,14 @@ ALTER TABLE ONLY public.profiles
 
 
 --
+-- Name: restaurant_copies restaurant_copies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_copies
+    ADD CONSTRAINT restaurant_copies_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: restaurants restaurants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -899,6 +1091,14 @@ ALTER TABLE ONLY public.restaurants
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: shares shares_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT shares_pkey PRIMARY KEY (id);
 
 
 --
@@ -1033,6 +1233,41 @@ CREATE INDEX index_images_on_imageable ON public.images USING btree (imageable_t
 
 
 --
+-- Name: index_list_restaurants_on_list_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_list_restaurants_on_list_id ON public.list_restaurants USING btree (list_id);
+
+
+--
+-- Name: index_list_restaurants_on_list_id_and_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_list_restaurants_on_list_id_and_restaurant_id ON public.list_restaurants USING btree (list_id, restaurant_id);
+
+
+--
+-- Name: index_list_restaurants_on_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_list_restaurants_on_restaurant_id ON public.list_restaurants USING btree (restaurant_id);
+
+
+--
+-- Name: index_lists_on_owner; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_lists_on_owner ON public.lists USING btree (owner_type, owner_id);
+
+
+--
+-- Name: index_lists_on_owner_type_and_owner_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_lists_on_owner_type_and_owner_id ON public.lists USING btree (owner_type, owner_id);
+
+
+--
 -- Name: index_memberships_on_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1058,6 +1293,34 @@ CREATE INDEX index_pg_search_documents_on_searchable ON public.pg_search_documen
 --
 
 CREATE INDEX index_profiles_on_user_id ON public.profiles USING btree (user_id);
+
+
+--
+-- Name: index_restaurant_copies_on_copied_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurant_copies_on_copied_restaurant_id ON public.restaurant_copies USING btree (copied_restaurant_id);
+
+
+--
+-- Name: index_restaurant_copies_on_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurant_copies_on_restaurant_id ON public.restaurant_copies USING btree (restaurant_id);
+
+
+--
+-- Name: index_restaurant_copies_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurant_copies_on_user_id ON public.restaurant_copies USING btree (user_id);
+
+
+--
+-- Name: index_restaurant_copies_on_user_id_and_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_restaurant_copies_on_user_id_and_restaurant_id ON public.restaurant_copies USING btree (user_id, restaurant_id);
 
 
 --
@@ -1110,6 +1373,13 @@ CREATE INDEX index_restaurants_on_notes ON public.restaurants USING btree (notes
 
 
 --
+-- Name: index_restaurants_on_original_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurants_on_original_restaurant_id ON public.restaurants USING btree (original_restaurant_id);
+
+
+--
 -- Name: index_restaurants_on_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1121,6 +1391,34 @@ CREATE INDEX index_restaurants_on_user_id ON public.restaurants USING btree (use
 --
 
 CREATE UNIQUE INDEX index_restaurants_on_user_id_and_google_restaurant_id ON public.restaurants USING btree (user_id, google_restaurant_id);
+
+
+--
+-- Name: index_shares_on_creator_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_shares_on_creator_id ON public.shares USING btree (creator_id);
+
+
+--
+-- Name: index_shares_on_recipient_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_shares_on_recipient_id ON public.shares USING btree (recipient_id);
+
+
+--
+-- Name: index_shares_on_shareable; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_shares_on_shareable ON public.shares USING btree (shareable_type, shareable_id);
+
+
+--
+-- Name: index_shares_uniqueness; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_shares_uniqueness ON public.shares USING btree (creator_id, recipient_id, shareable_type, shareable_id);
 
 
 --
@@ -1286,6 +1584,30 @@ ALTER TABLE ONLY public.visits
 
 
 --
+-- Name: restaurant_copies fk_rails_0ee957d258; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_copies
+    ADD CONSTRAINT fk_rails_0ee957d258 FOREIGN KEY (copied_restaurant_id) REFERENCES public.restaurants(id);
+
+
+--
+-- Name: restaurant_copies fk_rails_3ea502fa9a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_copies
+    ADD CONSTRAINT fk_rails_3ea502fa9a FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id);
+
+
+--
+-- Name: shares fk_rails_5d388a8a85; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT fk_rails_5d388a8a85 FOREIGN KEY (creator_id) REFERENCES public.users(id);
+
+
+--
 -- Name: memberships fk_rails_64267aab58; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1323,6 +1645,14 @@ ALTER TABLE ONLY public.memberships
 
 ALTER TABLE ONLY public.active_storage_variant_records
     ADD CONSTRAINT fk_rails_993965df05 FOREIGN KEY (blob_id) REFERENCES public.active_storage_blobs(id);
+
+
+--
+-- Name: restaurant_copies fk_rails_9d4e535f93; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_copies
+    ADD CONSTRAINT fk_rails_9d4e535f93 FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -1366,6 +1696,14 @@ ALTER TABLE ONLY public.restaurants
 
 
 --
+-- Name: shares fk_rails_c36b56cf51; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT fk_rails_c36b56cf51 FOREIGN KEY (recipient_id) REFERENCES public.users(id);
+
+
+--
 -- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1374,11 +1712,35 @@ ALTER TABLE ONLY public.active_storage_attachments
 
 
 --
+-- Name: list_restaurants fk_rails_c63a738d79; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.list_restaurants
+    ADD CONSTRAINT fk_rails_c63a738d79 FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id);
+
+
+--
+-- Name: restaurants fk_rails_cd30f1f5a1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurants
+    ADD CONSTRAINT fk_rails_cd30f1f5a1 FOREIGN KEY (original_restaurant_id) REFERENCES public.restaurants(id);
+
+
+--
 -- Name: profiles fk_rails_e424190865; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT fk_rails_e424190865 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: list_restaurants fk_rails_e68366fbf6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.list_restaurants
+    ADD CONSTRAINT fk_rails_e68366fbf6 FOREIGN KEY (list_id) REFERENCES public.lists(id);
 
 
 --
@@ -1396,6 +1758,7 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241111083840'),
 ('20241105103121'),
 ('20241103172330'),
 ('20241005155941'),

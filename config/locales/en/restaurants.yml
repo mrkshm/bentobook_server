@@ -31,3 +31,8 @@ en:
     new:
       title: "Create a new restaurant"
       short_description: "Please search for a restaurant here. Start with the name, if you do not see it add the city and other details."
+    attributes:
+      name: "Name"
+      cuisine_type: "Cuisine Type"
+      rating: "Rating"
+      price_range: "Price Range"

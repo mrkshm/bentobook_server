@@ -10,6 +10,8 @@ FactoryBot.define do
     business_status { ['OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY'].sample }
     favorite { [true, false].sample }
     notes { "Some notes about the restaurant" }
+    phone_number { "+1 555-#{rand(100..999)}-#{rand(1000..9999)}" }
+    url { "https://example#{rand(1..100)}.com" }
 
     trait :with_visits do
       after(:create) do |restaurant|
@@ -36,6 +38,16 @@ FactoryBot.define do
 
       after(:build) do |restaurant, evaluator|
         restaurant.google_place_id = evaluator.google_place_id
+      end
+    end
+
+    trait :in_list do
+      transient do
+        list { create(:list) }
+      end
+
+      after(:create) do |restaurant, evaluator|
+        create(:list_restaurant, restaurant: restaurant, list: evaluator.list)
       end
     end
   end

@@ -1,0 +1,48 @@
+fr:
+  lists:
+    name_placeholder: "Nom de la liste"
+    form:
+      name: "Nom"
+      name_placeholder: "Nom de la liste"
+      description: "Description"
+      description_placeholder: "Description de la liste"
+      visibility: "Visibilité"
+    index:
+      title: "Mes Listes"
+      new_list: "Nouvelle Liste"
+    new:
+      title: "Nouvelle Liste"
+    edit:
+      title: "Modifier la Liste"
+    form:
+      personal: "Personnel"
+      restricted: "Restreint"
+      discoverable: "Découvrable"
+      manage_restaurants: "Gérer les Restaurants"
+    show:
+      restaurants: "Restaurants dans cette Liste"
+      personal: "Personnel"
+      restricted: "Restreint"
+      discoverable: "Découvrable"
+      manage_restaurants: "Gérer les Restaurants"
+      stats:
+        total_restaurants: "Total de Restaurants"
+        visited_percentage: "Visited"
+        visited_desc: "%{visited} de %{total} restaurants"
+        last_updated: "Dernière mise à jour"
+    create:
+      success: "La liste a été créée avec succès."
+    update:
+      success: "La liste a été mise à jour avec succès."
+    destroy:
+      success: "La liste a été supprimée avec succès."
+    export_modal:
+      title: "Partager la Liste par Email"
+      email_label: "Email du Destinataire"
+      email_placeholder: "Entrez l'adresse email"
+      include_stats: "Inclure les statistiques de la liste"
+      include_notes: "Inclure les notes des restaurants"
+      send: "Envoyer la Liste"
+    export:
+      email_sent: "La liste '%{list}' a été envoyée à %{email}"
+      markdown_exported: "La liste a été exportée en markdown"

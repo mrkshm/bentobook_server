@@ -86,8 +86,10 @@
 
         <main class="flex-grow">
           <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            <% if notice %><div class="alert alert-info"><%= notice %></div><% end %>
-            <% if alert %><div class="alert alert-error"><%= alert %></div><% end %>
+            <% if devise_controller? %>
+              <% if notice %><div class="alert alert-info"><%= notice %></div><% end %>
+              <% if alert %><div class="alert alert-error"><%= alert %></div><% end %>
+            <% end %>
             <%= yield %>
           </div>
         </main>

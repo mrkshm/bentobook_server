@@ -1,0 +1,48 @@
+<%= turbo_frame_tag "modal" do %>
+  <div class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4"><%= t('.title') %></h3>
+      
+      <%= form_tag export_list_path(id: @list.id), 
+            method: :post, 
+            class: "space-y-4",
+            data: { turbo_stream: true } do %>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text"><%= t('.email_label') %></span>
+          </label>
+          <%= email_field_tag :email, nil, 
+              class: "input input-bordered w-full",
+              placeholder: t('.email_placeholder'),
+              required: true %>
+        </div>
+
+        <div class="form-control">
+          <label class="label cursor-pointer">
+            <%= check_box_tag 'include_stats', '1', true, class: "checkbox" %>
+            <span class="label-text ml-2"><%= t('.include_stats') %></span>
+          </label>
+        </div>
+
+        <div class="form-control">
+          <label class="label cursor-pointer">
+            <%= check_box_tag 'include_notes', '1', true, class: "checkbox" %>
+            <span class="label-text ml-2"><%= t('.include_notes') %></span>
+          </label>
+        </div>
+
+        <div class="modal-action">
+          <%= link_to t('common.cancel'), '#', 
+              class: "btn btn-ghost",
+              data: { action: "click->modal#close" } %>
+          <%= submit_tag t('.send'), class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+    <div class="modal-backdrop">
+      <%= link_to '', '#',
+          class: "cursor-default",
+          data: { action: "click->modal#close" } %>
+    </div>
+  </div>
+<% end %>
