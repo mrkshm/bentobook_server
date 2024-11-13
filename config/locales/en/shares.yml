@@ -1,0 +1,5 @@
+en:
+  shares:
+    create:
+      success: "List shared successfully"
+      success_with_visibility_change: "List shared successfully. The list visibility has been changed to restricted."

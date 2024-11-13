@@ -3,15 +3,29 @@ class SharesController < ApplicationController
   before_action :set_shareable, only: [:create]
   
   def create
-    @share = Share.new(share_params)
-    @share.creator = current_user
-    @share.shareable = @shareable
+    recipient_ids = params[:recipient_ids] || []
+    @shareable = List.find(params[:shareable_id])
     
-    if @share.save
-      # TODO: Send notification email
-      redirect_to list_path(id: @shareable.id), notice: t('.success')
+    shares = recipient_ids.map do |recipient_id|
+      Share.new(
+        creator: current_user,
+        recipient_id: recipient_id,
+        shareable: @shareable,
+        permission: params[:share][:permission]
+      )
+    end
+    
+    if shares.all?(&:valid?)
+      Share.transaction do
+        shares.each do |share|
+          share.save!
+          ShareMailer.share_notification(share).deliver_later
+        end
+      end
+      redirect_to list_path(@shareable), notice: t('.success')
     else
-      redirect_to list_path(id: @shareable.id), alert: @share.errors.full_messages.to_sentence
+      errors = shares.map { |s| s.errors.full_messages }.flatten.uniq
+      redirect_to list_path(@shareable), alert: errors.to_sentence
     end
   end
   

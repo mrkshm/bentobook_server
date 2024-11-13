@@ -91,6 +91,12 @@ class ListsController < ApplicationController
     end
   end
 
+  def share
+    @list = List.find(params[:id])
+    @share = Share.new
+    render :_share_modal, layout: false
+  end
+
   private
 
   def set_list

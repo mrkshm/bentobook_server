@@ -42,6 +42,7 @@ fr:
     visits: "Visites"
     profile: "Mon profil"
     contacts: "Contacts"
+    lists: "Listes"
   pagy:
     nav:
       previous: "« Précédent"

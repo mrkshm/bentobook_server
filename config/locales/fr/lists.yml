@@ -20,6 +20,7 @@ fr:
       discoverable: "Découvrable"
       manage_restaurants: "Gérer les Restaurants"
     show:
+      add_restaurant: "Ajouter un Restaurant"
       restaurants: "Restaurants dans cette Liste"
       personal: "Personnel"
       restricted: "Restreint"
@@ -46,3 +47,6 @@ fr:
     export:
       email_sent: "La liste '%{list}' a été envoyée à %{email}"
       markdown_exported: "La liste a été exportée en markdown"
+    share_modal:
+      share: "Partager"
+      search_placeholder: "Rechercher un utilisateur"

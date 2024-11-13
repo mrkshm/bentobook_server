@@ -57,6 +57,7 @@
             <div class="ml-6 flex items-center">
               <% if user_signed_in? %>
                 <%= link_to t("nav.restaurants"), restaurants_path, class: "btn btn-ghost" %>
+                <%= link_to t("nav.lists"), lists_path, class: "btn btn-ghost" %>
                 <%= link_to t("nav.visits"), visits_path, class: "btn btn-ghost" %>
                 <%= link_to t("nav.contacts"), contacts_path, class: "btn btn-ghost" %>
                 <%= link_to t("nav.profile"), profile_path, class: "btn btn-ghost" %>
@@ -72,10 +73,11 @@
         <div id="mobile-menu" style="display: none;">
           <ul class="menu menu-vertical px-1">
             <% if user_signed_in? %>
-              <li><%= link_to 'Restaurants', restaurants_path %></li>
-              <li><%= link_to 'Visits', visits_path %></li>
-              <li><%= link_to 'Contacts', contacts_path %></li>
-              <li><%= link_to 'My Profile', profile_path %></li>
+              <li><%= link_to t("nav.restaurants"), restaurants_path %></li>
+              <li><%= link_to t("nav.lists"), lists_path %></li>
+              <li><%= link_to t("nav.visits"), visits_path %></li>
+              <li><%= link_to t("nav.contacts"), contacts_path %></li>
+              <li><%= link_to t("nav.profile"), profile_path %></li>
             <% else %>
               <li><%= link_to 'Sign In', new_user_session_path %></li>
               <li><%= link_to 'Sign Up', new_user_registration_path %></li>

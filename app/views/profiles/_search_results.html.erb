@@ -1,0 +1,40 @@
+<div class="p-2 bg-base-100 shadow-lg rounded-lg">
+  <!-- Debug info -->
+  <div class="text-xs text-gray-500 mb-2">
+    Query: <%= params[:query] %>
+    Found: <%= @profiles.count %> results
+  </div>
+
+  <% if @profiles.any? %>
+    <% @profiles.each do |profile| %>
+      <button type="button"
+              class="w-full text-left px-4 py-2 hover:bg-base-200 rounded-lg"
+              data-action="click->profile-search#select"
+              data-profile-id="<%= profile.user_id %>"
+              data-profile-name="<%= profile.display_name %>"
+              data-profile-avatar-url="<%= profile.avatar.attached? ? url_for(profile.avatar) : asset_path('default_avatar.png') %>">
+        <div class="flex items-center gap-3">
+          <div class="avatar">
+            <div class="w-8 h-8 rounded-full">
+              <% if profile.avatar.attached? %>
+                <%= image_tag profile.avatar %>
+              <% else %>
+                <%= image_tag 'default_avatar.png' %>
+              <% end %>
+            </div>
+          </div>
+          <div>
+            <div class="font-medium"><%= profile.display_name %></div>
+            <% if profile.username.present? %>
+              <div class="text-sm text-base-content/70">@<%= profile.username %></div>
+            <% end %>
+          </div>
+        </div>
+      </button>
+    <% end %>
+  <% else %>
+    <div class="px-4 py-2 text-base-content/70">
+      <%= t('.no_results') %>
+    </div>
+  <% end %>
+</div>

@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       member do
         get 'export', to: 'lists#export'
         post 'export', to: 'lists#export'
+        get :share
       end
       resources :list_restaurants, only: [:new, :create, :index] do
         collection do
@@ -50,6 +51,12 @@ Rails.application.routes.draw do
     end
 
     resource :profile, only: [:show, :edit, :update]
+
+    resources :profiles, only: [] do
+      collection do
+        get :search, defaults: { format: :html }
+      end
+    end
 
     get "pages/terms", as: :terms
     get "pages/home"
@@ -84,5 +91,6 @@ Rails.application.routes.draw do
       end
     end
   end
+
 
 end

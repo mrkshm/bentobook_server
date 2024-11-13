@@ -1,0 +1,5 @@
+fr:
+  shares:
+    create:
+      success: "Liste partagée avec succès"
+      success_with_visibility_change: "Liste partagée avec succès. La visibilité de la liste a été changée pour restreinte."
