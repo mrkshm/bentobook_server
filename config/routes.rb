@@ -42,6 +42,13 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :shares, only: [:create] do
+      member do
+        patch :accept
+        patch :reject
+      end
+    end
+
     resource :profile, only: [:show, :edit, :update]
 
     get "pages/terms", as: :terms
@@ -77,4 +84,5 @@ Rails.application.routes.draw do
       end
     end
   end
+
 end
