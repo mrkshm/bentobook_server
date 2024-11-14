@@ -8,10 +8,11 @@ class List < ApplicationRecord
   
   validates :name, presence: true
   
-  enum :visibility, { personal: 0, restricted: 1, discoverable: 2 }
+  enum :visibility, { personal: 0, discoverable: 1 }
   
   default_scope { order(position: :asc) }
   
+  scope :personal_lists, -> { where(visibility: :personal) }
   scope :discoverable_lists, -> { where(visibility: :discoverable) }
   scope :shared_with, ->(user) { 
     joins(:shares).where(shares: { recipient: user, status: :accepted }) 

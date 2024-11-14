@@ -22,10 +22,6 @@ FactoryBot.define do
       visibility { :discoverable }
     end
 
-    trait :restricted do
-      visibility { :restricted }
-    end
-
     trait :personal do
       visibility { :personal }
     end

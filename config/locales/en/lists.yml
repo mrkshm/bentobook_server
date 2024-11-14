@@ -1,6 +1,8 @@
 en:
   lists:
     name_placeholder: "List name"
+    private: "Private"
+    public: "Public"
     form:
       name: "Name"
       name_placeholder: "List name"
@@ -19,6 +21,7 @@ en:
       restricted: "Restricted"
       discoverable: "Discoverable"
     show:
+      add_restaurant: "Add Restaurant"
       restaurants: "Restaurants in this List"
       personal: "Personal"
       restricted: "Restricted"
@@ -45,3 +48,6 @@ en:
     export:
       email_sent: "List '%{list}' has been sent to %{email}"
       markdown_exported: "List has been exported to markdown"
+    share_modal:
+      share: "Share"
+      search_placeholder: "Search for a user"

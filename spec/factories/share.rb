@@ -2,9 +2,10 @@ FactoryBot.define do
   factory :share do
     association :creator, factory: :user
     association :recipient, factory: :user
-    association :shareable, factory: :list, traits: [:restricted]
+    association :shareable, factory: :list
     status { :accepted }
     permission { :view }
+    reshareable { true }
     
     trait :pending do
       status { :pending }
@@ -16,6 +17,10 @@ FactoryBot.define do
     
     trait :with_edit_permission do
       permission { :edit }
+    end
+
+    trait :not_reshareable do
+      reshareable { false }
     end
   end
 end

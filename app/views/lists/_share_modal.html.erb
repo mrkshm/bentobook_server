@@ -1,0 +1,82 @@
+<%= turbo_frame_tag "modal" do %>
+  <div class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">
+        <%= t('.title', list: @list.name) %>
+      </h3>
+      
+      <%= form_with(model: @share, local: true, class: "space-y-4") do |f| %>
+        <%= hidden_field_tag :shareable_type, 'List' %>
+        <%= hidden_field_tag :shareable_id, @list.id %>
+
+        <div class="form-control" 
+             data-controller="profile-search" 
+             data-profile-search-url-value="<%= search_profiles_path %>">
+          <%= f.label :recipient_id, t('.recipient'), class: "label" %>
+          
+          <div class="relative flex-1">
+            <%= text_field_tag :recipient_query, nil,
+                data: {
+                  profile_search_target: "input",
+                  action: "input->profile-search#search"
+                },
+                class: "input input-bordered w-full",
+                placeholder: t('.search_placeholder') %>
+            
+            <div class="absolute z-10 w-full bg-base-100 rounded-box shadow-lg mt-1 hidden"
+                 data-profile-search-target="results">
+            </div>
+          </div>
+
+          <div class="mt-4 space-y-2"
+               data-profile-search-target="selectedRecipients">
+          </div>
+          
+          <div class="hidden" data-profile-search-target="recipientIds">
+            <%# Hidden fields for recipient IDs will be inserted here %>
+          </div>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :permission, t('.permission'), class: "label" %>
+          <div class="btn-group" data-controller="permission-buttons">
+            <% Share.permissions.each do |permission, _value| %>
+              <%= f.label :permission, 
+                  value: permission,
+                  class: "btn btn-sm btn-secondary opacity-50",
+                  data: { 
+                    permission_buttons_target: "button",
+                    action: "click->permission-buttons#toggle"
+                  } do %>
+                <%= f.radio_button :permission, permission, 
+                    class: "hidden",
+                    checked: permission == "view" %>
+                <%= t(".permissions.#{permission}") %>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="form-control">
+          <%= f.label :reshareable do %>
+            <%= f.check_box :reshareable, checked: true %>
+            <%= t('allow_resharing') %>
+          <% end %>
+        </div>
+
+        <div class="modal-action">
+          <%= f.submit t('.share'), class: "btn btn-primary" %>
+          <%= link_to t('common.cancel'), 
+              list_path(@list, locale: I18n.locale == I18n.default_locale ? nil : I18n.locale), 
+              class: "btn btn-ghost",
+              data: { turbo_frame: "modal" } %>
+        </div>
+      <% end %>
+    </div>
+    
+    <div class="modal-backdrop">
+      <%= link_to "", list_path(@list, locale: I18n.locale == I18n.default_locale ? nil : I18n.locale), 
+          data: { turbo_frame: "modal" } %>
+    </div>
+  </div>
+<% end %>

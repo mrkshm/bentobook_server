@@ -71,6 +71,7 @@ en:
     visits: "Visits"
     profile: "Profile"
     contacts: "Contacts"
+    lists: "Lists"
   pagy:
     nav:
       previous: "« Previous"

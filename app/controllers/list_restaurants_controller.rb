@@ -42,6 +42,17 @@ class ListRestaurantsController < ApplicationController
   private
 
   def set_list
-    @list = current_user.lists.find(params[:list_id])
+    @list = List.left_joins(:shares)
+      .where(owner: current_user)
+      .or(
+        List.where(
+          shares: { 
+            recipient: current_user, 
+            status: :accepted, 
+            permission: :edit 
+          }
+        )
+      )
+      .find(params[:list_id])
   end
 end

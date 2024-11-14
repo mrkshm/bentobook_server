@@ -8,7 +8,20 @@ RSpec.describe List, type: :model do
 
     it 'filters by visibility' do
       expect(List.personal).to include(personal_list)
-      expect(List.discoverable_lists).to include(discoverable_list)
+      expect(List.discoverable).to include(discoverable_list)
+    end
+
+    describe '.shared_with' do
+      let(:recipient) { create(:user) }
+      let(:shared_list) { create(:list, :personal, owner: user) }
+      
+      before do
+        create(:share, creator: user, recipient: recipient, shareable: shared_list, status: :accepted)
+      end
+
+      it 'returns lists shared with user' do
+        expect(List.shared_with(recipient)).to include(shared_list)
+      end
     end
   end
 
@@ -28,5 +41,17 @@ RSpec.describe List, type: :model do
   describe 'validations' do
     it { should validate_presence_of(:name) }
     it { should belong_to(:owner) }
+  end
+
+  describe 'visibility' do
+    it 'defaults to personal' do
+      list = create(:list)
+      expect(list).to be_personal
+    end
+
+    it 'can be made discoverable' do
+      list = create(:list, :discoverable)
+      expect(list).to be_discoverable
+    end
   end
 end

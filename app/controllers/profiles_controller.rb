@@ -42,6 +42,28 @@ class ProfilesController < ApplicationController
         redirect_to profile_path
       end
     end
+  
+    def search
+      return head(:bad_request) unless request.xhr?
+
+      # First get the user's contacts that have profiles
+      @profiles = Profile.joins(:user)
+                        # .joins("INNER JOIN contacts ON contacts.email = users.email")
+                        # .where(contacts: { user_id: current_user.id })
+                        .where("profiles.username ILIKE :query OR 
+                               profiles.first_name ILIKE :query OR 
+                               profiles.last_name ILIKE :query OR 
+                               users.email ILIKE :query", 
+                               query: "%#{params[:query]}%")
+                        .limit(5)
+
+      Rails.logger.info "Found #{@profiles.count} matching contacts with profiles"
+      
+      render partial: "profiles/search_results", 
+             formats: [:html], 
+             layout: false, 
+             status: :ok
+    end
 
     private
   
