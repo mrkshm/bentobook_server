@@ -601,7 +601,8 @@ CREATE TABLE public.shares (
     permission integer DEFAULT 0,
     status integer DEFAULT 0,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    reshareable boolean DEFAULT true NOT NULL
 );
 
 
@@ -1758,6 +1759,7 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241114110224'),
 ('20241111083840'),
 ('20241105103121'),
 ('20241103172330'),

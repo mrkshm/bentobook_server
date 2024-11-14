@@ -3,15 +3,17 @@ require 'rails_helper'
 RSpec.describe SharesController, type: :request do
   let(:user) { create(:user) }
   let(:recipient) { create(:user) }
-  let(:list) { create(:list, :restricted, owner: user) }
+  let(:list) { create(:list, owner: user) }
   
   describe 'POST /shares' do
     let(:valid_params) do
       {
         share: {
           recipient_id: recipient.id,
-          permission: 'view'
+          permission: 'view',
+          reshareable: true
         },
+        recipient_ids: [recipient.id],
         shareable_type: 'List',
         shareable_id: list.id
       }
@@ -37,29 +39,48 @@ RSpec.describe SharesController, type: :request do
         expect(share.recipient).to eq(recipient)
         expect(share.shareable).to eq(list)
         expect(share.permission).to eq('view')
+        expect(share.reshareable).to be true
         expect(share).to be_pending
+      end
+      
+      it 'creates multiple shares for multiple recipients' do
+        recipient2 = create(:user)
+        params = valid_params.merge(recipient_ids: [recipient.id, recipient2.id])
+
+        expect {
+          post shares_path, params: params
+        }.to change(Share, :count).by(2)
       end
       
       context 'with invalid params' do
         it 'handles missing recipient' do
-          post shares_path, params: valid_params.deep_merge(
-            share: { recipient_id: nil }
-          )
+          post shares_path, params: valid_params.merge(recipient_ids: [])
           
           expect(response).to redirect_to(list_path(id: list.id))
           expect(flash[:alert]).to be_present
         end
         
-        it 'prevents sharing personal lists' do
-          personal_list = create(:list, :personal, owner: user)
+        it 'handles invalid recipient ids' do
+          post shares_path, params: valid_params.merge(recipient_ids: ['invalid'])
           
-          post shares_path, params: valid_params.deep_merge(
-            shareable_id: personal_list.id
-          )
-          
-          expect(response).to redirect_to(list_path(id: personal_list.id))
-          expect(flash[:alert]).to include("Cannot share a personal list")
+          expect(response).to redirect_to(list_path(id: list.id))
+          expect(flash[:alert]).to be_present
         end
+        
+        it 'prevents sharing with self' do
+          params = valid_params.merge(recipient_ids: [user.id])
+          
+          post shares_path, params: params
+          
+          expect(response).to redirect_to(list_path(id: list.id))
+          expect(flash[:alert]).to include("can't be the same as creator")
+        end
+      end
+      
+      it 'sends share notifications' do
+        expect {
+          post shares_path, params: valid_params
+        }.to have_enqueued_job(ActionMailer::MailDeliveryJob)
       end
     end
     

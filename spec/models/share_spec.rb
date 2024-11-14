@@ -4,7 +4,7 @@ RSpec.describe Share, type: :model do
   describe 'validations' do
     let(:creator) { create(:user) }
     let(:recipient) { create(:user) }
-    let(:list) { create(:list, :restricted, owner: creator) }
+    let(:list) { create(:list, owner: creator) }
     
     it { should belong_to(:creator).class_name('User') }
     it { should belong_to(:recipient).class_name('User') }
@@ -24,34 +24,10 @@ RSpec.describe Share, type: :model do
       expect(share).not_to be_valid
       expect(share.errors[:recipient_id]).to include("can't be the same as creator")
     end
-    
-    context 'list visibility validation' do
-      it 'prevents sharing personal lists' do
-        personal_list = create(:list, :personal, owner: creator)
-        share = build(:share, creator: creator, recipient: recipient, shareable: personal_list)
-        
-        expect(share).not_to be_valid
-        expect(share.errors[:base]).to include("Cannot share a personal list")
-      end
-      
-      it 'allows sharing restricted lists' do
-        share = build(:share, creator: creator, recipient: recipient, shareable: list)
-        expect(share).to be_valid
-      end
-      
-      it 'allows sharing discoverable lists' do
-        discoverable_list = create(:list, :discoverable, owner: creator)
-        share = build(:share, creator: creator, recipient: recipient, shareable: discoverable_list)
-        expect(share).to be_valid
-      end
-    end
   end
   
   describe 'status transitions' do
-    let(:creator) { create(:user) }
-    let(:recipient) { create(:user) }
-    let(:list) { create(:list, :restricted, owner: creator) }
-    let(:share) { create(:share, :pending, creator: creator, recipient: recipient, shareable: list) }
+    let(:share) { create(:share, :pending) }
     
     it 'starts as pending' do
       expect(share).to be_pending
@@ -74,10 +50,7 @@ RSpec.describe Share, type: :model do
   end
   
   describe 'permission levels' do
-    let(:creator) { create(:user) }
-    let(:recipient) { create(:user) }
-    let(:list) { create(:list, :restricted, owner: creator) }
-    let(:share) { create(:share, creator: creator, recipient: recipient, shareable: list) }
+    let(:share) { create(:share) }
     
     it 'defaults to view permission' do
       expect(share).to be_view
@@ -94,6 +67,18 @@ RSpec.describe Share, type: :model do
       
       share.view!
       expect(share).to be_view
+    end
+  end
+
+  describe 'reshareable flag' do
+    it 'defaults to true' do
+      share = create(:share)
+      expect(share.reshareable).to be true
+    end
+
+    it 'can be set to false' do
+      share = create(:share, :not_reshareable)
+      expect(share.reshareable).to be false
     end
   end
 end

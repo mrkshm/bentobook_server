@@ -47,7 +47,15 @@ RSpec.describe ListsController, type: :request do
     end
 
     describe 'POST /lists' do
-      let(:valid_params) { { list: { name: 'New List', description: 'Description', visibility: 'restricted' } } }
+      let(:valid_params) { 
+        { 
+          list: { 
+            name: 'New List', 
+            description: 'Description', 
+            visibility: 'personal' 
+          } 
+        } 
+      }
       let(:invalid_params) { { list: { name: '', description: 'Description' } } }
 
       context 'with valid parameters' do
@@ -143,6 +151,24 @@ RSpec.describe ListsController, type: :request do
           expect(response).to be_successful
           expect(response.body).to include('success')
         end
+      end
+    end
+
+    describe 'visibility management' do
+      it 'creates a personal list' do
+        post lists_path, params: { list: { name: 'Personal List', visibility: 'personal' } }
+        expect(List.last).to be_personal
+      end
+
+      it 'creates a discoverable list' do
+        post lists_path, params: { list: { name: 'Public List', visibility: 'discoverable' } }
+        expect(List.last).to be_discoverable
+      end
+
+      it 'updates visibility from personal to discoverable' do
+        list = create(:list, :personal, owner: user)
+        patch list_path(id: list.id), params: { list: { visibility: 'discoverable' } }
+        expect(list.reload).to be_discoverable
       end
     end
   end

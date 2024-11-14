@@ -1,6 +1,8 @@
 en:
   lists:
     name_placeholder: "List name"
+    private: "Private"
+    public: "Public"
     form:
       name: "Name"
       name_placeholder: "List name"

@@ -10,18 +10,10 @@ class Share < ApplicationRecord
   validate :cannot_share_with_self
   validate :validate_status_transition, if: :status_changed?
   
-  before_create :ensure_shareable_visibility
-  
   private
   
   def cannot_share_with_self
     errors.add(:recipient_id, "can't be the same as creator") if creator_id == recipient_id
-  end
-  
-  def ensure_shareable_visibility
-    if shareable.is_a?(List) && shareable.personal?
-      shareable.restricted!
-    end
   end
   
   def validate_status_transition

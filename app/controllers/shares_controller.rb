@@ -11,7 +11,8 @@ class SharesController < ApplicationController
         creator: current_user,
         recipient_id: recipient_id,
         shareable: @shareable,
-        permission: params[:share][:permission]
+        permission: params[:share][:permission],
+        reshareable: params[:share][:reshareable]
       )
     end
     
@@ -22,10 +23,10 @@ class SharesController < ApplicationController
           ShareMailer.share_notification(share).deliver_later
         end
       end
-      redirect_to list_path(@shareable), notice: t('.success')
+      redirect_to list_path(id: @shareable.id), notice: t('.success')
     else
       errors = shares.map { |s| s.errors.full_messages }.flatten.uniq
-      redirect_to list_path(@shareable), alert: errors.to_sentence
+      redirect_to list_path(id: @shareable.id), alert: errors.to_sentence
     end
   end
   
@@ -41,6 +42,6 @@ class SharesController < ApplicationController
   end
   
   def share_params
-    params.require(:share).permit(:recipient_id, :permission)
+    params.require(:share).permit(:recipient_id, :permission, :reshareable)
   end
 end

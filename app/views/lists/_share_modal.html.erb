@@ -57,6 +57,13 @@
           </div>
         </div>
 
+        <div class="form-control">
+          <%= f.label :reshareable do %>
+            <%= f.check_box :reshareable, checked: true %>
+            <%= t('allow_resharing') %>
+          <% end %>
+        </div>
+
         <div class="modal-action">
           <%= f.submit t('.share'), class: "btn btn-primary" %>
           <%= link_to t('common.cancel'), 

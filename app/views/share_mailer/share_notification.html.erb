@@ -4,9 +4,9 @@
   <%= t('.body', 
         creator: @creator.profile.display_name,
         list: @shareable.name,
-        permission: t("lists.share_modal.permissions.#{@share.permission}")) %>
+        permission: t(".permissions.#{@share.permission}")) %>
 </p>
 
-<p>
-  <%= link_to t('.view_list'), list_url(@shareable), class: "button" %>
-</p>
+<p><%= t('.action') %></p>
+
+<%= link_to t('.view_list'), list_url(id: @shareable.id), class: "button" %>
