@@ -100,7 +100,15 @@ class ListsController < ApplicationController
   private
 
   def set_list
-    @list = current_user.lists.find(params[:id])
+    @list = List.left_joins(:shares)
+               .where(
+                 'lists.owner_id = :user_id AND lists.owner_type = :user_type OR ' \
+                 '(shares.recipient_id = :user_id AND shares.status = :accepted)',
+                 user_id: current_user.id,
+                 user_type: 'User',
+                 accepted: Share.statuses[:accepted]
+               )
+               .find(params[:id])
   end
 
   def list_params

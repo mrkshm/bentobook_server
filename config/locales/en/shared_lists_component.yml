@@ -1,0 +1,13 @@
+en:
+  shared_lists_component:
+    pending_shares: "Pending Shares"
+    shared_with_you: "Shared with You"
+    pending: "Pending"
+    shared_by: "Shared by %{user}"
+    accept: "Accept"
+    decline: "Decline"
+    permissions:
+      view: "View only"
+      edit: "Can edit"
+  common:
+    view: "View"

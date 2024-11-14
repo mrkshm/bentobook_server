@@ -1,0 +1,57 @@
+<div class="mb-8">
+  <% if @pending_shares.exists? %>
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold mb-4"><%= t('.pending_shares') %></h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @pending_shares.each do |share| %>
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title">
+                <%= share.shareable.name %>
+                <div class="badge badge-warning badge-sm"><%= t('.pending') %></div>
+              </h3>
+              <p class="text-sm text-base-content/70">
+                <%= t('.shared_by', user: share.creator.profile.display_name) %>
+              </p>
+              <div class="card-actions justify-end mt-4">
+                <%= button_to t('.accept'), accept_share_path(id: share.id), 
+                    method: :patch, 
+                    class: "btn btn-sm btn-success" %>
+                <%= button_to t('.decline'), decline_share_path(id: share.id), 
+                    method: :patch,
+                    class: "btn btn-sm btn-error" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @accepted_shares.exists? %>
+    <div>
+      <h2 class="text-xl font-semibold mb-4"><%= t('.shared_with_you') %></h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @accepted_shares.each do |share| %>
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h3 class="card-title">
+                <%= share.shareable.name %>
+                <div class="badge badge-info badge-sm">
+                  <%= t(".permissions.#{share.permission}") %>
+                </div>
+              </h3>
+              <p class="text-sm text-base-content/70">
+                <%= t('.shared_by', user: share.creator.profile.display_name) %>
+              </p>
+              <div class="card-actions justify-end">
+                <%= link_to t('common.view'), list_path(id: share.shareable.id), 
+                    class: "btn btn-sm" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

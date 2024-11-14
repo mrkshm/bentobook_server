@@ -29,6 +29,13 @@ Rails.application.routes.draw do
 
     resources :images, only: [:destroy]
 
+    resources :shares, only: [] do
+      member do
+        patch :accept
+        patch :decline
+      end
+    end
+
     resources :lists do
       member do
         get 'export', to: 'lists#export'

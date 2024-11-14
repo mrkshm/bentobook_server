@@ -25,6 +25,8 @@ class User < ApplicationRecord
   after_create :ensure_profile
 
   has_many :lists, as: :owner, dependent: :destroy
+  has_many :shares, foreign_key: :recipient_id
+  has_many :created_shares, class_name: 'Share', foreign_key: :creator_id
 
   def all_tags
     Restaurant.where(user_id: id).tag_counts_on(:tags)
