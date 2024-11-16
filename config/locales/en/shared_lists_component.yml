@@ -1,5 +1,7 @@
 en:
   shared_lists_component:
+    title: "Shared Lists"
+    confirm_remove: "Are you sure you want to remove this list from your shared lists?"
     pending_shares: "Pending Shares"
     shared_with_you: "Shared with You"
     pending: "Pending"

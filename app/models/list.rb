@@ -1,7 +1,7 @@
 class List < ApplicationRecord
   belongs_to :owner, polymorphic: true
   
-  has_many :list_restaurants, class_name: 'ListRestaurant', dependent: :destroy
+  has_many :list_restaurants, dependent: :destroy
   has_many :restaurants, through: :list_restaurants
   has_many :shares, as: :shareable, dependent: :destroy
   has_many :shared_users, through: :shares, source: :recipient
@@ -18,36 +18,11 @@ class List < ApplicationRecord
     joins(:shares).where(shares: { recipient: user, status: :accepted }) 
   }
 
-  def total_restaurants
-    restaurants.count
+  def viewable_by?(user)
+    owner == user || shares.accepted.exists?(recipient: user)
   end
 
-  def visited_percentage
-    return 0 if total_restaurants.zero?
-    
-    visited_count = restaurants
-      .joins(:visits)
-      .where(visits: { user_id: owner_id })
-      .distinct
-      .count
-    
-    (visited_count.to_f / total_restaurants * 100).round
-  end
-
-  def visited_count
-    restaurants
-      .joins(:visits)
-      .where(visits: { user_id: owner_id })
-      .distinct
-      .count
-  end
-
-  def last_updated_at
-    [
-      updated_at,
-      list_restaurants.maximum(:updated_at),
-      list_restaurants.joins(:restaurant)
-        .maximum('restaurants.updated_at')
-    ].compact.max
+  def editable_by?(user)
+    owner == user || shares.accepted.edit.exists?(recipient: user)
   end
 end

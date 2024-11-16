@@ -1,0 +1,11 @@
+<div class="relative group" id="<%= dom_id(list.shares.find_by(recipient: current_user)) %>">
+  <%= render(ListCardComponent.new(list: list, current_user: current_user)) %>
+  
+  <%= button_to remove_share_list_path(id: list.id), 
+      method: :delete,
+      class: "absolute top-2 right-2 btn btn-ghost btn-sm btn-circle opacity-0 group-hover:opacity-100 transition-opacity",
+      title: t('shared_lists_component.confirm_remove'),
+      form: { data: { turbo_confirm: t('shared_lists_component.confirm_remove') } } do %>
+    <%= heroicon "x-mark" %>
+  <% end %>
+</div>

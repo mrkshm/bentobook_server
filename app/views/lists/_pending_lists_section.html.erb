@@ -1,0 +1,34 @@
+<div id="pending-lists-section">
+  <% if pending_lists.any? %>
+    <div class="mb-8">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold"><%= t('shared_lists_component.pending_shares') %></h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% pending_lists.each do |list| %>
+          <div class="relative group" id="<%= dom_id(list.shares.find_by(recipient: current_user)) %>">
+            <%= render(ListCardComponent.new(list: list, current_user: current_user)) %>
+            <div class="absolute top-2 right-2 flex gap-2">
+              <%= button_to accept_share_list_path(id: list.id),
+                  method: :post,
+                  class: "btn btn-success btn-sm btn-circle",
+                  data: { turbo: true },
+                  title: t('shared_lists_component.accept') do %>
+                <%= heroicon "check" %>
+              <% end %>
+              
+              <%= button_to decline_share_list_path(id: list.id),
+                  method: :delete,
+                  class: "btn btn-error btn-sm btn-circle",
+                  data: { turbo: true },
+                  title: t('shared_lists_component.decline') do %>
+                <%= heroicon "x-mark" %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

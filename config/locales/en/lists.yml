@@ -1,8 +1,9 @@
 en:
   lists:
     name_placeholder: "List name"
-    private: "Private"
-    public: "Public"
+    visibility:
+      personal: "Personal"
+      discoverable: "Discoverable"
     form:
       name: "Name"
       name_placeholder: "List name"
@@ -16,6 +17,7 @@ en:
       title: "New List"
     edit:
       title: "Edit List"
+      not_authorized: "You are not authorized to edit this list"
     form:
       personal: "Personal"
       restricted: "Restricted"
@@ -51,3 +53,9 @@ en:
     share_modal:
       share: "Share"
       search_placeholder: "Search for a user"
+    accept_share:
+      share_accepted: "List share accepted"
+    decline_share:
+      share_declined: "List share declined"
+    remove_share:
+      share_removed: "List removed from your shared lists"

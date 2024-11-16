@@ -1,5 +1,7 @@
 fr:
   shared_lists_component:
+    title: "Listes partagées"
+    confirm_remove: "Voulez-vous vraiment supprimer cette liste de vos listes partagées ?"
     pending_shares: "Partages en attente"
     shared_with_you: "Partagé avec vous"
     pending: "En attente"

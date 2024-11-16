@@ -41,6 +41,9 @@ Rails.application.routes.draw do
         get 'export', to: 'lists#export'
         post 'export', to: 'lists#export'
         get :share
+        delete 'remove_share', to: 'lists#remove_share', as: :remove_share
+        post 'accept_share', to: 'lists#accept_share'
+        delete 'decline_share', to: 'lists#decline_share'
       end
       resources :list_restaurants, only: [:new, :create, :index] do
         collection do

@@ -1,0 +1,28 @@
+<%= link_to list_path(id: list.id), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
+  <div class="card-body">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h2 class="card-title">
+          <%= list.name %>
+          <div class="badge <%= visibility_badge_class %> badge-sm">
+            <%= t("lists.visibility.#{list.visibility}") %>
+          </div>
+        </h2>
+        <%= owner_avatar if is_shared %>
+      </div>
+    </div>
+
+    <div class="mt-4 flex items-center gap-4 text-sm text-base-content/70">
+      <div>
+        <%= t('.restaurants', count: statistics.total_restaurants) %>
+      </div>
+      <div class="flex items-center gap-2">
+        <%= t('.visited', percentage: statistics.visited_percentage) %>
+        <div class="w-20 bg-base-200 rounded-full h-1.5">
+          <div class="bg-primary h-1.5 rounded-full" 
+               style="width: <%= statistics.visited_percentage %>%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

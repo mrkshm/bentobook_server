@@ -1,6 +1,7 @@
 class ListsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_list, only: [:show, :edit, :update, :destroy]
+  before_action :ensure_editable, only: [:edit, :update, :destroy]
 
   def index
     @lists = current_user.lists.order(created_at: :desc)
@@ -9,6 +10,7 @@ class ListsController < ApplicationController
   def show
     @order_by = params[:order_by] || 'name'
     @order_direction = params[:order_direction] || 'asc'
+    @statistics = ListStatistics.new(list: @list, user: current_user)
 
     @restaurants = @list.restaurants
       .includes(:cuisine_type)
@@ -47,8 +49,16 @@ class ListsController < ApplicationController
   end
 
   def destroy
-    @list.destroy
-    redirect_to lists_path, notice: t('.success'), status: :see_other
+    unless @list.owner == current_user
+      redirect_to list_path(@list), alert: t('.not_authorized')
+      return
+    end
+
+    if @list.destroy
+      redirect_to lists_path, notice: t('.success'), status: :see_other
+    else
+      redirect_to list_path(@list), alert: t('.failure')
+    end
   end
 
   def export
@@ -97,18 +107,80 @@ class ListsController < ApplicationController
     render :_share_modal, layout: false
   end
 
+  def remove_share
+    @list = List.find(params[:id])
+    share = current_user.shares.find_by!(shareable: @list)
+    share.destroy
+
+    respond_to do |format|
+      format.html { redirect_to lists_path, notice: t('.share_removed') }
+      format.turbo_stream { flash.now[:notice] = t('.share_removed') }
+    end
+  end
+
+  def accept_share
+    @list = List.find(params[:id])
+    share = current_user.shares.find_by!(shareable: @list)
+    share.accepted!
+
+    respond_to do |format|
+      format.html { redirect_to lists_path, notice: t('.share_accepted') }
+      format.turbo_stream do
+        flash.now[:notice] = t('.share_accepted')
+        render turbo_stream: [
+          turbo_stream.remove(helpers.dom_id(share)),
+          turbo_stream.append('shared-lists-grid', partial: 'lists/shared_list', locals: { list: @list }),
+          turbo_stream.replace('pending-lists-section', partial: 'lists/pending_lists_section', locals: { 
+            pending_lists: current_user.shared_lists.pending.includes(:owner, owner: { profile: { avatar_attachment: :blob } }),
+            current_user: current_user
+          }),
+          turbo_stream.replace('shared-lists-section', partial: 'lists/shared_lists_section', locals: { 
+            accepted_lists: current_user.shared_lists.accepted.includes(:owner, owner: { profile: { avatar_attachment: :blob } }),
+            current_user: current_user
+          }),
+          turbo_stream.update('flash', partial: 'shared/flash')
+        ]
+      end
+    end
+  end
+
+  def decline_share
+    @list = List.find(params[:id])
+    share = current_user.shares.find_by!(shareable: @list)
+    share.destroy
+
+    respond_to do |format|
+      format.html { redirect_to lists_path, notice: t('.share_declined') }
+      format.turbo_stream do
+        flash.now[:notice] = t('.share_declined')
+        render turbo_stream: [
+          turbo_stream.remove(helpers.dom_id(share)),
+          turbo_stream.update('flash', partial: 'shared/flash')
+        ]
+      end
+    end
+  end
+
   private
 
   def set_list
     @list = List.left_joins(:shares)
-               .where(
-                 'lists.owner_id = :user_id AND lists.owner_type = :user_type OR ' \
-                 '(shares.recipient_id = :user_id AND shares.status = :accepted)',
-                 user_id: current_user.id,
-                 user_type: 'User',
-                 accepted: Share.statuses[:accepted]
-               )
-               .find(params[:id])
+             .where(
+               'lists.owner_id = :user_id AND lists.owner_type = :user_type OR ' \
+               '(shares.recipient_id = :user_id AND shares.status = :accepted)',
+               user_id: current_user.id,
+               user_type: 'User',
+               accepted: Share.statuses[:accepted]
+             )
+             .find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to lists_path, alert: t('.not_found')
+  end
+
+  def ensure_editable
+    unless @list.editable_by?(current_user)
+      redirect_to list_path(@list), alert: t('.not_authorized')
+    end
   end
 
   def list_params

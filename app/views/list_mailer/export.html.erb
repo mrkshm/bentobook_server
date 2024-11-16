@@ -17,9 +17,13 @@
 
   <h2><%= t('.list_info') %></h2>
   <ul>
-    <li><%= t('.total_restaurants', count: @list.total_restaurants) %></li>
-    <li><%= t('.visited_count', visited: @list.visited_count, total: @list.total_restaurants, percentage: @list.visited_percentage) %></li>
-    <li><%= t('.last_updated', date: l(@list.last_updated_at, format: :long)) %></li>
+    <li><%= t('.total_restaurants', count: @statistics.total_restaurants) %></li>
+    <li><%= t('.visited_count', 
+              visited: @statistics.visited_count, 
+              total: @statistics.total_restaurants, 
+              percentage: @statistics.visited_percentage) %></li>
+    <li><%= t('.last_updated', 
+              date: l(@statistics.last_visited_at || @list.created_at, format: :long)) %></li>
     <li><%= t('.visibility', visibility: t("lists.show.#{@list.visibility}")) %></li>
   </ul>
 

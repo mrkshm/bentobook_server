@@ -58,9 +58,16 @@ en:
     attributes:
       list:
         visibilities:
-          private: "Private"
-          shared: "Shared"
-          public: "Public"
+          personal: "Personal"
+          discoverable: "Discoverable"
+  list_header_component:
+    shared_by: "Shared by %{user}"
+    can_edit: "You can edit this list"
+  list_stats_component:
+    total_restaurants: "Total Restaurants"
+    visited_percentage: "Visited Percentage"
+    visited_desc: "%{visited} of %{total} restaurants visited"
+    last_updated: "Last Visit"
   date:
     month_names: [~, January, February, March, April, May, June, July, August, September, October, November, December]
     day: Day

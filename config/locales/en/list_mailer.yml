@@ -2,3 +2,5 @@ en:
   list_mailer:
     export:
       subject: "Restaurant List: %{list}"
+      visited_count: "%{visited} of %{total} restaurants visited (%{percentage}%)"
+      last_updated: "Last updated: %{date}"

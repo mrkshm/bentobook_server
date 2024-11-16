@@ -1,0 +1,11 @@
+<div class="flex -space-x-2 overflow-visible relative">
+  <% shares.each do |share| %>
+    <div class="<%= share.pending? ? 'opacity-50' : '' %> relative">
+      <%= render(AvatarComponent.new(
+        user: share.recipient,
+        size: :small,
+        tooltip: tooltip_for(share)
+      )) %>
+    </div>
+  <% end %>
+</div>

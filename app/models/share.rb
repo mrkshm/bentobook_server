@@ -1,4 +1,10 @@
 class Share < ApplicationRecord
+  # TODO: Future sharing enhancements to consider:
+  # - Sharing via email/link (recipient might not be a user)
+  # - Premium list access
+  # - Business/influencer use cases with public/premium lists
+  # For now, keeping the implementation focused on direct user-to-user sharing
+
   belongs_to :creator, class_name: 'User'
   belongs_to :recipient, class_name: 'User'
   belongs_to :shareable, polymorphic: true

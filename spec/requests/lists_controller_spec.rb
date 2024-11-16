@@ -172,4 +172,87 @@ RSpec.describe ListsController, type: :request do
       end
     end
   end
+
+  context 'with shared lists' do
+    let(:owner) { create(:user) }
+    let(:viewer) { create(:user) }
+    let(:editor) { create(:user) }
+    let(:list) { create(:list, owner: owner) }
+
+    before do
+      create(:share, creator: owner, recipient: viewer, 
+             shareable: list, permission: :view, status: :accepted)
+      create(:share, creator: owner, recipient: editor, 
+             shareable: list, permission: :edit, status: :accepted)
+    end
+
+    describe 'GET /lists/:id' do
+      it 'shows list to viewer' do
+        sign_in viewer
+        get list_path(id: list.id)
+        expect(response).to be_successful
+      end
+
+      it 'shows list to editor' do
+        sign_in editor
+        get list_path(id: list.id)
+        expect(response).to be_successful
+      end
+
+      it 'shows correct statistics for viewer' do
+        restaurant = create(:restaurant)
+        list.restaurants << restaurant
+        create(:visit, user: viewer, restaurant: restaurant)
+
+        sign_in viewer
+        get list_path(id: list.id)
+        expect(response.body).to include('100%') # Visited percentage
+      end
+    end
+
+    describe 'PATCH /lists/:id' do
+      context 'when user has view permission' do
+        before { sign_in viewer }
+
+        it 'prevents editing' do
+          patch list_path(id: list.id), params: { list: { name: 'New Name' } }
+          expect(response).to redirect_to(list_path(list))
+          expect(flash[:alert]).to be_present
+        end
+      end
+
+      context 'when user has edit permission' do
+        before { sign_in editor }
+
+        it 'allows editing' do
+          patch list_path(id: list.id), params: { list: { name: 'New Name' } }
+          expect(list.reload.name).to eq('New Name')
+          expect(response).to redirect_to(list_path(id: list.id))
+        end
+      end
+    end
+
+    describe 'DELETE /lists/:id' do
+      it 'prevents deletion by viewer' do
+        sign_in viewer
+        delete list_path(id: list.id)
+        expect(response).to redirect_to(list_path(list))
+        expect(List.exists?(list.id)).to be true
+      end
+
+      it 'prevents deletion by editor' do
+        sign_in editor
+        delete list_path(id: list.id)
+        expect(response).to redirect_to(list_path(list))
+        expect(List.exists?(list.id)).to be true
+      end
+
+      it 'allows deletion by owner' do
+        sign_in owner
+        delete list_path(id: list.id)
+        expect(response).to redirect_to(lists_path)
+        expect(List.exists?(list.id)).to be false
+      end
+    end
+  end
 end
