@@ -9,8 +9,8 @@
                            cuisine_type_select_target: "input",
                            action: "input->cuisine-type-select#search focus->cuisine-type-select#showResults blur->cuisine-type-select#hideResultsDelayed"
                          } %>
-    <%= @form.hidden_field :cuisine_type_id, 
-                           value: @form.object.cuisine_type_id,
+    <%= @form.hidden_field :cuisine_type_name, 
+                           value: @form.object.cuisine_type&.name,
                            data: { cuisine_type_select_target: "hiddenInput" } %>
     <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-full mt-1 hidden max-h-60 overflow-auto"
         data-cuisine-type-select-target="results">

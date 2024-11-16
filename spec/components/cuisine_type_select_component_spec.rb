@@ -43,9 +43,14 @@ RSpec.describe CuisineTypeSelectComponent, type: :component do
   describe '#cuisine_types_json' do
     it 'returns the correct JSON representation of cuisine types' do
       expected_json = [
-        { id: 1, name: 'Italian', translated_name: 'Italian' },
-        { id: 2, name: 'Japanese', translated_name: 'Japanese' },
-        { id: 3, name: 'Mexican', translated_name: 'Mexican' }
+        { 
+          id: 1, 
+          name: 'Italian', 
+          translated_name: 'Italian',
+          display_name: 'Italian (Italian)'
+        },
+        { id: 2, name: 'Japanese', translated_name: 'Japanese', display_name: 'Japanese (Japanese)' },
+        { id: 3, name: 'Mexican', translated_name: 'Mexican', display_name: 'Mexican (Mexican)' }
       ].to_json
 
       expect(component.cuisine_types_json).to eq(expected_json)

@@ -9,7 +9,7 @@ export default class extends Controller {
       console.error("Cuisine types data is missing")
       return
     }
-    console.log("Cuisine types:", this.cuisineTypesValue)  // Add this line
+    console.log("Cuisine types:", this.cuisineTypesValue)
     this.hideResultsTimeout = null
   }
 
@@ -21,8 +21,8 @@ export default class extends Controller {
     
     this.resultsTarget.innerHTML = matches.map(ct => `
       <li>
-        <a href="#" data-action="mousedown->cuisine-type-select#select" data-id="${ct.id}" data-name="${ct.translated_name}">
-          ${ct.translated_name}
+        <a href="#" data-action="mousedown->cuisine-type-select#select" data-id="${ct.id}" data-value="${ct.value}">
+          ${ct.name}
         </a>
       </li>
     `).join('')
@@ -33,10 +33,11 @@ export default class extends Controller {
   select(event) {
     event.preventDefault()
     const id = event.currentTarget.dataset.id
-    const name = event.currentTarget.dataset.name
+    const value = event.currentTarget.dataset.value
+    const cuisineType = this.cuisineTypesValue.find(ct => ct.id === parseInt(id))
     
-    this.hiddenInputTarget.value = id
-    this.inputTarget.value = name
+    this.hiddenInputTarget.value = value
+    this.inputTarget.value = cuisineType.name
     this.hideResults()
   }
 
