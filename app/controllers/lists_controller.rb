@@ -119,7 +119,7 @@ class ListsController < ApplicationController
   end
 
   def accept_share
-    @list = List.find(params[:id])
+    @list = List.find_by!(id: params[:id])
     share = current_user.shares.find_by!(shareable: @list)
     share.accepted!
 
@@ -145,7 +145,7 @@ class ListsController < ApplicationController
   end
 
   def decline_share
-    @list = List.find(params[:id])
+    @list = List.find_by!(id: params[:id])
     share = current_user.shares.find_by!(shareable: @list)
     share.destroy
 
