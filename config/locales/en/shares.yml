@@ -4,3 +4,9 @@ en:
     create:
       success: "List shared successfully"
       success_with_visibility_change: "List shared successfully. The list visibility has been changed to restricted."
+    accept:
+      success: "Share accepted successfully"
+      unauthorized: "You are not authorized to accept this share"
+    decline:
+      success: "Share declined"
+      unauthorized: "You are not authorized to decline this share"

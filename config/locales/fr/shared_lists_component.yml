@@ -1,0 +1,15 @@
+fr:
+  shared_lists_component:
+    title: "Listes partagées"
+    confirm_remove: "Voulez-vous vraiment supprimer cette liste de vos listes partagées ?"
+    pending_shares: "Partages en attente"
+    shared_with_you: "Partagé avec vous"
+    pending: "En attente"
+    shared_by: "Partagé par %{user}"
+    accept: "Accepter"
+    decline: "Refuser"
+    permissions:
+      view: "Voir seulement"
+      edit: "Peut modifier"
+  common:
+    view: "Voir"

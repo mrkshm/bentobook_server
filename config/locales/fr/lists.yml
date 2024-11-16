@@ -1,8 +1,9 @@
 fr:
   lists:
     name_placeholder: "Nom de la liste"
-    private: "Privée"
-    public: "Publique"
+    visibility:
+      personal: "Personnel"
+      discoverable: "Découvrable"
     form:
       name: "Nom"
       name_placeholder: "Nom de la liste"
@@ -16,6 +17,7 @@ fr:
       title: "Nouvelle Liste"
     edit:
       title: "Modifier la Liste"
+      not_authorized: "Vous n'êtes pas autorisé à modifier cette liste"
     form:
       personal: "Personnel"
       restricted: "Restreint"
@@ -52,3 +54,9 @@ fr:
     share_modal:
       share: "Partager"
       search_placeholder: "Rechercher un utilisateur"
+    accept_share:
+      share_accepted: "Partage de liste accepté"
+    decline_share:
+      share_declined: "Partage de liste refusé"
+    remove_share:
+      share_removed: "Liste supprimée de vos listes partagées"

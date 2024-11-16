@@ -172,4 +172,171 @@ RSpec.describe ListsController, type: :request do
       end
     end
   end
+
+  context 'with shared lists' do
+    let(:owner) { create(:user) }
+    let(:viewer) { create(:user) }
+    let(:editor) { create(:user) }
+    let(:list) { create(:list, owner: owner) }
+
+    before do
+      create(:share, creator: owner, recipient: viewer, 
+             shareable: list, permission: :view, status: :accepted)
+      create(:share, creator: owner, recipient: editor, 
+             shareable: list, permission: :edit, status: :accepted)
+    end
+
+    describe 'GET /lists/:id' do
+      it 'shows list to viewer' do
+        sign_in viewer
+        get list_path(id: list.id)
+        expect(response).to be_successful
+      end
+
+      it 'shows list to editor' do
+        sign_in editor
+        get list_path(id: list.id)
+        expect(response).to be_successful
+      end
+
+      it 'shows correct statistics for viewer' do
+        restaurant = create(:restaurant)
+        list.restaurants << restaurant
+        create(:visit, user: viewer, restaurant: restaurant)
+
+        sign_in viewer
+        get list_path(id: list.id)
+        expect(response.body).to include('100%') # Visited percentage
+      end
+    end
+
+    describe 'PATCH /lists/:id' do
+      context 'when user has view permission' do
+        before { sign_in viewer }
+
+        it 'prevents editing' do
+          patch list_path(id: list.id), params: { list: { name: 'New Name' } }
+          expect(response).to redirect_to(list_path(list))
+          expect(flash[:alert]).to be_present
+        end
+      end
+
+      context 'when user has edit permission' do
+        before { sign_in editor }
+
+        it 'allows editing' do
+          patch list_path(id: list.id), params: { list: { name: 'New Name' } }
+          expect(list.reload.name).to eq('New Name')
+          expect(response).to redirect_to(list_path(id: list.id))
+        end
+      end
+    end
+
+    describe 'DELETE /lists/:id' do
+      it 'prevents deletion by viewer' do
+        sign_in viewer
+        delete list_path(id: list.id)
+        expect(response).to redirect_to(list_path(list))
+        expect(List.exists?(list.id)).to be true
+      end
+
+      it 'prevents deletion by editor' do
+        sign_in editor
+        delete list_path(id: list.id)
+        expect(response).to redirect_to(list_path(list))
+        expect(List.exists?(list.id)).to be true
+      end
+
+      it 'allows deletion by owner' do
+        sign_in owner
+        delete list_path(id: list.id)
+        expect(response).to redirect_to(lists_path)
+        expect(List.exists?(list.id)).to be false
+      end
+    end
+  end
+
+  context 'sharing functionality' do
+    let(:owner) { create(:user) }
+    let(:recipient) { create(:user) }
+    let(:list) { create(:list, owner: owner) }
+
+    describe 'GET /lists/:id/share' do
+      before { sign_in owner }
+
+      it 'renders share modal' do
+        get share_list_path(id: list.id)
+        expect(response).to be_successful
+        expect(response.body).to include('share_modal')
+      end
+    end
+
+    describe 'DELETE /lists/:id/remove_share' do
+      let!(:share) { create(:share, creator: owner, recipient: recipient, shareable: list, status: :accepted) }
+      
+      before { sign_in recipient }
+
+      it 'removes share with html format' do
+        expect {
+          delete remove_share_list_path(id: list.id)
+        }.to change(Share, :count).by(-1)
+        
+        expect(response).to redirect_to(lists_path)
+        expect(flash[:notice]).to be_present
+      end
+
+      it 'removes share with turbo_stream format' do
+        delete remove_share_list_path(id: list.id, format: :turbo_stream)
+        
+        expect(response).to be_successful
+        expect(flash.now[:notice]).to be_present
+      end
+    end
+
+    describe 'POST /lists/:id/accept_share' do
+      let!(:share) { create(:share, creator: owner, recipient: recipient, shareable: list, status: :pending) }
+      
+      before { sign_in recipient }
+
+      it 'accepts share with html format' do
+        post accept_share_list_path(id: list.id)
+        
+        expect(share.reload).to be_accepted
+        expect(response).to redirect_to(lists_path)
+        expect(flash[:notice]).to be_present
+      end
+
+      it 'accepts share with turbo_stream format' do
+        post accept_share_list_path(id: list.id, format: :turbo_stream)
+        
+        expect(share.reload).to be_accepted
+        expect(response).to be_successful
+        expect(response.body).to include('turbo-stream')
+        expect(flash.now[:notice]).to be_present
+      end
+    end
+
+    describe 'DELETE /lists/:id/decline_share' do
+      let!(:share) { create(:share, creator: owner, recipient: recipient, shareable: list, status: :pending) }
+      
+      before { sign_in recipient }
+
+      it 'declines share with html format' do
+        expect {
+          delete decline_share_list_path(id: list.id)
+        }.to change(Share, :count).by(-1)
+        
+        expect(response).to redirect_to(lists_path)
+        expect(flash[:notice]).to be_present
+      end
+
+      it 'declines share with turbo_stream format' do
+        delete decline_share_list_path(id: list.id, format: :turbo_stream)
+        
+        expect(response).to be_successful
+        expect(response.body).to include('turbo-stream')
+        expect(flash.now[:notice]).to be_present
+      end
+    end
+  end
 end

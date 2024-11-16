@@ -1,0 +1,5 @@
+en:
+  sharee_avatars_component:
+    pending_tooltip: "%{user} (waiting for response)"
+    accepted_tooltip: "Shared with %{user}"
+    declined_tooltip: "%{user} (declined)"

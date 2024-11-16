@@ -91,4 +91,42 @@ RSpec.describe SharesController, type: :request do
       end
     end
   end
+
+  describe 'PATCH /shares/:id/accept' do
+    let(:share) { create(:share, :pending, recipient: recipient, creator: user, shareable: list) }
+
+    context 'when authenticated as recipient' do
+      before { sign_in recipient }
+
+      it 'accepts the share' do
+        patch accept_share_path(id: share.id)
+        expect(share.reload).to be_accepted
+        expect(response).to redirect_to(lists_path)
+      end
+    end
+
+    context 'when authenticated as non-recipient' do
+      before { sign_in user }
+
+      it 'does not accept the share' do
+        patch accept_share_path(id: share.id)
+        expect(share.reload).to be_pending
+        expect(response).to redirect_to(lists_path)
+      end
+    end
+  end
+
+  describe 'PATCH /shares/:id/decline' do
+    let(:share) { create(:share, recipient: recipient, creator: user, shareable: list) }
+
+    context 'when authenticated as recipient' do
+      before { sign_in recipient }
+
+      it 'declines the share' do
+        patch decline_share_path(id: share.id)
+        expect(share.reload).to be_rejected
+        expect(response).to redirect_to(lists_path)
+      end
+    end
+  end
 end

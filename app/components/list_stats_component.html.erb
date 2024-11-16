@@ -1,0 +1,27 @@
+<div class="stats shadow w-full">
+  <div class="stat">
+    <div class="stat-title"><%= t('.total_restaurants') %></div>
+    <div class="stat-value"><%= statistics.total_restaurants %></div>
+  </div>
+  
+  <div class="stat">
+    <div class="stat-title"><%= t('.visited_percentage') %></div>
+    <div class="stat-value"><%= statistics.visited_percentage %>%</div>
+    <div class="stat-desc">
+      <%= t('.visited_desc', 
+            visited: statistics.visited_count,
+            total: statistics.total_restaurants) %>
+      <div class="w-full bg-base-200 rounded-full h-2.5 mt-2">
+        <div class="bg-primary h-2.5 rounded-full" 
+             style="width: <%= statistics.visited_percentage %>%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-title"><%= t('.last_updated') %></div>
+    <div class="stat-value text-base">
+      <%= l(statistics.last_visited_at || list.created_at, format: :short) %>
+    </div>
+  </div>
+</div>

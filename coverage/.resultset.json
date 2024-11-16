@@ -15,7 +15,7 @@
           null,
           null,
           1,
-          3131,
+          3683,
           null,
           null,
           null,
@@ -30,6 +30,21 @@
           1,
           null,
           1,
+          1,
+          1,
+          29,
+          null,
+          null,
+          null,
+          null,
+          1,
+          14,
+          null,
+          null,
+          1,
+          14,
+          null,
+          null,
           null,
           1,
           3,
@@ -43,7 +58,7 @@
           1,
           null,
           1,
-          1913,
+          2269,
           null,
           null,
           1,
@@ -54,13 +69,13 @@
           null
         ],
         "branches": {
-          "[:if, 0, 35, 4, 35, 39]": {
-            "[:then, 1, 35, 28, 35, 33]": 1,
-            "[:else, 2, 35, 4, 35, 39]": 1
+          "[:if, 0, 50, 4, 50, 39]": {
+            "[:then, 1, 50, 28, 50, 33]": 1,
+            "[:else, 2, 50, 4, 50, 39]": 1
           },
-          "[:if, 3, 41, 4, 41, 34]": {
-            "[:then, 4, 41, 4, 41, 18]": 959,
-            "[:else, 5, 41, 4, 41, 34]": 954
+          "[:if, 3, 56, 4, 56, 34]": {
+            "[:then, 4, 56, 4, 56, 18]": 1137,
+            "[:else, 5, 56, 4, 56, 34]": 1132
           }
         }
       },
@@ -78,9 +93,31 @@
           1,
           1,
           1,
+          null,
+          1,
+          30,
+          null,
+          1,
+          null,
           null
         ],
         "branches": {
+          "[:\"&.\", 0, 6, 18, 6, 38]": {
+            "[:then, 1, 6, 18, 6, 38]": 29,
+            "[:else, 2, 6, 18, 6, 38]": 1
+          },
+          "[:\"&.\", 3, 6, 18, 6, 47]": {
+            "[:then, 4, 6, 18, 6, 47]": 29,
+            "[:else, 5, 6, 18, 6, 47]": 1
+          },
+          "[:\"&.\", 6, 6, 18, 6, 56]": {
+            "[:then, 7, 6, 18, 6, 56]": 29,
+            "[:else, 8, 6, 18, 6, 56]": 1
+          },
+          "[:unless, 9, 6, 4, 6, 56]": {
+            "[:else, 10, 6, 4, 6, 56]": 1,
+            "[:then, 11, 6, 4, 6, 10]": 29
+          }
         }
       },
       "/Users/mrks/Code/bentobook/bentobook_server/app/helpers/daisy_ui_pagy_helper.rb": {
@@ -220,17 +257,17 @@
         "lines": [
           1,
           1,
-          16,
-          16,
-          16,
-          16,
-          16,
+          43,
+          43,
+          43,
+          43,
+          43,
           null,
           null,
           1,
-          16,
-          1,
-          1,
+          43,
+          28,
+          28,
           null,
           null,
           15,
@@ -240,9 +277,9 @@
           1,
           null,
           1,
-          16,
-          16,
-          16,
+          43,
+          43,
+          43,
           5,
           5,
           5,
@@ -261,49 +298,49 @@
           null,
           null,
           null,
-          11,
-          11,
+          38,
+          38,
           null,
           null,
           null,
           null,
           null,
           1,
-          53,
+          134,
           3,
           null,
-          50,
+          131,
           null,
-          53,
-          53,
-          null,
-          null,
-          1,
-          16,
-          16,
-          16,
-          16,
+          134,
+          134,
           null,
           null,
           1,
-          16,
-          2,
+          43,
+          43,
+          43,
+          43,
+          null,
+          null,
+          1,
+          43,
+          29,
           2,
           12,
           null,
           null,
           null,
           1,
-          10,
-          1,
+          37,
+          28,
           1,
           8,
           null,
           null,
           null,
           1,
-          11,
-          10,
+          38,
+          37,
           null,
           1,
           1,
@@ -312,20 +349,20 @@
           null,
           null,
           1,
-          10,
-          10,
-          10,
-          4,
+          37,
+          37,
+          37,
+          8,
           null,
-          6,
+          29,
           null,
           null,
           null,
           1,
-          10,
+          37,
           1,
-          9,
-          7,
+          36,
+          34,
           2,
           1,
           null,
@@ -340,16 +377,16 @@
         ],
         "branches": {
           "[:if, 0, 4, 15, 4, 53]": {
-            "[:then, 1, 4, 34, 4, 46]": 12,
+            "[:then, 1, 4, 34, 4, 46]": 39,
             "[:else, 2, 4, 49, 4, 53]": 4
           },
           "[:if, 3, 11, 4, 17, 7]": {
-            "[:then, 4, 12, 6, 14, 9]": 1,
+            "[:then, 4, 12, 6, 14, 9]": 28,
             "[:else, 5, 16, 6, 16, 20]": 15
           },
           "[:if, 6, 25, 8, 46, 11]": {
             "[:then, 7, 26, 10, 42, 12]": 5,
-            "[:else, 8, 44, 10, 45, 29]": 11
+            "[:else, 8, 44, 10, 45, 29]": 38
           },
           "[:if, 9, 29, 25, 29, 84]": {
             "[:then, 10, 29, 51, 29, 66]": 0,
@@ -362,40 +399,40 @@
           },
           "[:unless, 16, 23, 39, 23, 71]": {
             "[:else, 17, 23, 39, 23, 71]": 5,
-            "[:then, 18, 23, 39, 23, 52]": 11
+            "[:then, 18, 23, 39, 23, 52]": 38
           },
           "[:if, 19, 52, 13, 56, 7]": {
             "[:then, 20, 53, 6, 53, 31]": 3,
-            "[:else, 21, 55, 6, 55, 64]": 50
+            "[:else, 21, 55, 6, 55, 64]": 131
           },
           "[:unless, 22, 64, 4, 64, 67]": {
             "[:else, 23, 64, 4, 64, 67]": 5,
-            "[:then, 24, 64, 4, 64, 48]": 11
+            "[:then, 24, 64, 4, 64, 48]": 38
           },
           "[:case, 25, 69, 4, 73, 7]": {
-            "[:when, 26, 70, 21, 70, 30]": 2,
+            "[:when, 26, 70, 21, 70, 30]": 29,
             "[:when, 27, 71, 21, 71, 32]": 2,
             "[:else, 28, 72, 9, 72, 20]": 12
           },
           "[:case, 29, 77, 4, 81, 7]": {
-            "[:when, 30, 78, 21, 78, 30]": 1,
+            "[:when, 30, 78, 21, 78, 30]": 28,
             "[:when, 31, 79, 21, 79, 31]": 1,
             "[:else, 32, 80, 9, 80, 19]": 8
           },
           "[:if, 33, 85, 4, 91, 7]": {
-            "[:then, 34, 86, 6, 86, 66]": 10,
+            "[:then, 34, 86, 6, 86, 66]": 37,
             "[:else, 35, 88, 6, 90, 9]": 1
           },
           "[:if, 36, 97, 4, 101, 7]": {
-            "[:then, 37, 98, 6, 98, 41]": 4,
-            "[:else, 38, 100, 6, 100, 22]": 6
+            "[:then, 37, 98, 6, 98, 41]": 8,
+            "[:else, 38, 100, 6, 100, 22]": 29
           },
           "[:if, 39, 105, 4, 113, 7]": {
             "[:then, 40, 106, 6, 106, 19]": 1,
-            "[:else, 41, 107, 4, 112, 19]": 9
+            "[:else, 41, 107, 4, 112, 19]": 36
           },
           "[:if, 42, 107, 4, 112, 19]": {
-            "[:then, 43, 108, 6, 108, 27]": 7,
+            "[:then, 43, 108, 6, 108, 27]": 34,
             "[:else, 44, 109, 4, 112, 19]": 2
           },
           "[:if, 45, 109, 4, 112, 19]": {
@@ -494,6 +531,131 @@
           3,
           3,
           3,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null
+        ],
+        "branches": {
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/list_actions_component.rb": {
+        "lines": [
+          1,
+          1,
+          1,
+          null,
+          1,
+          10,
+          10,
+          null,
+          10,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          1,
+          10,
+          null,
+          null,
+          null,
+          5,
+          null,
+          null
+        ],
+        "branches": {
+          "[:if, 0, 21, 4, 21, 45]": {
+            "[:then, 1, 21, 4, 21, 15]": 5,
+            "[:else, 2, 21, 4, 21, 45]": 5
+          }
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/list_component.rb": {
+        "lines": [
+          1,
+          1,
+          9,
+          9,
+          9,
+          9,
+          null,
+          9,
+          null,
+          null,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null
+        ],
+        "branches": {
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/list_header_component.rb": {
+        "lines": [
+          1,
+          1,
+          1,
+          null,
+          1,
+          17,
+          17,
+          17,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          1,
+          17,
+          16,
+          1,
+          null,
+          null,
+          null,
+          1,
+          7,
+          null,
+          7,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          17,
+          null,
+          null
+        ],
+        "branches": {
+          "[:case, 0, 16, 4, 19, 7]": {
+            "[:when, 1, 17, 25, 17, 40]": 16,
+            "[:when, 2, 18, 29, 18, 41]": 1,
+            "[:else, 3, 16, 4, 19, 7]": 0
+          },
+          "[:unless, 4, 23, 4, 23, 28]": {
+            "[:else, 5, 23, 4, 23, 28]": 7,
+            "[:then, 6, 23, 4, 23, 10]": 0
+          }
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/list_stats_component.rb": {
+        "lines": [
+          1,
+          1,
+          12,
+          12,
           null,
           null,
           1,
@@ -630,7 +792,7 @@
           null,
           1,
           1,
-          13,
+          14,
           null,
           null,
           1,
@@ -647,7 +809,7 @@
           null,
           null,
           1,
-          19,
+          21,
           null,
           null,
           null
@@ -764,15 +926,84 @@
         "branches": {
         }
       },
-      "/Users/mrks/Code/bentobook/bentobook_server/app/components/sort_form_component.rb": {
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/shared_lists_component.rb": {
+        "lines": [
+          1,
+          1,
+          1,
+          null,
+          1,
+          13,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          13,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          13,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null
+        ],
+        "branches": {
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/sharee_avatars_component.rb": {
         "lines": [
           1,
           1,
           14,
           14,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          1,
           14,
-          14,
-          14,
+          null,
+          null,
+          1,
+          5,
+          5,
+          null,
+          1,
+          null,
+          4,
+          null,
+          null,
+          null
+        ],
+        "branches": {
+          "[:case, 0, 17, 4, 22, 7]": {
+            "[:when, 1, 19, 6, 19, 44]": 1,
+            "[:when, 2, 21, 6, 21, 45]": 4,
+            "[:else, 3, 17, 4, 22, 7]": 0
+          }
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/sort_form_component.rb": {
+        "lines": [
+          1,
+          1,
+          17,
+          17,
+          17,
+          17,
+          17,
           null,
           null
         ],
@@ -1097,25 +1328,25 @@
           1,
           null,
           1,
-          284,
-          284,
+          302,
+          302,
           null,
           null,
           1,
           null,
           1,
-          284,
+          302,
           null,
-          284,
-          283,
-          283,
-          null,
-          1,
-          null,
-          null,
+          302,
+          301,
+          301,
           null,
           1,
-          134,
+          null,
+          null,
+          null,
+          1,
+          165,
           3,
           null,
           null,
@@ -1124,31 +1355,31 @@
           null,
           null,
           1,
-          284,
-          284,
+          302,
+          302,
           null,
           null
         ],
         "branches": {
           "[:if, 0, 19, 4, 24, 7]": {
-            "[:then, 1, 20, 6, 21, 39]": 283,
+            "[:then, 1, 20, 6, 21, 39]": 301,
             "[:else, 2, 23, 6, 23, 52]": 1
           },
           "[:if, 3, 28, 4, 28, 35]": {
-            "[:then, 4, 28, 4, 28, 13]": 131,
+            "[:then, 4, 28, 4, 28, 13]": 162,
             "[:else, 5, 28, 4, 28, 35]": 3
           },
           "[:\"&.\", 6, 37, 59, 37, 113]": {
             "[:then, 7, 37, 59, 37, 113]": 0,
-            "[:else, 8, 37, 59, 37, 113]": 269
+            "[:else, 8, 37, 59, 37, 113]": 287
           },
           "[:\"&.\", 9, 37, 59, 37, 120]": {
             "[:then, 10, 37, 59, 37, 120]": 0,
-            "[:else, 11, 37, 59, 37, 120]": 269
+            "[:else, 11, 37, 59, 37, 120]": 287
           },
           "[:if, 12, 38, 4, 38, 84]": {
             "[:then, 13, 38, 65, 38, 78]": 9,
-            "[:else, 14, 38, 4, 38, 84]": 275
+            "[:else, 14, 38, 4, 38, 84]": 293
           }
         }
       },
@@ -2170,6 +2401,7 @@
           1,
           2,
           2,
+          2,
           null,
           2,
           null,
@@ -2304,14 +2536,14 @@
           1,
           null,
           1,
-          479,
+          494,
           1,
           null,
           null,
           null,
           1,
-          438,
-          435,
+          453,
+          450,
           null,
           3,
           null,
@@ -2322,7 +2554,7 @@
           null,
           null,
           1,
-          434,
+          449,
           null,
           null
         ],
@@ -2333,10 +2565,10 @@
           },
           "[:if, 3, 42, 4, 44, 7]": {
             "[:then, 4, 43, 6, 43, 57]": 1,
-            "[:else, 5, 42, 4, 44, 7]": 478
+            "[:else, 5, 42, 4, 44, 7]": 493
           },
           "[:if, 6, 48, 4, 52, 7]": {
-            "[:then, 7, 49, 6, 49, 55]": 435,
+            "[:then, 7, 49, 6, 49, 55]": 450,
             "[:else, 8, 51, 6, 51, 25]": 3
           }
         }
@@ -2438,7 +2670,7 @@
           null,
           1,
           null,
-          162,
+          294,
           null,
           1,
           1,
@@ -2447,43 +2679,56 @@
           null,
           null,
           1,
-          24,
+          4,
           null,
           null,
           1,
-          7,
-          null,
-          5,
-          null,
-          null,
-          null,
-          null,
-          null,
-          5,
-          null,
-          null,
-          1,
-          6,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          1,
-          null,
-          6,
-          null,
-          null,
-          null,
-          null,
+          49,
           null,
           null
         ],
         "branches": {
-          "[:if, 0, 26, 4, 26, 39]": {
-            "[:then, 1, 26, 4, 26, 12]": 2,
-            "[:else, 2, 26, 4, 26, 39]": 5
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/models/list_statistics.rb": {
+        "lines": [
+          1,
+          1,
+          49,
+          49,
+          null,
+          null,
+          1,
+          127,
+          null,
+          null,
+          1,
+          31,
+          null,
+          null,
+          null,
+          null,
+          1,
+          65,
+          11,
+          null,
+          null,
+          1,
+          16,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null
+        ],
+        "branches": {
+          "[:if, 0, 18, 4, 18, 39]": {
+            "[:then, 1, 18, 4, 18, 12]": 54,
+            "[:else, 2, 18, 4, 18, 39]": 11
           }
         }
       },
@@ -2515,11 +2760,11 @@
           null,
           null,
           1,
-          22,
+          62,
           null,
           null,
           1,
-          22,
+          62,
           null,
           null
         ],
@@ -2598,7 +2843,7 @@
           null,
           1,
           13,
-          530,
+          515,
           null,
           null,
           null,
@@ -2631,7 +2876,7 @@
           null,
           null,
           1,
-          50,
+          52,
           null,
           null,
           1,
@@ -2651,7 +2896,7 @@
           null,
           null,
           1,
-          15,
+          12,
           null,
           null,
           1,
@@ -2710,7 +2955,7 @@
             "[:then, 14, 97, 6, 97, 16]": 2
           },
           "[:if, 15, 107, 6, 107, 38]": {
-            "[:then, 16, 107, 6, 107, 23]": 12,
+            "[:then, 16, 107, 6, 107, 23]": 9,
             "[:else, 17, 107, 6, 107, 38]": 3
           },
           "[:if, 18, 117, 6, 117, 38]": {
@@ -2726,6 +2971,12 @@
       "/Users/mrks/Code/bentobook/bentobook_server/app/models/share.rb": {
         "lines": [
           1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           1,
           1,
           1,
@@ -2740,11 +2991,11 @@
           1,
           null,
           1,
-          41,
+          113,
           null,
           null,
           1,
-          18,
+          74,
           1,
           1,
           null,
@@ -2752,13 +3003,13 @@
           null
         ],
         "branches": {
-          "[:if, 0, 16, 4, 16, 91]": {
-            "[:then, 1, 16, 4, 16, 61]": 5,
-            "[:else, 2, 16, 4, 16, 91]": 36
+          "[:if, 0, 22, 4, 22, 91]": {
+            "[:then, 1, 22, 4, 22, 61]": 5,
+            "[:else, 2, 22, 4, 22, 91]": 108
           },
-          "[:if, 3, 20, 4, 23, 7]": {
-            "[:then, 4, 21, 6, 22, 71]": 1,
-            "[:else, 5, 20, 4, 23, 7]": 17
+          "[:if, 3, 26, 4, 29, 7]": {
+            "[:then, 4, 27, 6, 28, 71]": 1,
+            "[:else, 5, 26, 4, 29, 7]": 73
           }
         }
       },
@@ -2954,21 +3205,23 @@
           1,
           1,
           1,
+          1,
           null,
           1,
           2,
           null,
           null,
           1,
-          2,
-          2,
+          5,
+          5,
+          5,
           null,
-          2,
+          5,
           null,
           null,
           null,
           null,
-          2,
+          5,
           null,
           null,
           null,
@@ -2992,96 +3245,187 @@
           null,
           null,
           1,
+          4,
+          3,
+          null,
+          1,
+          null,
+          null,
+          null,
+          1,
+          3,
+          1,
+          1,
+          null,
+          null,
+          2,
+          2,
+          null,
+          0,
+          null,
+          null,
+          null,
+          1,
+          4,
+          null,
+          4,
+          4,
+          1,
+          1,
+          1,
+          1,
+          null,
+          null,
+          4,
+          1,
+          null,
+          1,
+          null,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          4,
+          2,
+          1,
+          null,
+          null,
+          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          1,
+          1,
+          1,
+          null,
+          null,
+          1,
+          2,
+          2,
+          2,
+          null,
+          2,
+          3,
+          3,
+          null,
+          null,
+          null,
+          1,
+          2,
+          2,
+          2,
+          null,
+          2,
           3,
           2,
-          null,
-          1,
-          null,
-          null,
-          null,
-          1,
           1,
           1,
           null,
           null,
-          1,
-          4,
-          null,
-          4,
-          4,
-          1,
-          1,
-          1,
-          1,
           null,
           null,
-          4,
-          1,
           null,
-          1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
           1,
+          2,
+          2,
+          2,
           null,
-          1,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          4,
+          2,
+          3,
           2,
           1,
-          null,
-          null,
           1,
           null,
           null,
           null,
           null,
           null,
+          null,
+          null,
           1,
+          null,
+          1,
+          14,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           0,
-          0,
-          0,
           null,
           null,
           1,
+          9,
+          2,
+          null,
+          null,
           null,
           1,
-          6,
-          null,
-          null,
-          1,
-          7,
+          8,
           null,
           null
         ],
         "branches": {
-          "[:if, 0, 31, 4, 35, 7]": {
-            "[:then, 1, 32, 6, 32, 64]": 3,
-            "[:else, 2, 34, 6, 34, 48]": 1
+          "[:if, 0, 33, 4, 37, 7]": {
+            "[:then, 1, 34, 6, 34, 64]": 3,
+            "[:else, 2, 36, 6, 36, 48]": 1
           },
-          "[:if, 3, 42, 4, 46, 7]": {
-            "[:then, 4, 43, 6, 43, 50]": 2,
-            "[:else, 5, 45, 6, 45, 49]": 1
+          "[:if, 3, 44, 4, 48, 7]": {
+            "[:then, 4, 45, 6, 45, 50]": 3,
+            "[:else, 5, 47, 6, 47, 49]": 1
           },
-          "[:if, 6, 66, 8, 80, 11]": {
-            "[:then, 7, 67, 10, 79, 11]": 1,
-            "[:else, 8, 66, 8, 80, 11]": 0
+          "[:unless, 6, 52, 4, 55, 7]": {
+            "[:else, 7, 52, 4, 55, 7]": 2,
+            "[:then, 8, 53, 6, 54, 12]": 1
           },
-          "[:if, 9, 84, 8, 89, 11]": {
-            "[:then, 10, 85, 10, 86, 88]": 1,
-            "[:else, 11, 88, 10, 88, 45]": 1
+          "[:if, 9, 57, 4, 61, 7]": {
+            "[:then, 10, 58, 6, 58, 71]": 2,
+            "[:else, 11, 60, 6, 60, 56]": 0
+          },
+          "[:if, 12, 76, 8, 90, 11]": {
+            "[:then, 13, 77, 10, 89, 11]": 1,
+            "[:else, 14, 76, 8, 90, 11]": 0
+          },
+          "[:if, 15, 94, 8, 99, 11]": {
+            "[:then, 16, 95, 10, 96, 88]": 1,
+            "[:else, 17, 98, 10, 98, 45]": 1
+          },
+          "[:unless, 18, 181, 4, 183, 7]": {
+            "[:else, 19, 181, 4, 183, 7]": 7,
+            "[:then, 20, 182, 6, 182, 63]": 2
           }
         }
       },
       "/Users/mrks/Code/bentobook/bentobook_server/app/controllers/shares_controller.rb": {
         "lines": [
+          1,
           1,
           1,
           1,
@@ -3115,6 +3459,24 @@
           null,
           null,
           1,
+          2,
+          1,
+          1,
+          null,
+          1,
+          null,
+          null,
+          null,
+          1,
+          1,
+          1,
+          1,
+          null,
+          0,
+          null,
+          null,
+          null,
+          1,
           null,
           1,
           7,
@@ -3123,6 +3485,10 @@
           7,
           null,
           0,
+          null,
+          null,
+          1,
+          3,
           null,
           null,
           1,
@@ -3131,9 +3497,17 @@
           null
         ],
         "branches": {
-          "[:if, 0, 19, 4, 30, 7]": {
-            "[:then, 1, 20, 6, 26, 69]": 4,
-            "[:else, 2, 28, 6, 29, 73]": 3
+          "[:if, 0, 20, 4, 31, 7]": {
+            "[:then, 1, 21, 6, 27, 69]": 4,
+            "[:else, 2, 29, 6, 30, 73]": 3
+          },
+          "[:if, 3, 35, 4, 40, 7]": {
+            "[:then, 4, 36, 6, 37, 51]": 1,
+            "[:else, 5, 39, 6, 39, 55]": 1
+          },
+          "[:if, 6, 44, 4, 49, 7]": {
+            "[:then, 7, 45, 6, 46, 52]": 1,
+            "[:else, 8, 48, 6, 48, 55]": 0
           }
         }
       },
@@ -3482,22 +3856,6 @@
           1,
           2,
           2,
-          2,
-          2,
-          null,
-          null,
-          1,
-          2,
-          2,
-          2,
-          2,
-          null,
-          null,
-          1,
-          null,
-          1,
-          2,
-          2,
           null,
           null,
           1,
@@ -3509,68 +3867,35 @@
           null,
           null,
           null,
+          1,
           null,
           1,
           null,
           2,
           null,
-          3,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
           null,
           1,
-          null,
-          3,
-          3,
-          3,
+          2,
           3,
           null,
-          3,
-          null,
-          null,
-          3,
-          3,
-          null,
-          null,
-          3,
-          null,
-          3,
           null,
           null
         ],
         "branches": {
-          "[:if, 0, 11, 4, 11, 42]": {
-            "[:then, 1, 11, 4, 11, 24]": 2,
-            "[:else, 2, 11, 4, 11, 42]": 0
+          "[:if, 0, 26, 25, 26, 108]": {
+            "[:then, 1, 26, 55, 26, 98]": 0,
+            "[:else, 2, 26, 101, 26, 108]": 2
           },
-          "[:if, 3, 20, 5, 20, 63]": {
-            "[:then, 4, 20, 34, 20, 58]": 2,
-            "[:else, 5, 20, 61, 20, 63]": 0
-          },
-          "[:if, 6, 45, 6, 45, 82]": {
-            "[:then, 7, 45, 32, 45, 76]": 3,
-            "[:else, 8, 45, 79, 45, 82]": 0
-          },
-          "[:if, 9, 46, 6, 46, 66]": {
-            "[:then, 10, 46, 26, 46, 60]": 3,
-            "[:else, 11, 46, 63, 46, 66]": 0
-          },
-          "[:if, 12, 47, 6, 47, 81]": {
-            "[:then, 13, 47, 31, 47, 75]": 3,
-            "[:else, 14, 47, 78, 47, 81]": 0
-          },
-          "[:if, 15, 49, 6, 49, 93]": {
-            "[:then, 16, 49, 41, 49, 87]": 3,
-            "[:else, 17, 49, 90, 49, 93]": 0
-          },
-          "[:if, 18, 52, 4, 54, 7]": {
-            "[:then, 19, 53, 6, 53, 40]": 3,
-            "[:else, 20, 52, 4, 54, 7]": 0
-          },
-          "[:if, 21, 56, 4, 56, 72]": {
-            "[:then, 22, 56, 4, 56, 45]": 3,
-            "[:else, 23, 56, 4, 56, 72]": 0
+          "[:\"&.\", 3, 32, 31, 32, 60]": {
+            "[:then, 4, 32, 31, 32, 60]": 3,
+            "[:else, 5, 32, 31, 32, 60]": 0
           }
         }
       },
@@ -3700,6 +4025,65 @@
           }
         }
       },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/models/list_restaurant.rb": {
+        "lines": [
+          1,
+          1,
+          1,
+          null,
+          1,
+          1,
+          null
+        ],
+        "branches": {
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/list_card_component.rb": {
+        "lines": [
+          1,
+          1,
+          null,
+          1,
+          17,
+          17,
+          17,
+          17,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          1,
+          17,
+          17,
+          0,
+          null,
+          null,
+          null,
+          1,
+          15,
+          null,
+          15,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "branches": {
+          "[:case, 0, 16, 4, 19, 7]": {
+            "[:when, 1, 17, 25, 17, 40]": 17,
+            "[:when, 2, 18, 29, 18, 41]": 0,
+            "[:else, 3, 16, 4, 19, 7]": 0
+          },
+          "[:unless, 4, 23, 4, 23, 28]": {
+            "[:else, 5, 23, 4, 23, 28]": 15,
+            "[:then, 6, 23, 4, 23, 10]": 0
+          }
+        }
+      },
       "/Users/mrks/Code/bentobook/bentobook_server/app/serializers/user_serializer.rb": {
         "lines": [
           1,
@@ -3710,19 +4094,6 @@
           1,
           3,
           null,
-          null
-        ],
-        "branches": {
-        }
-      },
-      "/Users/mrks/Code/bentobook/bentobook_server/app/models/list_restaurant.rb": {
-        "lines": [
-          1,
-          1,
-          1,
-          null,
-          1,
-          1,
           null
         ],
         "branches": {
@@ -4504,6 +4875,6 @@
         }
       }
     },
-    "timestamp": 1731588754
+    "timestamp": 1731782765
   }
 }

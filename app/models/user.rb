@@ -25,6 +25,21 @@ class User < ApplicationRecord
   after_create :ensure_profile
 
   has_many :lists, as: :owner, dependent: :destroy
+  has_many :shares, foreign_key: :recipient_id
+  has_many :created_shares, class_name: 'Share', foreign_key: :creator_id
+  has_many :shared_lists, -> { distinct }, 
+           through: :shares,
+           source: :shareable,
+           source_type: 'List',
+           class_name: 'List' do
+    def pending
+      where(shares: { status: :pending })
+    end
+
+    def accepted
+      where(shares: { status: :accepted })
+    end
+  end
 
   def all_tags
     Restaurant.where(user_id: id).tag_counts_on(:tags)

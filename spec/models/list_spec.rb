@@ -1,6 +1,15 @@
 require 'rails_helper'
 
 RSpec.describe List, type: :model do
+  describe 'associations and validations' do
+    it { should belong_to(:owner) }
+    it { should have_many(:list_restaurants).dependent(:destroy) }
+    it { should have_many(:restaurants).through(:list_restaurants) }
+    it { should have_many(:shares).dependent(:destroy) }
+    it { should have_many(:shared_users).through(:shares) }
+    it { should validate_presence_of(:name) }
+  end
+
   describe 'scopes' do
     let(:user) { create(:user) }
     let!(:personal_list) { create(:list, :personal, owner: user) }
@@ -25,22 +34,55 @@ RSpec.describe List, type: :model do
     end
   end
 
-  describe '#visited_percentage' do
-    let(:list) { create(:list, :with_restaurants) }
-    let(:restaurant) { list.restaurants.first }
-    
+  describe 'permissions' do
+    let(:owner) { create(:user) }
+    let(:viewer) { create(:user) }
+    let(:editor) { create(:user) }
+    let(:non_shared_user) { create(:user) }
+    let(:list) { create(:list, owner: owner) }
+
     before do
-      create(:visit, restaurant: restaurant, user: list.owner)
+      create(:share, creator: owner, recipient: viewer, shareable: list, 
+             permission: :view, status: :accepted)
+      create(:share, creator: owner, recipient: editor, shareable: list, 
+             permission: :edit, status: :accepted)
     end
 
-    it 'calculates correct percentage' do
-      expect(list.visited_percentage).to eq(33) # 1 out of 3 restaurants visited
-    end
-  end
+    describe '#viewable_by?' do
+      it 'returns true for owner' do
+        expect(list).to be_viewable_by(owner)
+      end
 
-  describe 'validations' do
-    it { should validate_presence_of(:name) }
-    it { should belong_to(:owner) }
+      it 'returns true for users with view access' do
+        expect(list).to be_viewable_by(viewer)
+      end
+
+      it 'returns true for users with edit access' do
+        expect(list).to be_viewable_by(editor)
+      end
+
+      it 'returns false for non-shared users' do
+        expect(list).not_to be_viewable_by(non_shared_user)
+      end
+    end
+
+    describe '#editable_by?' do
+      it 'returns true for owner' do
+        expect(list).to be_editable_by(owner)
+      end
+
+      it 'returns false for users with view access' do
+        expect(list).not_to be_editable_by(viewer)
+      end
+
+      it 'returns true for users with edit access' do
+        expect(list).to be_editable_by(editor)
+      end
+
+      it 'returns false for non-shared users' do
+        expect(list).not_to be_editable_by(non_shared_user)
+      end
+    end
   end
 
   describe 'visibility' do

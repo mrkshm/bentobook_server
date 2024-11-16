@@ -4,3 +4,9 @@ fr:
     create:
       success: "Liste partagée avec succès"
       success_with_visibility_change: "Liste partagée avec succès. La visibilité de la liste a été changée pour restreinte."
+    accept:
+      success: "Partage accepté avec succès"
+      unauthorized: "Vous n'êtes pas autorisé à accepter ce partage"
+    decline:
+      success: "Partage refusé"
+      unauthorized: "Vous n'êtes pas autorisé à refuser ce partage"
