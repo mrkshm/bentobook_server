@@ -39,7 +39,7 @@
       <div>
         <h2 class="text-xl font-semibold mb-3">Details</h2>
         <div class="flex items-center space-x-4 mb-2">
-          <p><span class="font-bold">Cuisine:</span> <%= @restaurant.cuisine_type&.name %></p>
+          <p><span class="font-bold">Cuisine:</span> <%= t(@restaurant.cuisine_type&.name) %></p>
           <p><span class="font-bold">Price:</span> <%= render(PriceLevelComponent.new(restaurant: @restaurant)) %></p>
           <p><span class="font-bold">Rating:</span> <%= render(RatingsComponent.new(rating: @restaurant.rating, readonly: true)) %></p>
         </div>
