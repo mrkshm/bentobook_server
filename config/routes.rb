@@ -48,7 +48,11 @@ Rails.application.routes.draw do
       resources :list_restaurants, only: [:new, :create, :index] do
         collection do
           get :edit
+          post :import_all
+        end
+        member do
           delete :destroy
+          post :import
         end
       end
     end

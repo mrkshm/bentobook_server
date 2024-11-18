@@ -11,6 +11,7 @@ class Restaurant < ApplicationRecord
     has_many :copies, class_name: 'Restaurant', foreign_key: :original_restaurant_id
     belongs_to :original_restaurant, class_name: 'Restaurant', optional: true
     belongs_to :cuisine_type
+    has_many :restaurant_copies_as_copy, class_name: 'RestaurantCopy', foreign_key: :copied_restaurant_id, dependent: :destroy
   
     acts_as_taggable_on :tags
   

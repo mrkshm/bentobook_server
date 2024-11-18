@@ -104,19 +104,19 @@ RSpec.describe ListRestaurantsController, type: :request do
       
       it 'removes restaurant from list' do
         expect {
-          delete list_list_restaurants_path(list_id: list.id, restaurant_id: restaurant.id)
+          delete list_list_restaurant_path(list_id: list.id, id: list_restaurant.id)
         }.to change(ListRestaurant, :count).by(-1)
       end
       
       it 'redirects to edit page with success message' do
-        delete list_list_restaurants_path(list_id: list.id, restaurant_id: restaurant.id)
+        delete list_list_restaurant_path(list_id: list.id, id: list_restaurant.id)
         
         expect(response).to redirect_to(edit_list_list_restaurants_path(list_id: list.id))
         expect(flash[:notice]).to be_present
       end
       
       it 'returns 404 for non-existent restaurant in list' do
-        delete list_list_restaurants_path(list_id: list.id, restaurant_id: 0)
+        delete list_list_restaurant_path(list_id: list.id, id: 0)
         expect(response).to have_http_status(:not_found)
       end
     end
@@ -137,7 +137,7 @@ RSpec.describe ListRestaurantsController, type: :request do
       end
       
       it 'returns 404 for destroy' do
-        delete list_list_restaurants_path(list_id: other_list.id, restaurant_id: restaurant.id)
+        delete list_list_restaurant_path(list_id: other_list.id, id: restaurant.id)
         expect(response).to have_http_status(:not_found)
       end
     end
@@ -170,11 +170,65 @@ RSpec.describe ListRestaurantsController, type: :request do
         list_restaurant = create(:list_restaurant, list: other_list, restaurant: restaurant)
         
         expect {
-          delete list_list_restaurants_path(list_id: other_list.id, restaurant_id: restaurant.id)
+          delete list_list_restaurant_path(list_id: other_list.id, id: list_restaurant.id)
         }.to change(ListRestaurant, :count).by(-1)
         
         expect(response).to redirect_to(edit_list_list_restaurants_path(list_id: other_list.id))
         expect(flash[:notice]).to be_present
+      end
+    end
+    
+    context 'with shared list and view-only permission' do
+      let(:other_user) { create(:user) }
+      let(:other_list) { create(:list, owner: other_user) }
+      let!(:list_restaurant) { create(:list_restaurant, list: other_list, restaurant: restaurant) }
+      
+      before do
+        create(:share, 
+          creator: other_user, 
+          recipient: user, 
+          shareable: other_list, 
+          permission: :view,
+          status: :accepted
+        )
+      end
+      
+      it 'allows importing restaurants with view permission' do
+        expect {
+          post import_list_list_restaurant_path(list_id: other_list.id, id: restaurant.id),
+            headers: { 'ACCEPT' => 'text/vnd.turbo-stream.html' }
+        }.to change(RestaurantCopy, :count).by(1)
+        
+        expect(response).to be_successful
+      end
+      
+      it 'allows importing all restaurants with view permission' do
+        expect {
+          post import_all_list_list_restaurants_path(list_id: other_list.id),
+            headers: { 'ACCEPT' => 'text/vnd.turbo-stream.html' }
+        }.to change(RestaurantCopy, :count).by(1)
+        
+        expect(response).to be_successful
+      end
+      
+      it 'prevents adding new restaurants to list' do
+        post list_list_restaurants_path(
+          list_id: other_list.id, 
+          params: { restaurant_id: restaurant.id }
+        )
+        
+        expect(response).to redirect_to(list_path(id: other_list.id))
+        expect(flash[:alert]).to be_present
+      end
+      
+      it 'prevents removing restaurants from list' do
+        delete list_list_restaurant_path(
+          list_id: other_list.id, 
+          id: list_restaurant.id
+        )
+        
+        expect(response).to redirect_to(list_path(id: other_list.id))
+        expect(flash[:alert]).to be_present
       end
     end
   end

@@ -1,0 +1,9 @@
+fr:
+  components:
+    shared_restaurant_card_component:
+      already_in_your_restaurants: "Ce restaurant est déjà dans votre collection"
+      add_to_my_restaurants: "Ajouter à Mes Restaurants"
+    shared_list_actions_component:
+      shared_by: "Partagé par %{owner}"
+      import_all: "Tout Importer"
+      confirm_import_all: "Ajouter tous les restaurants à votre collection ?"

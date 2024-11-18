@@ -5,9 +5,7 @@
   <div id="download"></div>
 
   <%= render(ListComponent.new(list: @list, current_user: current_user)) do |list| %>
-    <% list.header do %>
-      <h1>TEST HEADER</h1>
-    <% end %>
+    <% list.header %>
 
     <% list.stats do %>
       <%= render(ListStatsComponent.new(statistics: @statistics, list: @list)) %>
@@ -28,26 +26,41 @@
           current_direction: @order_direction
         )) %>
 
-        <div class="flex gap-2">
-          <%= link_to new_list_list_restaurant_path(list_id: @list.id), 
-              class: "btn btn-primary btn-sm",
-              data: { turbo_frame: "modal" } do %>
-            <%= heroicon "plus", options: { class: "w-4 h-4 mr-2" } %>
-            <%= t('.add_restaurant') %>
-          <% end %>
-          <%= link_to edit_list_list_restaurants_path(list_id: @list.id),
-              class: "btn btn-outline btn-sm" do %>
-            <%= heroicon "pencil-square", options: { class: "w-4 h-4 mr-2" } %>
-            <%= t('.manage_restaurants') %>
-          <% end %>
-        </div>
+        <% if @list.owner == current_user %>
+          <div class="flex gap-2">
+            <%= link_to new_list_list_restaurant_path(list_id: @list.id), 
+                class: "btn btn-primary btn-sm",
+                data: { turbo_frame: "modal" } do %>
+              <%= heroicon "plus", options: { class: "w-4 h-4 mr-2" } %>
+              <%= t('.add_restaurant') %>
+            <% end %>
+            <%= link_to edit_list_list_restaurants_path(list_id: @list.id),
+                class: "btn btn-outline btn-sm" do %>
+              <%= heroicon "pencil-square", options: { class: "w-4 h-4 mr-2" } %>
+              <%= t('.manage_restaurants') %>
+            <% end %>
+          </div>
+        <% else %>
+          <%= render(SharedListActionsComponent.new(
+            list: @list,
+            current_user: current_user
+          )) %>
+        <% end %>
       </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-start">
       <% @restaurants.each do |restaurant| %>
         <div class="w-full">
-          <%= render(RestaurantCardComponent.new(restaurant: restaurant)) %>
+          <% if @list.owner == current_user %>
+            <%= render(RestaurantCardComponent.new(restaurant: restaurant)) %>
+          <% else %>
+            <%= render(SharedRestaurantCardComponent.new(
+              restaurant: restaurant,
+              current_user: current_user,
+              list: @list
+            )) %>
+          <% end %>
         </div>
       <% end %>
     </div>
@@ -56,29 +69,31 @@
 
 <%= turbo_frame_tag "modal" %>
 
-<div class="dropdown dropdown-end">
-  <label tabindex="0" class="btn btn-outline btn-sm">
-    <%= heroicon "arrow-down-tray", options: { class: "w-4 h-4 mr-2" } %>
-    <%= t('.export') %>
-  </label>
-  <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-    <li>
-      <%= link_to export_list_path(id: @list.id, format: :text),
-          data: { 
-            turbo: false,
-            controller: "flash",
-            action: "click->flash#showMessage",
-            message: t('.markdown_exported')
-          } do %>
-        <%= heroicon "document", options: { class: "w-4 h-4 mr-2" } %>
-        <%= t('.export_markdown') %>
-      <% end %>
-    </li>
-    <li>
-      <%= link_to export_list_path(id: @list.id), data: { turbo_frame: "modal" } do %>
-        <%= heroicon "envelope", options: { class: "w-4 h-4 mr-2" } %>
-        <%= t('.export_email') %>
-      <% end %>
-    </li>
-  </ul>
-</div>
+<% if @list.owner == current_user %>
+  <div class="dropdown dropdown-end">
+    <label tabindex="0" class="btn btn-outline btn-sm">
+      <%= heroicon "arrow-down-tray", options: { class: "w-4 h-4 mr-2" } %>
+      <%= t('.export') %>
+    </label>
+    <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+      <li>
+        <%= link_to export_list_path(id: @list.id, format: :text),
+            data: { 
+              turbo: false,
+              controller: "flash",
+              action: "click->flash#showMessage",
+              message: t('.markdown_exported')
+            } do %>
+          <%= heroicon "document", options: { class: "w-4 h-4 mr-2" } %>
+          <%= t('.export_markdown') %>
+        <% end %>
+      </li>
+      <li>
+        <%= link_to export_list_path(id: @list.id), data: { turbo_frame: "modal" } do %>
+          <%= heroicon "envelope", options: { class: "w-4 h-4 mr-2" } %>
+          <%= t('.export_email') %>
+        <% end %>
+      </li>
+    </ul>
+  </div>
+<% end %>
