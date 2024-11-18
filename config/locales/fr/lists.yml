@@ -18,6 +18,9 @@ fr:
     edit:
       title: "Modifier la Liste"
       not_authorized: "Vous n'êtes pas autorisé à modifier cette liste"
+      confirm_delete_shared: "Voulez-vous vraiment supprimer cette liste? Elle sera retirée de vos listes et de toutes les personnes avec qui vous l'avez partagée."
+      confirm_delete: "Voulez-vous vraiment supprimer cette liste? Elle sera retirée de vos listes."
+      delete_list: "Supprimer la Liste"
     form:
       personal: "Personnel"
       restricted: "Restreint"
@@ -41,6 +44,7 @@ fr:
       success: "La liste a été mise à jour avec succès."
     destroy:
       success: "La liste a été supprimée avec succès."
+      failure: "Impossible de supprimer la liste"
     export_modal:
       title: "Partager la Liste par Email"
       email_label: "Email du Destinataire"

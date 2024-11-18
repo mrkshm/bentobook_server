@@ -7,3 +7,4 @@ en:
       shared_by: "Shared by %{owner}"
       import_all: "Import All"
       confirm_import_all: "Add all restaurants to your collection?"
+      confirm_remove: "Remove this list from your shared lists? This will remove it from your lists but not delete any of your restaurants."

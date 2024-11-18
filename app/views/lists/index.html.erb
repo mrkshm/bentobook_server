@@ -1,14 +1,56 @@
 <div class="container mx-auto px-4 py-8">
-  <%= render SharedListsComponent.new(user: current_user) if user_signed_in? %>
-
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold"><%= t('.title') %></h1>
-    <%= link_to t('.new_list'), new_list_path, class: "btn btn-primary" %>
+  <div id="flash">
+    <%= render 'shared/flash' %>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <% @lists.each do |list| %>
-      <%= render(ListCardComponent.new(list: list, current_user: current_user)) %>
-    <% end %>
+  <% if user_signed_in? %>
+    <!-- Pending Lists Section -->
+    <div class="collapse collapse-arrow mb-8">
+      <input type="checkbox" checked /> 
+      <div class="collapse-title text-xl font-bold flex items-center gap-2">
+        <%= t('shared_lists_component.pending_shares') %>
+        <% if @pending_lists.any? %>
+          <span class="badge badge-secondary"><%= @pending_lists.size %></span>
+        <% end %>
+      </div>
+      <div class="collapse-content">
+        <%= render 'pending_lists_section', pending_lists: @pending_lists, current_user: current_user %>
+      </div>
+    </div>
+
+    <!-- Shared Lists Section -->
+    <div class="collapse collapse-arrow mb-8">
+      <input type="checkbox" checked />
+      <div class="collapse-title text-xl font-bold flex items-center gap-2">
+        <%= t('shared_lists_component.shared_with_you') %>
+        <% if @accepted_lists.any? %>
+          <span class="badge"><%= @accepted_lists.size %></span>
+        <% end %>
+      </div>
+      <div class="collapse-content">
+        <%= render 'shared_lists_section', accepted_lists: @accepted_lists, current_user: current_user %>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- My Lists Section -->
+  <div class="collapse collapse-arrow">
+    <input type="checkbox" checked />
+    <div class="collapse-title text-xl font-bold flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <%= t('.my_lists') %>
+        <% if @lists.any? %>
+          <span class="badge"><%= @lists.size %></span>
+        <% end %>
+      </div>
+      <%= link_to t('.new_list'), new_list_path, class: "btn btn-primary" %>
+    </div>
+    <div class="collapse-content">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @lists.each do |list| %>
+          <%= render(ListCardComponent.new(list: list, current_user: current_user)) %>
+        <% end %>
+      </div>
+    </div>
   </div>
 </div>

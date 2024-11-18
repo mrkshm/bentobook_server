@@ -5,6 +5,16 @@ class ListsController < ApplicationController
 
   def index
     @lists = current_user.lists.order(created_at: :desc)
+    
+    if user_signed_in?
+      @pending_lists = current_user.shared_lists
+                        .pending
+                        .includes(:owner, owner: { profile: { avatar_attachment: :blob } })
+      
+      @accepted_lists = current_user.shared_lists
+                         .accepted
+                         .includes(:owner, owner: { profile: { avatar_attachment: :blob } })
+    end
   end
 
   def show
@@ -49,16 +59,16 @@ class ListsController < ApplicationController
   end
 
   def destroy
-    unless @list.owner == current_user
-      redirect_to list_path(@list), alert: t('.not_authorized')
-      return
+    ActiveRecord::Base.transaction do
+      if @list.destroy
+        redirect_to lists_path, notice: t('.success'), status: :see_other
+      else
+        redirect_to list_path(@list), alert: t('.failure')
+      end
     end
-
-    if @list.destroy
-      redirect_to lists_path, notice: t('.success'), status: :see_other
-    else
-      redirect_to list_path(@list), alert: t('.failure')
-    end
+  rescue => e
+    Rails.logger.error "Failed to delete list: #{e.message}"
+    redirect_to list_path(@list), alert: t('.failure')
   end
 
   def export
@@ -112,10 +122,7 @@ class ListsController < ApplicationController
     share = current_user.shares.find_by!(shareable: @list)
     share.destroy
 
-    respond_to do |format|
-      format.html { redirect_to lists_path, notice: t('.share_removed') }
-      format.turbo_stream { flash.now[:notice] = t('.share_removed') }
-    end
+    redirect_to lists_path, notice: t('.share_removed')
   end
 
   def accept_share

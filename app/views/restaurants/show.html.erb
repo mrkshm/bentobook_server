@@ -77,6 +77,25 @@
       </div>
     <% end %>
 
+    <% if @lists.any? %>
+      <div class="divider"></div>
+      <div class="space-y-4">
+        <h2 class="text-xl font-semibold">Lists containing this restaurant</h2>
+        <div class="flex flex-wrap gap-2">
+          <% @lists.each do |list| %>
+            <%= link_to list_path(list), class: "badge badge-lg" do %>
+              <%= list.name %>
+              <% if list.owner == current_user %>
+                <span class="ml-1 text-base-content/70">(Your list)</span>
+              <% else %>
+                <span class="ml-1 text-base-content/70">(Shared by <%= list.owner.profile.display_name %>)</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
     <% if @visits.any? %>
       <div class="divider"></div>
       <div class="space-y-4">

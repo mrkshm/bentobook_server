@@ -24,6 +24,11 @@ class RestaurantsController < ApplicationController
       @tags = @restaurant.tags
       @all_tags = ActsAsTaggableOn::Tag.all
       @visits = @restaurant.visits
+      
+      list_restaurants = ListRestaurant.where(restaurant_id: @restaurant.id)
+      lists = List.where(id: list_restaurants.pluck(:list_id))
+      @lists = List.accessible_by(current_user).containing_restaurant(@restaurant)
+      
     end
   
     def edit

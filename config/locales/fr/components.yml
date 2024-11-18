@@ -7,3 +7,4 @@ fr:
       shared_by: "Partagé par %{owner}"
       import_all: "Tout Importer"
       confirm_import_all: "Ajouter tous les restaurants à votre collection ?"
+      confirm_remove: "Retirer cette liste de vos listes partagées ? Cela retirera cette liste de vos listes mais ne supprimera aucun restaurant."
