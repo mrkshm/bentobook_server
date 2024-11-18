@@ -15,11 +15,16 @@ class Share < ApplicationRecord
   validates :recipient_id, uniqueness: { scope: [:shareable_type, :shareable_id, :creator_id] }
   validate :cannot_share_with_self
   validate :validate_status_transition, if: :status_changed?
+  validates :reshareable, inclusion: { in: [true, false] }
   
   private
   
   def cannot_share_with_self
     errors.add(:recipient_id, "can't be the same as creator") if creator_id == recipient_id
+  end
+
+  def can_be_reshared?
+    reshareable? && accepted?
   end
   
   def validate_status_transition
