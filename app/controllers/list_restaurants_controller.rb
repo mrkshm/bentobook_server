@@ -1,4 +1,5 @@
 class ListRestaurantsController < ApplicationController
+  include ActionView::RecordIdentifier
   before_action :authenticate_user!
   before_action :set_list
   before_action :ensure_editable, except: [:import, :import_all]
@@ -56,26 +57,26 @@ class ListRestaurantsController < ApplicationController
     
     respond_to do |format|
       format.html do
-        redirect_to list_path(@list), 
+        redirect_to list_path(id: @list.id), 
           notice: t('.success', count: imported_count)
       end
       format.turbo_stream do
         flash.now[:notice] = t('.success', count: imported_count)
-        render turbo_stream: turbo_stream.update('flash', partial: 'shared/flash')
+        render turbo_stream: turbo_stream.update('flash', partial: 'shared/flash'), status: :ok
       end
     end
   end
 
   def import
-    restaurant = @list.restaurants.find(params[:restaurant_id])
+    restaurant = @list.restaurants.find(params[:id])
     copied_restaurant = restaurant.copy_for_user(current_user)
     
     respond_to do |format|
       format.html do
         if copied_restaurant.persisted?
-          redirect_to list_path(@list), notice: t('.success')
+          redirect_to list_path(id: @list.id), notice: t('.success')
         else
-          redirect_to list_path(@list), alert: t('.error')
+          redirect_to list_path(id: @list.id), alert: t('.error')
         end
       end
       format.turbo_stream do
@@ -83,7 +84,7 @@ class ListRestaurantsController < ApplicationController
           flash.now[:notice] = t('.success')
           render turbo_stream: [
             turbo_stream.replace(
-              "restaurant_#{restaurant.id}_import",
+              dom_id(restaurant, :import),
               partial: 'lists/restaurant_imported',
               locals: { restaurant: restaurant }
             ),
@@ -111,7 +112,7 @@ class ListRestaurantsController < ApplicationController
 
   def ensure_editable
     unless @list.editable_by?(current_user)
-      redirect_to list_path(@list), alert: t('.not_authorized')
+      redirect_to list_path(id: @list.id), alert: t('.not_authorized')
     end
   end
 end
