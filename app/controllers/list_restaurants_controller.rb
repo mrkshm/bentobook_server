@@ -1,6 +1,7 @@
 class ListRestaurantsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_list
+  before_action :ensure_editable, except: [:import, :import_all]
   include Pagy::Backend
   
   def index
@@ -39,20 +40,78 @@ class ListRestaurantsController < ApplicationController
     redirect_to edit_list_list_restaurants_path(list_id: @list.id)
   end
 
+  def import_all
+    restaurants_to_import = @list.restaurants.where.not(
+      id: RestaurantCopy.where(user: current_user).select(:restaurant_id)
+    )
+    
+    imported_count = 0
+    
+    ActiveRecord::Base.transaction do
+      restaurants_to_import.each do |restaurant|
+        copied_restaurant = restaurant.copy_for_user(current_user)
+        imported_count += 1 if copied_restaurant.persisted?
+      end
+    end
+    
+    respond_to do |format|
+      format.html do
+        redirect_to list_path(@list), 
+          notice: t('.success', count: imported_count)
+      end
+      format.turbo_stream do
+        flash.now[:notice] = t('.success', count: imported_count)
+        render turbo_stream: turbo_stream.update('flash', partial: 'shared/flash')
+      end
+    end
+  end
+
+  def import
+    restaurant = @list.restaurants.find(params[:restaurant_id])
+    copied_restaurant = restaurant.copy_for_user(current_user)
+    
+    respond_to do |format|
+      format.html do
+        if copied_restaurant.persisted?
+          redirect_to list_path(@list), notice: t('.success')
+        else
+          redirect_to list_path(@list), alert: t('.error')
+        end
+      end
+      format.turbo_stream do
+        if copied_restaurant.persisted?
+          flash.now[:notice] = t('.success')
+          render turbo_stream: [
+            turbo_stream.replace(
+              "restaurant_#{restaurant.id}_import",
+              partial: 'lists/restaurant_imported',
+              locals: { restaurant: restaurant }
+            ),
+            turbo_stream.update('flash', partial: 'shared/flash')
+          ]
+        else
+          flash.now[:alert] = t('.error')
+          render turbo_stream: turbo_stream.update('flash', partial: 'shared/flash')
+        end
+      end
+    end
+  end
+
   private
 
   def set_list
     @list = List.left_joins(:shares)
-      .where(owner: current_user)
-      .or(
-        List.where(
-          shares: { 
-            recipient: current_user, 
-            status: :accepted, 
-            permission: :edit 
-          }
-        )
+      .where(
+        'lists.owner_id = :user_id OR (shares.recipient_id = :user_id AND shares.status = :status)',
+        user_id: current_user.id,
+        status: Share.statuses[:accepted]
       )
       .find(params[:list_id])
+  end
+
+  def ensure_editable
+    unless @list.editable_by?(current_user)
+      redirect_to list_path(@list), alert: t('.not_authorized')
+    end
   end
 end

@@ -49,6 +49,8 @@ Rails.application.routes.draw do
         collection do
           get :edit
           delete :destroy
+          post :import_all
+          post :import
         end
       end
     end

@@ -7,3 +7,9 @@ fr:
       confirm_remove: "Êtes-vous sûr de vouloir retirer ce restaurant de la liste ?"
     destroy:
       success: "Restaurant retiré de la liste"
+    import_all:
+      success: "%{count} restaurants importés avec succès"
+      no_restaurants: "Aucun nouveau restaurant à importer"
+    import:
+      success: "Restaurant ajouté à votre collection avec succès"
+      error: "Impossible d'ajouter le restaurant à votre collection"
