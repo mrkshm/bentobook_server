@@ -33,7 +33,7 @@ class ListRestaurantsController < ApplicationController
   end
 
   def destroy
-    @list_restaurant = @list.list_restaurants.find_by!(restaurant_id: params[:restaurant_id])
+    @list_restaurant = @list.list_restaurants.find(params[:id])
     @list_restaurant.destroy
     
     flash[:notice] = t('.success')

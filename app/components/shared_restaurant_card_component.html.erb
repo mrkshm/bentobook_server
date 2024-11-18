@@ -21,12 +21,11 @@
             <%= heroicon "check-circle", options: { class: "w-6 h-6 text-success" } %>
           </div>
         <% else %>
-          <%= button_to import_list_list_restaurants_path(
-                list_id: list.id,
-                restaurant_id: restaurant.id
-              ),
-              class: "btn btn-sm btn-outline",
+          <%= button_to import_list_list_restaurant_path(list_id: list.id, id: restaurant.id),
+              class: "btn btn-primary btn-sm",
+              method: :post,
               data: { turbo: true } do %>
+            <%= heroicon "plus", options: { class: "w-4 h-4 mr-2" } %>
             <%= t('components.shared_restaurant_card_component.add_to_my_restaurants') %>
           <% end %>
         <% end %>

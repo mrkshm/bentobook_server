@@ -104,19 +104,19 @@ RSpec.describe ListRestaurantsController, type: :request do
       
       it 'removes restaurant from list' do
         expect {
-          delete list_list_restaurants_path(list_id: list.id, restaurant_id: restaurant.id)
+          delete list_list_restaurant_path(list_id: list.id, id: list_restaurant.id)
         }.to change(ListRestaurant, :count).by(-1)
       end
       
       it 'redirects to edit page with success message' do
-        delete list_list_restaurants_path(list_id: list.id, restaurant_id: restaurant.id)
+        delete list_list_restaurant_path(list_id: list.id, id: list_restaurant.id)
         
         expect(response).to redirect_to(edit_list_list_restaurants_path(list_id: list.id))
         expect(flash[:notice]).to be_present
       end
       
       it 'returns 404 for non-existent restaurant in list' do
-        delete list_list_restaurants_path(list_id: list.id, restaurant_id: 0)
+        delete list_list_restaurant_path(list_id: list.id, id: 0)
         expect(response).to have_http_status(:not_found)
       end
     end
@@ -137,7 +137,7 @@ RSpec.describe ListRestaurantsController, type: :request do
       end
       
       it 'returns 404 for destroy' do
-        delete list_list_restaurants_path(list_id: other_list.id, restaurant_id: restaurant.id)
+        delete list_list_restaurant_path(list_id: other_list.id, id: restaurant.id)
         expect(response).to have_http_status(:not_found)
       end
     end
@@ -170,7 +170,7 @@ RSpec.describe ListRestaurantsController, type: :request do
         list_restaurant = create(:list_restaurant, list: other_list, restaurant: restaurant)
         
         expect {
-          delete list_list_restaurants_path(list_id: other_list.id, restaurant_id: restaurant.id)
+          delete list_list_restaurant_path(list_id: other_list.id, id: list_restaurant.id)
         }.to change(ListRestaurant, :count).by(-1)
         
         expect(response).to redirect_to(edit_list_list_restaurants_path(list_id: other_list.id))
