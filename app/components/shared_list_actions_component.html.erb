@@ -15,8 +15,8 @@
     <% end %>
   </div>
 
-  <% if can_edit %>
-    <div class="flex gap-2">
+  <div class="flex gap-2">
+    <% if can_edit %>
       <%= link_to new_list_list_restaurant_path(list_id: list.id), 
           class: "btn btn-outline btn-sm",
           data: { turbo_frame: "modal" } do %>
@@ -29,6 +29,24 @@
         <%= helpers.heroicon "pencil-square", options: { class: "w-4 h-4 mr-2" } %>
         <%= t('components.shared_list_actions_component.manage_restaurants') %>
       <% end %>
-    </div>
-  <% end %>
+    <% else %>
+      <div class="dropdown dropdown-end">
+        <label tabindex="0" class="btn btn-outline btn-sm">
+          <%= helpers.heroicon "ellipsis-horizontal", options: { class: "w-4 h-4 mr-2" } %>
+          <%= t('components.shared_list_actions_component.actions') %>
+        </label>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+          <li>
+            <%= button_to remove_share_list_path(id: list.id),
+                method: :delete,
+                class: "text-error",
+                data: { turbo_confirm: t('components.shared_list_actions_component.confirm_remove') } do %>
+              <%= helpers.heroicon "trash", options: { class: "w-4 h-4 mr-2" } %>
+              <%= t('components.shared_list_actions_component.remove_from_my_lists') %>
+            <% end %>
+          </li>
+        </ul>
+      </div>
+    <% end %>
+  </div>
 </div>

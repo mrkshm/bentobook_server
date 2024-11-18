@@ -4,4 +4,20 @@
   </div>
 
   <%= render 'form', list: @list %>
+
+  <div class="divider"></div>
+
+  <div class="flex justify-end">
+    <%= button_to list_path(@list), 
+        method: :delete,
+        class: "btn btn-error",
+        data: { 
+          turbo_confirm: @list.shares.exists? ? 
+            t('.confirm_delete_shared') :
+            t('.confirm_delete')
+        } do %>
+      <%= heroicon "trash", options: { class: "w-5 h-5 mr-2" } %>
+      <%= t('.delete_list') %>
+    <% end %>
+  </div>
 </div>

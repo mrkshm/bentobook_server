@@ -18,6 +18,9 @@ en:
     edit:
       title: "Edit List"
       not_authorized: "You are not authorized to edit this list"
+      confirm_delete_shared: "Do you really want to delete this list? It will remove the list from your lists and all the people you shared it with."
+      confirm_delete: "Do you really want to delete this list? It will remove the list from your lists."
+      delete_list: "Delete List"
     form:
       personal: "Personal"
       restricted: "Restricted"
@@ -39,7 +42,8 @@ en:
     update:
       success: "List was successfully updated."
     destroy:
-      success: "List was successfully deleted."
+      success: "List was successfully deleted"
+      failure: "Unable to delete list"
     export_modal:
       title: "Share List via Email"
       email_label: "Recipient Email"

@@ -48,8 +48,7 @@ class ProfilesController < ApplicationController
 
       # First get the user's contacts that have profiles
       @profiles = Profile.joins(:user)
-                        # .joins("INNER JOIN contacts ON contacts.email = users.email")
-                        # .where(contacts: { user_id: current_user.id })
+                        .where.not(users: { id: current_user.id })
                         .where("profiles.username ILIKE :query OR 
                                profiles.first_name ILIKE :query OR 
                                profiles.last_name ILIKE :query OR 

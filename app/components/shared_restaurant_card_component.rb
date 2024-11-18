@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class SharedRestaurantCardComponent < ApplicationComponent
+  include HeroiconHelper
   def initialize(restaurant:, current_user:, list:)
     @restaurant = restaurant
     @current_user = current_user
@@ -14,6 +15,13 @@ class SharedRestaurantCardComponent < ApplicationComponent
   private
 
   attr_reader :restaurant, :current_user, :list, :already_imported
+
+  def copied_restaurant
+    @copied_restaurant ||= RestaurantCopy.find_by(
+      user: current_user, 
+      restaurant: restaurant
+    )&.copied_restaurant
+  end
 
   def formatted_address
     [
