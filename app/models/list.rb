@@ -18,6 +18,27 @@ class List < ApplicationRecord
     joins(:shares).where(shares: { recipient: user, status: :accepted }) 
   }
 
+  scope :containing_restaurant, ->(restaurant) {
+    joins(:list_restaurants)
+      .where("list_restaurants.restaurant_id = :id 
+             OR list_restaurants.restaurant_id = :original_id 
+             OR list_restaurants.restaurant_id IN (
+               SELECT id FROM restaurants 
+               WHERE original_restaurant_id = :id
+             )", 
+             id: restaurant.id,
+             original_id: restaurant.original_restaurant_id)
+  }
+
+  scope :accessible_by, ->(user) {
+    where("(lists.owner_type = 'User' AND lists.owner_id = :user_id) OR lists.id IN (
+      SELECT shareable_id FROM shares 
+      WHERE shares.shareable_type = 'List' 
+      AND shares.recipient_id = :user_id 
+      AND shares.status = :status
+    )", user_id: user.id, status: Share.statuses[:accepted])
+  }
+
   def viewable_by?(user)
     owner == user || shares.accepted.exists?(recipient: user)
   end
