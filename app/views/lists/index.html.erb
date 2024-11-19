@@ -3,6 +3,15 @@
     <%= render 'shared/flash' %>
   </div>
 
+  <div class="mb-4">
+    <%= render(SortFormComponent.new(
+      url: lists_path,
+      fields: @sort_fields,
+      current_order: @order_by,
+      current_direction: @order_direction
+    )) %>
+  </div>
+
   <% if user_signed_in? %>
     <!-- Pending Lists Section -->
     <div class="collapse collapse-arrow mb-8">

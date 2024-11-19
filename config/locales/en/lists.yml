@@ -1,5 +1,6 @@
 en:
   lists:
+    name: "List Name"
     name_placeholder: "List name"
     visibility:
       personal: "Personal"

@@ -1,5 +1,6 @@
 fr:
   lists:
+    name: "Nom de la Liste"
     name_placeholder: "Nom de la liste"
     visibility:
       personal: "Personnel"

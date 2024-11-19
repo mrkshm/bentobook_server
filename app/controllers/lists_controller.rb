@@ -4,17 +4,29 @@ class ListsController < ApplicationController
   before_action :ensure_editable, only: [:edit, :update, :destroy]
 
   def index
-    @lists = current_user.lists.order(created_at: :desc)
+    @order_by = params[:order_by] || 'created_at'
+    @order_direction = params[:order_direction] || 'desc'
+    
+    @lists = current_user.lists
+              .order(@order_by => @order_direction)
     
     if user_signed_in?
       @pending_lists = current_user.shared_lists
                         .pending
                         .includes(:owner, owner: { profile: { avatar_attachment: :blob } })
+                        .order(@order_by => @order_direction)
       
       @accepted_lists = current_user.shared_lists
                          .accepted
                          .includes(:owner, owner: { profile: { avatar_attachment: :blob } })
+                         .order(@order_by => @order_direction)
     end
+
+    @sort_fields = {
+      'name' => t('lists.name'),
+      'created_at' => t('common.sort.recently_added'),
+      'updated_at' => t('common.sort.recently_updated')
+    }
   end
 
   def show
@@ -27,7 +39,7 @@ class ListsController < ApplicationController
       .order(@order_by => @order_direction)
 
     @sort_fields = {
-      'name' => t('restaurants.attributes.name'),
+      'name' => t('restaurants.name'),
       'cuisine_types.name' => t('restaurants.attributes.cuisine_type'),
       'created_at' => t('common.sort.recently_added'),
     }
