@@ -18,13 +18,17 @@ RSpec.describe SharedListsComponent, type: :component do
       render_inline(described_class.new(user: user))
     end
 
-    it "renders the pending shares section" do
-      expect(page).to have_content(I18n.t('shared_lists_component.pending_shares'))
+    it "renders the pending lists section" do
+      within("#pending-lists-section") do
+        expect(page).to have_content(list.name)
+      end
     end
 
     it "renders the list using ListCardComponent" do
-      expect(page).to have_content(list.name)
-      expect(page).to have_selector('.badge', text: I18n.t("lists.visibility.#{list.visibility}"))
+      within("#pending-lists-section") do
+        expect(page).to have_content(list.name)
+        expect(page).to have_selector('.badge', text: I18n.t("lists.visibility.#{list.visibility}"))
+      end
     end
 
     it "shows the creator's avatar" do
@@ -44,13 +48,17 @@ RSpec.describe SharedListsComponent, type: :component do
       render_inline(described_class.new(user: user))
     end
 
-    it "renders the shared with you section" do
-      expect(page).to have_content(I18n.t('shared_lists_component.shared_with_you'))
+    it "renders the shared lists section" do
+      within("#shared-lists-section") do
+        expect(page).to have_content(list.name)
+      end
     end
 
     it "renders the list using ListCardComponent" do
-      expect(page).to have_content(list.name)
-      expect(page).to have_selector('.badge', text: I18n.t("lists.visibility.#{list.visibility}"))
+      within("#shared-lists-section") do
+        expect(page).to have_content(list.name)
+        expect(page).to have_selector('.badge', text: I18n.t("lists.visibility.#{list.visibility}"))
+      end
     end
 
     it "shows the creator's avatar" do
@@ -68,9 +76,14 @@ RSpec.describe SharedListsComponent, type: :component do
       render_inline(described_class.new(user: user))
     end
 
-    it "renders both sections" do
-      expect(page).to have_content(I18n.t('shared_lists_component.pending_shares'))
-      expect(page).to have_content(I18n.t('shared_lists_component.shared_with_you'))
+    it "renders both sections with content" do
+      within("#pending-lists-section") do
+        expect(page).to have_content(list.name)
+      end
+
+      within("#shared-lists-section") do
+        expect(page).to have_content(another_list.name)
+      end
     end
 
     it "shows lists in correct sections" do

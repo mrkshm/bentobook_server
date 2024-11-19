@@ -85,6 +85,29 @@ RSpec.describe List, type: :model do
     end
   end
 
+  describe '#deletable_by?' do
+    let(:owner) { create(:user) }
+    let(:editor) { create(:user) }
+    let(:list) { create(:list, owner: owner) }
+    
+    before do
+      create(:share, creator: owner, recipient: editor, shareable: list, 
+             status: :accepted, permission: :edit)
+    end
+
+    it 'returns true for owner' do
+      expect(list.deletable_by?(owner)).to be true
+    end
+
+    it 'returns false for editor' do
+      expect(list.deletable_by?(editor)).to be false
+    end
+
+    it 'returns false for nil user' do
+      expect(list.deletable_by?(nil)).to be false
+    end
+  end
+
   describe 'visibility' do
     it 'defaults to personal' do
       list = create(:list)

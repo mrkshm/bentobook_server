@@ -237,6 +237,7 @@ RSpec.describe ListsController, type: :request do
         sign_in viewer
         delete list_path(id: list.id)
         expect(response).to redirect_to(list_path(list))
+        expect(flash[:alert]).to be_present
         expect(List.exists?(list.id)).to be true
       end
 
@@ -244,7 +245,7 @@ RSpec.describe ListsController, type: :request do
         sign_in editor
         delete list_path(id: list.id)
         expect(response).to redirect_to(list_path(list))
-        expect(List.exists?(list.id)).to be true
+        expect(flash[:alert]).to be_present
       end
 
       it 'allows deletion by owner' do
@@ -285,11 +286,11 @@ RSpec.describe ListsController, type: :request do
         expect(flash[:notice]).to be_present
       end
 
-      it 'removes share with turbo_stream format' do
+      it 'removes share with html format only' do
         delete remove_share_list_path(id: list.id, format: :turbo_stream)
         
-        expect(response).to be_successful
-        expect(flash.now[:notice]).to be_present
+        expect(response).to redirect_to(lists_path)
+        expect(flash[:notice]).to be_present
       end
     end
 

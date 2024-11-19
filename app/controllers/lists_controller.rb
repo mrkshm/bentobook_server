@@ -196,7 +196,7 @@ class ListsController < ApplicationController
   end
 
   def ensure_editable
-    unless @list.editable_by?(current_user)
+    unless action_name == 'destroy' ? @list.deletable_by?(current_user) : @list.editable_by?(current_user)
       redirect_to list_path(@list), alert: t('.not_authorized')
     end
   end

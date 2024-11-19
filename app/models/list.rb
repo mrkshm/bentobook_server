@@ -46,4 +46,9 @@ class List < ApplicationRecord
   def editable_by?(user)
     owner == user || shares.accepted.edit.exists?(recipient: user)
   end
+
+  def deletable_by?(user)
+    return false unless user
+    owner == user
+  end
 end

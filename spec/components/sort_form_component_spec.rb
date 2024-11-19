@@ -21,11 +21,14 @@ RSpec.describe SortFormComponent, type: :component do
   end
 
   before do
-    # Mock translation helper
-    allow_any_instance_of(SortFormComponent).to receive(:t).with("common.sort_by").and_return("Sort by")
-    allow_any_instance_of(SortFormComponent).to receive(:params).and_return(params)
-    # Mock heroicon helper
-    allow_any_instance_of(SortFormComponent).to receive(:heroicon).and_return("icon")
+    # Update the translation key stub
+    allow_any_instance_of(SortFormComponent).to receive(:t)
+      .with("common.sort.sort_by")
+      .and_return("Sort by")
+    allow_any_instance_of(SortFormComponent).to receive(:params)
+      .and_return(params)
+    allow_any_instance_of(SortFormComponent).to receive(:heroicon)
+      .and_return("icon")
   end
 
   it "renders the sort form with correct attributes" do
