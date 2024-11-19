@@ -3,29 +3,42 @@
     <%= render 'shared/flash' %>
   </div>
 
-  <div class="mb-4">
+  <div class="flex flex-col md:flex-row gap-4 mb-4">
+    <%= render(SearchFormComponent.new(
+      url: lists_path,
+      placeholder: t('lists.search_placeholder'),
+      search_value: @query,
+      additional_fields: {
+        order_by: @order_by,
+        order_direction: @order_direction
+      }
+    )) %>
+
     <%= render(SortFormComponent.new(
       url: lists_path,
       fields: @sort_fields,
       current_order: @order_by,
-      current_direction: @order_direction
+      current_direction: @order_direction,
+      additional_fields: { search: @query }
     )) %>
   </div>
 
   <% if user_signed_in? %>
     <!-- Pending Lists Section -->
-    <div class="collapse collapse-arrow mb-8">
-      <input type="checkbox" checked /> 
-      <div class="collapse-title text-xl font-bold flex items-center gap-2">
-        <%= t('shared_lists_component.pending_shares') %>
-        <% if @pending_lists.any? %>
-          <span class="badge badge-secondary"><%= @pending_lists.size %></span>
-        <% end %>
+    <% if @pending_lists.any? %>
+      <div class="collapse collapse-arrow mb-8">
+        <input type="checkbox" checked /> 
+        <div class="collapse-title text-xl font-bold flex items-center gap-2">
+          <%= t('shared_lists_component.pending_shares') %>
+          <% if @pending_lists.any? %>
+            <span class="badge badge-secondary"><%= @pending_lists.size %></span>
+          <% end %>
+        </div>
+        <div class="collapse-content">
+          <%= render 'pending_lists_section', pending_lists: @pending_lists, current_user: current_user %>
+        </div>
       </div>
-      <div class="collapse-content">
-        <%= render 'pending_lists_section', pending_lists: @pending_lists, current_user: current_user %>
-      </div>
-    </div>
+    <% end %>
 
     <!-- Shared Lists Section -->
     <div class="collapse collapse-arrow mb-8">
@@ -47,7 +60,7 @@
     <input type="checkbox" checked />
     <div class="collapse-title text-xl font-bold flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <%= t('.my_lists') %>
+        <%= t('lists.my_lists') %>
         <% if @lists.any? %>
           <span class="badge"><%= @lists.size %></span>
         <% end %>

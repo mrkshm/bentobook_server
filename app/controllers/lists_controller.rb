@@ -6,20 +6,19 @@ class ListsController < ApplicationController
   def index
     @order_by = params[:order_by] || 'created_at'
     @order_direction = params[:order_direction] || 'desc'
+    @query = params[:search]
     
     @lists = current_user.lists
-              .order(@order_by => @order_direction)
-    
-    if user_signed_in?
-      @pending_lists = current_user.shared_lists
-                        .pending
-                        .includes(:owner, owner: { profile: { avatar_attachment: :blob } })
-                        .order(@order_by => @order_direction)
+    @pending_lists = user_signed_in? ? current_user.shared_lists.pending : []
+    @accepted_lists = user_signed_in? ? current_user.shared_lists.accepted : []
+
+    if @query.present?
+      search_condition = "LOWER(lists.name) LIKE :query OR LOWER(lists.description) LIKE :query"
+      query_param = "%#{@query.downcase}%"
       
-      @accepted_lists = current_user.shared_lists
-                         .accepted
-                         .includes(:owner, owner: { profile: { avatar_attachment: :blob } })
-                         .order(@order_by => @order_direction)
+      @lists = @lists.where(search_condition, query: query_param)
+      @pending_lists = @pending_lists.where(search_condition, query: query_param)
+      @accepted_lists = @accepted_lists.where(search_condition, query: query_param)
     end
 
     @sort_fields = {

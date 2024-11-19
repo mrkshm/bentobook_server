@@ -1,7 +1,9 @@
 en:
   lists:
+    my_lists: "My Lists"
     name: "List Name"
     name_placeholder: "List name"
+    search_placeholder: "Search for a list"
     visibility:
       personal: "Personal"
       discoverable: "Discoverable"
