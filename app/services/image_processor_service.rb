@@ -26,16 +26,11 @@ class ImageProcessorService
   private
 
   def valid_image?(image)
-    puts "\nValidating image: #{image.inspect}"
-    puts "Image responds to content_type? #{image.respond_to?(:content_type)}"
-    puts "Image responds to original_filename? #{image.respond_to?(:original_filename)}"
-    
     return false unless image.respond_to?(:content_type) && image.respond_to?(:original_filename)
     return false unless image.content_type&.start_with?('image/')
     
     true
   rescue StandardError => e
-    puts "\nValidation error occurred: #{e.message}"
     @logger.error "Image validation failed: #{e.message} for image: #{image.inspect}"
     false
   end

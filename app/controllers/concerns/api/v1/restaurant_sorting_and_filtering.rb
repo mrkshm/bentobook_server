@@ -4,9 +4,17 @@ module Api
       module RestaurantSortingAndFiltering
         extend ActiveSupport::Concern
   
+        ALLOWED_ORDER_FIELDS = %w[name created_at updated_at rating price_range]
+        DEFAULT_ORDER = { field: 'created_at', direction: 'desc' }.freeze
+  
         included do
-          ALLOWED_ORDER_FIELDS = %w[name rating created_at distance].freeze
-          DEFAULT_ORDER = { field: 'created_at', direction: 'desc' }.freeze
+          unless const_defined?(:ALLOWED_ORDER_FIELDS)
+            const_set(:ALLOWED_ORDER_FIELDS, %w[name created_at updated_at rating price_range])
+          end
+  
+          unless const_defined?(:DEFAULT_ORDER)
+            const_set(:DEFAULT_ORDER, { field: 'created_at', direction: 'desc' }.freeze)
+          end
         end
   
         def parse_order_params
