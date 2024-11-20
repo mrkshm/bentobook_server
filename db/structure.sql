@@ -694,6 +694,43 @@ ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
 
 
 --
+-- Name: user_sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_sessions (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    jti character varying NOT NULL,
+    client_name character varying NOT NULL,
+    last_used_at timestamp(6) without time zone NOT NULL,
+    ip_address character varying,
+    user_agent character varying,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: user_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.user_sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: user_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.user_sessions_id_seq OWNED BY public.user_sessions.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -938,6 +975,13 @@ ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id
 
 
 --
+-- Name: user_sessions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions ALTER COLUMN id SET DEFAULT nextval('public.user_sessions_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1116,6 +1160,14 @@ ALTER TABLE ONLY public.taggings
 
 ALTER TABLE ONLY public.tags
     ADD CONSTRAINT tags_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (id);
 
 
 --
@@ -1493,6 +1545,41 @@ CREATE UNIQUE INDEX index_tags_on_name ON public.tags USING btree (name);
 
 
 --
+-- Name: index_user_sessions_on_active; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_active ON public.user_sessions USING btree (active);
+
+
+--
+-- Name: index_user_sessions_on_jti; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_user_sessions_on_jti ON public.user_sessions USING btree (jti);
+
+
+--
+-- Name: index_user_sessions_on_last_used_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_last_used_at ON public.user_sessions USING btree (last_used_at);
+
+
+--
+-- Name: index_user_sessions_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_user_id ON public.user_sessions USING btree (user_id);
+
+
+--
+-- Name: index_user_sessions_on_user_id_and_client_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_user_id_and_client_name ON public.user_sessions USING btree (user_id, client_name);
+
+
+--
 -- Name: index_users_on_confirmation_token; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1657,6 +1744,14 @@ ALTER TABLE ONLY public.restaurant_copies
 
 
 --
+-- Name: user_sessions fk_rails_9fa262d742; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT fk_rails_9fa262d742 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
 -- Name: taggings fk_rails_9fcd2e236b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1759,6 +1854,8 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241120092910'),
+('20241120092858'),
 ('20241114110224'),
 ('20241111083840'),
 ('20241105103121'),

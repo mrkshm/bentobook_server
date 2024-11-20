@@ -14,15 +14,16 @@ RSpec.describe 'Profiles API', type: :request do
     get 'Retrieves the user profile' do
       tags 'Profiles'
       produces 'application/json'
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
 
       response '200', 'profile found' do
         let(:Authorization) { "Bearer #{token}" }
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['id']).to eq(user.profile.id)
-          expect(data).to have_key('avatar_url')
+          expect(data['data']['type']).to eq('profile')
+          expect(data['data']['id']).to eq(user.profile.id.to_s)
+          expect(data['data']['attributes']).to include('avatar_url')
         end
       end
 
@@ -36,7 +37,7 @@ RSpec.describe 'Profiles API', type: :request do
       tags 'Profiles'
       consumes 'application/json'
       produces 'application/json'
-      security [bearer_auth: []]
+      security [ bearer_auth: [] ]
       parameter name: :profile, in: :body, schema: {
         type: :object,
         properties: {
@@ -54,9 +55,9 @@ RSpec.describe 'Profiles API', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['first_name']).to eq('John')
-          expect(data['last_name']).to eq('Doe')
-          expect(data).to have_key('avatar_url')
+          expect(data['data']['attributes']['first_name']).to eq('John')
+          expect(data['data']['attributes']['last_name']).to eq('Doe')
+          expect(data['data']['attributes']).to include('avatar_url')
         end
       end
 
@@ -66,9 +67,12 @@ RSpec.describe 'Profiles API', type: :request do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data).to have_key('error')
-          expect(data).to have_key('errors')
-          expect(data['errors']).to have_key('first_name')
+          expect(data['status']).to eq('error')
+          expect(data['errors']).to be_an(Array)
+          expect(data['errors'].first).to include(
+            'code' => 'general_error',
+            'detail' => 'First name is too long (maximum is 50 characters)'
+          )
         end
       end
 
@@ -79,6 +83,4 @@ RSpec.describe 'Profiles API', type: :request do
       end
     end
   end
-
-
 end

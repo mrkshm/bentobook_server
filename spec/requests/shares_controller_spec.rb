@@ -85,9 +85,10 @@ RSpec.describe SharesController, type: :request do
     end
     
     context 'when not authenticated' do
-      it 'redirects to login' do
+      it 'returns unauthorized status' do
         post shares_path, params: valid_params
-        expect(response).to redirect_to(new_user_session_path)
+        expect(response).to have_http_status(:unauthorized)
+        expect(response.body).to include('You need to sign in or sign up before continuing')
       end
     end
   end

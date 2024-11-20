@@ -83,10 +83,13 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      devise_for :users, controllers: {
-          sessions: 'api/v1/sessions',
-          registrations: 'api/v1/registrations',
-        }, defaults: { format: :json }
+      devise_for :users, 
+        skip: [:registrations, :passwords], 
+        controllers: {
+          sessions: 'api/v1/sessions'
+        }, 
+        defaults: { format: :json }
+      
       resource :profile, only: [:show, :update]
       resources :contacts, only: [:index, :show, :create, :update, :destroy]
       resources :visits, only: [:index, :show, :create, :update, :destroy] do
