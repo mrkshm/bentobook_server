@@ -79,6 +79,7 @@ RSpec.configure do |config|
   config.include ActionView::Helpers::FormHelper
   config.include ActionView::RecordIdentifier
   config.include ActionDispatch::Routing::PolymorphicRoutes
+  config.include ActiveSupport::Testing::TimeHelpers
   config.include AuthHelpers, type: :request
   config.include Warden::Test::Helpers
 
@@ -93,9 +94,9 @@ RSpec.configure do |config|
     # Add PostGIS setup
     ActiveRecord::Base.connection.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
     ActiveRecord::Base.connection.execute(<<-SQL)
-      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) 
-      VALUES (4326, 'EPSG', 4326, 
-        '+proj=longlat +datum=WGS84 +no_defs', 
+      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext)#{' '}
+      VALUES (4326, 'EPSG', 4326,#{' '}
+        '+proj=longlat +datum=WGS84 +no_defs',#{' '}
         'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]')
       ON CONFLICT (srid) DO NOTHING;
     SQL
@@ -140,7 +141,7 @@ RSpec.configure do |config|
 
   config.include ActiveJob::TestHelper
   config.include Devise::Test::IntegrationHelpers, type: :request
-  
+
   # Clear enqueued jobs between tests
   config.before(:each) do
     ActiveJob::Base.queue_adapter = :test
@@ -162,7 +163,7 @@ end
 Geocoder::Lookup::Test.set_default_stub(
   [
     {
-      'coordinates'  => [40.7143528, -74.0059731],
+      'coordinates'  => [ 40.7143528, -74.0059731 ],
       'address'      => 'New York, NY, USA',
       'state'        => 'New York',
       'state_code'   => 'NY',
@@ -173,9 +174,9 @@ Geocoder::Lookup::Test.set_default_stub(
 )
 
 Geocoder::Lookup::Test.add_stub(
-  [40.7300, -74.0000], [
+  [ 40.7300, -74.0000 ], [
     {
-      'coordinates'  => [40.7300, -74.0000],
+      'coordinates'  => [ 40.7300, -74.0000 ],
       'address'      => 'New York, NY, USA',
       'state'        => 'New York',
       'state_code'   => 'NY',
@@ -186,9 +187,9 @@ Geocoder::Lookup::Test.add_stub(
 )
 
 Geocoder::Lookup::Test.add_stub(
-  [40.7128, -74.0060], [
+  [ 40.7128, -74.0060 ], [
     {
-      'coordinates'  => [40.7128, -74.0060],
+      'coordinates'  => [ 40.7128, -74.0060 ],
       'address'      => 'New York, NY, USA',
       'state'        => 'New York',
       'state_code'   => 'NY',
@@ -199,9 +200,9 @@ Geocoder::Lookup::Test.add_stub(
 )
 
 Geocoder::Lookup::Test.add_stub(
-  [40.7489, -73.9680], [
+  [ 40.7489, -73.9680 ], [
     {
-      'coordinates'  => [40.7489, -73.9680],
+      'coordinates'  => [ 40.7489, -73.9680 ],
       'address'      => 'New York, NY, USA',
       'state'        => 'New York',
       'state_code'   => 'NY',

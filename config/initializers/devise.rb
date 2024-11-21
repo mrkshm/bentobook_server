@@ -304,7 +304,7 @@ Devise.setup do |config|
   # Note: These might become the new default in future versions of Devise.
   config.responder.error_status = :unprocessable_entity
   config.responder.redirect_status = :see_other
-
+  config.navigational_formats = []
   # ==> Configuration for :registerable
 
   # When set to false, does not sign a user in automatically after their password is
@@ -314,14 +314,13 @@ Devise.setup do |config|
   config.jwt do |jwt|
     jwt.secret = ENV["DEVISE_JWT_SECRET_KEY"] || Rails.application.credentials.devise_jwt_secret_key!
     jwt.dispatch_requests = [
-      [ "POST", %r{^/api/v1/users/sign_in$} ]
+      [ "POST", %r{^/api/v1/users/sign_in$} ],
+      [ "GET", %r{^/api/v1/profile$} ]
     ]
     jwt.revocation_requests = [
       [ "DELETE", %r{^/api/v1/users/sign_out$} ]
     ]
     jwt.expiration_time = 1.day.to_i
-    jwt.request_formats = {
-      user: [ :json ]
-    }
+    jwt.request_formats = { user: [:json] }
   end
 end

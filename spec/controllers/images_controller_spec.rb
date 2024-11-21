@@ -9,9 +9,10 @@ RSpec.describe ImagesController, type: :controller do
   
   describe 'DELETE #destroy' do
     context 'when user is not authenticated' do
-      it 'redirects to sign in page' do
+      it 'returns unauthorized status' do
         delete :destroy, params: { id: image.id }
-        expect(response).to redirect_to(new_user_session_path)
+        expect(response).to have_http_status(:unauthorized)
+        expect(response.body).to include('You need to sign in or sign up before continuing')
       end
     end
 

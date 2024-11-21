@@ -5,9 +5,10 @@ RSpec.describe ListsController, type: :request do
   let(:list) { create(:list, owner: user) }
   
   describe 'authentication' do
-    it 'redirects to login when not authenticated' do
+    it 'returns unauthorized status when not authenticated' do
       get lists_path
-      expect(response).to redirect_to(new_user_session_path)
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.body).to include('You need to sign in or sign up before continuing')
     end
   end
   

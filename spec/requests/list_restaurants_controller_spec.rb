@@ -6,9 +6,10 @@ RSpec.describe ListRestaurantsController, type: :request do
   let(:restaurant) { create(:restaurant) }
   
   describe 'authentication' do
-    it 'redirects to login when not authenticated' do
+    it 'returns unauthorized status when not authenticated' do
       get new_list_list_restaurant_path(list_id: list.id)
-      expect(response).to redirect_to(new_user_session_path)
+      expect(response).to have_http_status(:unauthorized)
+      expect(response.body).to include('You need to sign in or sign up before continuing')
     end
   end
   

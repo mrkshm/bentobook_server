@@ -3,7 +3,7 @@ FactoryBot.define do
     sequence(:email) { |n| "user#{n}@example.com" }
     password { "password123" }
     password_confirmation { "password123" }
-    jti { SecureRandom.uuid } 
+    jti { SecureRandom.uuid }
 
     trait :with_profile do
       after(:create) do |user|
@@ -23,8 +23,27 @@ FactoryBot.define do
       end
     end
 
+    trait :with_lists do
+      after(:create) do |user|
+        create_list(:list, 2, owner: user)
+      end
+    end
+
+    trait :with_shared_lists do
+      after(:create) do |user|
+        create(:share, recipient: user, status: :accepted)
+        create(:share, recipient: user, status: :pending)
+      end
+    end
+
+    trait :with_created_shares do
+      after(:create) do |user|
+        create_list(:share, 2, creator: user)
+      end
+    end
+
     trait :unconfirmed do
-      confirmed_at { nil }  # This makes the user unconfirmed
+      confirmed_at { nil }
     end
 
     trait :with_contacts do
