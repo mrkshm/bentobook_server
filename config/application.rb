@@ -16,6 +16,10 @@ module Bentobook
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
+    config.middleware.use Rack::Attack
+
+    # Skip Warden JWT Auth middleware since we're using our own implementation
+    config.middleware.delete Warden::JWTAuth::Middleware
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -25,7 +29,7 @@ module Bentobook
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
     # Permitted locales available for the application
-    config.i18n.available_locales = [:en, :fr]
+    config.i18n.available_locales = [ :en, :fr ]
 
     # Set default locale to something other than :en
     config.i18n.default_locale = :en

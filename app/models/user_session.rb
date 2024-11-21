@@ -12,12 +12,37 @@ class UserSession < ApplicationRecord
   before_validation :set_last_used_at, on: :create
   before_validation :generate_jti, on: :create
 
-  def self.revoke!(jti)
-    find_by!(jti: jti).update!(active: false)
+  class << self
+    def validate_token(payload)
+      return false unless payload["jti"].present? && payload["sub"].present?
+
+      session = find_by(jti: payload["jti"])
+      return false unless session&.active? && session.user_id == payload["sub"].to_i
+
+      # Force timestamp update
+      session.update_columns(last_used_at: Time.zone.now)
+      true
+    end
+
+    def create_session(user, client_info)
+      create!(
+        user: user,
+        client_name: client_info[:name],
+        active: true
+      )
+    end
+
+    def revoke!(jti)
+      find_by!(jti: jti).update!(active: false)
+    end
   end
 
   def touch_last_used!
-    update!(last_used_at: Time.current)
+    update_columns(last_used_at: Time.zone.now)
+  end
+
+  def revoke!
+    update!(active: false)
   end
 
   private

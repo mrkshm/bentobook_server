@@ -312,15 +312,21 @@ Devise.setup do |config|
   # config.sign_in_after_change_password = true
 
   config.jwt do |jwt|
-    jwt.secret = ENV["DEVISE_JWT_SECRET_KEY"] || Rails.application.credentials.devise_jwt_secret_key!
+    jwt.secret = Rails.application.credentials.devise_jwt_secret_key!
+
+    # Configure which requests should generate a token
     jwt.dispatch_requests = [
       [ "POST", %r{^/api/v1/users/sign_in$} ],
-      [ "GET", %r{^/api/v1/profile$} ]
+      [ "POST", %r{^/api/v1/refresh_token$} ]
     ]
-    jwt.revocation_requests = [
-      [ "DELETE", %r{^/api/v1/users/sign_out$} ]
-    ]
-    jwt.expiration_time = 1.day.to_i
-    jwt.request_formats = { user: [:json] }
+
+    # Configure which requests should revoke a token
+    jwt.revocation_requests = []
+
+    # Set token expiration (1 hour)
+    jwt.expiration_time = 1.hour.to_i
+
+    # Only process JWT for JSON requests
+    jwt.request_formats = { user: [ :json ] }
   end
 end
