@@ -95,3 +95,5 @@ group :test do
   gem "database_cleaner-active_record"
   gem "timecop"
 end
+
+gem "rack-attack", "~> 6.7"

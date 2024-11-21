@@ -1,10 +1,9 @@
 class User < ApplicationRecord
-  include Devise::JWT::RevocationStrategies::JTIMatcher
+  include JwtRevocationStrategy
 
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :confirmable, :trackable, :lockable,
-         :jwt_authenticatable, jwt_revocation_strategy: self
+         :confirmable, :trackable, :lockable
 
   has_many :user_sessions, dependent: :destroy
   has_many :restaurants
@@ -45,11 +44,16 @@ class User < ApplicationRecord
 
   # Session management methods
   def create_session!(client_name:, ip_address: nil, user_agent: nil)
-    user_sessions.create!(
+    session = user_sessions.create!(
       client_name: client_name,
       ip_address: ip_address,
-      user_agent: user_agent
+      user_agent: user_agent,
+      active: true
     )
+
+    # Generate token but return session
+    generate_jwt_token(session)
+    session
   end
 
   def active_sessions
@@ -57,7 +61,7 @@ class User < ApplicationRecord
   end
 
   def revoke_session!(jti)
-    user_sessions.revoke!(jti)
+    user_sessions.find_by(jti: jti)&.update!(active: false)
   end
 
   def revoke_all_sessions!
@@ -68,11 +72,5 @@ class User < ApplicationRecord
 
   def ensure_profile
     create_profile if profile.nil?
-  end
-
-  # Explicit JWT revocation check
-  def jwt_revoked?(payload, user)
-    # Check if the token's JTI exists in revoked user_sessions
-    user_sessions.exists?(jti: payload['jti'], active: false)
   end
 end

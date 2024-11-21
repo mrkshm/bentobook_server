@@ -2,12 +2,16 @@ class BaseSerializer
   include Alba::Resource
 
   def self.render_success(resource, meta: {})
+    serializer = new(resource)
+    serialized = serializer.serialize
+    parsed = JSON.parse(serialized)
+
     {
       status: "success",
       data: {
         id: resource.id.to_s,
         type: resource.class.name.underscore,
-        attributes: JSON.parse(new(resource).serialize)
+        attributes: parsed
       },
       meta: {
         timestamp: Time.current.iso8601
@@ -16,15 +20,21 @@ class BaseSerializer
   end
 
   def self.render_collection(resources, meta: {}, pagy: nil)
+    serializer = new
+    serialized_resources = resources.map { |resource|
+      serialized = serializer.serialize(resource)
+      parsed = JSON.parse(serialized)
+
+      {
+        id: resource.id.to_s,
+        type: resource.class.name.underscore,
+        attributes: parsed
+      }
+    }
+
     {
       status: "success",
-      data: resources.map { |resource|
-        {
-          id: resource.id.to_s,
-          type: resource.class.name.underscore,
-          attributes: JSON.parse(new(resource).serialize)
-        }
-      },
+      data: serialized_resources,
       meta: {
         timestamp: Time.current.iso8601,
         pagination: pagy_metadata(pagy)
