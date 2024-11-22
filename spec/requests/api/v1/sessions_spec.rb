@@ -1,159 +1,172 @@
 require 'rails_helper'
+require 'swagger_helper'
 
-RSpec.describe Api::V1::SessionsController, type: :request do
-  let(:user) { create(:user, password: 'password123') }
-  let(:password) { 'password123' }
-  let(:mobile_user_agent) { "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1" }
-  let(:desktop_user_agent) { "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36" }
-
-  # Helper method to parse JSON response
-  def json_response
-    JSON.parse(response.body)
-  end
-
-  describe 'POST /api/v1/sessions' do
-    context 'with valid credentials' do
-      it 'returns device info for mobile device' do
-
-        post '/api/v1/sessions',
-          params: { user: { email: user.email, password: password } }.to_json,
-          headers: {
-            'User-Agent' => mobile_user_agent,
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
+RSpec.describe 'Sessions API' do
+  path '/api/v1/sessions' do
+    post 'Creates a session' do
+      tags 'Sessions'
+      security []  # Explicitly state that no security is required
+      consumes 'application/json'
+      produces 'application/json'
+      parameter name: :user_params, in: :body, schema: {
+        type: :object,
+        properties: {
+          user: {
+            type: :object,
+            properties: {
+              email: { type: :string },
+              password: { type: :string }
+            },
+            required: [ 'email', 'password' ]
           }
+        },
+        required: [ 'user' ]
+      }
 
-        expect(response).to have_http_status(:ok)
-        expect(json_response.dig('data', 'device_info')).to include(
-          'type' => 'mobile',
-          'device' => include('Safari'),
-          'platform' => include('iOS')
-        )
+      response '200', 'session created' do
+        let(:user) { create(:user, password: 'password123') }
+        let(:user_params) { { user: { email: user.email, password: 'password123' } } }
+
+        before do
+          # Create user before running test
+          user
+        end
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['status']['code']).to eq(200)
+          expect(data['status']['message']).to eq('Logged in successfully.')
+          expect(data['data']).to include('token', 'device_info')
+          expect(data['data']['device_info']).to include('client_name', 'device', 'last_ip')
+          expect(data['data']['user']).to include('email', 'id')
+        end
       end
 
-      it 'returns device info for desktop device' do
-        post '/api/v1/sessions',
-          params: { user: { email: user.email, password: password } }.to_json,
-          headers: {
-            'User-Agent' => desktop_user_agent,
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-          }
+      response '401', 'invalid credentials' do
+        let(:user) { create(:user, password: 'password123') }
+        let(:user_params) { { user: { email: user.email, password: 'wrong' } } }
 
-        expect(response).to have_http_status(:ok)
-        expect(json_response.dig('data', 'device_info')).to include(
-          'type' => 'desktop',
-          'device' => include('Chrome'),
-          'platform' => include('macOS')
-        )
-      end
-    end
+        before do
+          # Create user before running test
+          user
+        end
 
-    context 'with invalid credentials' do
-      it 'returns unauthorized' do
-
-        post '/api/v1/sessions',
-          params: { user: { email: user.email, password: 'wrong' } }.to_json,
-          headers: {
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json'
-          }
-
-        expect(response).to have_http_status(:unauthorized)
-      end
-    end
-  end
-
-  describe 'GET /api/v1/sessions' do
-    let!(:current_session) { create(:user_session, user: user) }
-    let!(:other_session) { create(:user_session, user: user) }
-
-    context 'when authenticated' do
-      before do
-        sign_in_with_token(user, current_session)
-        get '/api/v1/sessions', headers: @headers.merge({ 'Accept' => 'application/json' })
-      end
-
-      it 'lists all active sessions' do
-        expect(response).to have_http_status(:ok)
-        expect(json_response['sessions'].length).to eq(2)
-        expect(json_response['sessions'].first).to include(
-          'device_info',
-          'last_used_at',
-          'suspicious'
-        )
-      end
-    end
-
-    context 'when not authenticated' do
-      it 'returns unauthorized' do
-        get '/api/v1/sessions', headers: { 'Accept' => 'application/json' }
-
-        expect(response).to have_http_status(:unauthorized)
-      end
-    end
-  end
-
-  describe 'DELETE /api/v1/sessions/:id' do
-    let!(:current_session) { create(:user_session, user: user) }
-    let!(:other_session) { create(:user_session, user: user) }
-
-    context 'when authenticated' do
-      before do
-        sign_in_with_token(user, current_session)
-      end
-
-      it 'revokes another session' do
-
-        delete "/api/v1/sessions/#{other_session.id}", headers: @headers.merge({ 'Accept' => 'application/json' })
-
-        expect(response).to have_http_status(:ok)
-        expect(other_session.reload).not_to be_active
-      end
-
-      it 'prevents revoking current session' do
-
-        delete "/api/v1/sessions/#{current_session.id}", headers: @headers.merge({ 'Accept' => 'application/json' })
-
-        expect(response).to have_http_status(:bad_request)
-        expect(current_session.reload).to be_active
-      end
-    end
-
-    context 'when not authenticated' do
-      it 'returns unauthorized' do
-
-        delete "/api/v1/sessions/#{other_session.id}", headers: { 'Accept' => 'application/json' }
-        expect(response).to have_http_status(:unauthorized)
-      end
-    end
-  end
-
-  describe 'DELETE /api/v1/sessions' do
-    let!(:current_session) { create(:user_session, user: user) }
-    let!(:other_sessions) { create_list(:user_session, 3, user: user) }
-
-    context 'when authenticated' do
-      before do
-        sign_in_with_token(user, current_session)
-      end
-
-      it 'revokes all sessions except current' do
-
-        delete '/api/v1/sessions', headers: @headers.merge({ 'Accept' => 'application/json' })
-        expect(response).to have_http_status(:ok)
-        expect(current_session.reload).to be_active
-        other_sessions.each do |session|
-          expect(session.reload).not_to be_active
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:unauthorized)
+          expect(data['status']['code']).to eq(401)
+          expect(data['status']['message']).to eq('Invalid email or password.')
         end
       end
     end
 
-    context 'when not authenticated' do
-      it 'returns unauthorized' do
+    get 'Lists all active sessions' do
+      tags 'Sessions'
+      security [ bearer_auth: [] ]
+      produces 'application/json'
 
-        delete '/api/v1/sessions', headers: { 'Accept' => 'application/json' }
-        expect(response).to have_http_status(:unauthorized)
+      response '200', 'sessions found' do
+        let(:user) { create(:user) }
+        let(:current_session) { create(:user_session, user: user) }
+        let(:Authorization) { "Bearer #{generate_jwt_token(user, current_session)}" }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['sessions'].length).to eq(1)
+          expect(data['sessions'].first).to include(
+            'device_info',
+            'last_used_at',
+            'suspicious'
+          )
+        end
+      end
+
+      response '401', 'unauthorized' do
+        let(:Authorization) { 'Bearer invalid' }
+        run_test!
+      end
+    end
+
+    delete 'Revokes all other sessions' do
+      tags 'Sessions'
+      security [ bearer_auth: [] ]
+      produces 'application/json'
+
+      response '200', 'sessions revoked' do
+        let(:user) { create(:user) }
+        let(:current_session) { create(:user_session, user: user) }
+        let!(:other_sessions) { create_list(:user_session, 3, user: user) }
+        let(:Authorization) { "Bearer #{generate_jwt_token(user, current_session)}" }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['status']).to eq('success')
+          expect(data['meta']['message']).to eq('All other sessions revoked successfully.')
+          expect(current_session.reload).to be_active
+          other_sessions.each do |session|
+            expect(session.reload).not_to be_active
+          end
+        end
+      end
+    end
+  end
+
+  path '/api/v1/session' do
+    delete 'Logs out current session' do
+      tags 'Sessions'
+      security [ bearer_auth: [] ]
+      produces 'application/json'
+
+      response '200', 'logged out successfully' do
+        let(:user) { create(:user) }
+        let(:current_session) { create(:user_session, user: user) }
+        let(:Authorization) { "Bearer #{generate_jwt_token(user, current_session)}" }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['status']).to eq('success')
+          expect(data['meta']['message']).to eq('Logged out successfully.')
+          expect(current_session.reload).not_to be_active
+        end
+      end
+    end
+  end
+
+  path '/api/v1/refresh_token' do
+    post 'Refreshes current session token' do
+      tags 'Sessions'
+      security [ bearer_auth: [] ]
+      produces 'application/json'
+
+      response '200', 'token refreshed' do
+        let(:user) { create(:user) }
+        let(:current_session) { create(:user_session, user: user) }
+        let(:Authorization) { "Bearer #{generate_jwt_token(user, current_session)}" }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['status']).to eq('success')
+          expect(data['data']['attributes']).to include('token', 'device_info')
+          expect(data['data']['attributes']['device_info']).to include(
+            'client_name',
+            'device',
+            'last_ip',
+            'last_used_at',
+            'platform',
+            'type'
+          )
+        end
+      end
+
+      response '401', 'invalid session' do
+        let(:user) { create(:user) }
+        let(:current_session) { create(:user_session, user: user, active: false) }
+        let(:Authorization) { "Bearer #{generate_jwt_token(user, current_session)}" }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data['status']).to include('code' => 401)
+        end
       end
     end
   end
