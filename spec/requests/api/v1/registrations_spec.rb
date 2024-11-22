@@ -1,63 +1,84 @@
+require 'rails_helper'
 require 'swagger_helper'
 
-RSpec.describe 'Api::V1::Registrations', type: :request do
-  path '/api/v1/users' do
-    post 'Creates a new user' do
-      tags 'Users'
+RSpec.describe 'Registrations API' do
+  path '/api/v1/register' do
+    post 'Creates a new user account' do
+      tags 'Registration'
+      security [] # No auth required for registration
       consumes 'application/json'
       produces 'application/json'
-      security []
-      parameter name: :user, in: :body, schema: {
+
+      parameter name: :user_params, in: :body, schema: {
         type: :object,
         properties: {
           user: {
             type: :object,
             properties: {
-              email: { type: :string },
-              password: { type: :string },
-              password_confirmation: { type: :string }
+              email: { type: :string, example: 'user@example.com' },
+              password: { type: :string, example: 'password123' },
+              password_confirmation: { type: :string, example: 'password123' }
             },
-            required: ['email', 'password', 'password_confirmation']
+            required: [ 'email', 'password', 'password_confirmation' ]
           }
-        }
+        },
+        required: [ 'user' ]
       }
 
-      response '200', 'user created' do
-        let(:user) { { user: { email: 'test@example.com', password: 'password123', password_confirmation: 'password123' } } }
+      response '200', 'user registered successfully' do
+        let(:user_params) do
+          {
+            user: {
+              email: 'test@example.com',
+              password: 'password123',
+              password_confirmation: 'password123'
+            }
+          }
+        end
+
         run_test! do |response|
-          expect(response.status).to eq(200)
-          json_response = JSON.parse(response.body)
-          expect(json_response['status']['message']).to eq('Signed up successfully.')
-
-          # Parse the 'data' field separately
-          user_data = JSON.parse(json_response['data'])
-          expect(user_data['email']).to eq('test@example.com')
-
-          expect(json_response['token']).to be_a(String)
+          data = JSON.parse(response.body)
+          expect(data['status']).to eq('success')
+          expect(data['data']).to include(
+            'type' => 'user',
+            'attributes' => include(
+              'email' => 'test@example.com'
+            )
+          )
+          expect(data['meta']).to include(
+            'timestamp',
+            'token'
+          )
+          expect(data['meta']['token']).to be_present
         end
       end
 
       response '422', 'invalid request' do
-        let(:user) { { user: { email: 'invalid', password: 'short', password_confirmation: 'mismatch' } } }
+        let(:user_params) do
+          {
+            user: {
+              email: '',
+              password: 'short',
+              password_confirmation: 'not-matching'
+            }
+          }
+        end
+
         run_test! do |response|
-          expect(response.status).to eq(422)
-          json_response = JSON.parse(response.body)
-          expect(json_response['status']['message']).to eq("User couldn't be created successfully.")
-          expect(json_response['errors']).to be_present
+          data = JSON.parse(response.body)
+          expect(data['status']).to eq('error')
+          expect(data['errors']).to be_present
+          expect(response).to have_http_status(:unprocessable_entity)
         end
       end
 
-      response '401', 'user created but not activated' do
-        before do
-          allow_any_instance_of(User).to receive(:active_for_authentication?).and_return(false)
-        end
+      response '500', 'internal server error' do
+        let(:user_params) { { invalid: 'params' } }
 
-        let(:user) { { user: { email: 'inactive@example.com', password: 'password123', password_confirmation: 'password123' } } }
         run_test! do |response|
-          expect(response.status).to eq(401)
-          json_response = JSON.parse(response.body)
-          expect(json_response['status']['message']).to eq('User created but not activated')
-          expect(json_response['errors']).to include('User is not activated')
+          data = JSON.parse(response.body)
+          expect(data['status']['code']).to eq(500)
+          expect(data['status']['message']).to eq('Internal server error')
         end
       end
     end

@@ -38,7 +38,7 @@ gem "alba"
 
 gem "pg_search"
 
-gem 'acts_as_list'
+gem "acts_as_list"
 
 gem "heroicon"
 
@@ -51,7 +51,7 @@ gem "geocoder"
 gem "devise"
 
 gem "acts-as-taggable-on"
-
+gem "browser"
 gem "rswag-api"
 gem "rswag-ui"
 
@@ -61,7 +61,7 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
-gem 'aws-sdk-rails', '~> 4'
+gem "aws-sdk-rails", "~> 4"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

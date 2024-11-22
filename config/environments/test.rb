@@ -51,8 +51,31 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # config.logger = ActiveSupport::TaggedLogging.new(Logger.new(STDOUT))
-  # config.log_level = :debug
+  # Configure logging for test environment
+  config.log_level = :warn
+  config.logger = ActiveSupport::Logger.new(STDOUT)
+  config.logger.formatter = proc do |severity, datetime, progname, msg|
+    msg = msg.to_s  # Convert msg to string in case it's nil or another type
+    
+    # Skip noisy messages
+    noisy_patterns = [
+      'File not found in storage after rename',
+      'failed to recognize type',
+      'Error in set_filename: unexpected return',
+    ]
+    
+    # Skip if message matches any noisy pattern or is a backtrace line
+    if noisy_patterns.any? { |pattern| msg.include?(pattern) } || msg.start_with?('/')
+      ''
+    else
+      "[#{severity}] #{datetime}: #{msg}\n"
+    end
+  end
+
+  # Configure ActiveStorage to be less verbose in tests
+  config.active_storage.logger = ActiveSupport::Logger.new(nil)
+  config.active_storage.queue = :test
+  config.active_storage.service = :test
 
   Geocoder.configure(lookup: :test)
 

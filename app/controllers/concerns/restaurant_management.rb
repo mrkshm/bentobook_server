@@ -1,25 +1,25 @@
 module RestaurantManagement
     extend ActiveSupport::Concern
-    
+
     COMPARABLE_ATTRIBUTES = [
       :name, :address, :street_number, :street, :postal_code, :city, :state, :country,
       :phone_number, :url, :business_status, :latitude, :longitude
     ].freeze
-  
+
     def set_restaurant
       @restaurant = current_user.restaurants.with_google.find(params[:id])
     rescue ActiveRecord::RecordNotFound
       if request.format.json?
         render json: { error: "Restaurant not found or you don't have permission to view it" }, status: :not_found
       else
-        flash[:alert] = "Restaurant not found or you don't have permission to view it."
+        flash[:error] = "Restaurant not found or you don't have permission to view it"
         redirect_to restaurants_path
       end
     end
-  
+
     def build_restaurant
       @restaurant = current_user.restaurants.new(restaurant_params.except(:images))
-      
+
       if restaurant_params[:images].present?
         restaurant_params[:images].each do |image|
           @restaurant.images.new(file: image)
@@ -28,7 +28,7 @@ module RestaurantManagement
 
       @restaurant
     end
-  
+
     def compare_and_save_restaurant
       restaurant_attrs = restaurant_params
       google_restaurant = @restaurant.google_restaurant
@@ -42,9 +42,9 @@ module RestaurantManagement
 
       @restaurant.save
     end
-  
+
     private
-  
+
     def google_restaurant_params
       params.dig(:restaurant, :google_restaurant_attributes)&.permit(
         :id, :google_place_id, :name, :address, :city, :state, :country,
@@ -52,7 +52,7 @@ module RestaurantManagement
         :phone_number, :url, :business_status, :price_level
       ) || {}
     end
-  
+
     def restaurant_params
       params.require(:restaurant).permit(
         :name, :address, :notes, :cuisine_type, :rating, :price_level,
@@ -60,7 +60,7 @@ module RestaurantManagement
         images: []
       )
     end
-  
+
     def restaurant_save_params
       params.require(:restaurant).permit(
         :name, :address, :notes, :cuisine_type_id, :rating, :price_level,
@@ -68,7 +68,7 @@ module RestaurantManagement
         images: []
       )
     end
-  
+
     def restaurant_update_params
       params.require(:restaurant).permit(
         :name, :address, :notes, :cuisine_type_id, :rating, :price_level,
@@ -78,7 +78,7 @@ module RestaurantManagement
         images: []
       )
     end
-  
+
     def find_or_create_google_restaurant
       google_place_id = restaurant_params[:google_place_id]
       name = restaurant_params[:name]
@@ -115,7 +115,4 @@ module RestaurantManagement
 
       google_restaurant
     end
-    
-  
-    
-  end
+end

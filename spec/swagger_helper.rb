@@ -3,14 +3,14 @@
 require 'rails_helper'
 require 'jwt'
 
-def generate_jwt_token(user)
+def generate_jwt_token(user, session)
   payload = {
     sub: user.id,
-    jti: user.jti,
-    scp: 'user',
-    exp: 24.hours.from_now.to_i
+    jti: session.jti,
+    exp: 24.hours.from_now.to_i,
+    iat: Time.current.to_i
   }
-  JWT.encode(payload, Rails.application.credentials.devise_jwt_secret_key!)
+  JWT.encode(payload, Rails.application.credentials.devise_jwt_secret_key!, 'HS256')
 end
 
 RSpec.configure do |config|
@@ -57,6 +57,7 @@ RSpec.configure do |config|
   # Conditional Setup for Authenticated Requests
   config.before(:each, type: :request) do
     @user = create(:user)
-    @token = generate_jwt_token(@user)
+    @user_session = create(:user_session, user: @user)
+    @token = generate_jwt_token(@user, @user_session)
   end
 end

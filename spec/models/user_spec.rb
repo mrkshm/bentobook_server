@@ -139,7 +139,7 @@ RSpec.describe User, type: :model do
 
     describe '#jwt_revoked?' do
       let(:user) { create(:user) }
-      let(:session) { user.create_session!(client_name: 'test') }
+      let(:session) { user.create_session!(client_name: 'test', ip_address: '127.0.0.1') }
       let(:payload) { { 'jti' => session.jti } }
 
       it 'returns false for active sessions' do

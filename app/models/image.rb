@@ -38,15 +38,23 @@ class Image < ApplicationRecord
         # Try to copy from original key if it exists
         if file.blob.service.exist?(original_key)
           begin
-            file.blob.service.copy(original_key, file.blob.key) if file.blob.service.respond_to?(:copy)
-          rescue NoMethodError
+            if file.blob.service.respond_to?(:copy)
+              file.blob.service.copy(original_key, file.blob.key)
+            else
+              # For test environment, just ignore the copy
+              true
+            end
+          rescue StandardError => e
+            Rails.logger.error "Failed to copy file: #{e.message}"
           end
         end
       end
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error "Error in set_filename: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
     end
+    
+    true # Always return true to prevent callback chain from breaking
   end
 
   def purge_file

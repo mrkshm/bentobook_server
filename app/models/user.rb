@@ -43,7 +43,7 @@ class User < ApplicationRecord
   end
 
   # Session management methods
-  def create_session!(client_name:, ip_address: nil, user_agent: nil)
+  def create_session!(client_name:, ip_address: "127.0.0.1", user_agent: nil)
     session = user_sessions.create!(
       client_name: client_name,
       ip_address: ip_address,

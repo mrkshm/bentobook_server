@@ -316,12 +316,15 @@ Devise.setup do |config|
 
     # Configure which requests should generate a token
     jwt.dispatch_requests = [
-      [ "POST", %r{^/api/v1/users/sign_in$} ],
+      [ "POST", %r{^/api/v1/sessions$} ],
       [ "POST", %r{^/api/v1/refresh_token$} ]
     ]
 
     # Configure which requests should revoke a token
-    jwt.revocation_requests = []
+    jwt.revocation_requests = [
+      [ "DELETE", %r{^/api/v1/sessions/.*$} ],
+      [ "DELETE", %r{^/api/v1/sessions$} ]
+    ]
 
     # Set token expiration (1 hour)
     jwt.expiration_time = 1.hour.to_i

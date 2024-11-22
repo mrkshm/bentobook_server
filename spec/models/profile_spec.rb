@@ -7,12 +7,13 @@ RSpec.describe Profile, type: :model do
   end
 
   describe 'validations' do
-    subject { create(:profile) } 
+    subject { create(:profile) }
     it { should validate_uniqueness_of(:username).allow_blank }
     it { should validate_length_of(:first_name).is_at_most(50) }
     it { should validate_length_of(:last_name).is_at_most(50) }
-    it { should validate_inclusion_of(:preferred_theme).in_array(Profile::VALID_THEMES) }
-    it { should validate_inclusion_of(:preferred_language).in_array(Profile::VALID_LANGUAGES) }
+    it { should validate_inclusion_of(:preferred_theme).in_array(Profile::VALID_THEMES).allow_nil }
+    it { should validate_inclusion_of(:preferred_language).in_array(Profile::VALID_LANGUAGES).allow_nil }
+    it { should validate_length_of(:about).is_at_most(500) }
   end
 
   describe '#full_name' do
@@ -55,6 +56,30 @@ RSpec.describe Profile, type: :model do
     end
   end
 
+  describe '#theme' do
+    it 'returns the preferred theme when set' do
+      profile = build(:profile, preferred_theme: 'dark')
+      expect(profile.theme).to eq('dark')
+    end
+
+    it 'returns the default theme when preferred theme is nil' do
+      profile = build(:profile, preferred_theme: nil)
+      expect(profile.theme).to eq(Profile::VALID_THEMES.first)
+    end
+  end
+
+  describe '#language' do
+    it 'returns the preferred language when set' do
+      profile = build(:profile, preferred_language: 'fr')
+      expect(profile.language).to eq('fr')
+    end
+
+    it 'returns the default language when preferred language is nil' do
+      profile = build(:profile, preferred_language: nil)
+      expect(profile.language).to eq(Profile::VALID_LANGUAGES.first)
+    end
+  end
+
   describe '#avatar_url' do
     let(:profile) { create(:profile) }
     let(:host) { 'example.com' }
@@ -79,7 +104,7 @@ RSpec.describe Profile, type: :model do
 
       it 'returns nil when url generation fails' do
         allow(Rails.application.routes.url_helpers).to receive(:rails_blob_url).and_raise(StandardError.new('Test error'))
-        
+
         expect(Rails.logger).to receive(:error).with(/Error generating avatar URL: Test error/)
         expect(profile.avatar_url).to be_nil
       end

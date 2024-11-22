@@ -25,6 +25,9 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
+# Set ActiveRecord log level to info
+ActiveRecord::Base.logger.level = Logger::WARN
+
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
 Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
@@ -46,7 +49,7 @@ RSpec.configure do |config|
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false  # We'll handle this with DatabaseCleaner
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
@@ -84,59 +87,58 @@ RSpec.configure do |config|
   config.include Warden::Test::Helpers
 
   # If you're using DatabaseCleaner, make sure to clean the test database after each test
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false
 
   config.before(:suite) do
+    # Clean everything before starting
     DatabaseCleaner.clean_with(:truncation)
-    # Clean up Active Storage blobs and attachments before suite
+    
+    # Clean up storage
     FileUtils.rm_rf(Rails.root.join('tmp', 'storage'))
-
+    FileUtils.mkdir_p(Rails.root.join('tmp', 'storage'))
+    
     # Add PostGIS setup
     ActiveRecord::Base.connection.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
     ActiveRecord::Base.connection.execute(<<-SQL)
-      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext)#{' '}
-      VALUES (4326, 'EPSG', 4326,#{' '}
-        '+proj=longlat +datum=WGS84 +no_defs',#{' '}
+      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) 
+      VALUES (4326, 'EPSG', 4326, 
+        '+proj=longlat +datum=WGS84 +no_defs', 
         'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]')
       ON CONFLICT (srid) DO NOTHING;
     SQL
 
-    # Configure Active Storage to use the test service
+    # Configure Active Storage
     ActiveStorage::Current.url_options = { host: "localhost:3000" }
   end
 
   config.before(:each) do
     DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.start
+    
+    # Clear Active Jobs
+    ActiveJob::Base.queue_adapter = :test
+    clear_enqueued_jobs
+    clear_performed_jobs
   end
 
   config.before(:each, js: true) do
     DatabaseCleaner.strategy = :truncation
-  end
-
-  config.before(:each) do
     DatabaseCleaner.start
   end
 
   config.after(:each) do
+    # Clean the database
     DatabaseCleaner.clean
-    # Clean up Active Storage test files after each test
+    
+    # Clean Active Storage
     ActiveStorage::Blob.unattached.find_each(&:purge)
-  end
-
-  config.before(:each) do
-    class << Rails.logger
-      def debug_messages
-        @debug_messages ||= []
-      end
-
-      def debug(message = nil)
-        debug_messages << message if message
-      end
-    end
-  end
-
-  config.after(:each) do
+    FileUtils.rm_rf(Dir[Rails.root.join('tmp', 'storage', '*')])
+    
+    # Clear any debug messages
     Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
+    
+    # Reset time helpers
+    travel_back
   end
 
   config.include ActiveJob::TestHelper
