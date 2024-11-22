@@ -1,22 +1,47 @@
 Rails.application.routes.draw do
-  mount Rswag::Ui::Engine => "/api-docs"
-  mount Rswag::Api::Engine => "/api-docs"
-  # This MUST be before the locale scope
-  post "/profile/change_locale", to: "profiles#change_locale", as: :change_locale_profile
+  # API routes
+  namespace :api, defaults: { format: :json } do
+    namespace :v1 do
+      # Session management
+      post "/sessions", to: "sessions#create"
+      get "/sessions", to: "sessions#index"
+      delete "/session", to: "sessions#destroy_current"  # Logout current session
+      delete "/sessions/:id", to: "sessions#destroy"     # Logout specific session
+      delete "/sessions", to: "sessions#destroy_all"     # Logout all other sessions
+      post "/refresh_token", to: "sessions#refresh"
 
-  # Set up a constraint for all locales, including default
+      # Registration
+      post "/register", to: "registrations#create"
+
+      # Protected resources
+      scope :authenticated do
+        get "/profile", to: "profiles#show"
+        patch "/profile", to: "profiles#update"
+        put "/profile", to: "profiles#update"
+        resources :contacts, only: [ :index, :show, :create, :update, :destroy ]
+        resources :visits, only: [ :index, :show, :create, :update, :destroy ] do
+          resources :images, only: [ :create, :destroy ]
+        end
+        resources :images, only: [ :destroy ]
+      end
+    end
+  end
+
+  # Web routes
   scope "(:locale)", locale: /fr/ do
+    # Devise routes
     devise_for :users, controllers: {
       confirmations: "users/confirmations"
     }
 
+    # Restaurant routes
     resources :restaurants do
       member do
-        post "add_tag"
-        delete "remove_tag"
+        post :add_tag
+        delete :remove_tag
       end
       collection do
-        get "tagged/:tag", to: "restaurants#index", as: :tagged
+        get "tagged/:tag", action: :index, as: :tagged
       end
       resources :images, only: [ :create, :destroy ]
     end
@@ -29,88 +54,51 @@ Rails.application.routes.draw do
 
     resources :images, only: [ :destroy ]
 
-    resources :shares, only: [] do
+    # Share routes
+    resources :shares, only: [ :create ] do
       member do
         patch :accept
         patch :decline
       end
     end
 
+    # List routes
     resources :lists do
       member do
-        get "export", to: "lists#export"
-        post "export", to: "lists#export"
         get :share
-        delete "remove_share", to: "lists#remove_share", as: :remove_share
-        post "accept_share", to: "lists#accept_share"
-        delete "decline_share", to: "lists#decline_share"
+        delete :remove_share
+        post :accept_share
+        delete :decline_share
+        get :export
+        post :export
       end
-      resources :list_restaurants, only: [ :new, :create, :index ] do
+      resources :list_restaurants do
         collection do
           get :edit
           post :import_all
         end
         member do
-          delete :destroy
           post :import
         end
       end
     end
 
-    resources :shares, only: [ :create ] do
-      member do
-        patch :accept
-        patch :reject
-      end
-    end
-
+    # Profile routes
     resource :profile, only: [ :show, :edit, :update ]
+    get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
 
-    resources :profiles, only: [] do
-      collection do
-        get :search, defaults: { format: :html }
-      end
-    end
+    # Static pages
+    get "/pages/terms", to: "pages#terms", as: :terms
+    get "/pages/home", to: "pages#home", as: :pages_home
 
-    get "pages/terms", as: :terms
-    get "pages/home"
-
-    root "pages#home"
+    root to: "pages#home"
   end
 
-  # Routes outside of the locale scope
+  # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 
-  namespace :api do
-    namespace :v1 do
-      devise_for :users,
-        skip: [ :registrations, :passwords ],
-        controllers: {
-          sessions: "api/v1/sessions"
-        },
-        defaults: { format: :json }
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
 
-      devise_scope :user do
-        post "/refresh_token", to: "sessions#refresh"
-        delete "/logout_everywhere", to: "sessions#revoke_all"
-      end
-
-      resource :profile, only: [ :show, :update ]
-      resources :contacts, only: [ :index, :show, :create, :update, :destroy ]
-      resources :visits, only: [ :index, :show, :create, :update, :destroy ] do
-        resources :images, only: [ :create, :destroy ]
-      end
-      resources :images, only: [ :destroy ]
-      resources :restaurants do
-        resources :images, only: [ :create, :destroy ]
-        member do
-          post "add_tag"
-          delete "remove_tag"
-        end
-        collection do
-          get "tagged/:tag", to: "restaurants#index", as: :tagged
-        end
-      end
-    end
-  end
+  post "/profile/change_locale", to: "profiles#change_locale", as: :change_locale_profile
 end

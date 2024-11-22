@@ -1,163 +1,159 @@
 require 'rails_helper'
 
-RSpec.describe "Api::V1::Sessions", type: :request do
-  include AuthHelpers
-
+RSpec.describe Api::V1::SessionsController, type: :request do
+  let(:user) { create(:user, password: 'password123') }
   let(:password) { 'password123' }
-  let(:user) { create(:user, password: password) }
-  let(:client_info) { { name: 'Chrome on macOS', platform: 'web' } }
+  let(:mobile_user_agent) { "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1" }
+  let(:desktop_user_agent) { "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36" }
 
-  describe "POST /api/v1/users/sign_in" do
-    context "with valid credentials" do
-      it "returns a success response with user data, token, and creates user session" do
-        expect {
-          post "/api/v1/users/sign_in",
-               params: { user: { email: user.email, password: password }, client: client_info },
-               as: :json
-        }.to change(UserSession, :count).by(1)
+  # Helper method to parse JSON response
+  def json_response
+    JSON.parse(response.body)
+  end
+
+  describe 'POST /api/v1/sessions' do
+    context 'with valid credentials' do
+      it 'returns device info for mobile device' do
+
+        post '/api/v1/sessions',
+          params: { user: { email: user.email, password: password } }.to_json,
+          headers: {
+            'User-Agent' => mobile_user_agent,
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+          }
 
         expect(response).to have_http_status(:ok)
-        json_response = JSON.parse(response.body)
-
-        # Check response structure
-        expect(json_response).to include('status', 'data', 'token')
-        expect(json_response['status']['code']).to eq(200)
-        expect(json_response['status']['message']).to eq('Logged in successfully.')
-        expect(json_response['data']).to include('id', 'email', 'created_at')
-        expect(json_response['token']).to be_present
-
-        # Verify user session was created with client info
-        user_session = UserSession.last
-        expect(user_session.client_name).to eq(client_info[:name])
-        expect(user_session.active).to be true
+        expect(json_response.dig('data', 'device_info')).to include(
+          'type' => 'mobile',
+          'device' => include('Safari'),
+          'platform' => include('iOS')
+        )
       end
 
-      it "includes expiration time in JWT payload" do
-        post "/api/v1/users/sign_in",
-             params: { user: { email: user.email, password: password }, client: client_info },
-             as: :json
+      it 'returns device info for desktop device' do
+        post '/api/v1/sessions',
+          params: { user: { email: user.email, password: password } }.to_json,
+          headers: {
+            'User-Agent' => desktop_user_agent,
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+          }
 
-        token = JSON.parse(response.body)['token']
-        decoded_token = JWT.decode(token, Rails.application.credentials.devise_jwt_secret_key, true, { algorithm: 'HS256' }).first
-
-        expect(decoded_token).to include('exp')
-        expect(decoded_token['exp']).to be > Time.now.to_i
-        expect(decoded_token['exp']).to be <= (Time.now + 24.hours).to_i
+        expect(response).to have_http_status(:ok)
+        expect(json_response.dig('data', 'device_info')).to include(
+          'type' => 'desktop',
+          'device' => include('Chrome'),
+          'platform' => include('macOS')
+        )
       end
     end
 
-    context "with invalid credentials" do
-      it "returns an unauthorized response" do
-        post "/api/v1/users/sign_in",
-             params: { user: { email: user.email, password: 'wrong_password' } },
-             as: :json
+    context 'with invalid credentials' do
+      it 'returns unauthorized' do
+
+        post '/api/v1/sessions',
+          params: { user: { email: user.email, password: 'wrong' } }.to_json,
+          headers: {
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+          }
 
         expect(response).to have_http_status(:unauthorized)
       end
     end
   end
 
-  describe "POST /api/v1/refresh_token" do
-    let(:user_session) { create(:user_session, user: user, client_name: client_info[:name]) }
-    let(:expired_token) do
-      payload = {
-        'sub' => user.id,
-        'jti' => user_session.jti,
-        'exp' => 1.minute.ago.to_i
-      }
-      JWT.encode(payload, Rails.application.credentials.devise_jwt_secret_key, 'HS256')
+  describe 'GET /api/v1/sessions' do
+    let!(:current_session) { create(:user_session, user: user) }
+    let!(:other_session) { create(:user_session, user: user) }
+
+    context 'when authenticated' do
+      before do
+        sign_in_with_token(user, current_session)
+        get '/api/v1/sessions', headers: @headers.merge({ 'Accept' => 'application/json' })
+      end
+
+      it 'lists all active sessions' do
+        expect(response).to have_http_status(:ok)
+        expect(json_response['sessions'].length).to eq(2)
+        expect(json_response['sessions'].first).to include(
+          'device_info',
+          'last_used_at',
+          'suspicious'
+        )
+      end
     end
 
-    it "refreshes an expired token" do
-      post "/api/v1/refresh_token",
-           headers: { 'Authorization' => "Bearer #{expired_token}" },
-           as: :json
+    context 'when not authenticated' do
+      it 'returns unauthorized' do
+        get '/api/v1/sessions', headers: { 'Accept' => 'application/json' }
 
-      expect(response).to have_http_status(:ok)
-      json_response = JSON.parse(response.body)
-      expect(json_response['token']).to be_present
-      expect(json_response['token']).not_to eq(expired_token)
-
-      # Verify the session was updated
-      user_session.reload
-      expect(user_session.last_used_at).to be_within(1.second).of(Time.current)
-    end
-
-    it "rejects refresh for revoked session" do
-      user_session.update!(active: false)
-
-      post "/api/v1/refresh_token",
-           headers: { 'Authorization' => "Bearer #{expired_token}" },
-           as: :json
-
-      expect(response).to have_http_status(:unauthorized)
+        expect(response).to have_http_status(:unauthorized)
+      end
     end
   end
 
-  describe "DELETE /api/v1/users/sign_out" do
-    let(:user_session) { create(:user_session, user: user, client_name: client_info[:name]) }
-    let(:valid_token) do
-      begin
-        payload = {
-          'sub' => user.id,
-          'jti' => user_session.jti,
-          'exp' => 24.hours.from_now.to_i
-        }
-        Rails.logger.debug "Test payload: #{payload.inspect}"
-        token = JWT.encode(payload, Rails.application.credentials.devise_jwt_secret_key, 'HS256')
-        Rails.logger.debug "Generated token: #{token}"
-        token
-      rescue => e
-        Rails.logger.error "Error generating token: #{e.class} - #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-        raise
+  describe 'DELETE /api/v1/sessions/:id' do
+    let!(:current_session) { create(:user_session, user: user) }
+    let!(:other_session) { create(:user_session, user: user) }
+
+    context 'when authenticated' do
+      before do
+        sign_in_with_token(user, current_session)
+      end
+
+      it 'revokes another session' do
+
+        delete "/api/v1/sessions/#{other_session.id}", headers: @headers.merge({ 'Accept' => 'application/json' })
+
+        expect(response).to have_http_status(:ok)
+        expect(other_session.reload).not_to be_active
+      end
+
+      it 'prevents revoking current session' do
+
+        delete "/api/v1/sessions/#{current_session.id}", headers: @headers.merge({ 'Accept' => 'application/json' })
+
+        expect(response).to have_http_status(:bad_request)
+        expect(current_session.reload).to be_active
       end
     end
 
-    it "revokes the user session" do
-      begin
-        Rails.logger.debug "User: #{user.inspect}"
-        Rails.logger.debug "User Session: #{user_session.inspect}"
-        Rails.logger.debug "Token for request: #{valid_token}"
+    context 'when not authenticated' do
+      it 'returns unauthorized' do
 
-        delete "/api/v1/users/sign_out",
-               headers: { 'Authorization' => "Bearer #{valid_token}" },
-               as: :json
-      rescue => e
-        Rails.logger.error "Error in test: #{e.class} - #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-        raise
-      end
-
-      expect(response).to have_http_status(:ok)
-      user_session.reload
-      expect(user_session.active).to be false
-    end
-
-    it "handles multiple sessions for the same user" do
-      other_session = create(:user_session, user: user, client_name: 'Other Device')
-
-      delete "/api/v1/users/sign_out",
-             headers: { 'Authorization' => "Bearer #{valid_token}" },
-             as: :json
-
-      expect(response).to have_http_status(:ok)
-
-      # Verify only the current session was revoked
-      user_session.reload
-      other_session.reload
-      expect(user_session.active).to be false
-      expect(other_session.active).to be true
-    end
-
-    context "when user is not logged in" do
-      it "returns an unauthorized response" do
-        delete "/api/v1/users/sign_out", as: :json
-
+        delete "/api/v1/sessions/#{other_session.id}", headers: { 'Accept' => 'application/json' }
         expect(response).to have_http_status(:unauthorized)
-        json_response = JSON.parse(response.body)
-        expect(json_response['status']).to eq(401)
-        expect(json_response['message']).to eq("Couldn't find an active session.")
+      end
+    end
+  end
+
+  describe 'DELETE /api/v1/sessions' do
+    let!(:current_session) { create(:user_session, user: user) }
+    let!(:other_sessions) { create_list(:user_session, 3, user: user) }
+
+    context 'when authenticated' do
+      before do
+        sign_in_with_token(user, current_session)
+      end
+
+      it 'revokes all sessions except current' do
+
+        delete '/api/v1/sessions', headers: @headers.merge({ 'Accept' => 'application/json' })
+        expect(response).to have_http_status(:ok)
+        expect(current_session.reload).to be_active
+        other_sessions.each do |session|
+          expect(session.reload).not_to be_active
+        end
+      end
+    end
+
+    context 'when not authenticated' do
+      it 'returns unauthorized' do
+
+        delete '/api/v1/sessions', headers: { 'Accept' => 'application/json' }
+        expect(response).to have_http_status(:unauthorized)
       end
     end
   end

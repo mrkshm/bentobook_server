@@ -1,169 +1,200 @@
 module Api
   module V1
-    class SessionsController < ApplicationController
-      include ActionController::MimeResponds
-
-      respond_to :json
-      protect_from_forgery with: :null_session
+    class SessionsController < BaseController
+      skip_before_action :authenticate_user!, only: [ :create ]
       before_action :ensure_params_exist, only: [ :create ]
-      skip_before_action :verify_authenticity_token
 
       def create
-        @resource = User.find_for_database_authentication(email: params[:user][:email])
-        if @resource && @resource.valid_password?(params[:user][:password])
-          client_info = {
-            name: params.dig(:client, :name) || request.user_agent || "Unknown",
-            platform: params.dig(:client, :platform) || "web"
-          }
-
-          session = UserSession.create_session(@resource, client_info)
+        user = User.find_by(email: user_params[:email])
+        if user&.valid_password?(user_params[:password])
+          session = create_user_session(user)
+          token = generate_jwt_token(user, session)
 
           render json: {
-            status: {
-              code: 200,
-              message: "Logged in successfully."
-            },
-            data: UserSerializer.new(@resource).as_json,
-            token: generate_jwt_token(@resource, session)
-          }, status: :ok
+            status: { code: 200, message: "Logged in successfully." },
+            data: {
+              token: token,
+              user: user.as_json(only: [ :id, :email ]),
+              device_info: session.device_info
+            }
+          }
         else
           render json: {
-            status: {
-              code: 401,
-              message: "Invalid email or password."
-            }
+            status: { code: 401, message: "Invalid email or password." }
           }, status: :unauthorized
         end
       end
 
-      def refresh
-        token = request.headers["Authorization"]&.split(" ")&.last
-        return unauthorized_response unless token
-
-        begin
-          Rails.logger.debug "Received token: #{token}"
-          decoded_token = JWT.decode(
-            token,
-            Rails.application.credentials.devise_jwt_secret_key,
-            true,
-            { algorithm: "HS256" }
-          ).first
-          Rails.logger.debug "Decoded token: #{decoded_token.inspect}"
-
-          # Validate token and session
-          unless UserSession.validate_token(decoded_token)
-            return unauthorized_response
-          end
-
-          # Generate new token
-          user = User.find(decoded_token["sub"])
-          session = user.user_sessions.find_by!(jti: decoded_token["jti"])
-          Rails.logger.debug "Found session: #{session.inspect}"
-
-          render json: {
-            token: generate_jwt_token(user, session)
-          }, status: :ok
-        rescue JWT::ExpiredSignature
-          # Allow refresh of expired tokens
-          begin
-            decoded_token = JWT.decode(
-              token,
-              Rails.application.credentials.devise_jwt_secret_key,
-              false, # Skip verification for expired tokens
-              { algorithm: "HS256" }
-            ).first
-            Rails.logger.debug "Decoded token: #{decoded_token.inspect}"
-
-            # Validate session even for expired tokens
-            unless UserSession.validate_token(decoded_token)
-              return unauthorized_response
-            end
-
-            # Generate new token
-            user = User.find(decoded_token["sub"])
-            session = user.user_sessions.find_by!(jti: decoded_token["jti"])
-            Rails.logger.debug "Found session: #{session.inspect}"
-
-            render json: {
-              token: generate_jwt_token(user, session)
-            }, status: :ok
-          rescue StandardError => e
-            Rails.logger.error "Unexpected error: #{e.class} - #{e.message}"
-            Rails.logger.error e.backtrace.join("\n")
-            unauthorized_response
-          end
-        rescue StandardError => e
-          Rails.logger.error "Unexpected error: #{e.class} - #{e.message}"
-          Rails.logger.error e.backtrace.join("\n")
-          unauthorized_response
+      def index
+        sessions = current_user.user_sessions.active.map do |session|
+          {
+            id: session.id,
+            client_name: session.client_name,
+            device_info: session.device_info,
+            last_used_at: session.last_used_at,
+            current: session.jti == current_session.jti,
+            suspicious: session.suspicious
+          }
         end
+
+        render json: { sessions: sessions }
       end
 
       def destroy
-        Rails.logger.debug "Headers: #{request.headers.to_h.select { |k, v| k.start_with?('HTTP_') }}"
-        return no_session_response unless request.headers["Authorization"].present?
+        session = current_user.user_sessions.active.find_by(id: params[:id])
 
-        token = request.headers["Authorization"].split(" ").last
-        Rails.logger.debug "Received token: #{token}"
+        unless session
+          return render json: {
+            status: "error",
+            errors: [ {
+              code: "session_not_found",
+              detail: "Session not found"
+            } ],
+            meta: {
+              timestamp: Time.current.iso8601
+            }
+          }, status: :not_found
+        end
+
+        if session.jti == current_session.jti
+          return render json: {
+            status: "error",
+            errors: [ {
+              code: "invalid_request",
+              detail: "Cannot revoke current session"
+            } ],
+            meta: {
+              timestamp: Time.current.iso8601
+            }
+          }, status: :bad_request
+        end
+
+        session.revoke!
+        render json: {
+          status: "success",
+          meta: {
+            message: "Session revoked successfully.",
+            timestamp: Time.current.iso8601
+          }
+        }
+      end
+
+      def destroy_all
+        current_user.user_sessions.active
+          .where.not(jti: current_session.jti)
+          .update_all(active: false)
+
+        render json: {
+          status: "success",
+          meta: {
+            message: "All other sessions revoked successfully.",
+            timestamp: Time.current.iso8601
+          }
+        }
+      end
+
+      def destroy_current
+        begin
+          current_session.revoke!
+          render json: {
+            status: "success",
+            meta: {
+              message: "Logged out successfully.",
+              timestamp: Time.current.iso8601
+            }
+          }
+        rescue => e
+          Rails.logger.error "Error in destroy_current: #{e.class} - #{e.message}"
+          Rails.logger.error e.backtrace.join("\n")
+          render json: {
+            status: "error",
+            errors: [ {
+              code: "logout_failed",
+              detail: "Failed to logout"
+            } ],
+            meta: {
+              timestamp: Time.current.iso8601
+            }
+          }, status: :internal_server_error
+        end
+      end
+
+      def refresh
+        unless current_session&.active?
+          return render json: {
+            status: "error",
+            errors: [ {
+              code: "invalid_session",
+              detail: "Invalid or expired session"
+            } ],
+            meta: {
+              timestamp: Time.current.iso8601
+            }
+          }, status: :unauthorized
+        end
 
         begin
-          Rails.logger.debug "Decoding token with key: #{Rails.application.credentials.devise_jwt_secret_key.present? ? 'present' : 'missing'}"
-          decoded_token = JWT.decode(
-            token,
-            Rails.application.credentials.devise_jwt_secret_key,
-            true,
-            { algorithm: "HS256" }
-          ).first
-          Rails.logger.debug "Decoded token: #{decoded_token.inspect}"
+          Rails.logger.info "Refreshing token for session #{current_session.id}"
+          current_session.touch(:last_used_at)
+          token = generate_jwt_token(current_user, current_session)
+          Rails.logger.info "Generated new token"
+          current_session.token = token
+          Rails.logger.info "Set token on session"
 
-          session = UserSession.find_by(jti: decoded_token["jti"])
-          Rails.logger.debug "Found session: #{session.inspect}"
-          return no_session_response unless session&.active?
-
-          session.revoke!
-          Rails.logger.debug "Session revoked"
-
-          render json: {
-            status: 200,
-            message: "Logged out successfully."
-          }, status: :ok
-        rescue JWT::DecodeError => e
-          Rails.logger.error "JWT decode error: #{e.message}"
-          Rails.logger.error e.backtrace.join("\n")
-          no_session_response
+          render json: SessionSerializer.render_success(current_session)
         rescue => e
-          Rails.logger.error "Unexpected error: #{e.class} - #{e.message}"
+          Rails.logger.error "Error in refresh: #{e.class} - #{e.message}"
           Rails.logger.error e.backtrace.join("\n")
-          raise
+          render json: {
+            status: "error",
+            errors: [ {
+              code: "refresh_failed",
+              detail: "Failed to refresh token"
+            } ],
+            meta: {
+              timestamp: Time.current.iso8601
+            }
+          }, status: :internal_server_error
         end
       end
 
       private
 
       def ensure_params_exist
-        return if params[:user].present? && params[:user][:email].present? && params[:user][:password].present?
+        return if params[:user].present? &&
+                 params[:user][:email].present? &&
+                 params[:user][:password].present?
+
         render json: {
-          status: {
-            code: 400,
-            message: "Missing required parameters."
+          status: "error",
+          errors: [ {
+            code: "invalid_request",
+            detail: "Missing required parameters"
+          } ],
+          meta: {
+            timestamp: Time.current.iso8601
           }
         }, status: :bad_request
       end
 
-      def unauthorized_response
-        Rails.logger.debug "Returning unauthorized response"
-        render json: {
-          status: 401,
-          message: "Unauthorized."
-        }, status: :unauthorized
+      def user_params
+        params.require(:user).permit(:email, :password)
       end
 
-      def no_session_response
-        Rails.logger.debug "Returning no session response"
-        render json: {
-          status: 401,
-          message: "Couldn't find an active session."
-        }, status: :unauthorized
+      def create_user_session(user)
+        browser = Browser.new(request.user_agent)
+        client_info = {
+          name: params.dig(:client, :name) || request.user_agent || "Unknown",
+          user_agent: request.user_agent,
+          ip_address: request.remote_ip,
+          device_type: browser.device.mobile? ? "mobile" : (browser.device.tablet? ? "tablet" : "desktop"),
+          os_name: browser.platform.name,
+          os_version: browser.platform.version,
+          browser_name: browser.name,
+          browser_version: browser.version
+        }
+
+        UserSession.create_session(user, client_info)
       end
 
       def generate_jwt_token(user, session)
@@ -171,13 +202,14 @@ module Api
           sub: user.id,
           jti: session.jti,
           exp: 24.hours.from_now.to_i,
-          client: {
-            name: session.client_name
-          }
+          iat: Time.current.to_i
         }
 
-        Rails.logger.debug "Generating JWT token with payload: #{payload.inspect}"
-        JWT.encode(payload, Rails.application.credentials.devise_jwt_secret_key, "HS256")
+        JWT.encode(
+          payload,
+          Rails.application.credentials.devise_jwt_secret_key!,
+          "HS256"
+        )
       end
     end
   end

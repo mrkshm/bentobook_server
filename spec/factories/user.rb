@@ -3,7 +3,7 @@ FactoryBot.define do
     sequence(:email) { |n| "user#{n}@example.com" }
     password { "password123" }
     password_confirmation { "password123" }
-    jti { SecureRandom.uuid }
+    confirmed_at { Time.current }
 
     trait :with_profile do
       after(:create) do |user|

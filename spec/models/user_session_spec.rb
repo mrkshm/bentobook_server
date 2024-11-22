@@ -13,6 +13,7 @@ RSpec.describe UserSession, type: :model do
     it { should validate_uniqueness_of(:jti) }
     it { should validate_presence_of(:client_name) }
     it { should validate_presence_of(:last_used_at) }
+    it { should validate_presence_of(:ip_address) }
   end
 
   describe 'callbacks' do
@@ -67,9 +68,8 @@ RSpec.describe UserSession, type: :model do
 
     it 'updates last_used_at to current time' do
       freeze_time do
-        old_time = user_session.last_used_at
         user_session.touch_last_used!
-        expect(user_session.reload.last_used_at).to be > old_time
+        expect(user_session.reload.last_used_at).to eq(Time.current)
       end
     end
   end
@@ -158,6 +158,89 @@ RSpec.describe UserSession, type: :model do
 
         expect(user_session.reload).not_to be_active
         expect(other_session.reload).to be_active
+      end
+    end
+  end
+
+  describe 'device tracking' do
+    describe '#set_device_info' do
+      context 'with mobile device' do
+        let(:session) { build(:user_session, :mobile) }
+
+        it 'correctly identifies mobile device' do
+          session.valid?
+          expect(session.device_type).to eq('mobile')
+          expect(session.os_name).to eq('iOS')
+          expect(session.browser_name).to eq('Safari')
+          expect(session.browser_version).to be_present
+        end
+      end
+
+      context 'with desktop device' do
+        let(:session) { build(:user_session, :desktop) }
+
+        it 'correctly identifies desktop device' do
+          session.valid?
+          expect(session.device_type).to eq('desktop')
+          expect(session.os_name).to eq('macOS')
+          expect(session.browser_name).to eq('Chrome')
+          expect(session.browser_version).to be_present
+        end
+      end
+
+      context 'with tablet device' do
+        let(:session) { build(:user_session, :tablet) }
+
+        it 'correctly identifies tablet device' do
+          session.valid?
+          expect(session.device_type).to eq('tablet')
+          expect(session.os_name).to eq('iOS')
+          expect(session.browser_name).to eq('Safari')
+          expect(session.browser_version).to be_present
+        end
+      end
+
+      context 'with no user agent' do
+        let(:session) { build(:user_session, user_agent: nil) }
+
+        it 'does not set device info' do
+          session.valid?
+          expect(session.device_type).to be_nil
+          expect(session.os_name).to be_nil
+          expect(session.browser_name).to be_nil
+        end
+      end
+    end
+
+    describe '#track_ip_changes' do
+      let(:session) { create(:user_session, ip_address: '192.168.1.1') }
+
+      it 'tracks IP address changes' do
+        session.update(ip_address: '192.168.1.2')
+        expect(session.last_ip_address).to eq('192.168.1.1')
+      end
+
+      it 'does not track initial IP address' do
+        expect(session.last_ip_address).to be_nil
+      end
+    end
+
+    describe '#update_last_used' do
+      let(:session) { create(:user_session, ip_address: '192.168.1.1') }
+
+      it 'updates last_used_at' do
+        freeze_time do
+          old_time = session.last_used_at
+          travel 1.hour
+          session.update_last_used
+          expect(session.last_used_at).to be > old_time
+        end
+      end
+
+      it 'updates IP address when provided' do
+        session.update_last_used('192.168.1.2')
+        expect(session.ip_address).to eq('192.168.1.2')
+        expect(session.last_ip_address).to eq('192.168.1.1')
       end
     end
   end

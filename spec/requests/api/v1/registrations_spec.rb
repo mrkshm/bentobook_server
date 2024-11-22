@@ -1,64 +1,114 @@
-require 'swagger_helper'
+require 'rails_helper'
 
 RSpec.describe 'Api::V1::Registrations', type: :request do
-  path '/api/v1/users' do
-    post 'Creates a new user' do
-      tags 'Users'
-      consumes 'application/json'
-      produces 'application/json'
-      security []
-      parameter name: :user, in: :body, schema: {
-        type: :object,
-        properties: {
+  describe 'POST /api/v1/register' do
+    context 'with valid parameters' do
+      let(:valid_params) do
+        {
           user: {
-            type: :object,
-            properties: {
-              email: { type: :string },
-              password: { type: :string },
-              password_confirmation: { type: :string }
-            },
-            required: ['email', 'password', 'password_confirmation']
+            email: 'test@example.com',
+            password: 'password123',
+            password_confirmation: 'password123'
           }
         }
-      }
-
-      response '200', 'user created' do
-        let(:user) { { user: { email: 'test@example.com', password: 'password123', password_confirmation: 'password123' } } }
-        run_test! do |response|
-          expect(response.status).to eq(200)
-          json_response = JSON.parse(response.body)
-          expect(json_response['status']['message']).to eq('Signed up successfully.')
-
-          # Parse the 'data' field separately
-          user_data = JSON.parse(json_response['data'])
-          expect(user_data['email']).to eq('test@example.com')
-
-          expect(json_response['token']).to be_a(String)
-        end
       end
 
-      response '422', 'invalid request' do
-        let(:user) { { user: { email: 'invalid', password: 'short', password_confirmation: 'mismatch' } } }
-        run_test! do |response|
-          expect(response.status).to eq(422)
-          json_response = JSON.parse(response.body)
-          expect(json_response['status']['message']).to eq("User couldn't be created successfully.")
-          expect(json_response['errors']).to be_present
+      it 'creates a new user' do
+        freeze_time do
+          post '/api/v1/register',
+            params: valid_params.to_json,
+            headers: {
+              'CONTENT_TYPE' => 'application/json',
+              'ACCEPT' => 'application/json'
+            }
+
+          expect(response).to have_http_status(:success)
+
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('success')
+          expect(json['data']).to include(
+            'type' => 'user',
+            'attributes' => include(
+              'email' => 'test@example.com'
+            )
+          )
+          expect(json['meta']).to include(
+            'timestamp' => Time.current.iso8601,
+            'token' => be_present
+          )
         end
       end
+    end
 
-      response '401', 'user created but not activated' do
-        before do
-          allow_any_instance_of(User).to receive(:active_for_authentication?).and_return(false)
-        end
+    context 'with invalid parameters' do
+      let(:invalid_params) do
+        {
+          user: {
+            email: '',  # Empty email should trigger validation
+            password: 'short',  # Too short password
+            password_confirmation: 'not-matching'  # Non-matching confirmation
+          }
+        }
+      end
 
-        let(:user) { { user: { email: 'inactive@example.com', password: 'password123', password_confirmation: 'password123' } } }
-        run_test! do |response|
-          expect(response.status).to eq(401)
-          json_response = JSON.parse(response.body)
-          expect(json_response['status']['message']).to eq('User created but not activated')
-          expect(json_response['errors']).to include('User is not activated')
-        end
+      it 'returns validation errors' do
+        post '/api/v1/register',
+          params: invalid_params.to_json,
+          headers: {
+            'CONTENT_TYPE' => 'application/json',
+            'ACCEPT' => 'application/json'
+          }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+
+        json = JSON.parse(response.body)
+        expect(json['status']).to eq('error')
+        expect(json['errors']).to include(
+          include(
+            'code' => 'validation_error',
+            'detail' => be_present,
+            'source' => include('pointer' => '/data/attributes/email')
+          )
+        )
+        expect(json['meta']).to include('timestamp' => be_present)
+      end
+    end
+
+    context 'when user is created but not activated' do
+      let(:valid_params) do
+        {
+          user: {
+            email: 'test@example.com',
+            password: 'password123',
+            password_confirmation: 'password123'
+          }
+        }
+      end
+
+      before do
+        allow_any_instance_of(User).to receive(:active_for_authentication?).and_return(false)
+      end
+
+      it 'returns unauthorized with activation message' do
+        post '/api/v1/register',
+          params: valid_params.to_json,
+          headers: {
+            'CONTENT_TYPE' => 'application/json',
+            'ACCEPT' => 'application/json'
+          }
+
+        expect(response).to have_http_status(:unauthorized)
+
+        json = JSON.parse(response.body)
+        expect(json['status']).to eq('error')
+        expect(json['errors']).to include(
+          include(
+            'code' => 'inactive_user',
+            'detail' => 'User is not activated',
+            'source' => include('pointer' => '/data/attributes/status')
+          )
+        )
+        expect(json['meta']).to include('timestamp' => be_present)
       end
     end
   end

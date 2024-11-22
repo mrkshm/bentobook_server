@@ -707,7 +707,15 @@ CREATE TABLE public.user_sessions (
     user_agent character varying,
     active boolean DEFAULT true NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    device_type character varying,
+    os_name character varying,
+    os_version character varying,
+    browser_name character varying,
+    browser_version character varying,
+    last_ip_address character varying,
+    location_country character varying,
+    suspicious boolean DEFAULT false
 );
 
 
@@ -753,7 +761,6 @@ CREATE TABLE public.users (
     failed_attempts integer DEFAULT 0 NOT NULL,
     unlock_token character varying,
     locked_at timestamp(6) without time zone,
-    jti character varying NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
 );
@@ -1552,6 +1559,13 @@ CREATE INDEX index_user_sessions_on_active ON public.user_sessions USING btree (
 
 
 --
+-- Name: index_user_sessions_on_device_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_device_type ON public.user_sessions USING btree (device_type);
+
+
+--
 -- Name: index_user_sessions_on_jti; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1563,6 +1577,13 @@ CREATE UNIQUE INDEX index_user_sessions_on_jti ON public.user_sessions USING btr
 --
 
 CREATE INDEX index_user_sessions_on_last_used_at ON public.user_sessions USING btree (last_used_at);
+
+
+--
+-- Name: index_user_sessions_on_suspicious; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_suspicious ON public.user_sessions USING btree (suspicious);
 
 
 --
@@ -1591,13 +1612,6 @@ CREATE UNIQUE INDEX index_users_on_confirmation_token ON public.users USING btre
 --
 
 CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
-
-
---
--- Name: index_users_on_jti; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_users_on_jti ON public.users USING btree (jti);
 
 
 --
@@ -1854,6 +1868,8 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241122082306'),
+('20241121201805'),
 ('20241120092910'),
 ('20241120092858'),
 ('20241114110224'),

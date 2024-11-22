@@ -37,7 +37,6 @@ class RestaurantUpdater
         true
       end
 
-      Rails.logger.debug "Update result: #{result}, Changed: #{changed}, Notes before: #{original_notes}, Notes after: #{@restaurant.notes}"
       
       result
     rescue => e
@@ -50,7 +49,6 @@ class RestaurantUpdater
   private
 
   def update_basic_attributes
-    Rails.logger.debug "Updating basic attributes with: #{@params.except(:cuisine_type_name, :images, :tag_list).inspect}"
     @restaurant.assign_attributes(
       @params.except(:cuisine_type_name, :images, :tag_list)
     )
