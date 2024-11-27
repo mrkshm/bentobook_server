@@ -14,16 +14,17 @@ Rails.application.routes.draw do
       post "/register", to: "registrations#create"
 
       # Protected resources
-      scope :authenticated do
-        get "/profile", to: "profiles#show"
-        patch "/profile", to: "profiles#update"
-        put "/profile", to: "profiles#update"
-        resources :contacts, only: [ :index, :show, :create, :update, :destroy ]
-        resources :visits, only: [ :index, :show, :create, :update, :destroy ] do
-          resources :images, only: [ :create, :destroy ]
-        end
-        resources :images, only: [ :destroy ]
+      get "/profile", to: "profiles#show"
+      patch "/profile", to: "profiles#update"
+      put "/profile", to: "profiles#update"
+      get "/profiles/search", to: "profiles#search"
+      patch "/profile/locale", to: "profiles#change_locale"
+
+      resources :contacts, only: [ :index, :show, :create, :update, :destroy ]
+      resources :visits, only: [ :index, :show, :create, :update, :destroy ] do
+        resources :images, only: [ :create, :destroy ]
       end
+      resources :images, only: [ :destroy ]
     end
   end
 

@@ -1,38 +1,82 @@
 class ProfileSerializer < BaseSerializer
-  def self.render_success(profile)
+  attributes :username, :first_name, :last_name, :about,
+             :full_name, :display_name, :preferred_theme,
+             :preferred_language, :created_at, :updated_at
+
+  attribute :email do |profile|
+    profile.user.email
+  end
+
+  attribute :avatar_urls do |profile|
+    next nil unless profile.avatar.attached?
+    next nil unless Rails.application.config.action_mailer.default_url_options&.dig(:host)
+
     {
-      status: { code: 200, message: "Success" },
-      data: {
-        type: "profile",
-        id: profile.id.to_s,
-        attributes: {
-          username: profile.username,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          about: profile.about,
-          full_name: profile.full_name,
-          display_name: profile.display_name,
-          email: profile.user.email,
-          avatar_url: profile.avatar_url,
-          created_at: profile.created_at,
-          updated_at: profile.updated_at
-        }
-      }
+      thumbnail: variant_url(profile.avatar, thumbnail_options),
+      small: variant_url(profile.avatar, small_options),
+      medium: variant_url(profile.avatar, medium_options),
+      large: variant_url(profile.avatar, large_options),
+      original: blob_url(profile.avatar)
     }
   end
 
-  def self.render_error(errors)
+  private
+
+  def variant_url(attachment, options)
+    return nil unless attachment.attached?
+    return nil unless Rails.application.config.action_mailer.default_url_options&.dig(:host)
+
+    Rails.application.routes.url_helpers.rails_blob_url(
+      attachment.variant(options),
+      host: Rails.application.config.action_mailer.default_url_options[:host]
+    )
+  rescue StandardError => e
+    Rails.logger.error "Error generating variant URL: #{e.message}"
+    nil
+  end
+
+  def blob_url(attachment)
+    return nil unless attachment.attached?
+    return nil unless Rails.application.config.action_mailer.default_url_options&.dig(:host)
+
+    Rails.application.routes.url_helpers.rails_blob_url(
+      attachment,
+      host: Rails.application.config.action_mailer.default_url_options[:host]
+    )
+  rescue StandardError => e
+    Rails.logger.error "Error generating blob URL: #{e.message}"
+    nil
+  end
+
+  def thumbnail_options
     {
-      status: {
-        code: 422,
-        message: "Validation failed"
-      },
-      errors: errors.full_messages.map { |msg|
-        {
-          code: "general_error",
-          detail: msg
-        }
-      }
+      resize_to_fill: [ 100, 100 ],
+      format: :webp,
+      saver: { quality: 80 }
+    }
+  end
+
+  def small_options
+    {
+      resize_to_limit: [ 300, 200 ],
+      format: :webp,
+      saver: { quality: 80 }
+    }
+  end
+
+  def medium_options
+    {
+      resize_to_limit: [ 600, 400 ],
+      format: :webp,
+      saver: { quality: 80 }
+    }
+  end
+
+  def large_options
+    {
+      resize_to_limit: [ 1200, 800 ],
+      format: :webp,
+      saver: { quality: 80 }
     }
   end
 end

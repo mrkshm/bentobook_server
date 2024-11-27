@@ -56,17 +56,17 @@ Rails.application.configure do
   config.logger = ActiveSupport::Logger.new(STDOUT)
   config.logger.formatter = proc do |severity, datetime, progname, msg|
     msg = msg.to_s  # Convert msg to string in case it's nil or another type
-    
+
     # Skip noisy messages
     noisy_patterns = [
-      'File not found in storage after rename',
-      'failed to recognize type',
-      'Error in set_filename: unexpected return',
+      "File not found in storage after rename",
+      "failed to recognize type",
+      "Error in set_filename: unexpected return"
     ]
-    
+
     # Skip if message matches any noisy pattern or is a backtrace line
-    if noisy_patterns.any? { |pattern| msg.include?(pattern) } || msg.start_with?('/')
-      ''
+    if noisy_patterns.any? { |pattern| msg.include?(pattern) } || msg.start_with?("/")
+      ""
     else
       "[#{severity}] #{datetime}: #{msg}\n"
     end
