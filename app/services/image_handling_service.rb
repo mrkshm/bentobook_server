@@ -1,34 +1,45 @@
-require 'securerandom'
+require "securerandom"
 
 class ImageHandlingService
   DEFAULT_COMPRESSION_OPTIONS = {
-    resize_to_limit: [1200, 1200],
+    resize_to_limit: [ 1200, 1200 ],
     format: :jpg,
-    saver: { 
+    saver: {
       quality: 73,
       strip: true
     }
   }
 
   def self.process_images(imageable, params, compress: false)
+    Rails.logger.info "ImageHandlingService#process_images called with params: #{params.inspect}"
     if avatar_present?(params)
+      Rails.logger.info "Avatar is present in params"
       image = get_avatar_from_params(params)
+      Rails.logger.info "Retrieved avatar: #{image.inspect}"
       process_single_attachment(imageable, image, :avatar, compress)
       { success: true }
     else
+      Rails.logger.info "No avatar found in params"
       { success: false, message: "No image params" }
     end
+  rescue => e
+    Rails.logger.error "Error in ImageHandlingService#process_images: #{e.class.name}: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    raise
   end
 
   private
 
   def self.avatar_present?(params)
-    (params[:contact] && params[:contact][:avatar].present?) ||
-    (params[:profile] && params[:profile][:avatar].present?)
+    [ :contact, :profile ].any? do |key|
+      params[key]&.[](:avatar)&.present? || params.dig(key, :avatar)&.present?
+    end
   end
 
   def self.get_avatar_from_params(params)
-    params[:contact]&.[](:avatar) || params[:profile]&.[](:avatar)
+    [ :contact, :profile ].map do |key|
+      params[key]&.[](:avatar) || params.dig(key, :avatar)
+    end.compact.first
   end
 
   def self.process_single_attachment(imageable, image, attachment_name, compress)
@@ -45,21 +56,35 @@ class ImageHandlingService
   end
 
   def self.compress_image(image)
-    temp_blob = ActiveStorage::Blob.create_and_upload!(
-      io: image.tempfile,
-      filename: image.original_filename,
-      content_type: image.content_type
-    )
+    Rails.logger.info "Compressing image: #{image.inspect}"
 
-    variant = temp_blob.variant(DEFAULT_COMPRESSION_OPTIONS).processed
+    # Read the file content into memory once
+    file_content = image.read
 
+    # Create an in-memory temp file for image processing
+    temp_file = Tempfile.new([ "avatar", File.extname(image.original_filename) ])
+    temp_file.binmode
+    temp_file.write(file_content)
+    temp_file.rewind
+
+    # Process the image using ImageProcessing directly
+    processed_file = ImageProcessing::Vips.source(temp_file.path)
+      .resize_to_limit(1200, 1200)
+      .saver(quality: 73, strip: true)
+      .convert("jpg")
+      .call
+
+    # Create the final blob with the processed image
     compressed_blob = ActiveStorage::Blob.create_and_upload!(
-      io: StringIO.new(variant.download),
+      io: File.open(processed_file.path),
       filename: "#{File.basename(image.original_filename, '.*')}.jpg",
-      content_type: 'image/jpeg'
+      content_type: "image/jpeg"
     )
 
-    temp_blob.purge
+    # Clean up temporary files
+    temp_file.close
+    temp_file.unlink
+    File.unlink(processed_file.path) if File.exist?(processed_file.path)
 
     compressed_blob
   end

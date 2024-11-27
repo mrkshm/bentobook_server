@@ -61,9 +61,7 @@ class BaseSerializer
       current_page: pagy.page,
       total_pages: pagy.pages,
       total_count: pagy.count,
-      items_per_page: pagy.items,
-      next_page: pagy.next,
-      prev_page: pagy.prev
+      per_page: pagy.items
     }
   end
 
