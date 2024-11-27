@@ -61,7 +61,8 @@ Rails.application.configure do
     noisy_patterns = [
       "File not found in storage after rename",
       "failed to recognize type",
-      "Error in set_filename: unexpected return"
+      "Error in set_filename: unexpected return",
+      "Validation error: Name can't be blank"
     ]
 
     # Skip if message matches any noisy pattern or is a backtrace line

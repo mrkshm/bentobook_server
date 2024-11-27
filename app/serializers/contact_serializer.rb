@@ -1,9 +1,50 @@
-class ContactSerializer
-  include Alba::Resource
+class ContactSerializer < BaseSerializer
+  attributes :name,
+             :email,
+             :city,
+             :country,
+             :phone,
+             :notes,
+             :created_at,
+             :updated_at,
+             :visits_count
 
-  attributes :id, :name, :email, :city, :country, :phone, :notes, :created_at, :updated_at, :avatar_url
+  attribute :avatar_urls do |contact|
+    if contact.avatar.attached?
+      {
+        original: Rails.application.routes.url_helpers.rails_blob_url(
+          contact.avatar,
+          host: Rails.application.config.action_mailer.default_url_options[:host]
+        )
+      }
+    end
+  end
 
-  attribute :avatar_url do |contact|
-    Rails.application.routes.url_helpers.url_for(contact.avatar) if contact.avatar.attached?
+  def self.render_collection(resources, meta: {}, pagy: nil)
+    serialized_resources = resources.map { |resource|
+      serializer = new(resource)
+      serialized = serializer.serialize
+      parsed = JSON.parse(serialized)
+
+      {
+        id: resource.id.to_s,
+        type: resource.class.name.underscore,
+        attributes: parsed
+      }
+    }
+
+    {
+      status: "success",
+      data: serialized_resources,
+      meta: {
+        timestamp: Time.current.iso8601,
+        pagination: pagy ? {
+          current_page: pagy.page,
+          total_pages: pagy.pages,
+          total_count: pagy.count,
+          per_page: Pagy::DEFAULT[:items]
+        } : nil
+      }.merge(meta)
+    }
   end
 end

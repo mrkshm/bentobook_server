@@ -20,7 +20,11 @@ Rails.application.routes.draw do
       get "/profiles/search", to: "profiles#search"
       patch "/profile/locale", to: "profiles#change_locale"
 
-      resources :contacts, only: [ :index, :show, :create, :update, :destroy ]
+      resources :contacts, only: [ :index, :show, :create, :update, :destroy ] do
+        collection do
+          get :search
+        end
+      end
       resources :visits, only: [ :index, :show, :create, :update, :destroy ] do
         resources :images, only: [ :create, :destroy ]
       end
