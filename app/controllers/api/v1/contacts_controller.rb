@@ -21,6 +21,8 @@ module Api
       end
 
       def show
+        _includes = params[:include].to_s.split(",")
+
         render json: ContactSerializer.render_success(@contact)
       rescue StandardError => e
         Rails.logger.error "Show error: #{e.class.name}: #{e.message}"

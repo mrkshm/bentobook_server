@@ -134,6 +134,16 @@ RSpec.describe 'Api::V1::Contacts', type: :request do
       expect(response).to have_http_status(:not_found)
       expect(json_response['status']).to eq('error')
     end
+
+    context "when include parameter is specified" do
+      it "accepts the include parameter" do
+        get api_v1_contact_path(contact), params: { include: "visits" }, headers: @headers
+
+        expect(response).to have_http_status(:ok)
+        # We're not checking for visits yet, just making sure the parameter doesn't break anything
+        expect(json_response["data"]["attributes"]["name"]).to eq(contact.name)
+      end
+    end
   end
 
   describe 'POST /api/v1/contacts' do
