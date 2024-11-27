@@ -67,17 +67,18 @@ class BaseSerializer
 
   def self.format_error(error)
     case error
+    when Hash
+      error # Already formatted error hash
     when ActiveModel::Error
       {
         code: "validation_error",
         detail: error.message,
         source: { pointer: "/data/attributes/#{error.attribute}" }
       }
+    when String
+      { code: "general_error", detail: error }
     else
-      {
-        code: "general_error",
-        detail: error.to_s
-      }
+      { code: "general_error", detail: error.to_s }
     end
   end
 end

@@ -63,17 +63,17 @@ RSpec.describe ImageHandlingService, type: :service do
 
       it 'attaches uncompressed image when compress is false' do
         original_size = image.size
-        
+
         result = ImageHandlingService.process_images(contact, params, compress: false)
-        
+
         expect(result[:success]).to be true
         expect(contact.avatar).to be_attached
-        
+
         # The blob size should be similar to the original image
         # (allowing for small variations due to metadata)
         attached_size = contact.avatar.blob.byte_size
         expect(attached_size).to be_within(100).of(original_size)
-        
+
         # The content type should match the original
         expect(contact.avatar.blob.content_type).to eq('image/jpeg')
       end
@@ -82,9 +82,9 @@ RSpec.describe ImageHandlingService, type: :service do
         # Use a PNG image for this test
         png_image = fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.png'), 'image/png')
         png_params = { contact: { avatar: png_image } }
-        
+
         result = ImageHandlingService.process_images(contact, png_params, compress: false)
-        
+
         expect(result[:success]).to be true
         expect(contact.avatar).to be_attached
         expect(contact.avatar.blob.content_type).to eq('image/png')
@@ -108,14 +108,14 @@ RSpec.describe ImageHandlingService, type: :service do
       it 'raises an error for invalid image files' do
         expect {
           ImageHandlingService.process_images(contact, params, compress: true)
-        }.to raise_error(ActiveStorage::InvariableError)
+        }.to raise_error(Vips::Error)
       end
     end
   end
 
   describe '.get_avatar_from_params' do
     let(:test_image) { fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 'image/jpeg') }
-    
+
     it 'retrieves avatar from contact params' do
       params = { contact: { avatar: test_image } }
       result = ImageHandlingService.send(:get_avatar_from_params, params)
