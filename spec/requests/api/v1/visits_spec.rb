@@ -229,19 +229,21 @@ RSpec.describe 'Api::V1::Visits', type: :request do
 
   describe 'DELETE /api/v1/visits/:id' do
     context 'when the visit exists' do
-      let(:visit) { create(:visit, user: user) }
+      let!(:visit) { create(:visit, user: user) }
 
       it 'deletes the visit' do
-        delete "/api/v1/visits/#{visit.id}", headers: @headers
+        expect {
+          delete "/api/v1/visits/#{visit.id}", headers: @headers
+        }.to change(Visit, :count).by(-1)
 
         expect(response).to have_http_status(:no_content)
-        expect(Visit.exists?(visit.id)).to be false
+        expect(response.body).to be_empty
       end
     end
 
     context 'when the visit does not exist' do
       it 'returns a not found error' do
-        delete '/api/v1/visits/0', headers: @headers
+        delete "/api/v1/visits/0", headers: @headers
 
         expect(response).to have_http_status(:not_found)
         expect(json_response[:status]).to eq("error")
@@ -250,16 +252,15 @@ RSpec.describe 'Api::V1::Visits', type: :request do
       end
     end
 
-    context 'when an error occurs during deletion' do
-      let(:visit) { create(:visit, user: user) }
+    context 'when there is an error deleting the visit' do
+      let!(:visit) { create(:visit, user: user) }
 
-      it 'returns an error' do
-        # Simulate a deletion error
-        allow_any_instance_of(Visit).to receive(:destroy).and_return(false)
+      it 'returns an internal server error' do
+        allow_any_instance_of(Visit).to receive(:destroy).and_raise(StandardError.new("Test error"))
 
         delete "/api/v1/visits/#{visit.id}", headers: @headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:internal_server_error)
         expect(json_response[:status]).to eq("error")
         expect(json_response[:errors][0][:code]).to eq("unprocessable_entity")
         expect(json_response[:errors][0][:detail]).to eq("Failed to delete visit")
