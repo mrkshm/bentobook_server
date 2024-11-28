@@ -20,9 +20,9 @@ class BaseSerializer
   end
 
   def self.render_collection(resources, meta: {}, pagy: nil)
-    serializer = new
     serialized_resources = resources.map { |resource|
-      serialized = serializer.serialize(resource)
+      serializer = new(resource)
+      serialized = serializer.serialize
       parsed = JSON.parse(serialized)
 
       {
@@ -32,12 +32,26 @@ class BaseSerializer
       }
     }
 
+    pagination = if pagy
+      items = pagy.vars[:items].to_i
+      total = pagy.count
+      total_pages = total.zero? ? 1 : (total.to_f / items).ceil
+      {
+        current_page: pagy.page,
+        per_page: items.to_s,
+        total_pages: total_pages,
+        total_count: total
+      }
+    else
+      {}
+    end
+
     {
       status: "success",
       data: serialized_resources,
       meta: {
         timestamp: Time.current.iso8601,
-        pagination: pagy_metadata(pagy)
+        pagination: pagination
       }.merge(meta)
     }
   end
@@ -54,31 +68,17 @@ class BaseSerializer
 
   private
 
-  def self.pagy_metadata(pagy)
-    return {} unless pagy
-
-    {
-      current_page: pagy.page,
-      total_pages: pagy.pages,
-      total_count: pagy.count,
-      per_page: pagy.items
-    }
-  end
-
   def self.format_error(error)
     case error
-    when Hash
-      error # Already formatted error hash
+    when String
+      { detail: error }
     when ActiveModel::Error
       {
-        code: "validation_error",
-        detail: error.message,
-        source: { pointer: "/data/attributes/#{error.attribute}" }
+        source: { pointer: "/data/attributes/#{error.attribute}" },
+        detail: error.message
       }
-    when String
-      { code: "general_error", detail: error }
     else
-      { code: "general_error", detail: error.to_s }
+      { detail: error.to_s }
     end
   end
 end
