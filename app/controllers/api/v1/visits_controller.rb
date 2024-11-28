@@ -1,87 +1,134 @@
 module Api
-    module V1
-      class VisitsController < Api::V1::BaseController
-        before_action :set_visit, only: [:show, :update, :destroy]
-        before_action :ensure_valid_restaurant, only: [:create, :update]
+  module V1
+    class VisitsController < Api::V1::BaseController
+      before_action :set_visit, only: [ :show, :update, :destroy ]
+      before_action :ensure_valid_restaurant, only: [ :create, :update ]
 
-        def index
-          @pagy, @visits = pagy(current_user.visits.includes(:restaurant, :contacts))
+      def index
+        visits_scope = current_user.visits.includes(:restaurant, :contacts, :images)
+        @pagy, @visits = pagy(visits_scope, items: params[:per_page] || 10)
+
+        render json: VisitSerializer.render_collection(@visits, pagy: @pagy)
+      rescue StandardError => e
+        Rails.logger.error "Error in visits#index: #{e.class} - #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render_error("Failed to fetch visits", :internal_server_error)
+      end
+
+      def show
+        visit = current_user.visits.includes(:contacts, :images).find(params[:id])
+        render json: VisitSerializer.render_success(visit)
+      rescue ActiveRecord::RecordNotFound
+        render_error("Visit not found", :not_found)
+      rescue StandardError => e
+        Rails.logger.error("Error in visits#show: #{e.message}")
+        render_error("Failed to retrieve visit", :internal_server_error)
+      end
+
+      def create
+        visit = current_user.visits.build(visit_params)
+
+        ActiveRecord::Base.transaction do
+          if visit.save
+            process_images(visit) if params[:images].present?
+            render json: VisitSerializer.render_success(visit), status: :created
+          else
+            render_error(visit.errors.full_messages)
+          end
+        end
+      rescue StandardError => e
+        render_error("Failed to create visit")
+      end
+
+      def update
+        ActiveRecord::Base.transaction do
+          if @visit.update(visit_params)
+            process_images(@visit) if params[:images].present?
+            render json: VisitSerializer.render_success(@visit)
+          else
+            render_error(@visit.errors.full_messages)
+          end
+        end
+      rescue StandardError => e
+        render_error("Failed to update visit")
+      end
+
+      def destroy
+        if @visit.destroy
+          head :no_content
+        else
+          render_error("Failed to delete visit")
+        end
+      rescue ActiveRecord::RecordNotFound
+        render_error("Visit not found", :not_found)
+      rescue StandardError => e
+        Rails.logger.error("Error in visits#destroy: #{e.message}")
+        render_error("Failed to delete visit", :internal_server_error)
+      end
+
+      private
+
+      def set_visit
+        @visit = current_user.visits.find(params[:id])
+      rescue ActiveRecord::RecordNotFound
+        render_error("Visit not found", :not_found)
+      end
+
+      def visit_params
+        params.require(:visit).permit(
+          :date,
+          :title,
+          :notes,
+          :restaurant_id,
+          :rating,
+          :price_paid_cents,
+          :price_paid_currency,
+          contact_ids: []
+        )
+      end
+
+      def process_images(visit)
+        return unless params[:images].is_a?(Array)
+
+        params[:images].each do |image_file|
+          image = visit.images.build
+          timestamp = Time.current.strftime("%Y%m%d%H%M%S%L")
+          filename = "#{timestamp}_#{image_file.original_filename}"
+          image.file.attach(
+            io: image_file,
+            filename: filename,
+            content_type: image_file.content_type
+          )
+          raise ActiveRecord::RecordInvalid unless image.save
+        end
+      end
+
+      def ensure_valid_restaurant
+        restaurant_id = params.dig(:visit, :restaurant_id)
+        return if restaurant_id.blank?
+
+        unless current_user.restaurants.exists?(restaurant_id)
           render json: {
-            visits: @visits.map { |visit| VisitSerializer.new(visit).to_h },
-            pagination: pagy_metadata(@pagy)
+            status: "error",
+            errors: [ {
+              code: "invalid_restaurant",
+              detail: "Invalid restaurant"
+            } ],
+            meta: { timestamp: Time.current.iso8601 }
           }
         end
+      end
 
-        def show
-          render json: VisitSerializer.new(@visit).to_h
-        end
-
-        def create
-          @visit = current_user.visits.build(visit_params)
-
-          if @visit.save
-            if params[:images].present?
-              begin
-                process_images
-                render json: VisitSerializer.new(@visit).to_h, status: :created
-              rescue StandardError => e
-                @visit.destroy  # Rollback the visit creation if image processing fails
-                render json: { error: 'Image processing failed' }, status: :unprocessable_entity
-              end
-            else
-              render json: VisitSerializer.new(@visit).to_h, status: :created
-            end
-          else
-            render json: { errors: @visit.errors.full_messages }, status: :unprocessable_entity
-          end
-        end
-
-        def update
-          @visit = current_user.visits.find(params[:id])
-          if @visit.update(visit_params)
-            render json: VisitSerializer.new(@visit).to_h
-          else
-            render json: { errors: @visit.errors.full_messages }, status: :unprocessable_entity
-          end
-          rescue ActiveRecord::RecordInvalid => e
-            render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
-        end
-
-        def destroy
-          @visit.destroy
-          head :no_content
-        end
-
-        private
-
-        def set_visit
-          @visit = current_user.visits.find(params[:id])
-        rescue ActiveRecord::RecordNotFound
-          render json: { error: 'Visit not found' }, status: :not_found
-        end
-
-        def visit_params
-          params.require(:visit).permit(:date, :title, :notes, :restaurant_id, :rating, :price_paid, :price_paid_currency, contact_ids: []).tap do |whitelisted|
-            if whitelisted[:price_paid].present?
-              whitelisted[:price_paid] = Money.from_amount(whitelisted[:price_paid].to_f, whitelisted[:price_paid_currency] || 'USD')
-            end
-          end
-        end
-
-        def process_images
-          ImageHandlingService.process_images(@visit, params[:images])
-        end
-
-        def ensure_valid_restaurant
-          return if params[:visit].blank? || params[:visit][:restaurant_id].blank?
-          unless current_user.restaurants.exists?(params[:visit][:restaurant_id])
-            render json: { error: 'Invalid restaurant' }, status: :unprocessable_entity
-          end
-        end
-
-        def convert_to_money(amount, currency)
-          Money.from_amount(amount.to_f, currency || 'USD')
-        end
+      def render_error(message, status = :unprocessable_entity)
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "unprocessable_entity",
+            detail: message
+          } ],
+          meta: { timestamp: Time.current.iso8601 }
+        }, status: status
       end
     end
   end
+end

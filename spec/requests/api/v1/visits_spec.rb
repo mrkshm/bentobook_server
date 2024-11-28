@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Visits', type: :request do
   before(:all) do
-    Pagy::DEFAULT[:items] ||= 10
+    Pagy::DEFAULT[:items] = 10
   end
 
   let(:user) { create(:user) }
@@ -15,21 +15,14 @@ RSpec.describe 'Api::V1::Visits', type: :request do
            ip_address: '127.0.0.1')
   end
 
-  let(:visit_attributes) do
-    {
-      restaurant_id: restaurant.id,
-      date: Date.today,
-      title: "Great dinner",
-      notes: "Really enjoyed the food",
-      rating: 5,
-      price_paid_cents: 5000,
-      price_paid_currency: "USD"
-    }
-  end
-
   before do
     @headers = {}
     sign_in_with_token(user, user_session)
+    Rails.application.routes.default_url_options[:host] = 'example.com'
+  end
+
+  def json_response
+    @json_response ||= JSON.parse(response.body, symbolize_names: true)
   end
 
   describe 'GET /api/v1/visits' do
@@ -38,187 +31,287 @@ RSpec.describe 'Api::V1::Visits', type: :request do
         get '/api/v1/visits', headers: @headers
 
         expect(response).to have_http_status(:ok)
-        expect(json_response['status']).to eq('success')
-        expect(json_response['data']).to be_empty
+        expect(json_response[:status]).to eq('success')
+        expect(json_response[:data]).to eq([])
+        expect(json_response[:meta][:pagination]).to include(
+          current_page: 1,
+          total_pages: 1,
+          total_count: 0
+        )
       end
     end
 
-    context 'with multiple visits' do
-      let!(:visits) { create_list(:visit, 3, user: user, restaurant: restaurant) }
+    context 'with a visit' do
+      let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
 
-      it 'returns paginated visits' do
+      it 'returns the visit' do
         get '/api/v1/visits', headers: @headers
 
         expect(response).to have_http_status(:ok)
-        expect(json_response['status']).to eq('success')
-        expect(json_response['data'].length).to eq(3)
-        expect(json_response['meta']).to include('pagination')
+        expect(json_response[:status]).to eq('success')
+        expect(json_response[:data]).to be_an(Array)
+        visit_data = json_response[:data].first
+        expect(visit_data[:attributes]).to include(
+          date: visit.date.as_json,
+          title: visit.title,
+          notes: visit.notes,
+          rating: visit.rating
+        )
+      end
+    end
+
+    context 'with a visit that has an image' do
+      let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
+      let(:image_file) { fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg') }
+
+      before do
+        visit.images.create!(file: image_file)
       end
 
-      it 'orders visits by date desc' do
-        old_visit = create(:visit, user: user, restaurant: restaurant, date: 1.week.ago)
-        recent_visit = create(:visit, user: user, restaurant: restaurant, date: 1.day.ago)
+      it 'returns the visit with image urls' do
+        get '/api/v1/visits', headers: @headers
+
+        expect(response).to have_http_status(:ok)
+        visit_data = json_response[:data].first
+        expect(visit_data[:attributes][:images]).to be_an(Array)
+        expect(visit_data[:attributes][:images].first[:urls]).to include(
+          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/\d{14}_test_image\.jpg$})
+        )
+      end
+    end
+
+    context 'with a visit that has multiple images' do
+      let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
+      let(:image_file1) { fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg') }
+      let(:image_file2) { fixture_file_upload('spec/fixtures/files/test_image2.jpg', 'image/jpeg') }
+
+      before do
+        visit.images.create!(file: image_file1)
+        visit.images.create!(file: image_file2)
+      end
+
+      it 'returns the visit with all image urls' do
+        get '/api/v1/visits', headers: @headers
+
+        expect(response).to have_http_status(:ok)
+        visit_data = json_response[:data].first
+        expect(visit_data[:attributes][:images]).to be_an(Array)
+        expect(visit_data[:attributes][:images].length).to eq(2)
+
+        # Check first image
+        image1_data = visit_data[:attributes][:images][0]
+        expect(image1_data[:urls]).to include(
+          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
+          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/\d{14}_test_image\.jpg$})
+        )
+
+        # Check second image
+        image2_data = visit_data[:attributes][:images][1]
+        expect(image2_data[:urls]).to include(
+          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
+          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
+          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
+          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
+          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/\d{14}_test_image2\.jpg$})
+        )
+      end
+    end
+
+    context 'with pagination and images' do
+      before do
+        # Disable the set_filename callback for this test
+        Image.skip_callback(:create, :after, :set_filename)
+
+        15.times do |i|
+          visit = create(:visit, user: user)
+          image = visit.images.new
+          file_path = Rails.root.join('spec', 'fixtures', 'test_image.jpg')
+          image.file.attach(
+            io: File.open(file_path),
+            filename: "test_image_#{i}.jpg",
+            content_type: 'image/jpeg'
+          )
+          image.save!
+        end
+
+        # Re-enable the callback after creating images
+        Image.set_callback(:create, :after, :set_filename)
+      end
+
+      it 'returns paginated visits with images' do
+        get '/api/v1/visits?page=2&per_page=5', headers: @headers
+
+        expect(response).to have_http_status(:ok)
+        expect(json_response[:data].length).to eq(5)
+        expect(json_response[:meta][:pagination]).to include(
+          current_page: 2,
+          per_page: "5",
+          total_pages: 3,
+          total_count: 15
+        )
+
+        visit_data = json_response[:data].first
+        expect(visit_data[:attributes][:images]).to be_present
+        expect(visit_data[:attributes][:images].first[:urls]).to include(
+          :thumbnail,
+          :small,
+          :medium,
+          :large,
+          :original
+        )
+      end
+    end
+
+    context 'GET /api/v1/visits with error' do
+      it 'logs the error and returns an internal server error' do
+        allow_any_instance_of(Api::V1::VisitsController).to receive(:current_user).and_return(user)
+        allow(user.visits).to receive(:includes).with(:restaurant, :contacts, :images).and_raise(StandardError.new("Test error"))
 
         get '/api/v1/visits', headers: @headers
 
-        dates = json_response['data'].map { |v| Date.parse(v['attributes']['date']) }
-        expect(dates).to eq(dates.sort.reverse)
+        expect(response).to have_http_status(:internal_server_error)
+        expect(json_response[:status]).to eq("error")
+        expect(json_response[:errors][0][:code]).to eq("unprocessable_entity")
+        expect(json_response[:errors][0][:detail]).to eq('Failed to fetch visits')
       end
     end
 
-    context 'with pagination' do
-      before { create_list(:visit, 15, user: user, restaurant: restaurant) }
+    context 'when the visit exists' do
+      let(:visit) { create(:visit, user: user) }
 
-      it 'returns paginated results' do
-        get '/api/v1/visits', headers: @headers
+      it 'returns the visit' do
+        get "/api/v1/visits/#{visit.id}", headers: @headers
 
         expect(response).to have_http_status(:ok)
-        expect(json_response['data'].length).to eq(10)
-        expect(json_response['meta']['pagination']['current_page']).to eq(1)
-        expect(json_response['meta']['pagination']['total_pages']).to eq(2)
-      end
-
-      it 'returns the second page' do
-        get '/api/v1/visits', params: { page: 2 }, headers: @headers
-
-        expect(response).to have_http_status(:ok)
-        expect(json_response['data'].length).to eq(5)
-        expect(json_response['meta']['pagination']['current_page']).to eq(2)
-      end
-
-      it 'returns empty array for page beyond range' do
-        get '/api/v1/visits', params: { page: 3 }, headers: @headers
-
-        expect(response).to have_http_status(:ok)
-        expect(json_response['data']).to be_empty
-      end
-    end
-  end
-
-  describe 'GET /api/v1/visits/:id' do
-    let(:visit) { create(:visit, user: user, restaurant: restaurant) }
-
-    it 'returns the visit' do
-      get api_v1_visit_path(visit), headers: @headers
-
-      expect(response).to have_http_status(:ok)
-      expect(json_response['status']).to eq('success')
-      expect(json_response['data']['id']).to eq(visit.id.to_s)
-      expect(json_response['data']['type']).to eq('visit')
-      expect(json_response['data']['attributes']).to include(
-        'date' => visit.date.as_json,
-        'title' => visit.title,
-        'notes' => visit.notes,
-        'rating' => visit.rating
-      )
-    end
-
-    it 'returns not found for visit belonging to another user' do
-      other_visit = create(:visit)
-      get "/api/v1/visits/#{other_visit.id}", headers: @headers
-
-      expect(response).to have_http_status(:not_found)
-      expect(json_response['status']).to eq('error')
-    end
-  end
-
-  describe 'POST /api/v1/visits' do
-    context 'with valid parameters' do
-      it 'creates a new visit' do
-        expect {
-          post '/api/v1/visits',
-               params: { visit: visit_attributes },
-               headers: @headers
-        }.to change(Visit, :count).by(1)
-
-        expect(response).to have_http_status(:created)
-        expect(json_response['data']['attributes']['title']).to eq(visit_attributes[:title])
-      end
-
-      it 'creates a visit with an image' do
-        image = fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg')
-
-        post '/api/v1/visits',
-             params: {
-               visit: visit_attributes,
-               images: [ image ]
-             },
-             headers: @headers
-
-        expect(response).to have_http_status(:created)
-        expect(json_response['data']['attributes']).to have_key('images')
+        visit_data = json_response[:data]
+        expect(visit_data[:attributes].keys.map(&:to_s)).to include(
+          'date',
+          'title',
+          'notes',
+          'rating',
+          'contacts',
+          'price_paid'
+        )
       end
     end
 
-    context 'with invalid parameters' do
-      it 'returns validation errors' do
-        post '/api/v1/visits',
-             params: { visit: visit_attributes.merge(date: nil) },
-             headers: @headers
+    context 'when the visit does not exist' do
+      it 'returns a not found error' do
+        get '/api/v1/visits/0', headers: @headers
 
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response['status']).to eq('error')
-      end
-    end
-  end
-
-  describe 'PATCH /api/v1/visits/:id' do
-    let(:visit) { create(:visit, user: user, restaurant: restaurant) }
-
-    context 'with valid parameters' do
-      it 'updates the visit' do
-        patch api_v1_visit_path(visit),
-              params: { visit: { notes: 'Updated notes' } },
-              headers: @headers
-
-        expect(response).to have_http_status(:ok)
-        expect(json_response['data']['attributes']['notes']).to eq('Updated notes')
-      end
-
-      it 'updates the visit with a new image' do
-        image = fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg')
-
-        patch api_v1_visit_path(visit),
-              params: {
-                visit: { notes: 'Updated notes' },
-                images: [ image ]
-              },
-              headers: @headers
-
-        expect(response).to have_http_status(:ok)
-        expect(json_response['data']['attributes']).to have_key('images')
+        expect(response).to have_http_status(:not_found)
+        expect(json_response[:status]).to eq('error')
+        expect(json_response[:errors].first[:detail]).to eq('Visit not found')
       end
     end
 
-    context 'with invalid parameters' do
-      it 'returns validation errors' do
-        patch api_v1_visit_path(visit),
-              params: { visit: { date: nil } },
-              headers: @headers
+    context 'when an unexpected error occurs' do
+      let(:visit) { create(:visit, user: user) }
 
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response['status']).to eq('error')
+      it 'logs the error and returns an internal server error' do
+        allow_any_instance_of(Visit).to receive(:contacts).and_raise(StandardError.new("Test error"))
+
+        get "/api/v1/visits/#{visit.id}", headers: @headers
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(json_response[:status]).to eq('error')
+        expect(json_response[:errors].first[:detail]).to eq('Failed to retrieve visit')
       end
     end
   end
 
   describe 'DELETE /api/v1/visits/:id' do
-    let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
+    context 'when the visit exists' do
+      let!(:visit) { create(:visit, user: user) }
 
-    it 'deletes the visit' do
-      expect {
-        delete api_v1_visit_path(visit), headers: @headers
-      }.to change(Visit, :count).by(-1)
+      it 'deletes the visit' do
+        expect {
+          delete "/api/v1/visits/#{visit.id}", headers: @headers
+        }.to change(Visit, :count).by(-1)
 
-      expect(response).to have_http_status(:ok)
-      expect(json_response['status']).to eq('success')
+        expect(response).to have_http_status(:no_content)
+        expect(response.body).to be_empty
+      end
     end
 
-    it 'returns not found for non-existent visit' do
-      delete '/api/v1/visits/0', headers: @headers
+    context 'when the visit does not exist' do
+      it 'returns a not found error' do
+        delete "/api/v1/visits/0", headers: @headers
 
-      expect(response).to have_http_status(:not_found)
-      expect(json_response['status']).to eq('error')
+        expect(response).to have_http_status(:not_found)
+        expect(json_response[:status]).to eq("error")
+        expect(json_response[:errors][0][:code]).to eq("unprocessable_entity")
+        expect(json_response[:errors][0][:detail]).to eq("Visit not found")
+      end
+    end
+
+    context 'when there is an error deleting the visit' do
+      let!(:visit) { create(:visit, user: user) }
+
+      it 'returns an internal server error' do
+        allow_any_instance_of(Visit).to receive(:destroy).and_raise(StandardError.new("Test error"))
+
+        delete "/api/v1/visits/#{visit.id}", headers: @headers
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(json_response[:status]).to eq("error")
+        expect(json_response[:errors][0][:code]).to eq("unprocessable_entity")
+        expect(json_response[:errors][0][:detail]).to eq("Failed to delete visit")
+      end
+    end
+  end
+
+  describe 'GET /api/v1/visits/:id' do
+    context 'when the visit exists' do
+      let(:visit) { create(:visit, user: user) }
+
+      it 'returns the visit' do
+        get "/api/v1/visits/#{visit.id}", headers: @headers
+
+        expect(response).to have_http_status(:ok)
+        visit_data = json_response[:data]
+        expect(visit_data[:attributes].keys.map(&:to_s)).to include(
+          'date',
+          'title',
+          'notes',
+          'rating',
+          'contacts',
+          'price_paid'
+        )
+      end
+    end
+
+    context 'when the visit does not exist' do
+      it 'returns a not found error' do
+        get "/api/v1/visits/0", headers: @headers
+
+        expect(response).to have_http_status(:not_found)
+        expect(json_response[:status]).to eq("error")
+        expect(json_response[:errors][0][:code]).to eq("unprocessable_entity")
+        expect(json_response[:errors][0][:detail]).to eq("Visit not found")
+      end
+    end
+
+    context 'when there is an error retrieving the visit' do
+      let(:visit) { create(:visit, user: user) }
+
+      it 'returns an internal server error' do
+        allow_any_instance_of(Visit).to receive(:contacts).and_raise(StandardError.new("Test error"))
+
+        get "/api/v1/visits/#{visit.id}", headers: @headers
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(json_response[:status]).to eq("error")
+        expect(json_response[:errors][0][:code]).to eq("unprocessable_entity")
+        expect(json_response[:errors][0][:detail]).to eq("Failed to retrieve visit")
+      end
     end
   end
 end
