@@ -8,8 +8,10 @@ module Api
 
       def index
         restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
-        query = RestaurantQuery.new(restaurants_scope, search_params)
+        order_params = parse_order_params
+        return if performed?
 
+        query = RestaurantQuery.new(restaurants_scope, search_params.merge(order_params))
         @pagy, @restaurants = pagy(query.call, items: params.fetch(:per_page, 10))
 
         render_collection(
@@ -17,8 +19,8 @@ module Api
           pagy: @pagy,
           meta: {
             sorting: {
-              field: search_params[:order_by] || RestaurantQuery::DEFAULT_ORDER[:field],
-              direction: search_params[:order_direction] || RestaurantQuery::DEFAULT_ORDER[:direction]
+              field: order_params[:order_by] || RestaurantQuery::DEFAULT_ORDER[:field],
+              direction: order_params[:order_direction] || RestaurantQuery::DEFAULT_ORDER[:direction]
             }
           }
         )
@@ -58,21 +60,22 @@ module Api
 
       def update
         ActiveRecord::Base.transaction do
-          if restaurant_params[:images].present?
-            result = ImageProcessorService.new(@restaurant, restaurant_params[:images]).process
-            unless result.success?
-              raise StandardError, result.error
-            end
-          end
+          updater = RestaurantUpdater.new(@restaurant, restaurant_params.except(:images))
 
-          if @restaurant.update(restaurant_params.except(:images))
+          if updater.update
+            if restaurant_params[:images].present?
+              result = ImageProcessorService.new(@restaurant, restaurant_params[:images]).process
+              unless result.success?
+                raise StandardError, result.error
+              end
+            end
             render_success(@restaurant)
           else
-            render_error(@restaurant.errors.full_messages.join(", "))
+            render_error(@restaurant.errors.full_messages.join(", "), status: :unprocessable_entity)
           end
         end
       rescue StandardError => e
-        render_error(e.message)
+        render_error(e.message, status: :unprocessable_entity)
       end
 
       def destroy
@@ -167,7 +170,7 @@ module Api
 
       def search_params
         params.permit(
-          :search, :tag, :order_by, :order_direction, :latitude, :longitude, :per_page
+          :search, :tag, :latitude, :longitude, :per_page
         ).merge(user: current_user)
       end
 
@@ -181,15 +184,23 @@ module Api
         )
       end
 
-      def restaurant_update_params
-        params.require(:restaurant).permit(
-          :name, :address, :notes, :cuisine_type_id,
-          :rating, :price_level, :street_number, :street,
-          :postal_code, :city, :state, :country,
-          :phone_number, :url, :business_status,
-          :cuisine_type_name, :tag_list,
-          images: []
-        )
+      def parse_order_params
+        return {} unless params[:order_by].present?
+
+        unless RestaurantQuery::ALLOWED_ORDER_FIELDS.include?(params[:order_by])
+          render_error("Invalid order_by parameter. Allowed values: #{RestaurantQuery::ALLOWED_ORDER_FIELDS.join(', ')}")
+          return
+        end
+
+        unless [ "asc", "desc" ].include?(params[:order_direction]&.downcase)
+          render_error("Invalid order_direction parameter. Allowed values: asc, desc")
+          return
+        end
+
+        {
+          order_by: params[:order_by],
+          order_direction: params[:order_direction]&.downcase || "asc"
+        }
       end
 
       def render_collection(resources, meta: {}, pagy: nil)

@@ -552,7 +552,10 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         GoogleRestaurant.destroy_all
         CuisineType.destroy_all
         @error_restaurant = create(:restaurant, user: user, name: "Update Error Restaurant #{Time.current.to_f}")
-        allow_any_instance_of(Restaurant).to receive(:update).and_raise(StandardError.new("Failed to update restaurant"))
+        allow_any_instance_of(RestaurantUpdater).to receive(:update).and_return(false)
+        allow_any_instance_of(Restaurant).to receive(:errors).and_return(
+          double(full_messages: [ "Failed to update restaurant" ])
+        )
       end
 
       it 'returns an error response' do
