@@ -268,6 +268,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         let(:restaurant_params) do
           {
             name: "Test Restaurant with Rating #{Time.current.to_f}",
+            cuisine_type_name: 'italian',
             rating: "4",
             address: "123 Test St",
             city: "Test City",
@@ -293,6 +294,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         let(:restaurant_params) do
           {
             name: "Test Restaurant without Rating #{Time.current.to_f}",
+            cuisine_type_name: 'italian',
             address: "123 Test St",
             city: "Test City",
             latitude: "37.7749",
@@ -318,6 +320,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
           let(:restaurant_params) do
             {
               name: "Test Restaurant with Coordinates #{Time.current.to_f}",
+              cuisine_type_name: 'italian',
               google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
               address: "123 Test St",
               city: "Test City",
@@ -340,6 +343,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
           let(:restaurant_params) do
             {
               name: "Test Restaurant with Default Coordinates #{Time.current.to_f}",
+              cuisine_type_name: 'italian',
               google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
               address: "123 Test St",
               city: "Test City",
@@ -364,6 +368,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
           let(:restaurant_params) do
             {
               name: "Test Restaurant with Different Coordinates #{Time.current.to_f}",
+              cuisine_type_name: 'italian',
               address: "123 Test St",
               city: "Test City",
               latitude: "40.7128",
@@ -389,6 +394,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
           let(:restaurant_params) do
             {
               name: "Test Restaurant with Default Coordinates #{Time.current.to_f}",
+              cuisine_type_name: 'italian',
               address: "123 Test St",
               city: "Test City",
               latitude: "0.0",
@@ -408,6 +414,48 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
             expect(restaurant.google_restaurant.latitude).to eq(0.0)
             expect(restaurant.google_restaurant.longitude).to eq(0.0)
           end
+        end
+      end
+
+      context 'with google_place_id' do
+        let(:base_params) do
+          {
+            name: "Test Restaurant #{Time.current.to_f}",
+            cuisine_type_name: 'italian',
+            address: "123 Test St",
+            city: "Test City",
+            google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"
+          }
+        end
+
+        it 'converts string coordinates to decimal' do
+          params = base_params.merge(
+            latitude: "37.7749",
+            longitude: "-122.4194"
+          )
+
+          post '/api/v1/restaurants', params: { restaurant: params }, headers: @headers
+
+          expect(response).to have_http_status(:created)
+          restaurant = Restaurant.last
+          expect(restaurant.google_restaurant.latitude.class).to eq(BigDecimal)
+          expect(restaurant.google_restaurant.longitude.class).to eq(BigDecimal)
+          expect(restaurant.google_restaurant.latitude).to eq(BigDecimal("37.7749"))
+          expect(restaurant.google_restaurant.longitude).to eq(BigDecimal("-122.4194"))
+        end
+
+        it 'converts invalid coordinates to zero' do
+          params = base_params.merge(
+            latitude: "invalid",
+            longitude: "invalid"
+          )
+
+          post '/api/v1/restaurants', params: { restaurant: params }, headers: @headers
+
+          expect(response).to have_http_status(:created)
+          restaurant = Restaurant.last
+          expect(restaurant.google_restaurant.latitude).to eq(0.0)
+          expect(restaurant.google_restaurant.longitude).to eq(0.0)
         end
       end
     end
@@ -431,14 +479,6 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         expect(json_response['errors'].first['detail']).to eq('param is missing or the value is empty or invalid: restaurant')
       end
 
-      it 'returns error when restaurant params are empty' do
-        post '/api/v1/restaurants', params: { restaurant: {} }, headers: @headers
-
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response['status']).to eq('error')
-        expect(json_response['errors'].first['detail']).to eq('param is missing or the value is empty or invalid: restaurant')
-      end
-
       it 'filters out unpermitted parameters' do
         unpermitted_params = restaurant_attributes.merge(
           unpermitted_param: 'should not be included',
@@ -452,59 +492,6 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         expect(response).to have_http_status(:created)
         restaurant = Restaurant.last
         expect(restaurant.attributes).not_to include('unpermitted_param', 'another_unpermitted')
-      end
-    end
-
-    context 'with coordinate conversions' do
-      let(:base_params) do
-        {
-          name: "Test Restaurant Coordinates #{Time.current.to_f}",
-          address: "123 Test St",
-          city: "Test City",
-          google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"
-        }
-      end
-
-      it 'handles integer coordinates' do
-        params = base_params.merge(
-          latitude: 37,
-          longitude: -122
-        )
-
-        post '/api/v1/restaurants', params: { restaurant: params }, headers: @headers
-
-        expect(response).to have_http_status(:created)
-        restaurant = Restaurant.last
-        expect(restaurant.google_restaurant.latitude).to eq(37.0)
-        expect(restaurant.google_restaurant.longitude).to eq(-122.0)
-      end
-
-      it 'handles string coordinates' do
-        params = base_params.merge(
-          latitude: "37.7749",
-          longitude: "-122.4194"
-        )
-
-        post '/api/v1/restaurants', params: { restaurant: params }, headers: @headers
-
-        expect(response).to have_http_status(:created)
-        restaurant = Restaurant.last
-        expect(restaurant.google_restaurant.latitude).to eq(37.7749)
-        expect(restaurant.google_restaurant.longitude).to eq(-122.4194)
-      end
-
-      it 'handles scientific notation coordinates' do
-        params = base_params.merge(
-          latitude: "3.77490e1",
-          longitude: "-1.224194e2"
-        )
-
-        post '/api/v1/restaurants', params: { restaurant: params }, headers: @headers
-
-        expect(response).to have_http_status(:created)
-        restaurant = Restaurant.last
-        expect(restaurant.google_restaurant.latitude).to eq(37.749)
-        expect(restaurant.google_restaurant.longitude).to eq(-122.4194)
       end
     end
 

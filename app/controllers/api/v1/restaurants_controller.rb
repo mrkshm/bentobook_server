@@ -2,6 +2,7 @@ module Api
   module V1
     class RestaurantsController < Api::V1::BaseController
       include Pagy::Backend
+      include CuisineTypeValidation
 
       before_action :set_restaurant, only: [ :show, :update, :destroy, :add_tag, :remove_tag ]
 
@@ -118,9 +119,12 @@ module Api
           price_level: restaurant_params[:price_level]
         )
 
-        # Set cuisine type
-        cuisine_type_name = restaurant_params[:cuisine_type_name].presence || "uncategorized"
-        restaurant.cuisine_type = CuisineType.find_or_create_by!(name: cuisine_type_name.downcase)
+        # Validate and set cuisine type
+        valid, result = validate_cuisine_type(restaurant_params[:cuisine_type_name])
+        unless valid
+          raise StandardError, result
+        end
+        restaurant.cuisine_type = result
 
         # Handle tags if present
         if restaurant_params[:tag_list].present?
