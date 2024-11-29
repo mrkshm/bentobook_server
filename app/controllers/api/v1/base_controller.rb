@@ -3,6 +3,8 @@ module Api
     class BaseController < ApiController
       include Pagy::Backend
       before_action :authenticate_user!
+      before_action :set_default_format
+      rescue_from ActiveRecord::RecordNotFound, with: :not_found_response
 
       protected
 
@@ -33,6 +35,23 @@ module Api
         end
       end
 
+      def set_default_format
+        request.format = :json unless params[:format]
+      end
+
+      def not_found_response(exception)
+        render json: {
+          status: {
+            code: 404,
+            message: "Not Found"
+          },
+          errors: [ {
+            code: "not_found",
+            detail: exception.message
+          } ]
+        }, status: :not_found
+      end
+
       def unauthorized_response
         render json: {
           status: {
@@ -54,17 +73,37 @@ module Api
         @current_session
       end
 
-      def render_error(message, code = :unprocessable_entity)
+      def render_success(data, status: :ok, meta: {})
+        render json: {
+          status: "success",
+          data: data,
+          meta: meta.merge(timestamp: Time.current)
+        }, status: status
+      end
+
+      def render_collection(collection, pagy:, meta: {})
+        render json: {
+          status: "success",
+          data: collection,
+          meta: meta.merge(
+            timestamp: Time.current,
+            pagination: {
+              current_page: pagy.page,
+              total_pages: pagy.pages,
+              total_count: pagy.count,
+              per_page: pagy.items
+            }
+          )
+        }
+      end
+
+      def render_error(message, status = :unprocessable_entity)
         render json: {
           status: {
-            code: Rack::Utils::SYMBOL_TO_STATUS_CODE[code],
+            code: Rack::Utils.status_code(status),
             message: message
-          },
-          errors: [ {
-            code: "general_error",
-            detail: message
-          } ]
-        }, status: code
+          }
+        }, status: status
       end
     end
   end

@@ -20,6 +20,14 @@ Rails.application.routes.draw do
       get "/profiles/search", to: "profiles#search"
       patch "/profile/locale", to: "profiles#change_locale"
 
+      resources :restaurants do
+        member do
+          post :add_tag
+          delete :remove_tag
+        end
+        resources :images, only: [ :create, :destroy ]
+      end
+
       resources :contacts, only: [ :index, :show, :create, :update, :destroy ] do
         collection do
           get :search

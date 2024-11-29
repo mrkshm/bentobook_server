@@ -90,22 +90,15 @@ RSpec.configure do |config|
   config.use_transactional_fixtures = false
 
   config.before(:suite) do
-    # Clean everything before starting
+    # Enable PostGIS first
+    ActiveRecord::Base.connection.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+
+    # Then clean everything
     DatabaseCleaner.clean_with(:truncation)
-    
+
     # Clean up storage
     FileUtils.rm_rf(Rails.root.join('tmp', 'storage'))
     FileUtils.mkdir_p(Rails.root.join('tmp', 'storage'))
-    
-    # Add PostGIS setup
-    ActiveRecord::Base.connection.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext) 
-      VALUES (4326, 'EPSG', 4326, 
-        '+proj=longlat +datum=WGS84 +no_defs', 
-        'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]')
-      ON CONFLICT (srid) DO NOTHING;
-    SQL
 
     # Configure Active Storage
     ActiveStorage::Current.url_options = { host: "localhost:3000" }
@@ -114,7 +107,7 @@ RSpec.configure do |config|
   config.before(:each) do
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.start
-    
+
     # Clear Active Jobs
     ActiveJob::Base.queue_adapter = :test
     clear_enqueued_jobs
@@ -129,14 +122,14 @@ RSpec.configure do |config|
   config.after(:each) do
     # Clean the database
     DatabaseCleaner.clean
-    
+
     # Clean Active Storage
     ActiveStorage::Blob.unattached.find_each(&:purge)
     FileUtils.rm_rf(Dir[Rails.root.join('tmp', 'storage', '*')])
-    
+
     # Clear any debug messages
     Rails.logger.debug_messages.clear if Rails.logger.respond_to?(:debug_messages)
-    
+
     # Reset time helpers
     travel_back
   end
@@ -148,6 +141,11 @@ RSpec.configure do |config|
   config.before(:each) do
     ActiveJob::Base.queue_adapter = :test
     clear_enqueued_jobs
+  end
+
+  # Configure default URL options for tests
+  config.before(:each, type: :request) do
+    Rails.application.routes.default_url_options[:host] = 'http://example.com'
   end
 end
 

@@ -1,14 +1,21 @@
 FactoryBot.define do
   factory :restaurant do
     user
-    association :google_restaurant, factory: :google_restaurant
+    sequence(:name) { |n| "Custom Restaurant #{n}" }
     association :cuisine_type
-    sequence(:name) { |n| "Restaurant #{n}" }
-    sequence(:address) { |n| "#{n} Test Street, Test City" }
+
+    after(:build) do |restaurant|
+      # Create a new google_restaurant only if one isn't already assigned
+      restaurant.google_restaurant ||= build(:google_restaurant,
+        name: restaurant.name,
+        google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"
+      )
+    end
+
     rating { rand(0..5) }
     price_level { rand(0..4) }
-    business_status { ['OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY'].sample }
-    favorite { [true, false].sample }
+    business_status { [ 'OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY' ].sample }
+    favorite { [ true, false ].sample }
     notes { "Some notes about the restaurant" }
     phone_number { "+1 555-#{rand(100..999)}-#{rand(1000..9999)}" }
     url { "https://example#{rand(1..100)}.com" }
