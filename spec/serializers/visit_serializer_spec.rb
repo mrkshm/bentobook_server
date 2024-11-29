@@ -31,7 +31,22 @@ RSpec.describe VisitSerializer do
         'notes',
         'rating',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'restaurant'
+      )
+    end
+
+    it 'includes correct restaurant information' do
+      restaurant_data = rendered_json[:data][:attributes]['restaurant']
+      expect(restaurant_data).to include(
+        'id' => restaurant.id,
+        'name' => restaurant.combined_name,
+        'cuisine_type' => restaurant.cuisine_type&.name
+      )
+      expect(restaurant_data['location']).to include(
+        'address' => restaurant.combined_address,
+        'latitude' => restaurant.combined_latitude&.to_f,
+        'longitude' => restaurant.combined_longitude&.to_f
       )
     end
 

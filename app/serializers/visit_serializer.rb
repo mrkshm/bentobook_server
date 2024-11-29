@@ -8,6 +8,19 @@ class VisitSerializer < BaseSerializer
              :created_at,
              :updated_at
 
+  attribute :restaurant do |visit|
+    {
+      id: visit.restaurant.id,
+      name: visit.restaurant.combined_name,
+      cuisine_type: visit.restaurant.cuisine_type&.name,
+      location: {
+        address: visit.restaurant.combined_address,
+        latitude: visit.restaurant.combined_latitude&.to_f,
+        longitude: visit.restaurant.combined_longitude&.to_f
+      }
+    }
+  end
+
   attribute :contacts do |visit|
     visit.contacts.map do |contact|
       {
