@@ -1678,6 +1678,22 @@ CREATE INDEX taggings_taggable_context_idx ON public.taggings USING btree (tagga
 
 
 --
+-- Name: list_restaurants fk_list_restaurants_list; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.list_restaurants
+    ADD CONSTRAINT fk_list_restaurants_list FOREIGN KEY (list_id) REFERENCES public.lists(id) ON DELETE CASCADE;
+
+
+--
+-- Name: list_restaurants fk_list_restaurants_restaurant; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.list_restaurants
+    ADD CONSTRAINT fk_list_restaurants_restaurant FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id) ON DELETE CASCADE;
+
+
+--
 -- Name: visits fk_rails_09e5e7c20b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1868,6 +1884,7 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20241129140719'),
 ('20241122082306'),
 ('20241121201805'),
 ('20241120092910'),

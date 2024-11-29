@@ -1,123 +1,203 @@
 module Api
   module V1
     class RestaurantsController < Api::V1::BaseController
-      include RestaurantManagement
-      include Api::V1::RestaurantSortingAndFiltering
       include Pagy::Backend
-      before_action :set_restaurant, only: [:show, :update, :destroy, :add_tag, :remove_tag]
+
+      before_action :set_restaurant, only: [ :show, :update, :destroy, :add_tag, :remove_tag ]
 
       def index
-        order_field, order_direction, using_default, message = parse_order_params
-        return if performed?
+        restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
+        query = RestaurantQuery.new(restaurants_scope, search_params)
 
-        restaurants_scope = current_user.restaurants.with_google.includes(:visits)
+        @pagy, @restaurants = pagy(query.call, items: params.fetch(:per_page, 10))
 
-        restaurants_scope = apply_filters(restaurants_scope)
-        restaurants_scope = apply_ordering(restaurants_scope, order_field, order_direction)
-
-        @pagy, @restaurants = pagy(restaurants_scope, items: 10)
-
-        user_location = params[:latitude] && params[:longitude] ? [params[:latitude].to_f, params[:longitude].to_f] : nil
-
-        response_data = {
-          restaurants: @restaurants.map { |restaurant| 
-            RestaurantSerializer.new(restaurant, params: { user_location: user_location }).to_h
-          },
-          pagy: pagy_metadata(@pagy),
-          sorting: { field: order_field, direction: order_direction }
-        }
-
-        response_data[:message] = message if message
-
-        render json: response_data
+        render_collection(
+          @restaurants,
+          pagy: @pagy,
+          meta: {
+            sorting: {
+              field: search_params[:order_by] || RestaurantQuery::DEFAULT_ORDER[:field],
+              direction: search_params[:order_direction] || RestaurantQuery::DEFAULT_ORDER[:direction]
+            }
+          }
+        )
+      rescue StandardError => e
+        render_error(e.message)
       end
 
       def show
-        restaurant_data = RestaurantSerializer.new(@restaurant).to_h
-        visits_data = @restaurant.visits.map { |visit| VisitSerializer.new(visit).to_h }
-        render json: restaurant_data.merge(visits: visits_data), status: :ok
-      end
-
-      def destroy
-        @restaurant.destroy!
-        render json: { message: 'Restaurant was successfully removed from your list.' }, status: :ok
+        render_success(@restaurant)
+      rescue StandardError => e
+        render_error(e.message)
       end
 
       def create
+        restaurant = nil
+
         ActiveRecord::Base.transaction do
-          # Exclude :cuisine_type and :google_place_id from restaurant_params
-          restaurant_attributes = restaurant_params.except(:cuisine_type, :google_place_id)
-          @restaurant = current_user.restaurants.new(restaurant_attributes)
-          
-          @restaurant.cuisine_type = CuisineType.find_or_create_by(name: params[:restaurant][:cuisine_type])
-          
-          @google_restaurant = find_or_create_google_restaurant
+          restaurant = build_restaurant
 
-          @restaurant.google_restaurant = @google_restaurant
+          unless restaurant.save
+            return render_error(restaurant.errors.full_messages.join(", "))
+          end
 
-          if @restaurant.save
-            render json: RestaurantSerializer.new(@restaurant).serialize, status: :created
-          else
-            render json: { errors: @restaurant.errors.full_messages }, status: :unprocessable_entity
+          if restaurant_params[:images].present?
+            process_images(restaurant, restaurant_params[:images])
           end
         end
-      rescue ActiveRecord::RecordInvalid => e
-        render json: { errors: [e.message] }, status: :unprocessable_entity
+
+        render json: RestaurantSerializer.render_success(restaurant), status: :created
+      rescue StandardError => e
+        render_error(e.message)
       end
 
       def update
-        updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
-        updater.update!
-        render json: RestaurantSerializer.new(@restaurant).serialize, status: :ok
+        ActiveRecord::Base.transaction do
+          if restaurant_params[:images].present?
+            process_images(@restaurant, restaurant_params[:images])
+          end
+
+          if @restaurant.update(restaurant_params.except(:images))
+            render_success(@restaurant)
+          else
+            render_error(@restaurant.errors.full_messages.join(", "))
+          end
+        end
+      rescue StandardError => e
+        render_error(e.message)
+      end
+
+      def destroy
+        if @restaurant.destroy
+          head :no_content
+        else
+          render_error(@restaurant.errors.full_messages.join(", "))
+        end
+      rescue StandardError => e
+        render_error(e.message)
       end
 
       def add_tag
-        tag_name = params[:tag]
-        @restaurant.tag_list.add(tag_name) unless @restaurant.tag_list.include?(tag_name)
-        @restaurant.save!
-        render json: { message: 'Tag added successfully.', tags: @restaurant.tag_list }, status: :ok
+        @restaurant.tag_list.add(params[:tag])
+
+        if @restaurant.save
+          render_success(@restaurant)
+        else
+          render_error(@restaurant.errors.full_messages.join(", "))
+        end
+      rescue StandardError => e
+        render_error(e.message)
       end
 
       def remove_tag
-        tag_name = params[:tag]
-        @restaurant.tag_list.remove(tag_name)
-        @restaurant.save!
-        render json: { message: 'Tag removed successfully.', tags: @restaurant.tag_list }, status: :ok
-      end
+        @restaurant.tag_list.remove(params[:tag])
 
-      def tagged
-        tag_name = params[:tag]
-        restaurants_scope = current_user.restaurants.tagged_with(tag_name)
-
-        items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 10
-
-        @pagy, restaurants = pagy(restaurants_scope, items: items_per_page)
-
-        render json: {
-          restaurants: RestaurantSerializer.new(restaurants).serializable_hash,
-          pagination: pagy_metadata(@pagy)
-        }, status: :ok
-      rescue Pagy::OverflowError
-        render json: {
-          restaurants: [],
-          pagination: pagy_metadata(Pagy.new(count: 0, page: 1))
-        }, status: :ok
+        if @restaurant.save
+          render_success(@restaurant)
+        else
+          render_error(@restaurant.errors.full_messages.join(", "))
+        end
+      rescue StandardError => e
+        render_error(e.message)
       end
 
       private
 
-      def create_images
-        return unless restaurant_params[:images].present?
+      def set_restaurant
+        @restaurant = current_user.restaurants.find(params[:id])
+      rescue ActiveRecord::RecordNotFound
+        render_error("Restaurant not found", status: :not_found)
+      end
 
-        restaurant_params[:images].each do |image|
-          @restaurant.images.create(file: image)
+      def build_restaurant
+        # Create restaurant with basic attributes only
+        restaurant = current_user.restaurants.new(
+          name: restaurant_params[:name],
+          notes: restaurant_params[:notes],
+          rating: restaurant_params[:rating].present? ? restaurant_params[:rating].to_i : nil,
+          price_level: restaurant_params[:price_level]
+        )
+
+        # Set cuisine type
+        cuisine_type_name = restaurant_params[:cuisine_type_name].presence || "uncategorized"
+        restaurant.cuisine_type = CuisineType.find_or_create_by!(name: cuisine_type_name.downcase)
+
+        # Handle tags if present
+        if restaurant_params[:tag_list].present?
+          restaurant.tag_list = restaurant_params[:tag_list]
         end
+
+        # Create or find google restaurant
+        if restaurant_params[:google_place_id].present?
+          restaurant.google_restaurant = GoogleRestaurant.find_or_create_by!(
+            google_place_id: restaurant_params[:google_place_id]
+          ) do |gr|
+            gr.name = restaurant_params[:name]
+            gr.address = restaurant_params[:address]
+            gr.city = restaurant_params[:city]
+            gr.latitude = restaurant_params[:latitude]&.to_d
+            gr.longitude = restaurant_params[:longitude]&.to_d
+            gr.google_rating = restaurant_params[:rating]  # Keep the float rating in google_restaurant
+          end
+        else
+          restaurant.build_google_restaurant(
+            name: restaurant_params[:name],
+            address: restaurant_params[:address],
+            city: restaurant_params[:city],
+            latitude: restaurant_params[:latitude]&.to_d,
+            longitude: restaurant_params[:longitude]&.to_d,
+            google_rating: restaurant_params[:rating],  # Keep the float rating in google_restaurant
+            google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"  # Generate a unique ID when not provided
+          )
+        end
+
+        restaurant
+      end
+
+      def process_images(restaurant, images)
+        images.each do |image|
+          next unless image.content_type.start_with?("image/")
+          restaurant.images.create!(file: image)
+        end
+      end
+
+      def search_params
+        params.permit(
+          :search, :tag, :order_by, :order_direction, :latitude, :longitude, :per_page
+        ).merge(user: current_user)
       end
 
       def restaurant_params
         params.require(:restaurant).permit(
-          :name, :address, :city, :latitude, :longitude, :notes, :rating, :price_level, :google_place_id, :cuisine_type
+          :name, :address, :city, :latitude, :longitude,
+          :notes, :rating, :price_level, :google_place_id,
+          :cuisine_type_name,
+          tag_list: [],
+          images: []
         )
+      end
+
+      def restaurant_update_params
+        params.require(:restaurant).permit(
+          :name, :address, :notes, :cuisine_type_id,
+          :rating, :price_level, :street_number, :street,
+          :postal_code, :city, :state, :country,
+          :phone_number, :url, :business_status,
+          :cuisine_type_name, :tag_list,
+          images: []
+        )
+      end
+
+      def render_collection(resources, meta: {}, pagy: nil)
+        render json: RestaurantSerializer.render_collection(resources, meta: meta, pagy: pagy)
+      end
+
+      def render_success(resource, meta: {}, status: :ok)
+        render json: RestaurantSerializer.render_success(resource, meta: meta), status: status
+      end
+
+      def render_error(errors, meta: {}, status: :unprocessable_entity)
+        render json: RestaurantSerializer.render_error(errors, meta: meta), status: status
       end
     end
   end
