@@ -46,24 +46,10 @@ class RestaurantsController < ApplicationController
 
     def update
       @restaurant = current_user.restaurants.with_google.find(params[:id])
-
       begin
         updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
-
         if updater.update
-          if params[:restaurant]&.dig(:images)&.any? { |img| img.respond_to?(:content_type) }
-            Rails.logger.info "Processing new images"
-            result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
-            unless result.success?
-              Rails.logger.error "Image processing failed: #{result.error}"
-              flash[:alert] = result.error
-              raise StandardError, "Image processing failed"
-            end
-          else
-            Rails.logger.info "No valid image files found in params"
-          end
-
-          redirect_to restaurant_path, notice: "Restaurant was successfully updated."
+          save_restaurant(:edit)
         else
           @cuisine_types = CuisineType.all
           flash[:alert] = @restaurant.errors.full_messages.join(", ")
@@ -72,7 +58,7 @@ class RestaurantsController < ApplicationController
       rescue StandardError => e
         Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}"
         @cuisine_types = CuisineType.all
-        flash[:alert] = "Error updating the restaurant: #{e.message}"
+        flash[:alert] ||= "Error updating the restaurant: #{e.message}"
         render :edit, status: :unprocessable_entity
         raise ActiveRecord::Rollback
       end
@@ -82,26 +68,13 @@ class RestaurantsController < ApplicationController
       ActiveRecord::Base.transaction do
         begin
           @restaurant = build_restaurant
-
-          if @restaurant.save
-            if params[:restaurant][:images].present?
-              result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
-              unless result.success?
-                flash[:alert] = result.error
-                raise StandardError, "Image processing failed"
-              end
-            end
-            redirect_to({ action: :show, id: @restaurant.id }, notice: "Restaurant was successfully created.")
-          else
-            Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
-            handle_failed_save
-          end
+          save_restaurant(:new)
         rescue ActiveRecord::RecordNotFound => e
           @restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name))
           handle_invalid_cuisine_type
         rescue StandardError => e
           Rails.logger.error "Error creating restaurant: #{e.message}"
-          @restaurant.destroy if @restaurant&.persisted?
+          @restaurant&.destroy if @restaurant&.persisted?
           flash[:alert] = e.message
           handle_failed_save
         end
@@ -232,5 +205,40 @@ class RestaurantsController < ApplicationController
 
     def set_restaurant
       @restaurant = current_user.restaurants.find(params[:id])
+    end
+
+    def save_restaurant(render_action)
+      if @restaurant.persisted? || @restaurant.save
+        if params[:restaurant][:images].present?
+          begin
+            result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
+            unless result.success?
+              flash[:alert] = "Error updating the restaurant: Image processing failed"
+              @cuisine_types = CuisineType.all
+              if render_action == :edit
+                raise ActiveRecord::Rollback
+              else
+                raise StandardError, "Image processing failed"
+              end
+            end
+            redirect_to({ action: :show, id: @restaurant.id }, notice: "Restaurant was successfully #{render_action == :new ? 'created' : 'updated'}")
+          rescue StandardError => e
+            Rails.logger.error "Image processing failed: #{e.message}"
+            @restaurant.destroy if render_action == :new
+            if render_action == :edit
+              raise ActiveRecord::Rollback
+            else
+              raise # Re-raise the error to be handled by the parent action
+            end
+          end
+        else
+          redirect_to({ action: :show, id: @restaurant.id }, notice: "Restaurant was successfully #{render_action == :new ? 'created' : 'updated'}")
+        end
+      else
+        Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
+        flash.now[:alert] = "Failed to save restaurant"
+        @cuisine_types = CuisineType.all
+        render render_action, status: :unprocessable_entity
+      end
     end
 end
