@@ -43,19 +43,26 @@ module Api
           end
 
           if restaurant_params[:images].present?
-            process_images(restaurant, restaurant_params[:images])
+            result = ImageProcessorService.new(restaurant, restaurant_params[:images]).process
+            unless result.success?
+              raise StandardError, result.error
+            end
           end
         end
 
         render json: RestaurantSerializer.render_success(restaurant), status: :created
       rescue StandardError => e
+        restaurant&.destroy if restaurant&.persisted?
         render_error(e.message)
       end
 
       def update
         ActiveRecord::Base.transaction do
           if restaurant_params[:images].present?
-            process_images(@restaurant, restaurant_params[:images])
+            result = ImageProcessorService.new(@restaurant, restaurant_params[:images]).process
+            unless result.success?
+              raise StandardError, result.error
+            end
           end
 
           if @restaurant.update(restaurant_params.except(:images))
@@ -156,13 +163,6 @@ module Api
         end
 
         restaurant
-      end
-
-      def process_images(restaurant, images)
-        images.each do |image|
-          next unless image.content_type.start_with?("image/")
-          restaurant.images.create!(file: image)
-        end
       end
 
       def search_params

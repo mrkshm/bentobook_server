@@ -30,27 +30,38 @@ module Api
 
         ActiveRecord::Base.transaction do
           if visit.save
-            process_images(visit) if params[:images].present?
+            if params[:images].present?
+              result = ImageProcessorService.new(visit, params[:images]).process
+              unless result.success?
+                raise StandardError, result.error
+              end
+            end
             render json: VisitSerializer.render_success(visit), status: :created
           else
             render_error(visit.errors.full_messages)
           end
         end
       rescue StandardError => e
-        render_error("Failed to create visit")
+        visit&.destroy if visit&.persisted?
+        render_error("Failed to create visit: #{e.message}")
       end
 
       def update
         ActiveRecord::Base.transaction do
           if @visit.update(visit_params)
-            process_images(@visit) if params[:images].present?
+            if params[:images].present?
+              result = ImageProcessorService.new(@visit, params[:images]).process
+              unless result.success?
+                raise StandardError, result.error
+              end
+            end
             render json: VisitSerializer.render_success(@visit)
           else
             render_error(@visit.errors.full_messages)
           end
         end
       rescue StandardError => e
-        render_error("Failed to update visit")
+        render_error("Failed to update visit: #{e.message}")
       end
 
       def destroy
@@ -85,22 +96,6 @@ module Api
           :price_paid_currency,
           contact_ids: []
         )
-      end
-
-      def process_images(visit)
-        return unless params[:images].is_a?(Array)
-
-        params[:images].each do |image_file|
-          image = visit.images.build
-          timestamp = Time.current.strftime("%Y%m%d%H%M%S%L")
-          filename = "#{timestamp}_#{image_file.original_filename}"
-          image.file.attach(
-            io: image_file,
-            filename: filename,
-            content_type: image_file.content_type
-          )
-          raise ActiveRecord::RecordInvalid unless image.save
-        end
       end
 
       def ensure_valid_restaurant
