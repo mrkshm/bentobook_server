@@ -16,7 +16,7 @@ RSpec.describe RestaurantSerializer do
       expected_keys = %w[
         id notes favorite created_at updated_at name cuisine_type price_level rating
         business_status location contact_info google_place_id distance tags
-        visit_count images
+        visit_count visits images
       ]
       expect(serialized_restaurant.keys).to match_array(expected_keys)
     end

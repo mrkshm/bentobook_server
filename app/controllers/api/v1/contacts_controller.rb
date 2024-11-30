@@ -3,12 +3,26 @@ module Api
     class ContactsController < Api::V1::BaseController
       include Pagy::Backend
 
-      before_action :set_contact, only: [ :show, :update, :destroy ]
+      before_action :set_contact, only: [ :update, :destroy ]
 
       def index
-        contacts = current_user.contacts.order(created_at: :desc)
-        pagy, records = pagy(contacts)
+        contacts = current_user.contacts
+        contacts = contacts.search(params[:search]) if params[:search].present?
 
+        contacts = case params[:order_by]
+        when "name"
+            contacts.order(name: params[:order_direction] || :asc)
+        when "email"
+            contacts.order(email: params[:order_direction] || :asc)
+        when "visits"
+            contacts.left_joins(:visits)
+                   .group(:id)
+                   .order("COUNT(visits.id) #{params[:order_direction] || 'desc'}")
+        else
+            contacts.order(created_at: params[:order_direction] || :desc)
+        end
+
+        pagy, records = pagy(contacts)
         render json: ContactSerializer.render_collection(records, pagy: pagy)
       rescue Pagy::OverflowError
         last_page = (contacts.count.to_f / Pagy::DEFAULT[:items]).ceil
@@ -17,17 +31,65 @@ module Api
       rescue StandardError => e
         Rails.logger.error "Index error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: ContactSerializer.render_error([ e.message ]), status: :internal_server_error
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: e.message
+          } ]
+        }, status: :internal_server_error
       end
 
       def show
-        _includes = params[:include].to_s.split(",")
+        @contact = current_user.contacts.find(params[:id])
+
+        if params[:include]&.include?("visits")
+          @contact = Contact.includes(
+            visits: [
+              :restaurant,
+              :images,
+              :contacts,
+              { restaurant: :cuisine_type }
+            ]
+          ).where(id: @contact.id).first
+        end
 
         render json: ContactSerializer.render_success(@contact)
+      rescue ActiveRecord::RecordNotFound
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "not_found",
+            detail: "Contact not found"
+          } ]
+        }, status: :not_found
+      rescue ActiveRecord::ConnectionTimeoutError, ActiveRecord::StatementInvalid => e
+        Rails.logger.error "Database error in show action: #{e.class.name}: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: "Database error"
+          } ],
+          meta: {
+            timestamp: Time.current.iso8601
+          }
+        }, status: :internal_server_error
       rescue StandardError => e
         Rails.logger.error "Show error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: ContactSerializer.render_error([ e.message ]), status: :internal_server_error
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: e.message
+          } ],
+          meta: {
+            timestamp: Time.current.iso8601
+          }
+        }, status: :internal_server_error
       end
 
       def create
@@ -55,12 +117,27 @@ module Api
         render json: ContactSerializer.render_success(contact), status: :created
       rescue ActiveRecord::RecordInvalid => e
         Rails.logger.error "Validation error: #{e.record.errors.full_messages.join(', ')}"
-        errors = e.record.errors.map { |error| ActiveModel::Error.new(e.record, error.attribute, error.message) }
-        render json: ContactSerializer.render_error(errors), status: :unprocessable_entity
+        errors = e.record.errors.map do |error|
+          {
+            code: "validation_error",
+            detail: error.message,
+            source: { pointer: "/data/attributes/#{error.attribute}" }
+          }
+        end
+        render json: {
+          status: "error",
+          errors: errors
+        }, status: :unprocessable_entity
       rescue StandardError => e
         Rails.logger.error "Create error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: ContactSerializer.render_error([ e.message ]), status: :internal_server_error
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: e.message
+          } ]
+        }, status: :internal_server_error
       end
 
       def update
@@ -92,14 +169,30 @@ module Api
             source: { pointer: "/data/attributes/#{error.attribute}" }
           }
         end
-        render json: ContactSerializer.render_error(errors), status: :unprocessable_entity
+        render json: {
+          status: "error",
+          errors: errors
+        }, status: :unprocessable_entity
+      rescue ActiveRecord::ConnectionTimeoutError, ActiveRecord::StatementInvalid => e
+        Rails.logger.error "Database error in update action: #{e.class.name}: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: "Update failed"
+          } ]
+        }, status: :internal_server_error
       rescue StandardError => e
         Rails.logger.error "Update error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: ContactSerializer.render_error([ {
-          code: "general_error",
-          detail: e.message
-        } ]), status: :internal_server_error
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: e.message
+          } ]
+        }, status: :internal_server_error
       end
 
       def destroy
@@ -108,7 +201,13 @@ module Api
       rescue StandardError => e
         Rails.logger.error "Destroy error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: ContactSerializer.render_error([ e.message ]), status: :internal_server_error
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: e.message
+          } ]
+        }, status: :internal_server_error
       end
 
       def search
@@ -124,7 +223,13 @@ module Api
       rescue StandardError => e
         Rails.logger.error "Search error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
-        render json: ContactSerializer.render_error([ e.message ]), status: :internal_server_error
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: e.message
+          } ]
+        }, status: :internal_server_error
       end
 
       private
@@ -132,7 +237,23 @@ module Api
       def set_contact
         @contact = current_user.contacts.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        render json: ContactSerializer.render_error([ "Contact not found" ]), status: :not_found
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "not_found",
+            detail: "Contact not found"
+          } ]
+        }, status: :not_found
+      rescue ActiveRecord::ConnectionTimeoutError, ActiveRecord::StatementInvalid => e
+        Rails.logger.error "Database error in set_contact: #{e.class.name}: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render json: {
+          status: "error",
+          errors: [ {
+            code: "general_error",
+            detail: "Database error"
+          } ]
+        }, status: :internal_server_error
       end
 
       def contact_params_without_avatar

@@ -5,6 +5,16 @@ RSpec.describe GoogleRestaurant, type: :model do
     it { should have_many(:restaurants) }
     it { should have_many(:users).through(:restaurants) }
   end
+  before(:all) do
+    ActiveRecord::Base.connection.execute <<-SQL
+      INSERT INTO spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext)#{' '}
+      VALUES (4326, 'EPSG', 4326, '+proj=longlat +datum=WGS84 +no_defs',#{' '}
+      'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,
+      AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,
+      AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,
+      AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]');
+    SQL
+  end
 
   describe 'validations' do
     it { should validate_presence_of(:google_place_id) }
@@ -19,13 +29,13 @@ RSpec.describe GoogleRestaurant, type: :model do
     it { should validate_numericality_of(:google_rating).is_greater_than_or_equal_to(0).is_less_than_or_equal_to(5).allow_nil }
     it { should validate_numericality_of(:google_ratings_total).only_integer.is_greater_than_or_equal_to(0).allow_nil }
     it { should validate_numericality_of(:price_level).only_integer.is_greater_than_or_equal_to(0).is_less_than_or_equal_to(4).allow_nil }
-    it { should validate_inclusion_of(:business_status).in_array(['OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY']).allow_nil }
+    it { should validate_inclusion_of(:business_status).in_array([ 'OPERATIONAL', 'CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY' ]).allow_nil }
   end
 
   describe 'PostGIS functionality' do
     let!(:nyc_restaurant) { create(:google_restaurant, latitude: 40.7128, longitude: -74.0060) }
     let!(:la_restaurant) { create(:google_restaurant, latitude: 34.0522, longitude: -118.2437) }
-    
+
     describe '.order_by_distance_from' do
       it 'orders restaurants by distance from a given point' do
         ordered = GoogleRestaurant.order_by_distance_from(40.7128, -74.0060).to_a
@@ -47,14 +57,14 @@ RSpec.describe GoogleRestaurant, type: :model do
         restaurant = create(:google_restaurant)
         new_lat = 41.8781
         new_lon = -87.6298
-        
+
         restaurant.update(latitude: new_lat, longitude: new_lon)
         restaurant.reload
-        
+
         point = ActiveRecord::Base.connection.execute(
           "SELECT ST_X(location::geometry) as lon, ST_Y(location::geometry) as lat FROM google_restaurants WHERE id = #{restaurant.id}"
         ).first
-        
+
         expect(point['lon'].to_f).to be_within(0.0001).of(new_lon)
         expect(point['lat'].to_f).to be_within(0.0001).of(new_lat)
       end
@@ -69,7 +79,7 @@ RSpec.describe GoogleRestaurant, type: :model do
       it 'orders restaurants by distance from a given point' do
         lat, lon = 40.7128, -74.0060  # NYC coordinates
         ordered = GoogleRestaurant.order_by_distance_from(lat, lon).to_a
-        
+
         expect(ordered.first.id).to eq(nyc_restaurant.id)
         expect(ordered.last.id).to eq(la_restaurant.id)
       end
@@ -79,7 +89,7 @@ RSpec.describe GoogleRestaurant, type: :model do
       it 'returns restaurants within specified distance' do
         lat, lon = 40.7128, -74.0060  # NYC coordinates
         nearby = GoogleRestaurant.nearby(lat, lon, 100_000).to_a
-        
+
         expect(nearby).to include(nyc_restaurant)
         expect(nearby).not_to include(la_restaurant)
       end
@@ -114,7 +124,7 @@ RSpec.describe GoogleRestaurant, type: :model do
   describe '#coordinates' do
     it 'returns an array of latitude and longitude when both are present' do
       restaurant = build(:google_restaurant, latitude: 40.7128, longitude: -74.0060)
-      expect(restaurant.coordinates).to eq([40.7128, -74.0060])
+      expect(restaurant.coordinates).to eq([ 40.7128, -74.0060 ])
     end
 
     it 'returns nil when latitude is missing' do
@@ -133,12 +143,12 @@ RSpec.describe GoogleRestaurant, type: :model do
       it 'sets the location to a POINT' do
         restaurant = build(:google_restaurant, latitude: 40.7128, longitude: -74.0060)
         restaurant.send(:update_location)
-        
+
         # Parse the POINT string to extract coordinates
         point_regex = /POINT\(([-\d.]+) ([-\d.]+)\)/
         match = restaurant.location.match(point_regex)
         lon, lat = match[1].to_f, match[2].to_f
-        
+
         expect(lon).to be_within(0.0001).of(-74.0060)
         expect(lat).to be_within(0.0001).of(40.7128)
       end
@@ -148,21 +158,21 @@ RSpec.describe GoogleRestaurant, type: :model do
       it 'sets the location to nil when latitude is nil' do
         restaurant = build(:google_restaurant, latitude: nil, longitude: -74.0060)
         restaurant.send(:update_location)
-        
+
         expect(restaurant.location).to be_nil
       end
 
       it 'sets the location to nil when longitude is nil' do
         restaurant = build(:google_restaurant, latitude: 40.7128, longitude: nil)
         restaurant.send(:update_location)
-        
+
         expect(restaurant.location).to be_nil
       end
 
       it 'sets the location to nil when both coordinates are nil' do
         restaurant = build(:google_restaurant, latitude: nil, longitude: nil)
         restaurant.send(:update_location)
-        
+
         expect(restaurant.location).to be_nil
       end
     end
@@ -174,17 +184,17 @@ RSpec.describe GoogleRestaurant, type: :model do
 
         # Capture log messages
         expect(Rails.logger).to receive(:error).with("Failed to update location: Test error")
-        
+
         # Call private method
         restaurant.send(:update_location)
-        
+
         expect(restaurant.errors[:location]).to include("could not be updated")
       end
 
       it 'returns false when there is an error' do
         restaurant = build(:google_restaurant)
         allow(restaurant).to receive(:location=).and_raise(StandardError.new("Test error"))
-        
+
         result = restaurant.send(:update_location)
         expect(result).to be false
       end

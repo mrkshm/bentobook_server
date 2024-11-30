@@ -77,8 +77,13 @@ RSpec.describe 'Registrations API' do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['status']['code']).to eq(500)
-          expect(data['status']['message']).to eq('Internal server error')
+          expect(response).to have_http_status(:internal_server_error)
+          expect(data['status']).to eq('error')
+          expect(data['errors']).to eq([ {
+            'code' => 'general_error',
+            'detail' => 'param is missing or the value is empty or invalid: user'
+          } ])
+          expect(data['meta']['timestamp']).to match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/)
         end
       end
     end

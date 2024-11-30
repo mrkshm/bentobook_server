@@ -1,4 +1,6 @@
 class ContactSerializer < BaseSerializer
+  include Rails.application.routes.url_helpers
+
   attributes :name,
              :email,
              :city,
@@ -8,6 +10,53 @@ class ContactSerializer < BaseSerializer
              :created_at,
              :updated_at,
              :visits_count
+
+  attribute :visits do |contact|
+    if contact.association(:visits).loaded?
+      contact.visits.map do |visit|
+        {
+          id: visit.id,
+          date: visit.date,
+          title: visit.title,
+          notes: visit.notes,
+          rating: visit.rating,
+          restaurant: {
+            id: visit.restaurant.id,
+            name: visit.restaurant.combined_name,
+            cuisine_type: visit.restaurant.cuisine_type&.name,
+            location: {
+              address: visit.restaurant.combined_address,
+              latitude: visit.restaurant.combined_latitude&.to_f,
+              longitude: visit.restaurant.combined_longitude&.to_f
+            }
+          },
+          images: visit.images.map do |image|
+            next unless image.file.attached?
+            {
+              id: image.id,
+              urls: {
+                thumbnail: rails_blob_url(image.file.variant(
+                  resize_to_fill: [ 100, 100 ],
+                  format: :webp,
+                  saver: { quality: 80 }
+                )),
+                small: rails_blob_url(image.file.variant(
+                  resize_to_limit: [ 300, 200 ],
+                  format: :webp,
+                  saver: { quality: 80 }
+                )),
+                medium: rails_blob_url(image.file.variant(
+                  resize_to_limit: [ 600, 400 ],
+                  format: :webp,
+                  saver: { quality: 80 }
+                ))
+              }
+            }
+          end.compact
+        }
+      end
+    end
+  end
 
   attribute :avatar_urls do |contact|
     if contact.avatar.attached?
