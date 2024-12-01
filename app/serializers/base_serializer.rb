@@ -1,8 +1,15 @@
 class BaseSerializer
   include Alba::Resource
 
-  def self.render_success(resource, meta: {})
-    serializer = new(resource)
+  attr_reader :options
+
+  def initialize(resource, options = {})
+    @options = options
+    super(resource)
+  end
+
+  def self.render_success(resource, meta: {}, **options)
+    serializer = new(resource, options)
     serialized = serializer.serialize
     parsed = JSON.parse(serialized)
 
@@ -19,9 +26,39 @@ class BaseSerializer
     }
   end
 
-  def self.render_collection(resources, meta: {}, pagy: nil)
+  def self.render_error(message, code = :unprocessable_entity, pointer = nil)
+    {
+      status: "error",
+      errors: [ {
+        code: code.to_s,
+        detail: message,
+        source: pointer ? { pointer: pointer } : nil
+      }.compact ],
+      meta: {
+        timestamp: Time.current.iso8601
+      }
+    }
+  end
+
+  def self.render_validation_errors(resource)
+    {
+      status: "error",
+      errors: resource.errors.map { |error|
+        {
+          code: "validation_error",
+          detail: error.full_message,
+          source: { pointer: "/data/attributes/#{error.attribute}" }
+        }
+      },
+      meta: {
+        timestamp: Time.current.iso8601
+      }
+    }
+  end
+
+  def self.render_collection(resources, meta: {}, pagy: nil, **options)
     serialized_resources = resources.map { |resource|
-      serializer = new(resource)
+      serializer = new(resource, options)
       serialized = serializer.serialize
       parsed = JSON.parse(serialized)
 
@@ -33,15 +70,26 @@ class BaseSerializer
     }
 
     pagination = if pagy
-      items = pagy.vars[:items].to_i
-      total = pagy.count
-      total_pages = total.zero? ? 1 : (total.to_f / items).ceil
-      {
-        current_page: pagy.page,
-        per_page: items.to_s,
-        total_pages: total_pages,
-        total_count: total
-      }
+      begin
+        count = pagy.count.to_i
+        items = pagy.vars[:items].to_i
+        total_pages = items.zero? ? 0 : (count.to_f / items).ceil
+
+        {
+          current_page: pagy.page,
+          per_page: pagy.vars[:items].to_s,
+          total_pages: total_pages,
+          total_count: count
+        }
+      rescue StandardError => e
+        # Return minimal pagination info on error
+        {
+          current_page: pagy.page,
+          per_page: pagy.vars[:items].to_s,
+          total_pages: 1,
+          total_count: resources.size
+        }
+      end
     else
       {}
     end
@@ -54,31 +102,5 @@ class BaseSerializer
         pagination: pagination
       }.merge(meta)
     }
-  end
-
-  def self.render_error(errors, meta: {})
-    {
-      status: "error",
-      errors: Array(errors).map { |error| format_error(error) },
-      meta: {
-        timestamp: Time.current.iso8601
-      }.merge(meta)
-    }
-  end
-
-  private
-
-  def self.format_error(error)
-    case error
-    when String
-      { detail: error }
-    when ActiveModel::Error
-      {
-        source: { pointer: "/data/attributes/#{error.attribute}" },
-        detail: error.message
-      }
-    else
-      { detail: error.to_s }
-    end
   end
 end

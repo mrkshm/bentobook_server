@@ -165,7 +165,9 @@ RSpec.describe 'Sessions API' do
 
         run_test! do |response|
           data = JSON.parse(response.body)
-          expect(data['status']).to include('code' => 401)
+          expect(data['status']).to eq('error')
+          expect(data['errors'].first['code']).to eq('unauthorized')
+          expect(response.status).to eq(401)
         end
       end
     end

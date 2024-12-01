@@ -103,14 +103,10 @@ module Api
         return if restaurant_id.blank?
 
         unless current_user.restaurants.exists?(restaurant_id)
-          render json: {
-            status: "error",
-            errors: [ {
-              code: "invalid_restaurant",
-              detail: "Invalid restaurant"
-            } ],
-            meta: { timestamp: Time.current.iso8601 }
-          }
+          render json: BaseSerializer.render_error(
+            "Invalid restaurant",
+            :invalid_restaurant
+          ), status: :unprocessable_entity
         end
       end
 

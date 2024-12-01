@@ -77,7 +77,8 @@ module Api
           render json: ProfileSerializer.render_success(current_user.profile)
         else
           render json: ProfileSerializer.render_error(
-            [ "Invalid locale. Valid options are: #{Profile::VALID_LANGUAGES.join(', ')}" ]
+            "Invalid locale. Valid options are: #{Profile::VALID_LANGUAGES.join(', ')}",
+            :unprocessable_entity
           ), status: :unprocessable_entity
         end
       end
