@@ -6785,34 +6785,6 @@
         "branches": {
         }
       },
-      "/Users/mrks/Code/bentobook/bentobook_server/app/controllers/concerns/api_controller_concern.rb": {
-        "lines": [
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          null,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "branches": {
-        }
-      },
       "/Users/mrks/Code/bentobook/bentobook_server/app/serializers/user_serializer.rb": {
         "lines": [
           0,
@@ -6825,6 +6797,6 @@
         }
       }
     },
-    "timestamp": 1733074345
+    "timestamp": 1733075143
   }
 }
