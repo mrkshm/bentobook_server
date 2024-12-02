@@ -6,9 +6,48 @@ module Api
 
       def index
         visits_scope = current_user.visits.includes(:restaurant, :contacts, :images)
-        @pagy, @visits = pagy(visits_scope, items: params[:per_page] || 10)
 
-        render json: VisitSerializer.render_collection(@visits, pagy: @pagy)
+        if visits_scope.empty?
+          render json: VisitSerializer.render_collection(
+            [],
+            pagy: {
+              current_page: 1,
+              total_pages: 0,
+              total_count: 0,
+              per_page: (params[:per_page] || 10).to_s
+            }
+          )
+        else
+          begin
+            per_page = (params[:per_page] || 10).to_i
+            @pagy, @visits = pagy(visits_scope, limit: per_page)
+
+            render json: VisitSerializer.render_collection(
+              @visits,
+              pagy: {
+                current_page: @pagy.page,
+                total_pages: @pagy.pages,
+                total_count: @pagy.count,
+                per_page: per_page.to_s
+              }
+            )
+          rescue Pagy::OverflowError
+            # If page is too high, return last page
+            per_page = (params[:per_page] || 10).to_i
+            last_page = (visits_scope.count.to_f / per_page).ceil
+            @pagy, @visits = pagy(visits_scope, limit: per_page, page: last_page)
+
+            render json: VisitSerializer.render_collection(
+              @visits,
+              pagy: {
+                current_page: @pagy.page,
+                total_pages: @pagy.pages,
+                total_count: @pagy.count,
+                per_page: per_page.to_s
+              }
+            )
+          end
+        end
       rescue StandardError => e
         Rails.logger.error "Error in visits#index: #{e.class} - #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
@@ -103,14 +142,10 @@ module Api
         return if restaurant_id.blank?
 
         unless current_user.restaurants.exists?(restaurant_id)
-          render json: {
-            status: "error",
-            errors: [ {
-              code: "invalid_restaurant",
-              detail: "Invalid restaurant"
-            } ],
-            meta: { timestamp: Time.current.iso8601 }
-          }
+          render json: BaseSerializer.render_error(
+            "Invalid restaurant",
+            :invalid_restaurant
+          ), status: :unprocessable_entity
         end
       end
 

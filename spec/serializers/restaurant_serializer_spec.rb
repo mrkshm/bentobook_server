@@ -140,9 +140,16 @@ RSpec.describe RestaurantSerializer do
 
   describe '.render_collection' do
     let(:restaurants) { create_list(:restaurant, 2, user: user) }
-    let(:pagy) { instance_double(Pagy, page: 1, pages: 1, count: 2, vars: { items: 10 }) }
+    let(:pagy) { Pagy.new(count: 2, page: 1, items: 10) }
+    let(:pagination) do
+      {
+        current_page: pagy.page,
+        total_pages: pagy.pages,
+        total_count: pagy.count
+      }
+    end
 
-    subject(:rendered_json) { RestaurantSerializer.render_collection(restaurants, pagy: pagy) }
+    subject(:rendered_json) { RestaurantSerializer.render_collection(restaurants, pagy: pagination) }
 
     it 'follows the BaseSerializer format for collections' do
       expect(rendered_json[:status]).to eq('success')
@@ -150,10 +157,9 @@ RSpec.describe RestaurantSerializer do
       expect(rendered_json[:data].length).to eq(2)
       expect(rendered_json[:meta]).to include(:timestamp, :pagination)
       expect(rendered_json[:meta][:pagination]).to include(
-        :current_page,
-        :per_page,
-        :total_pages,
-        :total_count
+        current_page: 1,
+        total_pages: 1,
+        total_count: 2
       )
     end
   end

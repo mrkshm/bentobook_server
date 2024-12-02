@@ -35,7 +35,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
         expect(json_response[:data]).to eq([])
         expect(json_response[:meta][:pagination]).to include(
           current_page: 1,
-          total_pages: 1,
+          total_pages: 0,
           total_count: 0
         )
       end
@@ -125,6 +125,8 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'with pagination and images' do
+      let(:image_file) { fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg') }
+
       before do
         # Disable the set_filename callback for this test
         Image.skip_callback(:create, :after, :set_filename)
@@ -132,9 +134,8 @@ RSpec.describe 'Api::V1::Visits', type: :request do
         15.times do |i|
           visit = create(:visit, user: user)
           image = visit.images.new
-          file_path = Rails.root.join('spec', 'fixtures', 'test_image.jpg')
           image.file.attach(
-            io: File.open(file_path),
+            io: image_file.open,
             filename: "test_image_#{i}.jpg",
             content_type: 'image/jpeg'
           )

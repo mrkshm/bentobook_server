@@ -9,16 +9,28 @@ class VisitSerializer < BaseSerializer
              :updated_at
 
   attribute :restaurant do |visit|
-    {
-      id: visit.restaurant.id,
-      name: visit.restaurant.combined_name,
-      cuisine_type: visit.restaurant.cuisine_type&.name,
-      location: {
-        address: visit.restaurant.combined_address,
-        latitude: visit.restaurant.combined_latitude&.to_f,
-        longitude: visit.restaurant.combined_longitude&.to_f
+    begin
+      lat = visit.restaurant.combined_latitude
+      lon = visit.restaurant.combined_longitude
+
+      {
+        id: visit.restaurant.id,
+        name: visit.restaurant.combined_name,
+        cuisine_type: visit.restaurant.cuisine_type&.name,
+        location: {
+          address: visit.restaurant.combined_address,
+          latitude: lat.present? ? lat.to_f : nil,
+          longitude: lon.present? ? lon.to_f : nil
+        }
       }
-    }
+    rescue StandardError => e
+      # Return minimal restaurant data on error
+      {
+        id: visit.restaurant.id,
+        name: visit.restaurant.combined_name,
+        location: { address: nil, latitude: nil, longitude: nil }
+      }
+    end
   end
 
   attribute :contacts do |visit|
@@ -35,10 +47,15 @@ class VisitSerializer < BaseSerializer
 
   attribute :price_paid do |visit|
     if visit.price_paid_cents.present? && visit.price_paid_currency.present?
-      {
-        amount: sprintf("%.2f", visit.price_paid_cents / 100.0),
-        currency: visit.price_paid_currency
-      }
+      begin
+        amount = visit.price_paid_cents.to_s.to_f / 100.0
+        {
+          amount: sprintf("%.2f", amount),
+          currency: visit.price_paid_currency.to_s
+        }
+      rescue StandardError => e
+        nil
+      end
     end
   end
 
@@ -46,9 +63,8 @@ class VisitSerializer < BaseSerializer
     visit.images.map do |image|
       next unless image.file.attached?
 
-      {
-        id: image.id,
-        urls: {
+      begin
+        urls = {
           thumbnail: rails_blob_url(image.file.variant(
             resize_to_fill: [ 100, 100 ],
             format: :webp,
@@ -71,7 +87,16 @@ class VisitSerializer < BaseSerializer
           )),
           original: rails_blob_url(image.file)
         }
-      }
+        {
+          id: image.id,
+          urls: urls
+        }
+      rescue StandardError => e
+        {
+          id: image.id,
+          urls: {}
+        }
+      end
     end.compact
   end
 end

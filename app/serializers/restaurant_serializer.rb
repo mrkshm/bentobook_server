@@ -45,6 +45,16 @@ class RestaurantSerializer < BaseSerializer
     }
   end
 
+  attribute :distance do |restaurant|
+    if user_location? && restaurant.combined_latitude && restaurant.combined_longitude
+      Geocoder::Calculations.distance_between(
+        user_location,
+        [ restaurant.combined_latitude, restaurant.combined_longitude ],
+        units: :km
+      ).round(1)
+    end
+  end
+
   # Visits
   attribute :visits do |restaurant|
     restaurant.visits.map do |visit|
@@ -91,15 +101,18 @@ class RestaurantSerializer < BaseSerializer
     restaurant.google_restaurant&.google_place_id
   end
 
-  # Distance calculation (when user location is provided)
-  attribute :distance do |restaurant|
-    if @params[:user_location]
-      restaurant.distance_to(@params[:user_location][0], @params[:user_location][1])
-    end
-  end
-
   # Related data
   attribute :tags do |restaurant|
     restaurant.tag_list
+  end
+
+  private
+
+  def user_location?
+    @options[:params]&.dig(:user_location).present?
+  end
+
+  def user_location
+    @options[:params][:user_location]
   end
 end

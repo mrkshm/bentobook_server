@@ -42,14 +42,14 @@ class Rack::Attack
     # Basic sign in throttling - 5 requests per 20 seconds
     throttle("test/sign_in/basic", limit: 5, period: 20.seconds) do |req|
       if req.path == "/api/v1/users/sign_in" && req.post?
-        "test:signin:basic"
+        "test:signin:basic:#{req.ip}"
       end
     end
 
     # Refresh token throttling - 10 requests per 5 minutes
     throttle("test/refresh_token/basic", limit: 10, period: 5.minutes) do |req|
       if req.path == "/api/v1/refresh_token" && req.post?
-        "test:refresh:basic"
+        "test:refresh:basic:#{req.ip}"
       end
     end
 
@@ -57,7 +57,7 @@ class Rack::Attack
     throttle("test/login/fail2ban", limit: 0, period: 1.second) do |req|
       if req.path == "/api/v1/users/sign_in" && req.post?
         if req.params.dig("user", "password") == "wrong_password"
-          key = "test:fail2ban:count"
+          key = "test:fail2ban:count:#{req.ip}"
           count = Rack::Attack.cache.count(key, 1.hour)
 
           # Set level equal to count (1-based)

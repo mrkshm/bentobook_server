@@ -1,8 +1,15 @@
 class BaseSerializer
   include Alba::Resource
 
-  def self.render_success(resource, meta: {})
-    serializer = new(resource)
+  attr_reader :options
+
+  def initialize(resource, options = {})
+    @options = options
+    super(resource)
+  end
+
+  def self.render_success(resource, meta: {}, **options)
+    serializer = new(resource, options)
     serialized = serializer.serialize
     parsed = JSON.parse(serialized)
 
@@ -19,66 +26,66 @@ class BaseSerializer
     }
   end
 
-  def self.render_collection(resources, meta: {}, pagy: nil)
-    serialized_resources = resources.map { |resource|
-      serializer = new(resource)
-      serialized = serializer.serialize
-      parsed = JSON.parse(serialized)
-
-      {
-        id: resource.id.to_s,
-        type: resource.class.name.underscore,
-        attributes: parsed
-      }
-    }
-
-    pagination = if pagy
-      items = pagy.vars[:items].to_i
-      total = pagy.count
-      total_pages = total.zero? ? 1 : (total.to_f / items).ceil
-      {
-        current_page: pagy.page,
-        per_page: items.to_s,
-        total_pages: total_pages,
-        total_count: total
-      }
-    else
-      {}
-    end
-
+  def self.render_collection(resources, meta: {}, pagy: nil, **options)
     {
       status: "success",
-      data: serialized_resources,
+      data: resources.map do |resource|
+        serializer = new(resource, options)
+        serialized = serializer.serialize
+        parsed = JSON.parse(serialized)
+
+        {
+          id: resource.id.to_s,
+          type: resource.class.name.underscore,
+          attributes: parsed
+        }
+      end,
       meta: {
         timestamp: Time.current.iso8601,
-        pagination: pagination
+        pagination: if pagy.nil?
+          nil
+                    elsif pagy.is_a?(Hash)
+          pagy
+                    else
+          total_pages = pagy.count.zero? ? 0 : pagy.last
+          {
+            current_page: pagy.page,
+            total_pages: total_pages,
+            total_count: pagy.count,
+            per_page: pagy.limit.to_s
+          }
+                    end
       }.merge(meta)
     }
   end
 
-  def self.render_error(errors, meta: {})
+  def self.render_error(message, code = :unprocessable_entity, pointer = nil)
     {
       status: "error",
-      errors: Array(errors).map { |error| format_error(error) },
+      errors: [ {
+        code: code.to_s,
+        detail: message,
+        source: pointer ? { pointer: pointer } : nil
+      }.compact ],
       meta: {
         timestamp: Time.current.iso8601
-      }.merge(meta)
+      }
     }
   end
 
-  private
-
-  def self.format_error(error)
-    case error
-    when String
-      { detail: error }
-    when ActiveModel::Error
-      {
-        source: { pointer: "/data/attributes/#{error.attribute}" },
-        detail: error.message
+  def self.render_validation_errors(resource)
+    {
+      status: "error",
+      errors: resource.errors.map { |error|
+        {
+          code: "validation_error",
+          detail: error.full_message,
+          source: { pointer: "/data/attributes/#{error.attribute}" }
+        }
+      },
+      meta: {
+        timestamp: Time.current.iso8601
       }
-    else
-      { detail: error.to_s }
-    end
+    }
   end
 end

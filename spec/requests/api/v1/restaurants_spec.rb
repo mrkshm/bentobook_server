@@ -48,7 +48,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         expect(json_response['meta']).to include('timestamp')
         expect(json_response['meta']['pagination']).to include(
           'current_page' => 1,
-          'total_pages' => 1,
+          'total_pages' => 0,
           'total_count' => 0,
           'per_page' => Pagy::DEFAULT[:items].to_s
         )

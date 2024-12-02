@@ -73,37 +73,36 @@ module Api
         @current_session
       end
 
-      def render_success(data, status: :ok, meta: {})
-        render json: {
-          status: "success",
-          data: data,
-          meta: meta.merge(timestamp: Time.current)
-        }, status: status
+      def render_success(resource, meta: {}, **options)
+        render json: BaseSerializer.render_success(resource, meta: meta, **options)
       end
 
-      def render_collection(collection, pagy:, meta: {})
-        render json: {
-          status: "success",
-          data: collection,
-          meta: meta.merge(
-            timestamp: Time.current,
-            pagination: {
-              current_page: pagy.page,
-              total_pages: pagy.pages,
-              total_count: pagy.count,
-              per_page: pagy.items
-            }
-          )
-        }
+      def render_collection(resources, meta: {}, pagy: nil, **options)
+        render json: BaseSerializer.render_collection(resources, meta: meta, pagy: pagy, **options)
       end
 
-      def render_error(message, status = :unprocessable_entity)
-        render json: {
-          status: {
-            code: Rack::Utils.status_code(status),
-            message: message
-          }
-        }, status: status
+      def render_error(message, status = :unprocessable_entity, pointer = nil)
+        render json: BaseSerializer.render_error(message, status, pointer), status: status
+      end
+
+      def render_validation_errors(resource)
+        render json: BaseSerializer.render_validation_errors(resource), status: :unprocessable_entity
+      end
+
+      def not_found_response(exception)
+        render json: BaseSerializer.render_error(
+          exception.message,
+          :not_found,
+          "/data"
+        ), status: :not_found
+      end
+
+      def unauthorized_response
+        render json: BaseSerializer.render_error(
+          "Unauthorized access",
+          :unauthorized,
+          "/data"
+        ), status: :unauthorized
       end
     end
   end
