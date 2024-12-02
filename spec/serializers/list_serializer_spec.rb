@@ -88,31 +88,32 @@ RSpec.describe ListSerializer do
 
   describe '.render_collection' do
     let(:lists) { create_list(:list, 3, owner: user) }
-    subject(:rendered_json) { described_class.render_collection(lists) }
+    let(:pagy) { Pagy.new(count: 3, page: 1, items: 10) }
+    let(:pagination) do
+      {
+        current_page: pagy.page,
+        total_pages: pagy.pages,
+        total_count: pagy.count
+      }
+    end
+
+    subject(:rendered_json) { described_class.render_collection(lists, pagy: pagination) }
 
     it 'follows the collection format' do
       expect(rendered_json).to include(
         status: 'success',
         data: be_an(Array),
-        meta: include(:timestamp)
+        meta: include(:timestamp, :pagination)
+      )
+      expect(rendered_json[:meta][:pagination]).to include(
+        current_page: 1,
+        total_pages: 1,
+        total_count: 3
       )
     end
 
     it 'includes the correct number of lists' do
       expect(rendered_json[:data].length).to eq(3)
-    end
-
-    context 'with pagination' do
-      let(:pagy) { Pagy.new(count: 5, page: 1, items: 2) }
-      subject(:rendered_json) { described_class.render_collection(lists, pagy: pagy) }
-
-      it 'includes pagination metadata' do
-        expect(rendered_json[:meta][:pagination]).to include(
-          current_page: 1,
-          total_pages: 3,
-          total_count: 5
-        )
-      end
     end
   end
 end
