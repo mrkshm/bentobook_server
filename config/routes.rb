@@ -37,6 +37,13 @@ Rails.application.routes.draw do
         resources :images, only: [ :create, :destroy ]
       end
       resources :images, only: [ :destroy ]
+
+      resources :lists do
+        member do
+          get :export
+        end
+        resources :restaurants, only: [ :create, :destroy ], controller: "list_restaurants"
+      end
     end
   end
 

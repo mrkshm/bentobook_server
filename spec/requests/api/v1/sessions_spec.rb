@@ -34,11 +34,19 @@ RSpec.describe 'Sessions API' do
 
         run_test! do |response|
           data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+
+          # Check status
           expect(data['status']['code']).to eq(200)
           expect(data['status']['message']).to eq('Logged in successfully.')
-          expect(data['data']).to include('token', 'device_info')
+
+          # Check data structure
+          expect(data['data']).to include('token', 'user', 'device_info')
+          expect(data['data']['user']).to include('id', 'email', 'created_at')
           expect(data['data']['device_info']).to include('client_name', 'device', 'last_ip')
-          expect(data['data']['user']).to include('email', 'id')
+
+          # Check meta
+          expect(data['meta']).to include('timestamp')
         end
       end
 
@@ -54,8 +62,18 @@ RSpec.describe 'Sessions API' do
         run_test! do |response|
           data = JSON.parse(response.body)
           expect(response).to have_http_status(:unauthorized)
+
+          # Check status
           expect(data['status']['code']).to eq(401)
           expect(data['status']['message']).to eq('Invalid email or password.')
+
+          # Check errors
+          expect(data['errors']).to be_an(Array)
+          expect(data['errors'].first['code']).to eq('invalid_credentials')
+          expect(data['errors'].first['detail']).to eq('Invalid email or password.')
+
+          # Check meta
+          expect(data['meta']).to include('timestamp')
         end
       end
     end

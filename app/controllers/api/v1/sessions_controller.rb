@@ -11,16 +11,32 @@ module Api
           token = generate_jwt_token(user, session)
 
           render json: {
-            status: { code: 200, message: "Logged in successfully." },
+            status: {
+              code: 200,
+              message: "Logged in successfully."
+            },
             data: {
               token: token,
-              user: user.as_json(only: [ :id, :email ]),
+              user: UserSerializer.new(user).serialize,
               device_info: session.device_info
+            },
+            meta: {
+              timestamp: Time.current.iso8601
             }
           }
         else
           render json: {
-            status: { code: 401, message: "Invalid email or password." }
+            status: {
+              code: 401,
+              message: "Invalid email or password."
+            },
+            errors: [ {
+              code: "invalid_credentials",
+              detail: "Invalid email or password."
+            } ],
+            meta: {
+              timestamp: Time.current.iso8601
+            }
           }, status: :unauthorized
         end
       end
