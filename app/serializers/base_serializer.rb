@@ -42,7 +42,19 @@ class BaseSerializer
       end,
       meta: {
         timestamp: Time.current.iso8601,
-        pagination: pagy
+        pagination: if pagy.nil?
+          nil
+                    elsif pagy.is_a?(Hash)
+          pagy
+                    else
+          total_pages = pagy.count.zero? ? 0 : pagy.last
+          {
+            current_page: pagy.page,
+            total_pages: total_pages,
+            total_count: pagy.count,
+            per_page: pagy.limit.to_s
+          }
+                    end
       }.merge(meta)
     }
   end
