@@ -38,11 +38,24 @@ Rails.application.routes.draw do
       end
       resources :images, only: [ :destroy ]
 
+      # Share management
+      resources :shares, only: [ :index, :destroy ] do
+        member do
+          post :accept
+          post :decline
+        end
+        collection do
+          post :accept_all
+          post :decline_all
+        end
+      end
+
       resources :lists do
         member do
           get :export
         end
         resources :restaurants, only: [ :create, :destroy ], controller: "list_restaurants"
+        resources :shares, only: [ :index, :create ]
       end
     end
   end
