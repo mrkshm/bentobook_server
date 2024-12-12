@@ -56,16 +56,16 @@
   <% end %>
 
   <!-- My Lists Section -->
+  <div class="flex justify-end mb-4">
+    <%= link_to t('.new_list'), new_list_path, class: "btn btn-primary" %>
+  </div>
   <div class="collapse collapse-arrow">
     <input type="checkbox" checked />
-    <div class="collapse-title text-xl font-bold flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <%= t('lists.my_lists') %>
-        <% if @lists.any? %>
-          <span class="badge"><%= @lists.size %></span>
-        <% end %>
-      </div>
-      <%= link_to t('.new_list'), new_list_path, class: "btn btn-primary" %>
+    <div class="collapse-title text-xl font-bold flex items-center gap-2">
+      <%= t('lists.my_lists') %>
+      <% if @lists.any? %>
+        <span class="badge"><%= @lists.size %></span>
+      <% end %>
     </div>
     <div class="collapse-content">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
