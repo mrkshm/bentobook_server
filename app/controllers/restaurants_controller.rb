@@ -170,8 +170,15 @@ class RestaurantsController < ApplicationController
         raise ActiveRecord::RecordNotFound, result
       end
 
-      restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name))
-      restaurant.build_google_restaurant(restaurant_params[:google_restaurant_attributes]) if restaurant_params[:google_restaurant_attributes]
+      restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name, :google_restaurant_attributes))
+      
+      if restaurant_params[:google_restaurant_attributes]
+        google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(
+          restaurant_params[:google_restaurant_attributes]
+        )
+        restaurant.google_restaurant = google_restaurant
+      end
+
       restaurant.cuisine_type = result
       restaurant
     end

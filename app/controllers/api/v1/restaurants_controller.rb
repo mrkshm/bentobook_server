@@ -143,16 +143,17 @@ module Api
 
         # Create or find google restaurant
         if restaurant_params[:google_place_id].present?
-          restaurant.google_restaurant = GoogleRestaurant.find_or_create_by!(
-            google_place_id: restaurant_params[:google_place_id]
-          ) do |gr|
-            gr.name = restaurant_params[:name]
-            gr.address = restaurant_params[:address]
-            gr.city = restaurant_params[:city]
-            gr.latitude = restaurant_params[:latitude]&.to_d
-            gr.longitude = restaurant_params[:longitude]&.to_d
-            gr.google_rating = restaurant_params[:rating]  # Keep the float rating in google_restaurant
-          end
+          google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(
+            google_place_id: restaurant_params[:google_place_id],
+            name: restaurant_params[:name],
+            address: restaurant_params[:address],
+            city: restaurant_params[:city],
+            latitude: restaurant_params[:latitude]&.to_d,
+            longitude: restaurant_params[:longitude]&.to_d,
+            google_rating: restaurant_params[:rating],
+            google_updated_at: Time.current
+          )
+          restaurant.google_restaurant = google_restaurant
         else
           restaurant.build_google_restaurant(
             name: restaurant_params[:name],
@@ -160,7 +161,7 @@ module Api
             city: restaurant_params[:city],
             latitude: restaurant_params[:latitude]&.to_d,
             longitude: restaurant_params[:longitude]&.to_d,
-            google_rating: restaurant_params[:rating],  # Keep the float rating in google_restaurant
+            google_rating: restaurant_params[:rating],
             google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"  # Generate a unique ID when not provided
           )
         end

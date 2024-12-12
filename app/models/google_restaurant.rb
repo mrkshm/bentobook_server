@@ -36,6 +36,19 @@ class GoogleRestaurant < ApplicationRecord
 
   before_save :update_location, if: :coordinates_changed?
 
+  def self.find_or_initialize_by_place_id(attributes)
+    return nil unless attributes && attributes[:google_place_id].present?
+
+    existing = find_by(google_place_id: attributes[:google_place_id])
+    if existing
+      # Update existing record with new data if it needs update
+      existing.assign_attributes(attributes) if existing.needs_update?
+      existing
+    else
+      new(attributes)
+    end
+  end
+
   private
 
   def google_place_id_not_undefined
