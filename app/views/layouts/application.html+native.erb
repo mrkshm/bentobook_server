@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BentoBook</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'application' %>
+    <%= vite_stylesheet_tag '~/stylesheets/application.css' %>
+  </head>
+
+  <body class="native">
+    <div class="native-container">
+      <%= yield %>
+    </div>
+
+    <script>
+      console.log('Native layout loaded');
+    </script>
+  </body>
+</html>

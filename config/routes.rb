@@ -63,9 +63,11 @@ Rails.application.routes.draw do
   # Web routes
   scope "(:locale)", locale: /fr/ do
     # Devise routes
-    devise_for :users, controllers: {
-      confirmations: "users/confirmations"
-    }
+    devise_for :users,
+      controllers: {
+        confirmations: "users/confirmations"
+      },
+      constraints: { format: /html|native/ }
 
     # Restaurant routes
     resources :restaurants do
