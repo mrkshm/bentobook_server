@@ -3,6 +3,7 @@
   
   <% if user_signed_in? %>
     <%= link_to "View Restaurants", restaurants_path, class: "btn btn-primary w-full" %>
+    <%= link_to "View Visits", visits_path, class: "btn btn-primary w-full" %>
   <% else %>
     <%= link_to "Sign In", new_user_session_path, class: "btn btn-primary w-full" %>
   <% end %>
