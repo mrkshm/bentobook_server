@@ -17,14 +17,21 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
   end
 
   path '/api/v1/usernames/verify' do
-    get 'Verifies username availability' do
+    post 'Verifies username availability' do
       tags 'Usernames'
+      consumes 'application/json'
       produces 'application/json'
       security [bearer_auth: []]
-      parameter name: :username, in: :query, type: :string, required: true, description: 'Username to verify'
+      parameter name: :params, in: :body, schema: {
+        type: :object,
+        properties: {
+          username: { type: :string }
+        },
+        required: ['username']
+      }
       
       response '200', 'username availability checked' do
-        let(:username) { 'testuser' }
+        let(:params) { { username: 'testuser' } }
         
         schema type: :object,
           properties: {
@@ -77,8 +84,7 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
       end
 
       response '400', 'invalid request' do
-        let(:username) { '' }
-        let(:Authorization) { "Bearer #{user_session.token}" }
+        let(:params) { { username: '' } }
         
         schema type: :object,
           properties: {

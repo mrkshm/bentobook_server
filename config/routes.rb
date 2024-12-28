@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       # Protected resources
       get "/profile", to: "profiles#show"
       patch "/profile", to: "profiles#update"
+      patch "/profile/avatar", to: "profiles#update_avatar"
       put "/profile", to: "profiles#update"
       get "/profiles/search", to: "profiles#search"
       patch "/profile/locale", to: "profiles#change_locale"
@@ -58,7 +59,7 @@ Rails.application.routes.draw do
         resources :shares, only: [ :index, :create ]
       end
 
-      get "/usernames/verify", to: "usernames#verify"
+      post "/usernames/verify", to: "usernames#verify"
     end
   end
 
