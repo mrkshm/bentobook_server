@@ -1,6 +1,8 @@
 module Api
     module V1
       class UsernamesController < ApplicationController
+        skip_before_action :verify_authenticity_token
+        
         def verify
           username = params[:username].to_s
           

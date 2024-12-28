@@ -58,7 +58,7 @@ Rails.application.routes.draw do
         resources :shares, only: [ :index, :create ]
       end
 
-      get "/usernames/verify", to: "usernames#verify"
+      post "/usernames/verify", to: "usernames#verify"
     end
   end
 
