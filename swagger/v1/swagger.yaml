@@ -114,6 +114,95 @@ paths:
           description: token refreshed
         '401':
           description: invalid session
+  "/api/v1/usernames/verify":
+    get:
+      summary: Verifies username availability
+      tags:
+      - Usernames
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: username
+        in: query
+        required: true
+        description: Username to verify
+        schema:
+          type: string
+      responses:
+        '200':
+          description: username availability checked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - success
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                      attributes:
+                        type: object
+                        properties:
+                          available:
+                            type: boolean
+                          username:
+                            type: string
+                        required:
+                        - available
+                        - username
+                    required:
+                    - id
+                    - type
+                    - attributes
+                  meta:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                      message:
+                        type: string
+                    required:
+                    - timestamp
+                    - message
+        '400':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - error
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        detail:
+                          type: string
+                      required:
+                      - code
+                      - detail
+                  meta:
+                    type: object
+                    properties:
+                      timestamp:
+                        type: string
+                        format: date-time
+                    required:
+                    - timestamp
 servers:
 - url: https://{defaultHost}
   variables:

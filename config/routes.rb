@@ -57,6 +57,8 @@ Rails.application.routes.draw do
         resources :restaurants, only: [ :create, :destroy ], controller: "list_restaurants"
         resources :shares, only: [ :index, :create ]
       end
+
+      get "/usernames/verify", to: "usernames#verify"
     end
   end
 
