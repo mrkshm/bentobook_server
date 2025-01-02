@@ -10,32 +10,34 @@ module Api
       end
 
       def update
-        profile_update_result =
-          Profile.transaction do
-            @profile.update!(profile_params_without_avatar)
-
-            Rails.logger.info "Avatar params: #{params.dig(:profile, :avatar).inspect}"
-            Rails.logger.info "Full params: #{params.inspect}"
-
-            if params.dig(:profile, :avatar).present?
-              Rails.logger.info "Processing avatar with ImageHandlingService"
-              result = ImageHandlingService.process_images(@profile, params, compress: true)
-              Rails.logger.info "ImageHandlingService result: #{result.inspect}"
-              raise ActiveRecord::RecordInvalid.new(@profile) unless result[:success]
-            end
-
-            true
-          end
-
-        render json: ProfileSerializer.render_success(@profile)
-      rescue ActiveRecord::RecordInvalid
-        render json: ProfileSerializer.render_error(@profile.errors),
-               status: :unprocessable_entity
+        if @profile.update(profile_params)
+          render json: ProfileSerializer.render_success(@profile)
+        else
+          render json: ProfileSerializer.render_error(@profile.errors),
+                 status: :unprocessable_entity
+        end
       rescue StandardError => e
-        Rails.logger.error "Profile update error: #{e.class.name}: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
+        Rails.logger.error "Profile update error: #{e.message}"
         render json: ProfileSerializer.render_error([ e.message ]),
                status: :internal_server_error
+      end
+
+      def update_avatar
+        begin
+          Rails.logger.info "Processing avatar with ImageHandlingService"
+          result = ImageHandlingService.process_images(@profile, params, compress: true)
+
+          if result[:success]
+            render json: ProfileSerializer.render_success(@profile)
+          else
+            render json: ProfileSerializer.render_error([ "Failed to update avatar" ]),
+                   status: :unprocessable_entity
+          end
+        rescue StandardError => e
+          Rails.logger.error "Avatar update error: #{e.message}"
+          render json: ProfileSerializer.render_error([ e.message ]),
+                 status: :internal_server_error
+        end
       end
 
       def search
@@ -85,7 +87,7 @@ module Api
 
       private
 
-      def profile_params_without_avatar
+      def profile_params
         params.require(:profile).permit(
           :username, :first_name, :last_name, :about,
           :preferred_theme, :preferred_language

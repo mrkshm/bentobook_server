@@ -9,42 +9,39 @@ class ProfileSerializer < BaseSerializer
 
   attribute :avatar_urls do |profile|
     next nil unless profile.avatar.attached?
-    next nil unless Rails.application.config.action_mailer.default_url_options&.dig(:host)
 
     {
-      thumbnail: variant_url(profile.avatar, thumbnail_options),
-      small: variant_url(profile.avatar, small_options),
-      medium: variant_url(profile.avatar, medium_options),
-      large: variant_url(profile.avatar, large_options),
-      original: blob_url(profile.avatar)
+      thumbnail: variant_path(profile.avatar, thumbnail_options),
+      small: variant_path(profile.avatar, small_options),
+      medium: variant_path(profile.avatar, medium_options),
+      large: variant_path(profile.avatar, large_options),
+      original: blob_path(profile.avatar)
     }
   end
 
   private
 
-  def variant_url(attachment, options)
+  def variant_path(attachment, options)
     return nil unless attachment.attached?
-    return nil unless Rails.application.config.action_mailer.default_url_options&.dig(:host)
 
-    Rails.application.routes.url_helpers.rails_blob_url(
+    Rails.application.routes.url_helpers.rails_blob_path(
       attachment.variant(options),
-      host: Rails.application.config.action_mailer.default_url_options[:host]
+      only_path: true
     )
   rescue StandardError => e
-    Rails.logger.error "Error generating variant URL: #{e.message}"
+    Rails.logger.error "Error generating variant path: #{e.message}"
     nil
   end
 
-  def blob_url(attachment)
+  def blob_path(attachment)
     return nil unless attachment.attached?
-    return nil unless Rails.application.config.action_mailer.default_url_options&.dig(:host)
 
-    Rails.application.routes.url_helpers.rails_blob_url(
+    Rails.application.routes.url_helpers.rails_blob_path(
       attachment,
-      host: Rails.application.config.action_mailer.default_url_options[:host]
+      only_path: true
     )
   rescue StandardError => e
-    Rails.logger.error "Error generating blob URL: #{e.message}"
+    Rails.logger.error "Error generating blob path: #{e.message}"
     nil
   end
 
