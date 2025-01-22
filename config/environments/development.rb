@@ -42,7 +42,7 @@ Rails.application.configure do
 
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 5100 }
-  config.action_mailer.default_options = { from: 'confirmation@bentobook.app' }
+  config.action_mailer.default_options = { from: "confirmation@bentobook.app" }
   config.action_mailer.delivery_method = :smtp
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
@@ -90,4 +90,10 @@ Rails.application.configure do
 
   # Set default URL host for Active Storage
   config.active_storage.default_url_options = { host: "localhost", port: 5100 }  # Match your mailer port
+
+  # Configure default URL options
+  Rails.application.routes.default_url_options = {
+    host: "localhost",
+    port: 5100
+  }
 end

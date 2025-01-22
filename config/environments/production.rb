@@ -60,7 +60,7 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "bentobook.app" }
-  config.action_mailer.default_options = { from: 'confirmation@bentobook.app' }
+  config.action_mailer.default_options = { from: "confirmation@bentobook.app" }
   config.action_mailer.delivery_method = :smtp
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via rails credentials:edit.
   config.action_mailer.smtp_settings = {
@@ -92,4 +92,8 @@ Rails.application.configure do
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   config.active_storage.default_url_options = { host: "bentobook.app", protocol: "https" }
+
+  Rails.application.routes.default_url_options = {
+    host: "bentobook.app"
+  }
 end

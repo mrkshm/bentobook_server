@@ -17,9 +17,11 @@ Rails.application.routes.draw do
       get "/profile", to: "profiles#show"
       patch "/profile", to: "profiles#update"
       patch "/profile/avatar", to: "profiles#update_avatar"
+      delete "/profile/avatar", to: "profiles#destroy_avatar"
       put "/profile", to: "profiles#update"
       get "/profiles/search", to: "profiles#search"
       patch "/profile/locale", to: "profiles#change_locale"
+      patch "/profile/theme", to: "profiles#change_theme"
 
       resources :restaurants do
         member do
