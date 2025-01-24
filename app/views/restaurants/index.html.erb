@@ -25,9 +25,9 @@
       </label>
       <div class="flex gap-2 items-center">
         <select id="sort-select" name="order_by" class="select select-bordered w-full md:w-64" onchange="this.form.submit()">
-          <% [['name', t("restaurants.search_by.name")], 
-          ['created_at', t("restaurants.search_by.created_at")], 
-          ['updated_at', t("restaurants.search_by.updated_at")], 
+          <% [['name', t("restaurants.search_by.name")],
+          ['created_at', t("restaurants.search_by.created_at")],
+          ['updated_at', t("restaurants.search_by.updated_at")],
           ['distance', t("restaurants.search_by.distance")]].each do |value, label| %>
             <option value="<%= value %>" <%= 'selected' if params[:order_by] == value %>><%= label %></option>
           <% end %>
@@ -66,6 +66,7 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
     <% @restaurants.each do |restaurant| %>
       <div class="w-full">
+        <%= restaurant.id %>
         <%= render(RestaurantCardComponent.new(restaurant: restaurant)) %>
       </div>
     <% end %>
