@@ -5,7 +5,20 @@ module Api
       before_action :ensure_valid_restaurant, only: [ :create, :update ]
 
       def index
-        visits_scope = current_user.visits.includes(:restaurant, :contacts, :images)
+        base_scope = current_user.visits
+          .select("visits.*")
+          .includes(
+            restaurant: { cuisine_type: {} },
+            contacts: {}
+          )
+
+        visits_scope = VisitQuery.new(
+          base_scope,
+          search: params[:search],
+          order_by: params[:order_by],
+          order_direction: params[:order_direction],
+          user: current_user
+        ).call
 
         if visits_scope.empty?
           render json: VisitSerializer.render_collection(
@@ -32,11 +45,9 @@ module Api
               }
             )
           rescue Pagy::OverflowError
-            # If page is too high, return last page
-            per_page = (params[:per_page] || 10).to_i
+            # If page is out of bounds, return the last page
             last_page = (visits_scope.count.to_f / per_page).ceil
-            @pagy, @visits = pagy(visits_scope, limit: per_page, page: last_page)
-
+            @pagy, @visits = pagy(visits_scope, page: last_page)
             render json: VisitSerializer.render_collection(
               @visits,
               pagy: {
