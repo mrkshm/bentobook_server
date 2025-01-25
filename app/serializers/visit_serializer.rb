@@ -35,12 +35,25 @@ class VisitSerializer < BaseSerializer
 
   attribute :contacts do |visit|
     visit.contacts.map do |contact|
+      avatar_url = if contact.avatar.attached?
+        begin
+          rails_blob_url(contact.avatar.variant(
+            resize_to_fill: [ 100, 100 ],
+            format: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:format],
+            saver: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:saver]
+          ))
+        rescue StandardError => e
+          nil
+        end
+      end
+
       {
         id: contact.id,
         name: contact.name,
         email: contact.email,
         phone: contact.phone,
-        notes: contact.notes
+        notes: contact.notes,
+        avatar_url: avatar_url
       }
     end
   end
