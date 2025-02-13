@@ -179,7 +179,7 @@ module Api
         params.require(:restaurant).permit(
           :name, :address, :city, :latitude, :longitude,
           :notes, :rating, :price_level, :google_place_id,
-          :cuisine_type_name,
+          :cuisine_type_name, :favorite,
           tag_list: [],
           images: []
         )
@@ -212,8 +212,8 @@ module Api
         render json: RestaurantSerializer.render_success(resource, meta: meta), status: status
       end
 
-      def render_error(errors, meta: {}, status: :unprocessable_entity)
-        render json: RestaurantSerializer.render_error(errors, meta: meta), status: status
+      def render_error(message, status = :unprocessable_entity, pointer = nil)
+        render json: BaseSerializer.render_error(message, status, pointer), status: status
       end
     end
   end

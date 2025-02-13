@@ -144,7 +144,9 @@ module Api
         Contact.transaction do
           @contact.update!(contact_params_without_avatar)
 
-          if params.dig(:contact, :avatar).present?
+          if params.dig(:contact, :remove_avatar)
+            @contact.avatar.purge if @contact.avatar.attached?
+          elsif params.dig(:contact, :avatar).present?
             Rails.logger.info "Processing avatar with ImageHandlingService"
             begin
               result = ImageHandlingService.process_images(@contact, params, compress: true)
