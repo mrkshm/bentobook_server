@@ -1,124 +1,112 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <title>BentobookServer</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     
-    <!-- Inline critical CSS -->
-    <style>
-      html { visibility: hidden; }
-      body { 
-        background-color: #1d232a; /* Match your dark theme background */
-        margin: 0;
-      }
-    </style>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'entrypoints/application', defer: false %>
+    <%= javascript_include_tag "turbo", type: "module" %>
     
     <%= javascript_tag nonce: true do %>
       window.googleMapsApiKey = "<%= Rails.application.credentials.google_maps_api_key %>";
     <% end %>
     
-    <%= javascript_include_tag "turbo", type: "module" %>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= vite_client_tag %>
-    <%= vite_javascript_tag 'application' %>
-    <%= vite_stylesheet_tag '~/stylesheets/application.css' unless ViteRuby.instance.dev_server_running? %>
+    <!-- Inline critical CSS -->
+    <style>
+      body { 
+        margin: 0;
+        background-color: #ffffff;
+      }
+    </style>
   </head>
-  <body class="bg-base-100">
+  <body class="bg-green-200">
     <!-- loading indicator -->
-    <div id="loading-indicator" class="fixed inset-0 flex items-center justify-center bg-base-100 z-50" style="display: none;">
-      <div class="loading loading-spinner loading-lg"></div>
+    <div id="loading-indicator" class="fixed inset-0 flex items-center justify-center bg-white z-50" style="display: none;">
+      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
     <div class="min-h-screen flex flex-col">
-      <nav class="bg-base-200 shadow">
-        <div class="navbar mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex-1">
-            <div class="flex-shrink-0 flex items-center">
+      <nav class="bg-white shadow">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16 items-center">
+            <div class="flex-shrink-0">
               <% if user_signed_in? %>
-                <%= link_to "BentoBook", restaurants_path, class: "text-xl font-bold text-primary" %>
+                <%= link_to "BentoBook", restaurants_path, class: "text-xl font-bold text-blue-600" %>
               <% else %>
-                <%= link_to "BentoBook", root_path, class: "text-xl font-bold text-primary" %>
+                <%= link_to "BentoBook", root_path, class: "text-xl font-bold text-blue-600" %>
               <% end %>
             </div>
-          </div>
           
-          <!-- Hamburger menu for mobile -->
-          <div class="flex-none lg:hidden">
-            <button class="btn btn-square btn-ghost" id="mobile-menu-button" type="button">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-5 h-5 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </button>
-          </div>
+            <!-- Hamburger menu for mobile -->
+            <div class="lg:hidden">
+              <button class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100" id="mobile-menu-button" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+              </button>
+            </div>
           
-          <!-- Desktop menu -->
-          <div class="flex-none hidden lg:flex">
-            <!-- User menu -->
-            <div class="ml-6 flex items-center">
+            <!-- Desktop menu -->
+            <div class="hidden lg:flex lg:items-center lg:space-x-4">
               <% if user_signed_in? %>
-                <%= link_to restaurants_path, class: "btn btn-ghost" do %>
+                <%= link_to restaurants_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
                   <%= t("nav.restaurants") %>
                 <% end %>
-                <%= link_to lists_path, class: "btn btn-ghost" do %>
+                <%= link_to lists_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
                   <%= t("nav.lists") %>
                   <%= notification_dot %>
                 <% end %>
-                <%= link_to visits_path, class: "btn btn-ghost" do %>
+                <%= link_to visits_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
                   <%= t("nav.visits") %>
                 <% end %>
-                <%= link_to t("nav.contacts"), contacts_path, class: "btn btn-ghost" %>
-                <%= link_to t("nav.profile"), profile_path, class: "btn btn-ghost" %>
+                <%= link_to t("nav.contacts"), contacts_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+                <%= link_to t("nav.profile"), profile_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
               <% else %>
-                <%= link_to t("sign_in"), new_user_session_path, class: "btn btn-ghost" %>
-                <%= link_to t("sign_up"), new_user_registration_path, class: "btn btn-ghost" %>
+                <%= link_to t("sign_in"), new_user_session_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+                <%= link_to t("sign_up"), new_user_registration_path, class: "px-3 py-2 rounded-md text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" %>
               <% end %>
             </div>
           </div>
         </div>
         
         <!-- Mobile menu (hidden by default) -->
-        <div id="mobile-menu" style="display: none;">
-          <ul class="menu menu-vertical px-1">
+        <div id="mobile-menu" class="lg:hidden" style="display: none;">
+          <div class="px-2 pt-2 pb-3 space-y-1">
             <% if user_signed_in? %>
-              <li>
-                <%= link_to restaurants_path do %>
-                  <%= t("nav.restaurants") %>
-                <% end %>
-              </li>
-              <li>
-                <%= link_to lists_path do %>
-                  <%= t("nav.lists") %>
-                  <%= notification_dot %>
-                <% end %>
-              </li>
-              <li>
-                <%= link_to visits_path do %>
-                  <%= t("nav.visits") %>
-                <% end %>
-              </li>
-              <li><%= link_to t("nav.contacts"), contacts_path %></li>
-              <li><%= link_to t("nav.profile"), profile_path %></li>
+              <%= link_to t("nav.restaurants"), restaurants_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+              <%= link_to lists_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
+                <%= t("nav.lists") %>
+                <%= notification_dot %>
+              <% end %>
+              <%= link_to t("nav.visits"), visits_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+              <%= link_to t("nav.contacts"), contacts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+              <%= link_to t("nav.profile"), profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
             <% else %>
-              <li><%= link_to 'Sign In', new_user_session_path %></li>
-              <li><%= link_to 'Sign Up', new_user_registration_path %></li>
+              <%= link_to t("sign_in"), new_user_session_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+              <%= link_to t("sign_up"), new_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" %>
             <% end %>
-          </ul>
+          </div>
         </div>
       </nav>
 
-        <main class="flex-grow">
-          <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            <% if devise_controller? %>
-              <% if notice %><div class="alert alert-info"><%= notice %></div><% end %>
-              <% if alert %><div class="alert alert-error"><%= alert %></div><% end %>
+      <main class="flex-grow">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <% if devise_controller? %>
+            <% if notice %>
+              <div class="p-4 mb-4 text-sm text-blue-700 bg-blue-100 rounded-lg"><%= notice %></div>
             <% end %>
-            <%= yield %>
-          </div>
-        </main>
+            <% if alert %>
+              <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"><%= alert %></div>
+            <% end %>
+          <% end %>
+          <%= yield %>
+        </div>
+      </main>
 
-      <footer class="bg-base-200">
+      <footer class="bg-gray-50">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <p class="text-center text-base-content text-sm">&copy; <%= Time.current.year %> BentoBook. <%= t("all_rights_reserved") %></p>
+          <p class="text-center text-gray-600 text-sm">&copy; <%= Time.current.year %> BentoBook. <%= t("all_rights_reserved") %></p>
         </div>
       </footer>
     </div>
@@ -130,24 +118,12 @@
           "data-turbo-track": "reload" %>
     <% end %>
     <script>
-      // Make the page visible once CSS is loaded
-      document.addEventListener('DOMContentLoaded', function() {
-        document.documentElement.style.visibility = 'visible';
-        
-        const storedTheme = localStorage.getItem('theme');
-        if (storedTheme) {
-          document.documentElement.setAttribute('data-theme', storedTheme);
-        }
-      });
-
       // Handle Turbo navigation
       document.addEventListener("turbo:before-render", function() {
-        document.documentElement.style.visibility = 'hidden';
         document.getElementById('loading-indicator').style.display = 'flex';
       });
 
       document.addEventListener("turbo:render", function() {
-        document.documentElement.style.visibility = 'visible';
         document.getElementById('loading-indicator').style.display = 'none';
       });
     </script>

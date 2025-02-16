@@ -1,6 +1,24 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@source "../../../app/views/**/*.html.erb";
+@source "../../../app/views/**/*.rb";
+@source "../../../app/helpers/**/*.rb";
+@source "../../../app/components/**/*.rb";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-typography: var(--typography);
+}
+
+[data-theme='light'] {
+  --background: #fff;
+  --typography: #333;
+}
+
+[data-theme='dark'] {
+  --background: #333;
+  --typography: #fff;
+}
 
 /* Safe area utilities */
 .safe-top {
@@ -29,13 +47,8 @@
 /* Native specific styles */
 .native-container {
   min-height: 100vh;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-}
-
-/* Fix for iOS web view */
-body {
-  @apply bg-base-100;
-  -webkit-overflow-scrolling: touch;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .native {
