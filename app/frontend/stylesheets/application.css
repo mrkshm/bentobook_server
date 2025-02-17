@@ -4,6 +4,7 @@
 @source "../../../app/views/**/*.rb";
 @source "../../../app/helpers/**/*.rb";
 @source "../../../app/components/**/*.rb";
+@source "../../../app/components/**/*.html.erb";
 
 @theme inline {
   /* PRIMARY */

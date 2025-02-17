@@ -11,11 +11,14 @@ class LanguageSwitcherComponent < ViewComponent::Base
     @current_locale.to_sym
   end
 
-  def other_locale
-    current_locale == :en ? :fr : :en
+  def current_locale_name
+    current_locale == :en ? "English" : "Français"
   end
 
-  def other_locale_name
-    other_locale == :en ? "English" : "Français"
+  def available_locales
+    [
+      { code: :en, name: "English" },
+      { code: :fr, name: "Français" }
+    ]
   end
 end
