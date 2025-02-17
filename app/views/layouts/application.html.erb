@@ -52,6 +52,7 @@
                       aria-label="Toggle theme">
                 <!-- Icon will be inserted by JavaScript -->
               </button>
+              <%= render LanguageSwitcherComponent.new %>
               <% if user_signed_in? %>
                 <%= link_to restaurants_path, class: "px-3 py-2 rounded-md text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-200" do %>
                   <%= t("nav.restaurants") %>

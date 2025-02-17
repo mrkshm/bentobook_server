@@ -1,0 +1,18 @@
+<div data-controller="language-switcher">
+  <% if helpers.user_signed_in? %>
+    <%= form_tag change_locale_profile_path, method: :post, data: { turbo: false } do %>
+      <%= hidden_field_tag :locale, other_locale %>
+      <%= button_tag other_locale_name, 
+          class: "btn btn-link text-decoration-none", 
+          type: "submit" %>
+    <% end %>
+  <% else %>
+    <%= link_to other_locale_name,
+        other_locale == :en ? "/" : "/fr",
+        class: "btn btn-link text-decoration-none",
+        data: {
+          action: "language-switcher#storeLocale",
+          locale: other_locale
+        } %>
+  <% end %>
+</div>
