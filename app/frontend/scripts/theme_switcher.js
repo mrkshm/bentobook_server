@@ -1,21 +1,28 @@
 export function initializeThemeSwitcher() {
   const themeToggle = document.getElementById('theme-toggle');
-  if (themeToggle) {
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    document.body.setAttribute('data-theme', currentTheme);
-    updateThemeIcon(themeToggle, currentTheme);
+  if (!themeToggle) return;
 
-    themeToggle.addEventListener('click', () => {
-      const newTheme =
-        document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      document.body.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeIcon(themeToggle, newTheme);
-    });
-  }
+  // Always set the current theme from localStorage first
+  const currentTheme = localStorage.getItem('theme') || 'light';
+  document.body.setAttribute('data-theme', currentTheme);
+  updateThemeIcon(themeToggle, currentTheme);
+
+  // Remove any existing click listeners to prevent duplicates
+  themeToggle.removeEventListener('click', handleThemeToggle);
+  // Add the click listener
+  themeToggle.addEventListener('click', handleThemeToggle);
+}
+
+function handleThemeToggle() {
+  const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  document.body.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcon(document.getElementById('theme-toggle'), newTheme);
 }
 
 function updateThemeIcon(button, theme) {
+  if (!button) return;
+  
   // Update button icon and aria-label
   button.innerHTML =
     theme === 'light'
@@ -27,5 +34,7 @@ function updateThemeIcon(button, theme) {
   );
 }
 
+// Initialize on various page load events to ensure it works in all scenarios
 document.addEventListener('turbo:load', initializeThemeSwitcher);
+document.addEventListener('turbo:render', initializeThemeSwitcher);
 document.addEventListener('DOMContentLoaded', initializeThemeSwitcher);
