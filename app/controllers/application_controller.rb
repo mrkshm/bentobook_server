@@ -19,14 +19,22 @@ class ApplicationController < ActionController::Base
   end
 
   def set_locale
+    Rails.logger.info "LOCALE DEBUG: params[:locale]=#{params[:locale].inspect}"
+    Rails.logger.info "LOCALE DEBUG: session[:locale]=#{session[:locale].inspect}"
+    Rails.logger.info "LOCALE DEBUG: I18n.default_locale=#{I18n.default_locale.inspect}"
+    Rails.logger.info "LOCALE DEBUG: request.env['HTTP_ACCEPT_LANGUAGE']=#{request.env['HTTP_ACCEPT_LANGUAGE'].inspect}"
+
     locale = params[:locale] || session[:locale] || I18n.default_locale
     locale = locale.to_s if locale
+    Rails.logger.info "LOCALE DEBUG: computed locale=#{locale.inspect}"
 
     if locale && I18n.available_locales.include?(locale.to_sym)
       session[:locale] = locale
       I18n.locale = locale
+      Rails.logger.info "LOCALE DEBUG: final I18n.locale=#{I18n.locale.inspect}"
     else
       I18n.locale = I18n.default_locale
+      Rails.logger.info "LOCALE DEBUG: fallback I18n.locale=#{I18n.locale.inspect}"
     end
   end
 

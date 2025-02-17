@@ -1,21 +1,86 @@
-<div class="container mx-auto mt-8 p-4">
-  <h1 class="text-3xl font-bold text-primary">Welcome to Your App</h1>
-  
-
-  <div class="mt-4 bg-green-100">
-    <div class="w-96 bg-blue-100 shadow-xl">
-      <div>
-        <h2 class="card-title">Card title</h2>
-        <p class="bg-red-500 text-blue-500 font-bold">If a dog chews shoes whose shoes does he choose?</p>
-        <p class="bg-blue-500 text-white">If a dog chews shoes whose shoes does he choose?</p>
-        <p class="bg-background text-typography" data-theme="light">If a dog chews shoes whose shoes does he choose?</p>
-        <p class="bg-background text-typography" data-theme="dark">If a dog chews shoes whose shoes does he choose?</p>
+<!-- Hero Section -->
+<div class="bg-surface-100 py-32">
+  <div class="container mx-auto px-4">
+    <div class="flex justify-center items-center min-h-[25vh]">
+      <div class="max-w-3xl text-center py-12">
+        <h1 class="text-5xl font-bold text-primary-600"><%= t('.hero.title') %></h1>
+        <p class="py-4 text-xl italic text-surface-700"><%= t('.hero.tagline') %></p>
+        <p class="py-6 text-lg text-surface-600"><%= t('.hero.intro') %></p>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Main Content -->
+<div class="container mx-auto px-4 py-16 bg-surface-50">
+  <!-- Personal Culinary Archive Section -->
+  <div class="prose max-w-3xl mx-auto mb-16">
+    <h2 class="text-3xl font-bold mb-6 text-surface-900"><%= t('.culinary_archive.title') %></h2>
+    <p class="mb-4 text-surface-700"><%= t('.culinary_archive.story_intro') %></p>
+    <p class="mb-4 text-surface-700"><%= t('.culinary_archive.features') %></p>
+    <p class="text-surface-700"><%= t('.culinary_archive.mission') %></p>
+  </div>
 
-<script>
-  console.log('This is an inline script')
-</script>
+  <!-- Features Grid -->
+  <h2 class="text-3xl font-bold text-center mb-12 text-surface-900"><%= t('.features.section_title') %></h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+    <!-- Private by Design -->
+    <div class="bg-surface-200 rounded-xl shadow-lg p-6">
+      <div class="space-y-4">
+        <h3 class="text-xl font-bold text-primary-700"><%= t('.features.private_design.title') %></h3>
+        <p class="text-surface-700"><%= t('.features.private_design.description') %></p>
+      </div>
+    </div>
+
+    <!-- Living History -->
+    <div class="bg-surface-200 rounded-xl shadow-lg p-6">
+      <div class="space-y-4">
+        <h3 class="text-xl font-bold text-primary-700"><%= t('.features.living_history.title') %></h3>
+        <p class="text-surface-700"><%= t('.features.living_history.description') %></p>
+      </div>
+    </div>
+
+    <!-- Quick Memory Capture -->
+    <div class="bg-surface-200 rounded-xl shadow-lg p-6">
+      <div class="space-y-4">
+        <h3 class="text-xl font-bold text-primary-700"><%= t('.features.quick_capture.title') %></h3>
+        <p class="text-surface-700"><%= t('.features.quick_capture.description') %></p>
+      </div>
+    </div>
+
+    <!-- Personal Organization -->
+    <div class="bg-surface-200 rounded-xl shadow-lg p-6">
+      <div class="space-y-4">
+        <h3 class="text-xl font-bold text-primary-700"><%= t('.features.organization.title') %></h3>
+        <p class="text-surface-700"><%= t('.features.organization.description') %></p>
+      </div>
+    </div>
+
+    <!-- Meaningful Sharing -->
+    <div class="bg-surface-200 rounded-xl shadow-lg p-6">
+      <div class="space-y-4">
+        <h3 class="text-xl font-bold text-primary-700"><%= t('.features.sharing.title') %></h3>
+        <p class="text-surface-700"><%= t('.features.sharing.description') %></p>
+      </div>
+    </div>
+
+    <!-- Relationship Stories -->
+    <div class="bg-surface-200 rounded-xl shadow-lg p-6">
+      <div class="space-y-4">
+        <h3 class="text-xl font-bold text-primary-700"><%= t('.features.relationships.title') %></h3>
+        <p class="text-surface-700"><%= t('.features.relationships.description') %></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="bg-primary-600 text-surface-50 rounded-xl max-w-2xl mx-auto shadow-xl">
+    <div class="p-8 text-center">
+      <h2 class="text-2xl font-bold mb-4"><%= t('.cta.title') %></h2>
+      <p class="mb-6 text-surface-100"><%= t('.cta.description') %></p>
+      <button class="bg-surface-100 text-primary-700 px-6 py-2 rounded-lg font-semibold hover:bg-surface-200 transition-colors">
+        <%= t('.cta.button') %>
+      </button>
+    </div>
+  </div>
+</div>

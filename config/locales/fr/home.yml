@@ -1,0 +1,39 @@
+fr:
+  pages:
+    home:
+      hero:
+        title: 'BentoBook'
+        tagline: 'Pas seulement où vous avez mangé, mais comment vous vous êtes senti.'
+        intro: 'Une nouvelle application de restauration sociale qui comprend la nature personnelle des souvenirs culinaires. BentoBook crée un espace privé pour votre voyage culinaire - aussi intime ou social que vous le souhaitez.'
+
+      culinary_archive:
+        title: 'Votre Archive Culinaire Personnelle'
+        story_intro: "Chaque repas raconte une histoire. Certains sont des moments calmes de découverte, d'autres des célébrations partagées avec des êtres chers. Où avez-vous eu votre premier rendez-vous avec votre partenaire ? Qu'avez-vous commandé qui vous a fait sourire tous les deux ? Ces moments comptent, et BentoBook vous aide à les capturer naturellement, sans vous distraire du moment présent."
+        features: 'Avec BentoBook, vous pouvez rapidement enregistrer où vous avez mangé, les plats que vous avez appréciés et avec qui vous étiez. Utilisez des photos et des notes pour garder une trace des plats spéciaux et revoyez-les à tout moment. Avec une recherche rapide et des enregistrements détaillés des visites, BentoBook vous aide à passer moins de temps sur votre téléphone et plus de temps à profiter de la vie.'
+        mission: "Nous avons créé BentoBook parce que nous croyons que vos expériences culinaires méritent mieux que de se perdre dans des flux sociaux sans fin ou d'être enterrées dans des sites d'avis génériques. C'est une application qui respecte la nature personnelle de la nourriture tout en facilitant le partage de recommandations avec les personnes qui comptent le plus."
+
+      features:
+        section_title: 'Une Application Culinaire Différente'
+        private_design:
+          title: 'Conçu pour la Confidentialité'
+          description: "Vos souvenirs restent privés par défaut. Pas de profils publics, pas de pression sociale - juste votre collection personnelle d'expériences culinaires, organisée à votre façon. Et lorsque vous êtes prêt à partager, BentoBook vous permet de le faire à vos conditions."
+        living_history:
+          title: 'Histoire Vivante'
+          description: "Découvrez les modèles de votre vie culinaire qui racontent votre histoire. Voyez où vous avez mangé le plus souvent l'année dernière, avec qui vous avez partagé le plus de repas, ou quelles cuisines ont dominé vos week-ends."
+        quick_capture:
+          title: 'Capture Rapide de Mémoires'
+          description: "Nous avons conçu BentoBook pour rester discret. Enregistrez les visites en quelques secondes, ajoutez des photos et des notes quand vous le souhaitez, et concentrez-vous sur la dégustation de votre repas. L'application s'adapte à la façon dont vous voulez l'utiliser."
+        organization:
+          title: 'Organisation Personnelle'
+          description: "Créez des collections qui comptent pour vous - lieux de premier rendez-vous, célébrations d'anniversaire, plats réconfortants préférés. Recherchez dans votre historique par compagnon, plat, humeur ou occasion."
+        sharing:
+          title: 'Partage Significatif'
+          description: 'Partagez des recommandations naturellement, comme vous le feriez avec des amis. Créez des listes publiques pour partager vos découvertes avec le monde, ou gardez-les privées pour votre cercle intime.'
+        relationships:
+          title: 'Histoires de Relations'
+          description: "Chaque relation a ses lieux spéciaux. BentoBook vous aide à vous souvenir non seulement de l'endroit où vous avez mangé, mais aussi des histoires et des personnes qui ont rendu chaque repas mémorable."
+
+      cta:
+        title: "Rejoignez la Liste d'Attente"
+        description: 'BentoBook est actuellement en Alpha privée. Une application iOS est prévue pour le Q2 2025, une application Android pour le Q4.'
+        button: "S'inscrire aux Mises à Jour"
