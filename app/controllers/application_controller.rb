@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
   before_action :set_locale
+  before_action :ensure_locale_matches_url
   before_action :configure_turbo_native_auth
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
@@ -19,23 +20,33 @@ class ApplicationController < ActionController::Base
   end
 
   def set_locale
-    Rails.logger.info "LOCALE DEBUG: params[:locale]=#{params[:locale].inspect}"
-    Rails.logger.info "LOCALE DEBUG: session[:locale]=#{session[:locale].inspect}"
-    Rails.logger.info "LOCALE DEBUG: I18n.default_locale=#{I18n.default_locale.inspect}"
-    Rails.logger.info "LOCALE DEBUG: request.env['HTTP_ACCEPT_LANGUAGE']=#{request.env['HTTP_ACCEPT_LANGUAGE'].inspect}"
+    locale = if user_signed_in?
+      params[:locale] || session[:locale] || I18n.default_locale
+    else
+      params[:locale] || I18n.default_locale
+    end
 
-    locale = params[:locale] || session[:locale] || I18n.default_locale
     locale = locale.to_s if locale
-    Rails.logger.info "LOCALE DEBUG: computed locale=#{locale.inspect}"
 
     if locale && I18n.available_locales.include?(locale.to_sym)
-      session[:locale] = locale
+      session[:locale] = locale if user_signed_in?  # Only store in session if authenticated
       I18n.locale = locale
-      Rails.logger.info "LOCALE DEBUG: final I18n.locale=#{I18n.locale.inspect}"
     else
       I18n.locale = I18n.default_locale
-      Rails.logger.info "LOCALE DEBUG: fallback I18n.locale=#{I18n.locale.inspect}"
     end
+  end
+
+  def ensure_locale_matches_url
+    return if request.path.start_with?("/api") # Skip for API routes
+
+    current_path = request.path
+    expected_path = if I18n.locale == :en
+      current_path.gsub(/^\/fr/, "")
+    else
+      current_path.start_with?("/fr") ? current_path : "/fr#{current_path}"
+    end
+
+    redirect_to expected_path if current_path != expected_path
   end
 
   def default_url_options
