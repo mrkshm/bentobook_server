@@ -25,15 +25,20 @@ en:
           description: 'We designed BentoBook to stay out of your way. Log visits in seconds, add photos and notes when you want, and focus on enjoying your meal. The app adapts to how you want to use it.'
         organization:
           title: 'Personal Organization'
-          description: 'Create collections that matter to you – first-date spots, anniversary celebrations, comfort food favorites. Search your history by companion, dish, mood, or occasion.'
+          description: 'Create collections that matter to you – first-date spots, anniversary celebrations, comfort food favorites. Your memories, your categories.'
         sharing:
           title: 'Meaningful Sharing'
-          description: 'Share recommendations naturally, the way you would with friends. Create public lists to share your discoveries with the world, or keep them private for your inner circle.'
+          description: 'Share recommendations with friends and family who appreciate your taste. No public reviews or ratings – just personal suggestions for people you trust.'
         relationships:
           title: 'Relationship Stories'
-          description: 'Every relationship has its special places. BentoBook helps you remember not just where you ate, but the stories and people that made each meal memorable.'
+          description: 'Track the restaurants that mark important moments in your relationships. First dates, family celebrations, friend reunions – all organized by the people who matter.'
 
       cta:
-        title: 'Join the Waitlist'
-        description: 'BentoBook is currently in private Alpha. An iOS app is expected in Q2/2025, an Android app in Q4.'
-        button: 'Subscribe to Updates'
+        title: 'Want product news and updates? Sign up for our newsletter.'
+        email_placeholder: 'Enter your email'
+        button: 'Subscribe'
+        privacy_notice: 'We care about your data. Read our'
+        privacy_link: 'privacy policy'
+        success:
+          title: 'Thank You!'
+          message: "We'll keep you posted about BentoBook's launch."

@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  # Subscription
+  post "/subscribe", to: "subscriptions#create"
+
   # API routes
   namespace :api, defaults: { format: :json } do
     namespace :v1 do

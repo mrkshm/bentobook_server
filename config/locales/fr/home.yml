@@ -31,9 +31,14 @@ fr:
           description: 'Partagez des recommandations naturellement, comme vous le feriez avec des amis. Créez des listes publiques pour partager vos découvertes avec le monde, ou gardez-les privées pour votre cercle intime.'
         relationships:
           title: 'Histoires de Relations'
-          description: "Chaque relation a ses lieux spéciaux. BentoBook vous aide à vous souvenir non seulement de l'endroit où vous avez mangé, mais aussi des histoires et des personnes qui ont rendu chaque repas mémorable."
+          description: 'Suivez les restaurants qui marquent les moments importants de vos relations. Premiers rendez-vous, célébrations familiales, réunions entre amis - le tout organisé par les personnes qui comptent.'
 
       cta:
-        title: "Rejoignez la Liste d'Attente"
-        description: 'BentoBook est actuellement en Alpha privée. Une application iOS est prévue pour le Q2 2025, une application Android pour le Q4.'
-        button: "S'inscrire aux Mises à Jour"
+        title: 'Vous voulez des nouvelles et des mises à jour ? Inscrivez-vous à notre newsletter.'
+        email_placeholder: 'Entrez votre email'
+        button: "S'inscrire"
+        privacy_notice: 'Nous prenons soin de vos données. Lisez notre'
+        privacy_link: 'politique de confidentialité'
+        success:
+          title: 'Merci !'
+          message: 'Nous vous tiendrons informé du lancement de BentoBook.'
