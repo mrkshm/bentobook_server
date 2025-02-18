@@ -1,20 +1,28 @@
-<%= form_tag @url, method: :get, class: 'w-full md:w-auto', id: 'sort-form' do %>
+<%= form_tag @url, method: :get, 
+            class: 'w-full md:w-auto', 
+            data: {
+              controller: "sort-form",
+              sort_form_target: "form"
+            } do %>
   <%= hidden_field_tag :search, params[:search] %>
+  <%= hidden_field_tag :latitude, nil, data: { sort_form_target: "lat" } %>
+  <%= hidden_field_tag :longitude, nil, data: { sort_form_target: "lng" } %>
   
   <% @additional_fields.each do |name, value| %>
     <%= hidden_field_tag name, value %>
   <% end %>
   
-  <div class="space-y-4">
-    <div>
-      <label for="sort-select" class="block text-sm/6 font-medium text-surface-900">
+  <div class="flex items-end gap-4">
+    <div class="flex-1">
+      <label for="sort-select" class="block text-sm/6 font-medium text-surface-900 mb-2">
         <%= t('common.sort.sort_by') %>
       </label>
-      <div class="mt-2 grid grid-cols-1">
+      <div class="grid grid-cols-1">
         <select id="sort-select" 
                 name="order_by" 
                 class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-surface-50 py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
-                onchange="this.form.submit()">
+                data-sort-form-target="sort"
+                data-action="change->sort-form#sortChanged">
           <% @fields.each do |value, label| %>
             <option value="<%= value %>" <%= 'selected' if @current_order == value %>><%= label %></option>
           <% end %>
@@ -25,18 +33,22 @@
       </div>
     </div>
 
-    <div class="flex gap-2">
-      <%= button_tag type: 'submit', 
-                    name: 'order_direction', 
-                    value: 'asc', 
-                    class: "inline-flex items-center rounded-md px-2.5 py-1.5 text-sm font-medium shadow-sm #{@current_direction != 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+    <div class="flex gap-2 h-[38px]" data-sort-form-target="directionButtons" <%= "style='display: #{@current_order != 'distance' ? 'flex' : 'none'};'" %>>
+      <%= button_tag type: 'button', 
+                    data: { 
+                      action: "sort-form#orderChanged",
+                      order_direction: "asc"
+                    },
+                    class: "h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm #{@current_direction != 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
         <%= heroicon "arrow-down", options: { class: "w-4 h-4" } %>
       <% end %>
       
-      <%= button_tag type: 'submit', 
-                    name: 'order_direction', 
-                    value: 'desc', 
-                    class: "inline-flex items-center rounded-md px-2.5 py-1.5 text-sm font-medium shadow-sm #{@current_direction == 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+      <%= button_tag type: 'button',
+                    data: { 
+                      action: "sort-form#orderChanged",
+                      order_direction: "desc"
+                    },
+                    class: "h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm #{@current_direction == 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
         <%= heroicon "arrow-up", options: { class: "w-4 h-4" } %>
       <% end %>
     </div>

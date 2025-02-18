@@ -1,13 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["form", "sort", "orderAsc", "lat", "lng"]
+  static targets = ["form", "sort", "lat", "lng", "directionButtons"]
+
+  connect() {
+    // Initialize button visibility
+    this.updateDirectionButtonsVisibility()
+  }
 
   // Called when sort selection changes
   async sortChanged(event) {
-    if (event.target === this.sortTarget) {
-      this.orderAscTarget.value = 'asc'
-    }
+    this.updateDirectionButtonsVisibility()
 
     if (this.sortTarget.value === 'distance') {
       await this.handleLocationSort()
@@ -19,9 +22,18 @@ export default class extends Controller {
     }
   }
 
+  // Update direction buttons visibility based on sort value
+  updateDirectionButtonsVisibility() {
+    if (this.hasDirectionButtonsTarget) {
+      this.directionButtonsTarget.style.display = 
+        this.sortTarget.value === 'distance' ? 'none' : 'flex'
+    }
+  }
+
   // Called when order direction changes
-  orderChanged() {
-    this.submitForm()
+  orderChanged(event) {
+    const direction = event.currentTarget.dataset.orderDirection
+    this.submitForm(direction)
   }
 
   // Handle location-based sorting
@@ -29,7 +41,6 @@ export default class extends Controller {
     try {
       // Show loading state
       this.sortTarget.disabled = true
-      this.orderAscTarget.disabled = true
       
       const position = await this.getCurrentPosition()
       
@@ -62,15 +73,14 @@ export default class extends Controller {
     } finally {
       // Re-enable controls
       this.sortTarget.disabled = false
-      this.orderAscTarget.disabled = false
     }
   }
 
   // Submit form preserving all values
-  submitForm() {
+  submitForm(direction = null) {
     const params = new URLSearchParams({
       order_by: this.sortTarget.value,
-      order_direction: this.orderAscTarget.value
+      order_direction: direction || 'asc'
     })
 
     if (this.latTarget.value && this.lngTarget.value) {
