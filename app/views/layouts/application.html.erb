@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html <%= "data-hotwire-native-app" if hotwire_native_app? %> lang="en">
+<html <%= "data-hotwire-native-app" if hotwire_native_app? %> lang="en"">
   <head>
     <title>BentobookServer</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -17,9 +17,13 @@
     <style>
       body { 
         margin: 0;
+        background-color: oklch(0.25 0.004 270);
       }
       .preload * { display: none; }
     </style>
+    
+    <meta name="turbo-visit-control" content="reload">
+    <meta name="turbo-cache-control" content="no-preview">
   </head>
   <body data-theme="light" class="preload bg-surface-100">
     <%= render Shell::LoadingIndicatorComponent.new %>
@@ -41,7 +45,7 @@
       <%= render Shell::MobileMenuComponent.new(id: "mobile-menu") %>
     </nav>
 
-    <main class="flex-grow">
+    <main class="flex-grow bg-surface-100">
       <div class="w-full flex justify-center">
         <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <% if devise_controller? %>

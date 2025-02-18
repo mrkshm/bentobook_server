@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
 class RatingsComponent < ViewComponent::Base
-    def initialize(rating: nil, form: nil, readonly: false, size: :md)
+    include ActionView::RecordIdentifier
+
+    def initialize(rating: nil, form: nil, readonly: false, size: :md, dom_id: nil, restaurant: nil)
       @rating = rating.to_i  # Convert to integer, nil becomes 0
       @form = form
       @readonly = readonly
       @size = size
+      @dom_id = dom_id || (restaurant ? dom_id(restaurant, :rating) : nil)
+      @restaurant = restaurant
     end
 
     def call
@@ -19,7 +23,7 @@ class RatingsComponent < ViewComponent::Base
     private
 
     def render_readonly_stars
-      content_tag(:div, class: "flex items-center") do
+      content_tag(:div, class: "flex items-center", id: @dom_id) do
         (1..5).map do |i|
           star_svg(i <= @rating ? "text-yellow-400" : "text-gray-500")
         end.join.html_safe
@@ -27,9 +31,17 @@ class RatingsComponent < ViewComponent::Base
     end
 
     def render_editable_stars
-      content_tag(:div, class: "flex items-center", data: { controller: "ratings" }) do
-        star_buttons +
-        (@form.hidden_field(:rating, data: { "ratings-target": "input" }) if @form)
+      content_tag(:div,
+        class: "flex items-center",
+        data: {
+          controller: "ratings",
+          ratings_target: "container",
+          ratings_url: @restaurant ? "/restaurants/#{@restaurant.id}" : nil,
+          ratings_rating_value: @rating
+        },
+        id: @dom_id
+      ) do
+        star_buttons
       end
     end
 
@@ -38,9 +50,9 @@ class RatingsComponent < ViewComponent::Base
         button_tag(type: "button",
                    class: star_classes(i),
                    data: {
-                     action: "click->ratings#setRating mouseover->ratings#hoverRating mouseout->ratings#resetRating",
-                     ratings_target: "star",
-                     value: i
+                     turbo_stream_action: "update",
+                     turbo_stream_target: "ratings",
+                     turbo_stream_action_value: i
                    }) do
           star_svg
         end

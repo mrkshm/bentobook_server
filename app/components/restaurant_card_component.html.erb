@@ -1,4 +1,4 @@
-<%= link_to restaurant_path(id: restaurant.id), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>
+<%= link_to restaurant_path(id: restaurant.id), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200", data: { turbo_frame: "_top" } do %>
   <div class="p-6">
     <%# Header with name and visits %>
     <div class="flex items-end justify-between mb-4">
@@ -23,7 +23,13 @@
         </div>
 
         <div class="mt-2">
-          <%= render(RatingsComponent.new(rating: restaurant.rating, readonly: true, size: :sm)) %>
+          <%= render(RatingsComponent.new(
+                rating: restaurant.rating,
+                readonly: true,
+                size: :sm,
+                dom_id: dom_id(restaurant, :rating),
+                restaurant: restaurant
+              )) %>
         </div>
 
         <% if restaurant.tags.any? %>

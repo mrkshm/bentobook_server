@@ -1,0 +1,5 @@
+<%= render(RatingsComponent.new(
+      restaurant: restaurant,
+      rating: restaurant.rating,
+      dom_id: dom_id(restaurant, :rating)
+    )) %>

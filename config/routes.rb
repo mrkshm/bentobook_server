@@ -35,6 +35,7 @@ Rails.application.routes.draw do
         member do
           post :add_tag
           delete :remove_tag
+          patch 'update_rating', to: 'restaurants#update_rating'
         end
         resources :images, only: [ :create, :destroy ]
       end

@@ -8,31 +8,42 @@ import { initializeThemeSwitcher } from '../scripts/theme_switcher';
 import { initializeNavbar } from '../scripts/navbar';
 import '../scripts/page_render';
 
-import { Application } from '@hotwired/stimulus';
-import { registerControllers } from 'stimulus-vite-helpers';
-import '@hotwired/turbo-rails';
-console.log('🔥 ALPINE INITIALIZED 🔥');
-console.log('Vite ⚡️ Rails');
+import "@hotwired/turbo-rails"
+import { Application } from "@hotwired/stimulus"
+import { registerControllers } from "stimulus-vite-helpers"
+
+// Configure Turbo
+document.addEventListener("turbo:before-cache", () => {
+  // Clear any dynamic content that shouldn't be cached
+})
+
+document.addEventListener("turbo:load", () => {
+  initializeThemeSwitcher();
+  initializeNavbar();
+})
+
+document.addEventListener("turbo:visit", () => {
+  // Clear any state before navigating
+})
+
+// Prevent Turbo from caching pages
+Turbo.setProgressBarDelay(100)
+Turbo.setConfirmMethod((message) => Promise.resolve(confirm(message)))
 
 // Initialize Stimulus application
 const application = Application.start();
 
-// Register all controllers in the controllers directory
-const controllers = import.meta.glob('../controllers/**/*_controller.js', {
-  eager: true,
-});
-registerControllers(application, controllers);
+// Register all Stimulus controllers
+const controllers = import.meta.glob("../controllers/**/*_controller.js", { eager: true })
+registerControllers(application, controllers)
 
-// Turbo
-import * as Turbo from '@hotwired/turbo';
+// Make available for Stimulus debugging in browser console
+window.Stimulus = application
+
+// Start Turbo
 Turbo.start();
 
 // Event listeners
-document.addEventListener('turbo:load', () => {
-  initializeThemeSwitcher();
-  initializeNavbar();
-});
-
 document.addEventListener('turbo:render', initializeNavbar);
 
 // Fallback for non-Turbo pages
@@ -42,6 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeNavbar();
   }
 });
+
+console.log('🔥 ALPINE INITIALIZED 🔥');
+console.log('Vite ⚡️ Rails');
 
 // Example: Load Rails libraries in Vite.
 //
