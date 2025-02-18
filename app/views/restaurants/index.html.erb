@@ -1,19 +1,19 @@
-<h1 class="text-4xl mb-4"><%= t('restaurants.index.title') %></h1>
+<h1 class="text-4xl my-4 font-bold text-surface-700"><%= t('restaurants.index.title') %></h1>
 
 <% flash.each do |type, message| %>
-  <div class="alert alert-<%= type %>">
+  <div class="px-4 py-3 rounded-lg mb-4 <%= type == 'notice' ? 'bg-primary-100 text-primary-700' : 'bg-error-100 text-error-700' %>">
     <%= message %>
   </div>
 <% end %>
 
 <% if params[:tag].present? %>
-  <div class="alert alert-info">
+  <div class="px-4 py-3 rounded-lg mb-4 bg-primary-100 text-primary-700">
     Showing restaurants tagged with "<%= params[:tag] %>"
   </div>
 <% end %>
 
 <div class="mb-4">
-  <%= link_to t('restaurants.create_restaurant_button'), new_restaurant_path, class: 'btn btn-primary' %>
+  <%= link_to t('restaurants.create_restaurant_button'), new_restaurant_path, class: 'inline-flex items-center px-4 py-2 bg-primary-600 text-surface-50 font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors' %>
 </div>
 
 <div class="mb-4 flex flex-col md:flex-row justify-between items-end gap-4">
@@ -21,7 +21,6 @@
       x-data="{ 
         coords: { lat: null, lng: null },
         async getLocation(event) {
-          // If triggered by select change, set ascending order
           if (event?.target === this.$refs.sortSelect) {
             this.$refs.orderAsc.value = 'asc';
           }
@@ -32,17 +31,14 @@
                 navigator.geolocation.getCurrentPosition(resolve, reject);
               });
               
-              // Set the input values directly
               this.$refs.latInput.value = position.coords.latitude;
               this.$refs.lngInput.value = position.coords.longitude;
               
-              // Also update the Alpine state
               this.coords = {
                 lat: position.coords.latitude,
                 lng: position.coords.longitude
               };
               
-              // Now submit the form
               this.$refs.form.submit();
             } catch (error) {
               console.error('Location error:', error);
@@ -61,12 +57,13 @@
     <input type="hidden" name="latitude" x-ref="latInput">
     <input type="hidden" name="longitude" x-ref="lngInput">
     <input type="hidden" name="order_direction" value="<%= params[:order_direction] || 'asc' %>" x-ref="orderAsc">
-    <div class="form-control w-full">
-      <label for="sort-select" class="label">
-        <span class="label-text"><%= t('restaurants.index.sort_by') %></span>
+    <div class="w-full">
+      <label for="sort-select" class="block text-sm font-medium text-surface-700 mb-1">
+        <%= t('restaurants.index.sort_by') %>
       </label>
       <div class="flex gap-2 items-center">
-        <select id="sort-select" name="order_by" class="select select-bordered w-full md:w-64" 
+        <select id="sort-select" name="order_by" 
+                class="block w-full md:w-64 px-3 py-2 bg-surface-50 border border-surface-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500" 
                 x-ref="sortSelect"
                 @change="getLocation($event)">
           <% [['name', t("restaurants.search_by.name")],
@@ -77,10 +74,12 @@
           <% end %>
         </select>
         <div class="flex gap-1">
-          <button type="submit" name="order_direction" value="asc" class="btn btn-ghost btn-sm <%= 'btn-active' if params[:order_direction] != 'desc' %>">
+          <button type="submit" name="order_direction" value="asc" 
+                  class="p-2 rounded-lg hover:bg-surface-100 transition-colors <%= params[:order_direction] != 'desc' ? 'bg-surface-100' : '' %>">
             <%= heroicon "arrow-down", options: { class: "w-5 h-5" } %>
           </button>
-          <button type="submit" name="order_direction" value="desc" class="btn btn-ghost btn-sm <%= 'btn-active' if params[:order_direction] == 'desc' %>">
+          <button type="submit" name="order_direction" value="desc" 
+                  class="p-2 rounded-lg hover:bg-surface-100 transition-colors <%= params[:order_direction] == 'desc' ? 'bg-surface-100' : '' %>">
             <%= heroicon "arrow-up", options: { class: "w-5 h-5" } %>
           </button>
         </div>
@@ -90,14 +89,18 @@
 
   <%= form_tag restaurants_path, method: :get, class: 'w-full md:w-1/2', id: 'search-form' do %>
     <div class="flex flex-col md:flex-row items-end gap-2">
-      <div class="form-control w-full">
-        <label for="search-input" class="label">
-          <span class="label-text"><%= t('search') %>:</span>
+      <div class="w-full">
+        <label for="search-input" class="block text-sm font-medium text-surface-700 mb-1">
+          <%= t('search') %>:
         </label>
         <div class="flex gap-2">
-          <input type="text" id="search-input" name="search" value="<%= params[:search] %>" class="input input-bordered w-full" placeholder=<%= t('restaurants.index.search_restaurants_placeholder') %>>
-          <%= submit_tag t("search"), class: 'btn btn-primary whitespace-nowrap' %>
-          <%= button_tag t("reset"), type: 'button', class: 'btn btn-ghost whitespace-nowrap', onclick: "window.location='#{restaurants_path}'" %>
+          <input type="text" id="search-input" name="search" value="<%= params[:search] %>" 
+                 class="block w-full px-3 py-2 bg-surface-50 border border-surface-300 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500" 
+                 placeholder=<%= t('restaurants.index.search_restaurants_placeholder') %>>
+          <%= submit_tag t("search"), class: 'px-4 py-2 bg-primary-600 text-surface-50 font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors whitespace-nowrap' %>
+          <%= button_tag t("reset"), type: 'button', 
+              class: 'px-4 py-2 text-surface-700 bg-surface-50 border border-surface-300 rounded-lg hover:bg-surface-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500 transition-colors whitespace-nowrap', 
+              onclick: "window.location='#{restaurants_path}'" %>
         </div>
       </div>
     </div>
@@ -105,7 +108,7 @@
 </div>
 
 <% if @restaurants.empty? %>
-    <p class="no-restaurants-message"><%= t('restaurants.index.no_restaurants_found') %></p>
+    <p class="text-surface-600 text-center py-8"><%= t('restaurants.index.no_restaurants_found') %></p>
 <% else %>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
     <% @restaurants.each do |restaurant| %>
@@ -115,8 +118,10 @@
     <% end %>
   </div>
   <div class="flex flex-col items-center space-y-4 mt-8">
-    <%== pagy_daisy_ui_nav(@pagy) %>
-    <div class="text-sm text-gray-600 bg-base-200 p-2 rounded-lg">
+    <nav class="flex items-center space-x-2" role="navigation" aria-label="Pagination">
+      <%== pagy_nav(@pagy) %>
+    </nav>
+    <div class="text-sm text-surface-600 bg-surface-100 px-4 py-2 rounded-lg">
       <%== pagy_info(@pagy) %>
     </div>
   </div>

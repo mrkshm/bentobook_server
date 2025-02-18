@@ -1,46 +1,56 @@
-<%= link_to restaurant_path(id: restaurant.id), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
-  <div class="card-body">
-    <h2 class="card-title flex items-center justify-between">
-      <div class="flex items-center">
-        <%= restaurant.name %>
-        <% if restaurant.cuisine_type %>
-          <span class="ml-2 text-sm font-normal text-gray-500"><%= restaurant.cuisine_type.name %></span>
-        <% end %>
-      </div>
+<%= link_to restaurant_path(id: restaurant.id), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>
+  <div class="p-6">
+    <%# Header with name and visits %>
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900"><%= restaurant.name %></h3>
       <% if visit_count.positive? %>
-        <div class="badge badge-secondary"><%= visit_count %></div>
-      <% end %>
-    </h2>
-    <div class="mt-2">
-      <h3 class="font-semibold mb-1">Address</h3>
-      <p><%= "#{restaurant.street_number} #{restaurant.street}" %></p>
-      <p><%= "#{restaurant.postal_code} #{restaurant.city}" %></p>
-      <% if restaurant.state.present? %>
-        <p><%= restaurant.state %></p>
-      <% end %>
-      <p><%= restaurant.country %></p>
-    </div>
-    <div class="mt-4">
-      <h3 class="font-semibold mb-1">Contact</h3>
-      <% if restaurant.phone_number.present? %>
-        <div class="flex items-center mb-2">
-          <%= heroicon "phone", options: { class: "w-5 h-5 mr-2 text-gray-600" } %>
-          <span><%= restaurant.phone_number %></span>
-        </div>
-      <% end %>
-      <% if restaurant.url.present? %>
-        <div class="flex items-center relative z-20">
-          <%= heroicon "globe-alt", options: { class: "w-5 h-5 mr-2 text-gray-600" } %>
-          <%= link_to restaurant.url, restaurant.url, target: "_blank", class: "link link-primary", data: { turbo: false } %>
-        </div>
+        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs text-surface-700">
+          visited <%= visit_count %>&nbsp; time
+        </span>
       <% end %>
     </div>
-    <% if restaurant.tags.any? %>
-      <div class="mt-4">
-        <% restaurant.tags.each do |tag| %>
-          <span class="badge badge-outline mr-1 mb-1"><%= tag.name %></span>
+
+    <%# Main content container with left and right sides %>
+    <div class="flex">
+      <%# Left side: cuisine, price, rating, tags %>
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+          <% if restaurant.cuisine_type %>
+            <span><%= t("cuisine_types.#{restaurant.cuisine_type.name.downcase}") %></span>
+            <span class="mx-2">·</span>
+          <% end %>
+          <%= render(PriceLevelComponent.new(restaurant: restaurant)) %>
+        </div>
+
+        <div class="mt-2">
+          <%= render(RatingsComponent.new(rating: restaurant.rating, readonly: true, size: :sm)) %>
+        </div>
+
+        <% if restaurant.tags.any? %>
+          <div class="mt-4 flex flex-wrap gap-1">
+            <% restaurant.tags.each do |tag| %>
+              <span class="inline-flex items-center rounded-full bg-surface-100 px-2 py-0.5 text-xs font-medium text-surface-700 ring-1 ring-surface-600/20 ring-inset">
+                <%= tag.name %>
+              </span>
+            <% end %>
+          </div>
         <% end %>
       </div>
-    <% end %>
+
+      <%# Right side: address info %>
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span><%= "#{restaurant.street_number} #{restaurant.street}" %></span>
+        </div>
+        <div class="">
+          <span><%= [restaurant.postal_code, restaurant.city].compact.join(' ') %></span>
+        </div>
+        <% if restaurant.state.present? || restaurant.country.present? %>
+          <div class="">
+            <span><%= [restaurant.state, restaurant.country].compact.reject(&:empty?).join(', ') %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
   </div>
 <% end %>
