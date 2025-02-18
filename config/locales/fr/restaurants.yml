@@ -1,38 +1,38 @@
 fr:
   restaurants:
-    create_restaurant_button: "Créer un nouveau restaurant"
-    select_price_level: "Sélectionner le niveau de prix"
+    create_restaurant_button: 'Créer un nouveau restaurant'
+    select_price_level: 'Sélectionner le niveau de prix'
     search_by:
-      name: "Nom"
-      created_at: "Créé le"
-      updated_at: "Modifié le"
-      distance: "Distance"
+      name: 'Nom'
+      created_at: 'Créé le'
+      updated_at: 'Modifié le'
+      distance: 'Distance'
     form:
-      name: "Nom"
-      address: "Adresse"
-      street_number: "Numéro de rue"
-      street: "Rue"
-      postal_code: "Code postal"
-      city: "Ville"
-      state: "État"
-      country: "Pays"
-      phone_number: "Numéro de téléphone"
-      url: "URL"
-      business_status: "Statut commercial"
-      rating: "Votre note"
-      price_level: "Niveau de prix"
-      notes: "Notes"
-      tag_list: "Tags"
+      name: 'Nom'
+      address: 'Adresse'
+      street_number: 'Numéro de rue'
+      street: 'Rue'
+      postal_code: 'Code postal'
+      city: 'Ville'
+      state: 'État'
+      country: 'Pays'
+      phone_number: 'Numéro de téléphone'
+      url: 'URL'
+      business_status: 'Statut commercial'
+      rating: 'Votre note'
+      price_level: 'Niveau de prix'
+      notes: 'Notes'
+      tag_list: 'Tags'
     index:
-      title: "Mes Restaurants"
-      sort_by: "Trier par :"
-      no_restaurants_found: "Pas de restaurants trouvés."
-      search_restaurants_placeholder: "Rechercher..."
+      title: 'Mes Restaurants'
+      sort_by: 'Trier par :'
+      no_restaurants_found: 'Pas de restaurants trouvés.'
+      search_placeholder: 'Rechercher...'
     new:
-      title: "Créer un nouveau restaurant"
+      title: 'Créer un nouveau restaurant'
       short_description: "Veuillez rechercher un restaurant ici. Commencez avec le nom, si vous ne le trouvez pas, ajoutez la ville et d'autres détails."
     attributes:
-      name: "Nom"
-      cuisine_type: "Type de cuisine"
-      rating: "Note"
-      price_range: "Prix"
+      name: 'Nom'
+      cuisine_type: 'Type de cuisine'
+      rating: 'Note'
+      price_range: 'Prix'

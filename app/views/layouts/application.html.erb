@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html <%= "data-hotwire-native-app" if hotwire_native_app? %> lang="en"">
   <head>
-    <title>BentobookServer</title>
+    <title><%= content_for(:title) || "BentoBook" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -19,33 +19,31 @@
         margin: 0;
         background-color: oklch(0.25 0.004 270);
       }
-      .preload * { display: none; }
     </style>
-    
-    <meta name="turbo-visit-control" content="reload">
-    <meta name="turbo-cache-control" content="no-preview">
   </head>
-  <body data-theme="light" class="preload bg-surface-100">
+  <body data-theme="light" class="bg-surface-100">
     <%= render Shell::LoadingIndicatorComponent.new %>
 
-    <nav class="sticky top-0 z-50 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16 items-center hotwire-native:hidden">
-          <%= render Shell::LogoComponent.new %>
-          
-          <!-- Hamburger menu for mobile -->
-          <%= render Shell::HamburgerButtonComponent.new(mobile_menu_id: "mobile-menu") %>
+    <% if user_signed_in? %>
+      <nav class="sticky top-0 z-50 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16 items-center hotwire-native:hidden">
+            <%= render Shell::LogoComponent.new %>
+            
+            <!-- Hamburger menu for mobile -->
+            <%= render Shell::HamburgerButtonComponent.new(mobile_menu_id: "mobile-menu") %>
 
-          <!-- Desktop menu -->
-          <%= render Shell::DesktopMenuComponent.new %>
+            <!-- Desktop menu -->
+            <%= render Shell::DesktopMenuComponent.new %>
+          </div>
         </div>
-      </div>
-      
-      <!-- Mobile menu (hidden by default) -->
-      <%= render Shell::MobileMenuComponent.new(id: "mobile-menu") %>
-    </nav>
+        
+        <!-- Mobile menu (hidden by default) -->
+        <%= render Shell::MobileMenuComponent.new(id: "mobile-menu") %>
+      </nav>
+    <% end %>
 
-    <main class="flex-grow bg-surface-100">
+    <main class="flex-grow bg-surface-100" data-turbo-permanent>
       <div class="w-full flex justify-center">
         <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <% if devise_controller? %>
