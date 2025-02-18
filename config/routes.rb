@@ -2,6 +2,11 @@ Rails.application.routes.draw do
   # Subscription
   post "/subscribe", to: "subscriptions#create"
 
+  resources :configurations, only: [] do
+    get :ios_v1, on: :collection
+  end
+
+
   # API routes
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
@@ -133,6 +138,11 @@ Rails.application.routes.draw do
     get "/pages/terms", to: "pages#terms", as: :terms
     get "/pages/home", to: "pages#home", as: :pages_home
     get "/pages/privacy", to: "pages#privacy", as: :pages_privacy
+
+    resources :visits
+    resources :contacts
+    resources :lists
+    get "home/dashboard", as: :home_dashboard
 
     root to: "pages#home"
   end

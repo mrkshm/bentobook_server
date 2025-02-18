@@ -79,6 +79,8 @@ en:
     profile: "Profile"
     contacts: "Contacts"
     lists: "Lists"
+    welcome: "Welcome to BentoBook"
+    dashboard_description: "What would you like to do today?"
   pagy:
     nav:
       previous: "« Previous"
