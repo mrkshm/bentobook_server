@@ -183,7 +183,7 @@ class RestaurantsController < ApplicationController
   end
 
   def search_params
-    params.permit(:search, :tag, :latitude, :longitude).merge(user: current_user)
+    params.permit(:search, :tag, :latitude, :longitude, :order_by, :order_direction).merge(user: current_user)
   end
 
   def tag_params

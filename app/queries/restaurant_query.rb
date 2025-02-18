@@ -1,5 +1,5 @@
 class RestaurantQuery
-    ALLOWED_ORDER_FIELDS = %w[name address created_at updated_at distance].freeze
+    ALLOWED_ORDER_FIELDS = %w[name address created_at updated_at distance rating price_level].freeze
     DEFAULT_ORDER = { field: "name", direction: "asc" }.freeze
 
     attr_reader :relation, :params
@@ -46,19 +46,20 @@ class RestaurantQuery
         sort_by_distance(scoped)
       when "created_at"
         scoped.order(restaurants: { created_at: order_direction })
+      when "rating"
+        scoped.order(restaurants: { rating: order_direction })
+      when "price_level"
+        scoped.order(restaurants: { price_level: order_direction })
       else
         scoped.order(Arel.sql("LOWER(restaurants.name) #{order_direction}, LOWER(google_restaurants.name) #{order_direction}"))
       end
     end
 
     def sort_by_distance(scoped)
-      if params[:latitude].present? && params[:longitude].present?
-        point = "POINT(#{params[:longitude]} #{params[:latitude]})"
-        scoped
-          .joins(:google_restaurant)
-          .order(Arel.sql("ST_Distance(google_restaurants.location, ST_SetSRID(ST_MakePoint(#{params[:longitude]}, #{params[:latitude]}), 4326))"))
-      else
-        scoped
-      end
+      return scoped unless params[:latitude].present? && params[:longitude].present?
+
+      scoped.by_distance(
+        origin: [params[:latitude].to_f, params[:longitude].to_f]
+      )
     end
 end
