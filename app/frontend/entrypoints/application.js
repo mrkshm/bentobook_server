@@ -6,6 +6,7 @@ Alpine.start();
 
 import { initializeThemeSwitcher } from '../scripts/theme_switcher';
 import { initializeNavbar } from '../scripts/navbar';
+import '../scripts/page_render';
 
 import { Application } from '@hotwired/stimulus';
 import { registerControllers } from 'stimulus-vite-helpers';

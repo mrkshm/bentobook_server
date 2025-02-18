@@ -74,8 +74,7 @@ Rails.application.routes.draw do
     devise_for :users,
       controllers: {
         confirmations: "users/confirmations"
-      },
-      constraints: { format: /html|native/ }
+      }
 
     # Restaurant routes
     resources :restaurants do
@@ -133,6 +132,7 @@ Rails.application.routes.draw do
     # Static pages
     get "/pages/terms", to: "pages#terms", as: :terms
     get "/pages/home", to: "pages#home", as: :pages_home
+    get "/pages/privacy", to: "pages#privacy", as: :pages_privacy
 
     root to: "pages#home"
   end

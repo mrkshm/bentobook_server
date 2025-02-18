@@ -1,0 +1,32 @@
+<div 
+  id="<%= id %>" 
+  class="lg:hidden hidden hotwire-native:hidden fixed inset-x-0 top-16 bottom-0 bg-surface-100 z-40 overflow-y-auto"
+  data-mobile-menu-target="menu">
+  <div class="px-4 py-6 space-y-3">
+    <% if user_signed_in? %>
+      <%= link_to t("nav.restaurants"), restaurants_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+      
+      <%= link_to lists_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
+        <%= t("nav.lists") %>
+        <%= notification_dot %>
+      <% end %>
+      
+      <%= link_to t("nav.visits"), visits_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+      
+      <%= link_to t("nav.contacts"), contacts_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+      
+      <%= link_to t("nav.profile"), profile_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+    <% else %>
+      <%= link_to t("sign_in"), new_user_session_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+      
+      <%= link_to t("sign_up"), new_user_registration_path, 
+          class: "block px-4 py-3 rounded-lg text-base font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" %>
+    <% end %>
+  </div>
+</div>

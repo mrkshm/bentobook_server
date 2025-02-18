@@ -1,0 +1,26 @@
+en:
+  privacy_policy:
+    title: 'Privacy Policy'
+    sections:
+      data_collection:
+        title: '1. Data Collection'
+        content: |
+          We collect and store your email address solely for the purpose of operating the app. This includes:
+          - Providing access to app features  
+          - Sending essential app-related communications  
+          - Sending emails from our mailing list, but only if you have explicitly subscribed
+      data_usage:
+        title: '2. Data Usage'
+        content: |
+          Your email will never be:
+          - Shared with third parties  
+          - Sold or used for advertising purposes
+      security:
+        title: '3. Data Security'
+        content: |
+          We take appropriate security measures to protect your data and ensure it remains confidential.
+      user_control:
+        title: '4. User Control'
+        content: |
+          You can unsubscribe from our mailing list at any time via the provided link in our emails.
+    contact: 'For any questions, please contact us at %{email}.'

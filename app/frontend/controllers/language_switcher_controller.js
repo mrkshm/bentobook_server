@@ -1,12 +1,12 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-  static targets = ['button', 'menu']
+  static targets = ['button', 'menu'];
 
   connect() {
     // Handle clicking outside to close dropdown
     document.addEventListener('click', this.handleClickOutside.bind(this));
-    
+
     // On page load, check if we should redirect based on localStorage
     const storedLocale = localStorage.getItem('locale');
     const currentPath = window.location.pathname;
@@ -30,7 +30,8 @@ export default class extends Controller {
   toggleDropdown(event) {
     event.stopPropagation();
     this.menuTarget.classList.toggle('hidden');
-    const isExpanded = this.buttonTarget.getAttribute('aria-expanded') === 'true';
+    const isExpanded =
+      this.buttonTarget.getAttribute('aria-expanded') === 'true';
     this.buttonTarget.setAttribute('aria-expanded', !isExpanded);
   }
 
@@ -44,5 +45,12 @@ export default class extends Controller {
   switchLocale(event) {
     const newLocale = event.currentTarget.dataset.locale;
     localStorage.setItem('locale', newLocale);
+
+    const currentPath = window.location.pathname;
+    const newPath =
+      newLocale === 'fr'
+        ? `/fr${currentPath}`
+        : currentPath.replace(/^\/fr/, '');
+    window.location.pathname = newPath;
   }
 }

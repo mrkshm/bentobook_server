@@ -170,6 +170,18 @@
   --color-warning-700: oklch(0.85 0.16 85);
 }
 
+@custom-variant hotwire-native {
+  html[data-hotwire-native-app] & {
+    @slot;
+  }
+}
+
+@custom-variant not-hotwire-native {
+  html:not([data-hotwire-native-app]) & {
+    @slot;
+  }
+}
+
 /* Safe area utilities */
 .safe-top {
   padding-top: env(safe-area-inset-top);
@@ -207,4 +219,12 @@
   padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   padding-left: max(env(safe-area-inset-left), 1rem);
   padding-right: max(env(safe-area-inset-right), 1rem);
+}
+
+.d-hotwire-native-none {
+  display: none !important;
+}
+
+.d-hotwire-native-block {
+  display: block !important;
 }

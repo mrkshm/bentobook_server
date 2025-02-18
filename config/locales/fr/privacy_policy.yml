@@ -1,0 +1,26 @@
+fr:
+  privacy_policy:
+    title: 'Politique de confidentialité'
+    sections:
+      data_collection:
+        title: '1. Collecte des données'
+        content: |
+          Nous collectons et stockons votre adresse e-mail uniquement pour faire fonctionner l’application, notamment pour :
+          - Vous donner accès aux fonctionnalités  
+          - Envoyer des communications essentielles liées à l’application  
+          - Envoyer des e-mails de notre liste de diffusion, uniquement si vous vous y êtes explicitement inscrit
+      data_usage:
+        title: '2. Utilisation des données'
+        content: |
+          Votre e-mail ne sera jamais :
+          - Partagé avec des tiers  
+          - Vendu ou utilisé à des fins publicitaires
+      security:
+        title: '3. Sécurité des données'
+        content: |
+          Nous mettons en place des mesures de sécurité adaptées pour protéger vos données et garantir leur confidentialité.
+      user_control:
+        title: '4. Contrôle par l’utilisateur'
+        content: |
+          Vous pouvez vous désinscrire de notre liste de diffusion à tout moment via le lien fourni dans nos e-mails.
+    contact: 'Pour toute question, contactez-nous à %{email}.'
