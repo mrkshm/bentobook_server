@@ -5,26 +5,40 @@
     <%= hidden_field_tag name, value %>
   <% end %>
   
-  <div class="form-control w-full">
-    <label for="sort-select" class="label">
-      <span class="label-text"><%= t('common.sort.sort_by') %></span>
-    </label>
-    <div class="flex gap-2 items-center">
-      <select id="sort-select" name="order_by" class="select select-bordered w-full md:w-64" onchange="this.form.submit()">
-        <% @fields.each do |value, label| %>
-          <option value="<%= value %>" <%= 'selected' if @current_order == value %>><%= label %></option>
-        <% end %>
-      </select>
-      <div class="flex gap-1">
-        <%= button_tag type: 'submit', name: 'order_direction', value: 'asc', 
-            class: "btn btn-ghost btn-sm #{'btn-active' if @current_direction != 'desc'}" do %>
-          <%= heroicon "arrow-down", options: { class: "w-5 h-5" } %>
-        <% end %>
-        <%= button_tag type: 'submit', name: 'order_direction', value: 'desc', 
-            class: "btn btn-ghost btn-sm #{'btn-active' if @current_direction == 'desc'}" do %>
-          <%= heroicon "arrow-up", options: { class: "w-5 h-5" } %>
-        <% end %>
+  <div class="space-y-4">
+    <div>
+      <label for="sort-select" class="block text-sm/6 font-medium text-surface-900">
+        <%= t('common.sort.sort_by') %>
+      </label>
+      <div class="mt-2 grid grid-cols-1">
+        <select id="sort-select" 
+                name="order_by" 
+                class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-surface-50 py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                onchange="this.form.submit()">
+          <% @fields.each do |value, label| %>
+            <option value="<%= value %>" <%= 'selected' if @current_order == value %>><%= label %></option>
+          <% end %>
+        </select>
+        <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
       </div>
+    </div>
+
+    <div class="flex gap-2">
+      <%= button_tag type: 'submit', 
+                    name: 'order_direction', 
+                    value: 'asc', 
+                    class: "inline-flex items-center rounded-md px-2.5 py-1.5 text-sm font-medium shadow-sm #{@current_direction != 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+        <%= heroicon "arrow-down", options: { class: "w-4 h-4" } %>
+      <% end %>
+      
+      <%= button_tag type: 'submit', 
+                    name: 'order_direction', 
+                    value: 'desc', 
+                    class: "inline-flex items-center rounded-md px-2.5 py-1.5 text-sm font-medium shadow-sm #{@current_direction == 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+        <%= heroicon "arrow-up", options: { class: "w-4 h-4" } %>
+      <% end %>
     </div>
   </div>
 <% end %>

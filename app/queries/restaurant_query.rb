@@ -58,8 +58,11 @@ class RestaurantQuery
     def sort_by_distance(scoped)
       return scoped unless params[:latitude].present? && params[:longitude].present?
 
-      scoped.by_distance(
-        origin: [params[:latitude].to_f, params[:longitude].to_f]
-      )
+      lat = params[:latitude].to_f
+      lon = params[:longitude].to_f
+
+      scoped
+        .select("restaurants.*, ST_Distance(google_restaurants.location, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)) as distance")
+        .order('distance')
     end
 end
