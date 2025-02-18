@@ -1,0 +1,33 @@
+<div class="hidden lg:flex lg:items-center lg:space-x-4">
+  <%= render Shell::ThemeToggleComponent.new %>
+  
+  <% if user_signed_in? %>
+    <%= link_to restaurants_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-200" do %>
+      <%= t("nav.restaurants") %>
+    <% end %>
+
+    <%= link_to lists_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
+      <%= t("nav.lists") %>
+      <%= notification_dot %>
+    <% end %>
+
+    <%= link_to visits_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
+      <%= t("nav.visits") %>
+    <% end %>
+
+    <%= link_to t("nav.contacts"), contacts_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+
+    <%= link_to t("nav.profile"), profile_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+  <% else %>
+    <%= link_to t("sign_in"), new_user_session_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
+
+    <%= link_to t("sign_up"), new_user_registration_path, 
+        class: "px-3 py-2 rounded-md text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" %>
+  <% end %>
+</div>

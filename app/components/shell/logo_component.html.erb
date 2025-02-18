@@ -1,0 +1,7 @@
+<div class="flex-shrink-0">
+  <% if user_signed_in? %>
+    <%= link_to "BentoBook", restaurants_path, class: "text-xl font-bold text-blue-600" %>
+  <% else %>
+    <%= link_to "BentoBook", root_path, class: "text-xl font-bold text-blue-600" %>
+  <% end %>
+</div>

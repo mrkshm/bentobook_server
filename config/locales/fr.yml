@@ -50,6 +50,9 @@ fr:
     profile: "Mon profil"
     contacts: "Contacts"
     lists: "Listes"
+    dashboard: "Tableau de bord"
+    welcome: "Bienvenue sur BentoBook"
+    dashboard_description: "Que souhaitez-vous faire aujourd'hui ?"
   pagy:
     nav:
       previous: "« Précédent"

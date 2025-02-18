@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html <%= "data-hotwire-native-app" if hotwire_native_app? %> lang="en"">
   <head>
-    <title>BentobookServer</title>
+    <title><%= content_for(:title) || "BentoBook" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     
     <%= vite_client_tag %>
     <%= vite_javascript_tag 'entrypoints/application', defer: false %>
-    <%= javascript_include_tag "turbo", type: "module" %>
     
     <%= javascript_tag nonce: true do %>
       window.googleMapsApiKey = "<%= Rails.application.credentials.google_maps_api_key %>";
@@ -18,98 +17,48 @@
     <style>
       body { 
         margin: 0;
-        background-color: #ffffff;
+        background-color: oklch(0.25 0.004 270);
       }
     </style>
   </head>
-  <body class="bg-green-200">
-    <!-- loading indicator -->
-    <div id="loading-indicator" class="fixed inset-0 flex items-center justify-center bg-white z-50" style="display: none;">
-      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
+  <body data-theme="light" class="bg-surface-100">
+    <%= render Shell::LoadingIndicatorComponent.new %>
 
-    <div class="min-h-screen flex flex-col">
-      <nav class="bg-white shadow">
+    <% if user_signed_in? %>
+      <nav class="sticky top-0 z-50 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between h-16 items-center">
-            <div class="flex-shrink-0">
-              <% if user_signed_in? %>
-                <%= link_to "BentoBook", restaurants_path, class: "text-xl font-bold text-blue-600" %>
-              <% else %>
-                <%= link_to "BentoBook", root_path, class: "text-xl font-bold text-blue-600" %>
-              <% end %>
-            </div>
-          
+          <div class="flex justify-between h-16 items-center hotwire-native:hidden">
+            <%= render Shell::LogoComponent.new %>
+            
             <!-- Hamburger menu for mobile -->
-            <div class="lg:hidden">
-              <button class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100" id="mobile-menu-button" type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-              </button>
-            </div>
-          
+            <%= render Shell::HamburgerButtonComponent.new(mobile_menu_id: "mobile-menu") %>
+
             <!-- Desktop menu -->
-            <div class="hidden lg:flex lg:items-center lg:space-x-4">
-              <% if user_signed_in? %>
-                <%= link_to restaurants_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
-                  <%= t("nav.restaurants") %>
-                <% end %>
-                <%= link_to lists_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
-                  <%= t("nav.lists") %>
-                  <%= notification_dot %>
-                <% end %>
-                <%= link_to visits_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
-                  <%= t("nav.visits") %>
-                <% end %>
-                <%= link_to t("nav.contacts"), contacts_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-                <%= link_to t("nav.profile"), profile_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-              <% else %>
-                <%= link_to t("sign_in"), new_user_session_path, class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-                <%= link_to t("sign_up"), new_user_registration_path, class: "px-3 py-2 rounded-md text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" %>
-              <% end %>
-            </div>
+            <%= render Shell::DesktopMenuComponent.new %>
           </div>
         </div>
         
         <!-- Mobile menu (hidden by default) -->
-        <div id="mobile-menu" class="lg:hidden" style="display: none;">
-          <div class="px-2 pt-2 pb-3 space-y-1">
-            <% if user_signed_in? %>
-              <%= link_to t("nav.restaurants"), restaurants_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-              <%= link_to lists_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
-                <%= t("nav.lists") %>
-                <%= notification_dot %>
-              <% end %>
-              <%= link_to t("nav.visits"), visits_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-              <%= link_to t("nav.contacts"), contacts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-              <%= link_to t("nav.profile"), profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-            <% else %>
-              <%= link_to t("sign_in"), new_user_session_path, class: "block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" %>
-              <%= link_to t("sign_up"), new_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50" %>
-            <% end %>
-          </div>
-        </div>
+        <%= render Shell::MobileMenuComponent.new(id: "mobile-menu") %>
       </nav>
+    <% end %>
 
-      <main class="flex-grow">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow bg-surface-100" data-turbo-permanent>
+      <div class="w-full flex justify-center">
+        <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <% if devise_controller? %>
-            <% if notice %>
-              <div class="p-4 mb-4 text-sm text-blue-700 bg-blue-100 rounded-lg"><%= notice %></div>
-            <% end %>
-            <% if alert %>
-              <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"><%= alert %></div>
-            <% end %>
+            <div class="py-8">
+              <%= render Shell::FlashMessagesComponent.new(notice: notice, alert: alert) %>
+              <%= yield %>
+            </div>
+          <% else %>
+            <%= yield %>
           <% end %>
-          <%= yield %>
         </div>
-      </main>
+      </div>
+    </main>
 
-      <footer class="bg-gray-50">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <p class="text-center text-gray-600 text-sm">&copy; <%= Time.current.year %> BentoBook. <%= t("all_rights_reserved") %></p>
-        </div>
-      </footer>
-    </div>
+    <%= render Shell::FooterComponent.new %>
 
     <% if content_for?(:google_maps) %>
       <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_maps_api_key}&libraries=places&callback=initGooglePlaces", 
@@ -117,15 +66,5 @@
           async: true,
           "data-turbo-track": "reload" %>
     <% end %>
-    <script>
-      // Handle Turbo navigation
-      document.addEventListener("turbo:before-render", function() {
-        document.getElementById('loading-indicator').style.display = 'flex';
-      });
-
-      document.addEventListener("turbo:render", function() {
-        document.getElementById('loading-indicator').style.display = 'none';
-      });
-    </script>
   </body>
 </html>

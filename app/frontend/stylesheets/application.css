@@ -4,20 +4,182 @@
 @source "../../../app/views/**/*.rb";
 @source "../../../app/helpers/**/*.rb";
 @source "../../../app/components/**/*.rb";
+@source "../../../app/components/**/*.html.erb";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-typography: var(--typography);
+  /* PRIMARY */
+  --color-primary-50: var(--color-primary-50);
+  --color-primary-100: var(--color-primary-100);
+  --color-primary-200: var(--color-primary-200);
+  --color-primary-300: var(--color-primary-300);
+  --color-primary-400: var(--color-primary-400);
+  --color-primary-500: var(--color-primary-500);
+  --color-primary-600: var(--color-primary-600);
+  --color-primary-700: var(--color-primary-700);
+  --color-primary-800: var(--color-primary-800);
+  --color-primary-900: var(--color-primary-900);
+  --color-primary-950: var(--color-primary-950);
+
+  /* SURFACE */
+  --color-surface-50: var(--color-surface-50);
+  --color-surface-100: var(--color-surface-100);
+  --color-surface-200: var(--color-surface-200);
+  --color-surface-300: var(--color-surface-300);
+  --color-surface-400: var(--color-surface-400);
+  --color-surface-500: var(--color-surface-500);
+  --color-surface-600: var(--color-surface-600);
+  --color-surface-700: var(--color-surface-700);
+  --color-surface-800: var(--color-surface-800);
+  --color-surface-900: var(--color-surface-900);
+  --color-surface-950: var(--color-surface-950);
+
+  /* SUCCESS */
+  --color-success-50: var(--color-success-50);
+  --color-success-100: var(--color-success-100);
+  --color-success-300: var(--color-success-300);
+  --color-success-500: var(--color-success-500);
+  --color-success-600: var(--color-success-600);
+  --color-success-700: var(--color-success-700);
+
+  /* WARNING */
+  --color-warning-50: var(--color-warning-50);
+  --color-warning-100: var(--color-warning-100);
+  --color-warning-300: var(--color-warning-300);
+  --color-warning-500: var(--color-warning-500);
+  --color-warning-600: var(--color-warning-600);
+  --color-warning-700: var(--color-warning-700);
+
+  /* ERROR */
+  --color-error-50: var(--color-error-50);
+  --color-error-100: var(--color-error-100);
+  --color-error-300: var(--color-error-300);
+  --color-error-500: var(--color-error-500);
+  --color-error-600: var(--color-error-600);
+  --color-error-700: var(--color-error-700);
 }
 
 [data-theme='light'] {
-  --background: #fff;
-  --typography: #333;
+  /* PRIMARY */
+  --color-primary-50: oklch(0.97 0.02 270);
+  --color-primary-100: oklch(0.94 0.04 270);
+  --color-primary-200: oklch(0.89 0.07 270);
+  --color-primary-300: oklch(0.83 0.1 270);
+  --color-primary-400: oklch(0.76 0.13 270);
+  --color-primary-500: oklch(0.67 0.15 270);
+  --color-primary-600: oklch(0.6 0.14 270);
+  --color-primary-700: oklch(0.52 0.12 270);
+  --color-primary-800: oklch(0.45 0.1 270);
+  --color-primary-900: oklch(0.38 0.08 270);
+  --color-primary-950: oklch(0.32 0.06 270);
+
+  /* SURFACE */
+  --color-surface-50: oklch(
+    0.98 0.003 270
+  ); /* Nearly white, slight warm tint */
+  --color-surface-100: oklch(0.95 0.004 270); /* Very light background */
+  --color-surface-200: oklch(0.9 0.005 270); /* Alternative background */
+  --color-surface-300: oklch(0.85 0.006 270); /* Subtle borders */
+  --color-surface-400: oklch(0.75 0.007 270); /* Disabled text */
+  --color-surface-500: oklch(0.65 0.008 270); /* Placeholder text */
+  --color-surface-600: oklch(0.55 0.007 270); /* Secondary text */
+  --color-surface-700: oklch(0.45 0.006 270); /* Strong text */
+  --color-surface-800: oklch(0.35 0.005 270); /* Emphasized text */
+  --color-surface-900: oklch(0.25 0.004 270); /* High contrast text */
+  --color-surface-950: oklch(0.2 0.003 270); /* Maximum contrast text */
+
+  /* SUCCESS - simplified scale */
+  --color-success-50: oklch(
+    0.95 0.06 145
+  ); /* Light background for success messages */
+  --color-success-100: oklch(0.9 0.08 145); /* Alternative light background */
+  --color-success-300: oklch(0.75 0.12 145); /* Borders, subtle elements */
+  --color-success-500: oklch(0.65 0.15 145); /* Icons, visual indicators */
+  --color-success-600: oklch(0.55 0.18 145); /* Text, buttons */
+  --color-success-700: oklch(0.45 0.15 145); /* Hover states, strong emphasis */
+
+  /* ERROR - red based */
+  --color-error-50: oklch(
+    0.96 0.04 30
+  ); /* Light background for error messages */
+  --color-error-100: oklch(0.92 0.06 30); /* Alternative light background */
+  --color-error-300: oklch(0.75 0.12 30); /* Borders, subtle elements */
+  --color-error-500: oklch(0.65 0.18 30); /* Icons, visual indicators */
+  --color-error-600: oklch(0.55 0.2 30); /* Text, buttons */
+  --color-error-700: oklch(0.45 0.16 30); /* Hover states */
+
+  /* WARNING - amber based */
+  --color-warning-50: oklch(
+    0.96 0.05 85
+  ); /* Light background for warning messages */
+  --color-warning-100: oklch(0.92 0.08 85); /* Alternative light background */
+  --color-warning-300: oklch(0.75 0.12 85); /* Borders, subtle elements */
+  --color-warning-500: oklch(0.65 0.18 85); /* Icons, visual indicators */
+  --color-warning-600: oklch(0.55 0.2 85); /* Text, buttons */
+  --color-warning-700: oklch(0.45 0.16 85); /* Hover states */
 }
 
 [data-theme='dark'] {
-  --background: #333;
-  --typography: #fff;
+  /* PRIMARY - adjusted for dark theme */
+  --color-primary-50: oklch(0.97 0.02 270);
+  --color-primary-100: oklch(0.94 0.04 270);
+  --color-primary-200: oklch(0.89 0.07 270);
+  --color-primary-300: oklch(0.83 0.1 270);
+  --color-primary-400: oklch(0.76 0.13 270);
+  --color-primary-500: oklch(0.67 0.15 270);
+  --color-primary-600: oklch(0.6 0.14 270);
+  --color-primary-700: oklch(0.52 0.12 270);
+  --color-primary-800: oklch(0.45 0.1 270);
+  --color-primary-900: oklch(0.38 0.08 270);
+  --color-primary-950: oklch(0.32 0.06 270);
+
+  /* SURFACE - inverted for dark theme */
+  --color-surface-50: oklch(0.2 0.003 270); /* Darkest background */
+  --color-surface-100: oklch(0.25 0.004 270); /* Alternative dark background */
+  --color-surface-200: oklch(0.3 0.005 270); /* Subtle elevated surfaces */
+  --color-surface-300: oklch(0.35 0.006 270); /* Borders */
+  --color-surface-400: oklch(0.45 0.007 270); /* Subtle text */
+  --color-surface-500: oklch(0.55 0.008 270); /* Secondary text */
+  --color-surface-600: oklch(0.65 0.007 270); /* Primary text */
+  --color-surface-700: oklch(0.75 0.006 270); /* Emphasized text */
+  --color-surface-800: oklch(0.85 0.005 270); /* High contrast text */
+  --color-surface-900: oklch(0.95 0.004 270); /* Maximum contrast text */
+  --color-surface-950: oklch(0.98 0.003 270); /* Pure white text */
+
+  /* SUCCESS - adjusted for dark theme visibility */
+  --color-success-50: oklch(0.25 0.06 145); /* Dark success background */
+  --color-success-100: oklch(0.3 0.08 145); /* Alternative dark background */
+  --color-success-300: oklch(0.45 0.12 145); /* Borders */
+  --color-success-500: oklch(0.65 0.18 145); /* Icons, indicators */
+  --color-success-600: oklch(0.75 0.2 145); /* Text */
+  --color-success-700: oklch(0.85 0.16 145); /* Bright emphasis */
+
+  /* ERROR - adjusted for dark theme visibility */
+  --color-error-50: oklch(0.25 0.04 30);
+  --color-error-100: oklch(0.3 0.06 30);
+  --color-error-300: oklch(0.45 0.12 30);
+  --color-error-500: oklch(0.65 0.18 30);
+  --color-error-600: oklch(0.75 0.2 30);
+  --color-error-700: oklch(0.85 0.16 30);
+
+  /* WARNING - adjusted for dark theme visibility */
+  --color-warning-50: oklch(0.25 0.05 85);
+  --color-warning-100: oklch(0.3 0.08 85);
+  --color-warning-300: oklch(0.45 0.12 85);
+  --color-warning-500: oklch(0.65 0.18 85);
+  --color-warning-600: oklch(0.75 0.2 85);
+  --color-warning-700: oklch(0.85 0.16 85);
+}
+
+@custom-variant hotwire-native {
+  html[data-hotwire-native-app] & {
+    @slot;
+  }
+}
+
+@custom-variant not-hotwire-native {
+  html:not([data-hotwire-native-app]) & {
+    @slot;
+  }
 }
 
 /* Safe area utilities */
@@ -57,4 +219,12 @@
   padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   padding-left: max(env(safe-area-inset-left), 1rem);
   padding-right: max(env(safe-area-inset-right), 1rem);
+}
+
+.d-hotwire-native-none {
+  display: none !important;
+}
+
+.d-hotwire-native-block {
+  display: block !important;
 }

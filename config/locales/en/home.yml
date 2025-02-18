@@ -1,0 +1,44 @@
+en:
+  pages:
+    home:
+      hero:
+        title: 'BentoBook'
+        tagline: 'Not just where you ate, but how you felt.'
+        intro: 'A new kind of social dining app that understands the deeply personal nature of food memories. BentoBook creates a private space for your culinary journey – as intimate or as social as you want it to be.'
+
+      culinary_archive:
+        title: 'Your Personal Culinary Archive'
+        story_intro: 'Every meal tells a story. Some are quiet moments of discovery, others are celebrations shared with loved ones. Where did you and your partner have your first date? What did you order that made you both smile? These moments matter, and BentoBook helps you capture them naturally, without taking you out of the moment.'
+        features: 'With BentoBook, you can quickly log where you ate, the meals you enjoyed, and who you were with. Use photos and notes to keep track of special dishes and revisit them anytime. Together with speedy searching and detailed visit records, BentoBook helps you spend less time on your phone and more time experiencing life.'
+        mission: "We built BentoBook because we believe your food experiences deserve better than getting lost in endless social feeds or buried in generic review sites. It's an app that respects the personal nature of food while making it easy to share recommendations with the people who matter most."
+
+      features:
+        section_title: 'A Different Kind of Food App'
+        private_design:
+          title: 'Private by Design'
+          description: "Your memories stay private by default. No public profiles, no social pressure – just your personal collection of dining experiences, organized your way. And when you're ready to share, BentoBook lets you do it on your terms."
+        living_history:
+          title: 'Living History'
+          description: 'Discover patterns in your dining life that tell your story. See where you ate most frequently last year, who you shared the most meals with, or which cuisines dominated your weekends.'
+        quick_capture:
+          title: 'Quick Memory Capture'
+          description: 'We designed BentoBook to stay out of your way. Log visits in seconds, add photos and notes when you want, and focus on enjoying your meal. The app adapts to how you want to use it.'
+        organization:
+          title: 'Personal Organization'
+          description: 'Create collections that matter to you – first-date spots, anniversary celebrations, comfort food favorites. Your memories, your categories.'
+        sharing:
+          title: 'Meaningful Sharing'
+          description: 'Share recommendations with friends and family who appreciate your taste. No public reviews or ratings – just personal suggestions for people you trust.'
+        relationships:
+          title: 'Relationship Stories'
+          description: 'Track the restaurants that mark important moments in your relationships. First dates, family celebrations, friend reunions – all organized by the people who matter.'
+
+      cta:
+        title: 'Want product news and updates? Sign up for our newsletter.'
+        email_placeholder: 'Enter your email'
+        button: 'Subscribe'
+        privacy_notice: 'We care about your data. Read our'
+        privacy_link: 'privacy policy'
+        success:
+          title: 'Thank You!'
+          message: "We'll keep you posted about BentoBook's launch."
