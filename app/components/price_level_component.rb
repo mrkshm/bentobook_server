@@ -2,6 +2,7 @@
 
 class PriceLevelComponent < ViewComponent::Base
   include RestaurantsHelper
+  include HeroiconHelper
 
   def initialize(restaurant:, form: nil)
     @restaurant = restaurant
@@ -15,7 +16,11 @@ class PriceLevelComponent < ViewComponent::Base
   private
 
   def render_readonly_price_level
-    content_tag(:span, @restaurant.price_level_display, class: "font-bold text-green-600")
+    content_tag(:div, class: "flex items-center space-x-1") do
+      (@restaurant.price_level || 0).times.map do
+        heroicon("currency-dollar", options: { class: "w-5 h-5 text-green-600" })
+      end.join.html_safe
+    end
   end
 
   def render_editable_price_level
