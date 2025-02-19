@@ -52,11 +52,18 @@ class RestaurantsController < ApplicationController
       if updater.update
         respond_to do |format|
           format.turbo_stream do
-            render turbo_stream: turbo_stream.replace(
-              dom_id(@restaurant, :rating),
-              partial: "restaurants/rating",
-              locals: { restaurant: @restaurant }
-            )
+            render turbo_stream: [
+              turbo_stream.replace(
+                dom_id(@restaurant, :rating),
+                partial: "restaurants/rating",
+                locals: { restaurant: @restaurant }
+              ),
+              turbo_stream.replace(
+                "#{dom_id(@restaurant, :rating)}_modal",
+                partial: "restaurants/rating",
+                locals: { restaurant: @restaurant }
+              )
+            ]
           end
           format.html do
             if turbo_frame_request?

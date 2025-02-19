@@ -61,15 +61,28 @@ export default class extends Controller {
         method: 'PATCH',
         headers: {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-          'Accept': 'application/json'
+          'Accept': 'text/vnd.turbo-stream.html, application/json'
         },
         body: formData
       }).then(response => {
         console.log("Server response:", response)
         if (!response.ok) throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`)
+        
+        // Handle both Turbo Stream and JSON responses
+        const contentType = response.headers.get("Content-Type")
+        if (contentType && contentType.includes("text/vnd.turbo-stream.html")) {
+          return response.text().then(html => {
+            Turbo.renderStreamMessage(html)
+          })
+        }
         return response.json()
       }).then(data => {
-        console.log("Rating updated successfully:", data)
+        if (data) { // Only for JSON responses
+          console.log("Rating updated successfully:", data)
+          this.rating = data.rating
+          this.updateStars()
+        }
+
         // Find and close the modal
         const modalId = `${this.element.closest('[data-controller="ratings"]').id}_modal`
         const modal = document.getElementById(modalId)
@@ -79,15 +92,6 @@ export default class extends Controller {
             modalController.close()
           }
         }
-
-        // Update all instances of this rating component
-        document.querySelectorAll(`[data-controller="ratings"][data-ratings-url-value="${this.urlValue}"]`).forEach(el => {
-          const controller = this.application.getControllerForElementAndIdentifier(el, 'ratings')
-          if (controller && controller !== this) {
-            controller.rating = newRating
-            controller.updateStars()
-          }
-        })
       }).catch(error => {
         console.error('Error updating rating:', error)
         // Revert the UI on error
