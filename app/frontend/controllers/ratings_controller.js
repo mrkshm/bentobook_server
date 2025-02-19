@@ -1,14 +1,36 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["star"]
+  static targets = ["star", "starsContainer"]
   static values = {
-    rating: Number
+    rating: Number,
+    url: String
   }
 
   connect() {
+    console.log("Ratings controller connected", this.element)
     this.rating = this.ratingValue || 0
     this.updateStars()
+  }
+
+  openModal(event) {
+    console.log("Opening modal")
+    event.preventDefault()
+    const modalId = `${this.element.id}_modal`
+    console.log("Looking for modal with ID:", modalId)
+    const modal = document.getElementById(modalId)
+    console.log("Found modal:", modal)
+    
+    if (modal) {
+      // Use the global Stimulus instance
+      const modalController = window.Stimulus.getControllerForElementAndIdentifier(modal, 'modal')
+      console.log("Modal controller:", modalController)
+      if (modalController) {
+        modalController.open()
+      } else {
+        console.error("Modal controller not found")
+      }
+    }
   }
 
   setRating(event) {
@@ -18,7 +40,7 @@ export default class extends Controller {
     // Disable stars during submission
     this.starTargets.forEach(star => star.disabled = true)
     
-    if (this.element.dataset.ratingsUrl) {
+    if (this.urlValue) {
       const formData = new FormData()
       formData.append("restaurant[rating]", newRating)
       
@@ -26,65 +48,46 @@ export default class extends Controller {
       this.rating = newRating
       this.updateStars()
       
-      fetch(this.element.dataset.ratingsUrl, {
+      fetch(this.urlValue, {
         method: 'PATCH',
         headers: {
-          'Accept': 'text/vnd.turbo-stream.html',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json'
         },
-        body: formData,
-        credentials: 'same-origin'
+        body: formData
       }).then(response => {
-        if (!response.ok) {
-          // Reset to previous state if request failed
-          this.rating = this.ratingValue
-          this.updateStars()
-          throw new Error('Network response was not ok')
+        if (!response.ok) throw new Error('Network response was not ok')
+        return response.json()
+      }).then(data => {
+        // Close the modal after successful update
+        const modalId = `${this.element.id}_modal`
+        const modal = document.getElementById(modalId)
+        if (modal) {
+          const modalController = window.Stimulus.getControllerForElementAndIdentifier(modal, 'modal')
+          if (modalController) {
+            modalController.close()
+          }
         }
-        return response.text()
-      }).then(html => {
-        Turbo.renderStreamMessage(html)
       }).catch(error => {
-        console.error('Error updating rating:', error)
+        console.error('Error:', error)
       }).finally(() => {
         // Re-enable stars
         this.starTargets.forEach(star => star.disabled = false)
       })
-    } else {
-      // Local update only (no server)
-      this.rating = newRating
-      this.updateStars()
-      this.starTargets.forEach(star => star.disabled = false)
     }
   }
 
-  hoverRating(event) {
-    const hoverValue = parseInt(event.currentTarget.dataset.value)
-    this.starTargets.forEach((star, index) => {
-      if (index < hoverValue) {
-        star.classList.add("text-yellow-400")
-        star.classList.remove("text-gray-500")
-      } else {
-        star.classList.remove("text-yellow-400")
-        star.classList.add("text-gray-500")
-      }
-    })
-  }
-
-  resetRating() {
-    this.updateStars()
-  }
-
   updateStars() {
-    this.starTargets.forEach((star, index) => {
-      if (index < this.rating) {
-        star.classList.add("text-yellow-400")
-        star.classList.remove("text-gray-500")
+    const stars = this.element.querySelectorAll('[data-ratings-target="star"]')
+    stars.forEach((star, index) => {
+      const starValue = index + 1
+      if (starValue <= this.rating) {
+        star.classList.remove('text-gray-500')
+        star.classList.add('text-yellow-400')
       } else {
-        star.classList.remove("text-yellow-400")
-        star.classList.add("text-gray-500")
+        star.classList.remove('text-yellow-400')
+        star.classList.add('text-gray-500')
       }
-      star.disabled = false
     })
   }
 }

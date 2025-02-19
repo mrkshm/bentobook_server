@@ -1,126 +1,158 @@
-<div class="card bg-base-100 shadow-xl max-w-2xl mx-auto mt-8">
-  <div class="card-body">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="card-title text-3xl"><%= @restaurant.name %></h1>
-      <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: 'btn btn-muted', data: { turbo: false } do %>
-        <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
-        Add a Visit
-      <% end %>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div>
-        <h2 class="text-xl font-semibold mb-3">Address</h2>
-        <p><%= "#{@restaurant.street_number} #{@restaurant.street}" %></p>
-        <p><%= "#{@restaurant.postal_code} #{@restaurant.city}" %></p>
-        <% if @restaurant.state.present? %>
-          <p><%= @restaurant.state %></p>
-        <% end %>
-        <p><%= @restaurant.country %></p>
-      </div>
-      <div>
-        <h2 class="text-xl font-semibold mb-3">Contact</h2>
-        <% if @restaurant.phone_number.present? %>
-        <p class="flex items-center">
-          <%= heroicon "phone", options: { class: "w-5 h-5 mr-2" } %>
-          <%= @restaurant.phone_number %>
-        </p>
-        <% end %>
-        <% if @restaurant.url.present? %>
-          <p class="flex items-center mt-2">
-            <%= heroicon "globe-alt", options: { class: "w-5 h-5 mr-2" } %>
-            <%= link_to @restaurant.url, @restaurant.url, target: "_blank", class: "link link-primary no-underline" %>
-          </p>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-6 mb-6">
-      <div>
-        <h2 class="text-xl font-semibold mb-3">Details</h2>
-        <div class="flex items-center space-x-4 mb-2">
-          <p><span class="font-bold">Cuisine:</span> <%= t(@restaurant.cuisine_type&.name) %></p>
-          <p><span class="font-bold">Price:</span> <%= render(PriceLevelComponent.new(restaurant: @restaurant)) %></p>
-          <p><span class="font-bold">Rating:</span> <%= render(RatingsComponent.new(rating: @restaurant.rating, readonly: true)) %></p>
+<% content_for :title, @restaurant.name %>
+  
+<div class="relative isolate overflow-hidden bg-surface-50 pt-6 pb-12 sm:py-16 lg:overflow-visible">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-x-8">
+      <!-- Main Content -->
+      <div class="lg:col-span-7">
+        <div class="flex justify-between items-center mb-6">
+          <div class="w-full">
+            <div class="flex justify-between w-full items-center">
+              <h1 class="text-4xl hotwire-native:text-2xl font-bold tracking-tight text-surface-900"><%= @restaurant.name %></h1>
+              <div class="hotwire-native:hidden">
+                <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: "inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200" do %>
+                  <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
+                  Add a visit
+                <% end %>
+              </div>
+            </div>
+            <p class="mt-0 text-lg text-surface-600"><%= t(@restaurant.cuisine_type&.name) %></p>
+          </div>
         </div>
-        <div class="my-6">
-          <% if @tags.any? %>
-            <div class="flex flex-wrap gap-2">
-              <% @tags.each do |tag| %>
-                <div class="badge badge-primary">
-                  <%= link_to tag.name, tagged_restaurants_path(tag: tag.name), class: 'text-primary-content' %>
+
+        <!-- Details Grid -->
+        <div class="mt-8 grid grid-cols-1 gap-8">
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+            <div class="flex gap-8">
+              <div class="flex items-center space-x-2">
+                <%= render(PriceLevelComponent.new(restaurant: @restaurant)) %>
+              </div>
+              <div class="flex items-center space-x-2">
+                <%= render(RatingsComponent.new(rating: @restaurant.rating, restaurant: @restaurant)) %>
+              </div>
+            </div>
+          </div>
+          <!-- Address Section -->
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div class="flex items-start space-x-3">
+                  <%= heroicon "map-pin", options: { class: "w-5 h-5 text-primary-500 mt-1" } %>
+                  <div>
+                    <p class="text-surface-700"><%= "#{@restaurant.street_number} #{@restaurant.street}" %></p>
+                    <p class="text-surface-700"><%= "#{@restaurant.postal_code} #{@restaurant.city}" %></p>
+                    <% if @restaurant.state.present? %>
+                      <p class="text-surface-700"><%= @restaurant.state %></p>
+                    <% end %>
+                    <p class="text-surface-700"><%= @restaurant.country %></p>
+                  </div>
                 </div>
-              <% end %>
+              </div>
+              
+              <div class="space-y-3">
+                <% if @restaurant.phone_number.present? %>
+                  <div class="flex items-center space-x-3">
+                    <%= heroicon "phone", options: { class: "w-5 h-5 text-primary-500" } %>
+                    <p class="text-surface-700"><%= @restaurant.phone_number %></p>
+                  </div>
+                <% end %>
+                <% if @restaurant.url.present? %>
+                  <div class="flex items-center space-x-3">
+                    <%= heroicon "globe-alt", options: { class: "w-5 h-5 text-primary-500" } %>
+                    <%= link_to URI.parse(@restaurant.url).host.gsub(/^www\./, ''), @restaurant.url, target: "_blank", class: "text-primary-600 hover:text-primary-700" %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Restaurant Details -->
+          <% if @restaurant.notes.present? or @tags.any? %>
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+
+            <% if @tags.any? %>
+              <div class="mt-4">
+                <h3 class="text-sm font-medium text-surface-700 mb-2">Tags</h3>
+                <div class="flex flex-wrap gap-2">
+                  <% @tags.each do |tag| %>
+                    <%= link_to tagged_restaurants_path(tag: tag.name), class: 'inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 hover:bg-primary-100' do %>
+                      <%= tag.name %>
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+
+            <% if @restaurant.notes.present? %>
+              <div class="">
+                <h3 class="text-sm font-medium text-surface-700 mb-2">Notes</h3>
+                <p class="text-surface-600"><%= @restaurant.notes %></p>
+              </div>
+            <% end %>
+          </div>
+          <% end %>
+
+          <!-- Images Section -->
+          <% if @restaurant.images.any? %>
+            <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+              <%= render(GalleryComponent.new(images: @restaurant.images.map(&:file))) %>
             </div>
           <% end %>
         </div>
-        <% if @restaurant.notes.present? %>
-          <div>
-            <p class="font-bold mb-1">Notes:</p>
-            <p><%= @restaurant.notes %></p>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="lg:col-span-5 mt-8 lg:mt-0">
+        <!-- Lists Section -->
+        <% if @lists.any? %>
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm mb-8">
+            <h2 class="text-xl font-semibold text-surface-900 mb-4">Lists</h2>
+            <div class="space-y-3">
+              <% @lists.each do |list| %>
+                <%= link_to list_path(list), class: "block p-3 rounded-lg hover:bg-surface-200/50 transition-colors" do %>
+                  <div class="flex items-center justify-between">
+                    <span class="text-surface-900 font-medium"><%= list.name %></span>
+                    <% if list.owner == current_user %>
+                      <span class="text-sm text-surface-600">Your list</span>
+                    <% else %>
+                      <span class="text-sm text-surface-600">By <%= list.owner.profile.display_name %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
           </div>
         <% end %>
-      </div>
-    </div>
 
-    <div class="flex space-x-4 mb-6">
-      <% if @restaurant.user == current_user %>
-        <%= link_to 'Edit', edit_restaurant_path(id: @restaurant.id), class: 'btn btn-primary', data: { turbo: false } %>
-      <% end %>
-      <%= link_to 'Back to all restaurants', restaurants_path, class: 'btn btn-ghost', data: { turbo: false } %>
-    </div>
-
-    <% if @restaurant.images.any? %>
-      <div class="mt-6">
-        <h2 class="text-xl font-semibold mb-4">Restaurant Images</h2>
-        <%= render(GalleryComponent.new(images: @restaurant.images.map(&:file))) %>
-      </div>
-    <% end %>
-
-    <% if @lists.any? %>
-      <div class="divider"></div>
-      <div class="space-y-4">
-        <h2 class="text-xl font-semibold">Lists containing this restaurant</h2>
-        <div class="flex flex-wrap gap-2">
-          <% @lists.each do |list| %>
-            <%= link_to list_path(list), class: "badge badge-lg" do %>
-              <%= list.name %>
-              <% if list.owner == current_user %>
-                <span class="ml-1 text-base-content/70">(Your list)</span>
-              <% else %>
-                <span class="ml-1 text-base-content/70">(Shared by <%= list.owner.profile.display_name %>)</span>
-              <% end %>
-            <% end %>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
-
-    <% if @visits.any? %>
-      <div class="divider"></div>
-      <div class="space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold">Visits</h2>
-          <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: 'btn btn-sm btn-ghost' do %>
-            <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
-            Add Visit
-          <% end %>
-        </div>
-        <div class="grid grid-cols-1 gap-4">
-          <% @visits.order(date: :desc).each do |visit| %>
-            <%= render(VisitCardComponent.new(visit: visit)) %>
-          <% end %>
-        </div>
-      </div>
-    <% else %>
-      <div class="divider"></div>
-      <div class="text-center py-8">
-        <p class="text-base-content/70 mb-4">No visits recorded yet</p>
-        <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: 'btn btn-primary' do %>
-          <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
-          Add Your First Visit
+        <!-- Visits Section -->
+        <% if @visits.any? %>
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+            <h2 class="text-xl font-semibold text-surface-900 mb-4">Visits</h2>
+            <div class="space-y-4">
+              <%= render partial: "visits/visit", collection: @visits %>
+            </div>
+          </div>
+        <% else %>
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm text-center">
+            <p class="text-surface-600 mb-4">No visits recorded yet</p>
+          </div>
         <% end %>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 flex space-x-4">
+          <% if @restaurant.user == current_user %>
+            <%= link_to 'Edit Restaurant', edit_restaurant_path(id: @restaurant.id), class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-primary-600 text-primary-50 hover:bg-primary-700 transition-colors', data: { turbo: false } %>
+          <% end %>
+          <%= link_to 'Back to Restaurants', restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors', data: { turbo: false } %>
+        </div>
       </div>
-    <% end %>
+    </div>
   </div>
+  <%= link_to new_visit_path(restaurant_id: @restaurant.id), 
+    class: 'not-hotwire-native:hidden fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center rounded-full bg-primary-600 text-white shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200',
+    aria: { label: 'Add a visit' } do %>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+    </svg>
+  <% end %>
 </div>

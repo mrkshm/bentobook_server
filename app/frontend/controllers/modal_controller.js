@@ -4,11 +4,12 @@ export default class extends Controller {
   static targets = ["overlay", "content"]
 
   connect() {
-    console.log("Modal controller connected")
+    // Initialize modal in hidden state
     this.element.classList.add("hidden")
   }
 
   open() {
+    // Show modal container
     this.element.classList.remove("hidden")
     
     // Start transitions after a small delay
@@ -19,39 +20,38 @@ export default class extends Controller {
       this.contentTarget.classList.add("opacity-100", "scale-100")
     })
     
+    // Prevent body scroll
     document.body.style.overflow = "hidden"
-    this.trapFocus()
   }
 
   close() {
-    
     // Start the closing transition
     this.overlayTarget.classList.remove("opacity-100")
     this.overlayTarget.classList.add("opacity-0")
     this.contentTarget.classList.remove("opacity-100", "scale-100")
     this.contentTarget.classList.add("opacity-0", "scale-95")
     
-    // Wait for the transition to complete before hiding
+    // Hide modal after transition
     setTimeout(() => {
       this.element.classList.add("hidden")
       document.body.style.overflow = ""
-      this.releaseFocus()
     }, 300)
-  }
-
-  trapFocus() {
-    this.previouslyFocused = document.activeElement
-    this.element.focus()
-  }
-
-  releaseFocus() {
-    if (this.previouslyFocused) {
-      this.previouslyFocused.focus()
-    }
   }
 
   closeWithKeyboard(event) {
     if (event.key === "Escape") {
+      event.stopPropagation() // Prevent other controllers from handling Escape
+      this.close()
+    }
+  }
+
+  handleClick(event) {
+    // If clicked element or its parent has the ignore attribute, don't close
+    const clickedElement = event.target
+    const shouldIgnore = clickedElement.closest('[data-modal-ignore-click]')
+    
+    if (!shouldIgnore) {
+      event.preventDefault()
       this.close()
     }
   }

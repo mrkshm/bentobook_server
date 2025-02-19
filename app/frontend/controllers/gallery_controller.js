@@ -117,7 +117,8 @@ export default class extends Controller {
         this.previous()
         break
       case "Escape":
-        this.closeModal()
+        event.preventDefault()
+        event.stopPropagation()
         break
     }
   }
