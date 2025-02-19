@@ -1,0 +1,5 @@
+<%= render(PriceLevelComponent.new(
+      restaurant: restaurant,
+      price_level: restaurant.price_level,
+      dom_id: dom_id(restaurant, :price_level)
+    )) %>
