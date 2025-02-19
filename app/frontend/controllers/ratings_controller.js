@@ -72,6 +72,12 @@ export default class extends Controller {
         const contentType = response.headers.get("Content-Type")
         if (contentType && contentType.includes("text/vnd.turbo-stream.html")) {
           return response.text().then(html => {
+            // Close modal before Turbo Stream updates the DOM
+            const modal = this.element.closest('[data-controller="modal"]')
+            if (modal) {
+              const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+              if (modalController) modalController.close()
+            }
             Turbo.renderStreamMessage(html)
           })
         }
@@ -81,15 +87,11 @@ export default class extends Controller {
           console.log("Rating updated successfully:", data)
           this.rating = data.rating
           this.updateStars()
-        }
-
-        // Find and close the modal
-        const modalId = `${this.element.closest('[data-controller="ratings"]').id}_modal`
-        const modal = document.getElementById(modalId)
-        if (modal) {
-          const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
-          if (modalController) {
-            modalController.close()
+          // Close modal after successful update
+          const modal = this.element.closest('[data-controller="modal"]')
+          if (modal) {
+            const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+            if (modalController) modalController.close()
           }
         }
       }).catch(error => {
