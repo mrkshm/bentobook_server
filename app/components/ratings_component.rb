@@ -33,28 +33,30 @@ class RatingsComponent < ViewComponent::Base
   def render_editable_stars
     # Render modal content at page level
     content_for :modals do
-      render(ModalComponent.new(id: "#{@dom_id}_modal")) do |modal|
-        modal.with_header { tag.h3("Rate this restaurant", class: "text-lg font-medium text-surface-900") }
-        
-        modal.with_body do
-          # Important: Add the ratings controller to the modal content
-          tag.div(class: "flex items-center justify-center gap-4 py-4",
-                 data: { 
-                   controller: "ratings",
-                   ratings_url_value: restaurant_path,
-                   ratings_rating_value: @rating
-                 }) do
-            (1..5).map do |i|
-              button_tag(type: "button",
-                        class: "w-12 h-12 focus:outline-none transition-transform hover:scale-110",
-                        data: { 
-                          ratings_target: "star",
-                          value: i,
-                          action: "click->ratings#setRating"
-                        }) do
-                star_svg(i <= @rating ? "text-yellow-400" : "text-gray-500", size: :lg)
-              end
-            end.join.html_safe
+      tag.div(id: "#{@dom_id}_modal_container") do
+        render(ModalComponent.new(id: "#{@dom_id}_modal")) do |modal|
+          modal.with_header { tag.h3("Rate this restaurant", class: "text-lg font-medium text-surface-900") }
+          
+          modal.with_body do
+            # Important: Add the ratings controller to the modal content
+            tag.div(class: "flex items-center justify-center gap-4 py-4",
+                   data: { 
+                     controller: "ratings",
+                     ratings_url_value: restaurant_path,
+                     ratings_rating_value: @rating
+                   }) do
+              (1..5).map do |i|
+                button_tag(type: "button",
+                          class: "w-12 h-12 focus:outline-none transition-transform hover:scale-110",
+                          data: { 
+                            ratings_target: "star",
+                            value: i,
+                            action: "click->ratings#setRating"
+                          }) do
+                  star_svg(i <= @rating ? "text-yellow-400" : "text-gray-500", size: :lg)
+                end
+              end.join.html_safe
+            end
           end
         end
       end
