@@ -1,6 +1,6 @@
-<div class="container mx-auto px-4 py-8">
-<h1 class="mt-4 mb-12 text-4xl font-semibold tracking-tight text-pretty text-surface-900 sm:text-5xl"><%= t('privacy_policy.title') %></h1>
+<%= render "shared/header", title: t('privacy_policy.title') %>
 
+<div class="container mx-auto px-4 pb-8 hotwire-native:pt-8">
 <% t('privacy_policy.sections').each do |key, section| %>
 <div class="mb-8">
   <h2 class="text-2xl font-semibold tracking-tight text-pretty text-surface-900"><%= section[:title] %></h2>
