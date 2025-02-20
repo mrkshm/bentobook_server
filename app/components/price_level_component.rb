@@ -26,15 +26,19 @@ class PriceLevelComponent < ViewComponent::Base
 
   def render_readonly_price_level
     content_tag(:div, class: "flex items-center space-x-1", id: @dom_id) do
-      (@price_level || 0).times.map do
-        heroicon("currency-dollar", options: { class: "w-5 h-5 text-green-600" })
+      (1..4).map do |i|
+        heroicon("currency-dollar",
+                 options: { class: "w-5 h-5 #{i <= @price_level ? 'text-green-600' : 'text-gray-400'}" })
       end.join.html_safe
     end
   end
 
   def render_editable_price_level
     content_for :modals do
-      render partial: "restaurants/price_level_modal", locals: { restaurant: @restaurant }
+      render partial: "restaurants/price_level_modal",
+             locals: {
+               restaurant: @restaurant
+             }
     end
 
     # Render the price level display button
@@ -42,15 +46,16 @@ class PriceLevelComponent < ViewComponent::Base
             id: @dom_id,
             data: {
               controller: "price-level",
-              price_level_url_value: restaurant_path(@restaurant),
+              price_level_url_value: restaurant_path(@restaurant, locale: I18n.locale),
               price_level_level_value: @price_level
             }) do
       content_tag(:button,
                  type: "button",
                  class: "flex items-center space-x-1 cursor-pointer focus:outline-none",
                  data: { action: "click->price-level#openModal" }) do
-        (@price_level || 0).times.map do
-          heroicon("currency-dollar", options: { class: "w-5 h-5 text-green-600" })
+        (1..4).map do |i|
+          heroicon("currency-dollar",
+                   options: { class: "w-5 h-5 #{i <= @price_level ? 'text-green-600' : 'text-gray-400'}" })
         end.join.html_safe
       end
     end
