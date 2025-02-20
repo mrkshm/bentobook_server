@@ -98,7 +98,7 @@
           <!-- Images Section -->
           <% if @restaurant.images.any? %>
             <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
-              <%= render(GalleryComponent.new(images: @restaurant.images.map(&:file))) %>
+              <%= render(GalleryComponent.new(images: @restaurant.images)) %>
             </div>
           <% end %>
         </div>
