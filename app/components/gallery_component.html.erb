@@ -2,18 +2,19 @@
   <% @images.each_with_index do |image, index| %>
     <div class="aspect-w-3 aspect-h-2">
       <%= render(S3ImageComponent.new(
-        image: image,
-        size: :medium,
+        image: process_image(image),
+        size: :original,
         html_class: image_classes,
         data: { 
-          action: "click->gallery#openModal",
+          controller: "gallery-image",
+          action: "click->gallery#openModal load->gallery#imageLoaded error->gallery#imageError",
           gallery_index_param: index
         }
       )) %>
     </div>
 
     <%= render(GalleryModalComponent.new(
-      image: image,
+      image: process_image(image, :large),
       images: @images,
       total_count: @images.size,
       current_index: index

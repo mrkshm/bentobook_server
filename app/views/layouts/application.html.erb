@@ -17,15 +17,15 @@
     <style>
       body { 
         margin: 0;
-        background-color: oklch(0.25 0.004 270);
+        # background-color: oklch(0.25 0.004 270);
       }
     </style>
   </head>
-  <body data-theme="light" class="bg-surface-100">
+  <body data-theme="light" class="bg-surface-100 text-surface-700">
     <%= render Shell::LoadingIndicatorComponent.new %>
 
     <% if user_signed_in? %>
-      <nav class="sticky top-0 z-50 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
+      <nav class="sticky top-0 z-50 text-surface-700 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-16 items-center hotwire-native:hidden">
             <%= render Shell::LogoComponent.new %>
@@ -45,7 +45,7 @@
 
     <main class="flex-grow bg-surface-100" data-turbo-permanent>
       <div class="w-full flex justify-center">
-        <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8 hotwire-native:px-2">
           <% if devise_controller? %>
             <div class="py-8">
               <%= render Shell::FlashMessagesComponent.new(notice: notice, alert: alert) %>
@@ -66,5 +66,8 @@
           async: true,
           "data-turbo-track": "reload" %>
     <% end %>
+
+    <!-- Modals container -->
+<%= yield :modals if content_for?(:modals) %>
   </body>
 </html>

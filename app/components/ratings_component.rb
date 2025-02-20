@@ -1,85 +1,94 @@
 # frozen_string_literal: true
 
 class RatingsComponent < ViewComponent::Base
-    include ActionView::RecordIdentifier
+  include ActionView::RecordIdentifier
 
-    def initialize(rating: nil, form: nil, readonly: false, size: :md, dom_id: nil, restaurant: nil)
-      @rating = rating.to_i  # Convert to integer, nil becomes 0
-      @form = form
-      @readonly = readonly
-      @size = size
-      @dom_id = dom_id || (restaurant ? dom_id(restaurant, :rating) : nil)
-      @restaurant = restaurant
+  def initialize(rating: nil, form: nil, readonly: false, size: :md, dom_id: nil, restaurant: nil)
+    @rating = rating.to_i  # Convert to integer, nil becomes 0
+    @form = form
+    @readonly = readonly
+    @size = size
+    @dom_id = dom_id || (restaurant ? dom_id(restaurant, :rating) : nil)
+    @restaurant = restaurant
+  end
+
+  def call
+    if @readonly
+      render_readonly_stars
+    else
+      render_editable_stars
     end
+  end
 
-    def call
-      if @readonly
-        render_readonly_stars
-      else
-        render_editable_stars
+  private
+
+  def render_readonly_stars
+    content_tag(:div, class: "flex items-center", id: @dom_id) do
+      (1..5).map do |i|
+        star_svg(i <= @rating ? "text-yellow-400" : "text-gray-500")
+      end.join.html_safe
+    end
+  end
+
+  def render_editable_stars
+    # Render modal content at page level
+    content_for :modals do
+      tag.div(id: "#{@dom_id}_modal_container") do
+        render(ModalComponent.new(id: "#{@dom_id}_modal")) do |modal|
+          modal.with_header { tag.h3("Rate this restaurant", class: "text-lg font-medium text-surface-900") }
+          
+          modal.with_body do
+            # Important: Add the ratings controller to the modal content
+            tag.div(class: "flex items-center justify-center gap-4 py-4",
+                   data: { 
+                     controller: "ratings",
+                     ratings_url_value: restaurant_path,
+                     ratings_rating_value: @rating
+                   }) do
+              (1..5).map do |i|
+                button_tag(type: "button",
+                          class: "w-12 h-12 focus:outline-none transition-transform hover:scale-110",
+                          data: { 
+                            ratings_target: "star",
+                            value: i,
+                            action: "click->ratings#setRating"
+                          }) do
+                  star_svg(i <= @rating ? "text-yellow-400" : "text-gray-500", size: :lg)
+                end
+              end.join.html_safe
+            end
+          end
+        end
       end
     end
 
-    private
-
-    def render_readonly_stars
-      content_tag(:div, class: "flex items-center", id: @dom_id) do
+    # Render the stars button
+    tag.div(class: "flex items-center", 
+            id: @dom_id, 
+            data: { 
+              controller: "ratings",
+              ratings_url_value: restaurant_path,
+              ratings_rating_value: @rating
+            }) do
+      content_tag(:button, type: "button", class: "flex items-center cursor-pointer focus:outline-none", data: { action: "click->ratings#openModal" }) do
         (1..5).map do |i|
           star_svg(i <= @rating ? "text-yellow-400" : "text-gray-500")
         end.join.html_safe
       end
     end
+  end
 
-    def render_editable_stars
-      content_tag(:div,
-        class: "flex items-center",
-        data: {
-          controller: "ratings",
-          ratings_target: "container",
-          ratings_url: @restaurant ? "/restaurants/#{@restaurant.id}" : nil,
-          ratings_rating_value: @rating
-        },
-        id: @dom_id
-      ) do
-        star_buttons
-      end
-    end
+  def star_svg(classes, size: @size)
+    size_classes = {
+      sm: "w-4 h-4",
+      md: "w-5 h-5",
+      lg: "w-8 h-8"
+    }
 
-    def star_buttons
-      (1..5).map do |i|
-        button_tag(type: "button",
-                   class: star_classes(i),
-                   data: {
-                     turbo_stream_action: "update",
-                     turbo_stream_target: "ratings",
-                     turbo_stream_action_value: i
-                   }) do
-          star_svg
-        end
-      end.join.html_safe
-    end
-
-    def star_classes(index)
-      classes = [ "inline-flex justify-center items-center rounded-full" ]
-      classes << size_class
-      classes << (@rating && index <= @rating ? "text-yellow-400" : "text-gray-500")
-      classes.join(" ")
-    end
-
-    def size_class
-      case @size
-      when :sm
-        "size-4"
-      when :lg
-        "size-6"
-      else # :md
-        "size-5"
-      end
-    end
-
-    def star_svg(color_class = nil)
-      content_tag(:svg, class: "shrink-0 #{size_class} #{color_class}", xmlns: "http://www.w3.org/2000/svg", width: "16", height: "16", fill: "currentColor", viewBox: "0 0 16 16") do
-        tag(:path, d: "M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z")
-      end
-    end
+    <<-SVG.strip.html_safe
+      <svg class="#{size_classes[size]} #{classes} transition-colors" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+      </svg>
+    SVG
+  end
 end

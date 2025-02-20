@@ -1,5 +1,9 @@
 # BentoBook
 
+## General
+
+DO NOT install new gems or dependencies without asking first.
+
 ## Base Setup
 
 This is a Rails 8 app setup with Vite. We are using Tailwind CSS for styling and Tailwind UI for components. (There are still DaisyUI components present but we will weed them out.)

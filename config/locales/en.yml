@@ -77,10 +77,12 @@ en:
     restaurants: "Restaurants"
     visits: "Visits"
     profile: "Profile"
+    dashboard: "Dashboard"
     contacts: "Contacts"
     lists: "Lists"
     welcome: "Welcome to BentoBook"
     dashboard_description: "What would you like to do today?"
+    profile_settings: "Profile | Settings"
   pagy:
     nav:
       previous: "« Previous"

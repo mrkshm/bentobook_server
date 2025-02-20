@@ -48,11 +48,12 @@ fr:
     restaurants: "Restaurants"
     visits: "Visites"
     profile: "Mon profil"
+    dashboard: "Tableau de bord"
     contacts: "Contacts"
     lists: "Listes"
-    dashboard: "Tableau de bord"
     welcome: "Bienvenue sur BentoBook"
     dashboard_description: "Que souhaitez-vous faire aujourd'hui ?"
+    profile_settings: "Profil | Paramètres"
   pagy:
     nav:
       previous: "« Précédent"
