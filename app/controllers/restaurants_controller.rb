@@ -5,7 +5,7 @@ class RestaurantsController < ApplicationController
   include CuisineTypeValidation
 
   before_action :authenticate_user!
-  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating ]
+  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level ]
 
   def index
     order_params = parse_order_params
@@ -46,51 +46,41 @@ class RestaurantsController < ApplicationController
   end
 
   def update
-    @restaurant = current_user.restaurants.with_google.find(params[:id])
-    begin
-      updater = RestaurantUpdater.new(@restaurant, restaurant_update_params)
-      if updater.update
-        respond_to do |format|
-          format.turbo_stream do
+    if @restaurant.update(restaurant_params)
+      respond_to do |format|
+        format.turbo_stream do
+          if restaurant_params.key?(:price_level)
+            render turbo_stream: [
+              turbo_stream.replace(
+                dom_id(@restaurant, :price_level),
+                partial: "restaurants/price_level",
+                locals: { restaurant: @restaurant }
+              ),
+              turbo_stream.replace(
+                "#{dom_id(@restaurant, :price_level)}_modal_container",
+                partial: "restaurants/price_level_modal",
+                locals: { restaurant: @restaurant }
+              )
+            ]
+          elsif restaurant_params.key?(:rating)
             render turbo_stream: turbo_stream.replace(
               dom_id(@restaurant, :rating),
               partial: "restaurants/rating",
               locals: { restaurant: @restaurant }
             )
           end
-          format.html do
-            if turbo_frame_request?
-              @restaurants = current_user.restaurants.page(params[:page])
-              render :index
-            else
-              redirect_to @restaurant
-            end
-          end
-          format.json { render json: { status: :ok, rating: @restaurant.rating } }
         end
-      else
-        @cuisine_types = CuisineType.all
-        flash[:alert] = @restaurant.errors.full_messages.join(", ")
-        respond_to do |format|
-          format.html { render :edit, status: :unprocessable_entity }
-          format.json { render json: { status: :error, errors: @restaurant.errors }, status: :unprocessable_entity }
-        end
+        format.html { redirect_to @restaurant }
+        format.json { render json: @restaurant }
       end
-    rescue StandardError => e
-      Rails.logger.error "Error updating restaurant #{@restaurant.id}: #{e.message}"
-      @cuisine_types = CuisineType.all
-      flash[:alert] ||= "Error updating the restaurant: #{e.message}"
-      respond_to do |format|
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: { status: :error, message: e.message }, status: :internal_server_error }
-      end
-      raise ActiveRecord::Rollback
+    else
+      head :unprocessable_entity
     end
   end
 
   def update_rating
     @restaurant = current_user.restaurants.find(params[:id])
-    
+
     if @restaurant.update(rating: params[:rating])
       respond_to do |format|
         format.turbo_stream do
@@ -101,6 +91,27 @@ class RestaurantsController < ApplicationController
           )
         end
         format.html { redirect_to @restaurant }
+        format.json { render json: { status: :ok, rating: @restaurant.rating } }
+      end
+    else
+      head :unprocessable_entity
+    end
+  end
+
+  def update_price_level
+    @restaurant = current_user.restaurants.find(params[:id])
+
+    if @restaurant.update(price_level: params[:restaurant][:price_level])
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@restaurant, :price_level),
+            partial: "restaurants/price_level",
+            locals: { restaurant: @restaurant }
+          )
+        end
+        format.html { redirect_to @restaurant }
+        format.json { render json: { status: :ok, price_level: @restaurant.price_level } }
       end
     else
       head :unprocessable_entity
@@ -202,7 +213,7 @@ class RestaurantsController < ApplicationController
         :phone_number, :url, :business_status, :google_rating,
         :google_ratings_total, :price_level, :opening_hours, :google_updated_at
       ]
-    )
+)
   end
 
   def build_restaurant
@@ -214,7 +225,7 @@ class RestaurantsController < ApplicationController
     end
 
     restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name, :google_restaurant_attributes))
-    
+
     if restaurant_params[:google_restaurant_attributes]
       google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(
         restaurant_params[:google_restaurant_attributes]

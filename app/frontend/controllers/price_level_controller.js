@@ -41,57 +41,32 @@ export default class extends Controller {
     console.log("Setting price level...")
     event.preventDefault()
     const newLevel = parseInt(event.currentTarget.dataset.value)
-    console.log("New level:", newLevel)
-    
-    // Disable dollars during submission
-    this.dollarTargets.forEach(dollar => dollar.disabled = true)
     
     if (this.urlValue) {
       const formData = new FormData()
       formData.append("restaurant[price_level]", newLevel)
       
-      // Update UI immediately for better UX
-      this.level = newLevel
-      this.updateDollars()
-      
       fetch(this.urlValue, {
         method: 'PATCH',
         headers: {
           'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
-          'Accept': 'text/vnd.turbo-stream.html, application/json'
+          'Accept': 'text/vnd.turbo-stream.html'
         },
         body: formData
       }).then(response => {
         if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`)
-        
-        const contentType = response.headers.get("Content-Type")
-        if (contentType && contentType.includes("text/vnd.turbo-stream.html")) {
-          return response.text().then(html => {
-            const modal = this.element.closest('[data-controller="modal"]')
-            if (modal) {
-              const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
-              if (modalController) modalController.close()
-            }
-            Turbo.renderStreamMessage(html)
-          })
+        return response.text()
+      }).then(html => {
+        const modal = this.element.closest('[data-controller="modal"]')
+        if (modal) {
+          const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
+          if (modalController) modalController.close()
         }
-        return response.json()
-      }).then(data => {
-        if (data) {
-          this.level = data.price_level
-          this.updateDollars()
-          const modal = this.element.closest('[data-controller="modal"]')
-          if (modal) {
-            const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
-            if (modalController) modalController.close()
-          }
-        }
+        Turbo.renderStreamMessage(html)
       }).catch(error => {
-        console.error('Error updating price level:', error)
+        console.error("Error updating price level:", error)
         this.level = this.levelValue
         this.updateDollars()
-      }).finally(() => {
-        this.dollarTargets.forEach(dollar => dollar.disabled = false)
       })
     }
   }
