@@ -7,9 +7,11 @@ Alpine.start();
 import { initializeThemeSwitcher } from '../scripts/theme_switcher';
 import { initializeNavbar } from '../scripts/navbar';
 import '../scripts/page_render';
+import "lightgallery/css/lightgallery.css"
 
 import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
+import Lightbox from '@stimulus-components/lightbox'
 import { registerControllers } from "stimulus-vite-helpers"
 
 // Configure Turbo
@@ -32,6 +34,10 @@ Turbo.setConfirmMethod((message) => Promise.resolve(confirm(message)))
 
 // Initialize Stimulus application
 const application = Application.start();
+application.register('lightbox', Lightbox, {
+  plugins: [],
+  speed: 500,
+})
 
 // Register all Stimulus controllers
 const controllers = import.meta.glob("../controllers/**/*_controller.js", { eager: true })
