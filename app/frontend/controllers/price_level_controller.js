@@ -8,28 +8,18 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Price level controller connected", {
-      element: this.element,
-      dollars: this.dollarTargets,
-      url: this.urlValue,
-      level: this.levelValue
-    })
     this.level = this.levelValue || 0
     this.updateDollars()
   }
 
   // Add logging like in ratings controller
   openModal(event) {
-    console.log("Opening modal...")
     event.preventDefault()
     const modalId = `${this.element.id}_modal`
-    console.log("Modal ID:", modalId)
     const modal = document.getElementById(modalId)
-    console.log("Found modal:", modal)
     
     if (modal) {
       const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
-      console.log("Modal controller:", modalController)
       if (modalController) {
         modalController.open()
       }
@@ -38,7 +28,6 @@ export default class extends Controller {
 
   // Match setRating pattern
   setLevel(event) {
-    console.log("Setting price level...")
     event.preventDefault()
     const newLevel = parseInt(event.currentTarget.dataset.value)
     

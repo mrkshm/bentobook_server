@@ -8,12 +8,6 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Ratings controller connected", {
-      element: this.element,
-      stars: this.starTargets,
-      url: this.urlValue,
-      rating: this.ratingValue
-    })
     this.rating = this.ratingValue || 0
     this.updateStars()
   }
@@ -22,13 +16,10 @@ export default class extends Controller {
     console.log("Opening modal...")
     event.preventDefault()
     const modalId = `${this.element.id}_modal`
-    console.log("Modal ID:", modalId)
     const modal = document.getElementById(modalId)
-    console.log("Found modal:", modal)
     
     if (modal) {
       const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
-      console.log("Modal controller:", modalController)
       if (modalController) {
         modalController.open()
       }
@@ -39,7 +30,6 @@ export default class extends Controller {
     console.log("Setting rating...")
     event.preventDefault()
     const newRating = parseInt(event.currentTarget.dataset.value)
-    console.log("New rating:", newRating)
     
     // Disable stars during submission
     this.starTargets.forEach(star => star.disabled = true)
@@ -95,7 +85,6 @@ export default class extends Controller {
           }
         }
       }).catch(error => {
-        console.error('Error updating rating:', error)
         // Revert the UI on error
         this.rating = this.ratingValue
         this.updateStars()
@@ -109,10 +98,6 @@ export default class extends Controller {
   }
 
   updateStars() {
-    console.log("Updating stars UI:", {
-      rating: this.rating,
-      stars: this.starTargets
-    })
     
     this.starTargets.forEach(star => {
       const value = parseInt(star.dataset.value)

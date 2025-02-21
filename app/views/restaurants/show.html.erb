@@ -70,30 +70,26 @@
           </div>
 
           <!-- Restaurant Details -->
-          <% if @restaurant.notes.present? or @tags.any? %>
-          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
-
-            <% if @tags.any? %>
-              <div class="mt-4">
-                <h3 class="text-sm font-medium text-surface-700 mb-2">Tags</h3>
-                <div class="flex flex-wrap gap-2">
-                  <% @tags.each do |tag| %>
-                    <%= link_to tagged_restaurants_path(tag: tag.name), class: 'inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 hover:bg-primary-100' do %>
-                      <%= tag.name %>
+            <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+              <% if @tags.any? %>
+                <div class="mt-4">
+                  <h3 class="text-sm font-medium text-surface-700 mb-2">Tags</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <% @tags.each do |tag| %>
+                      <%= link_to tagged_restaurants_path(tag: tag.name), class: 'inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 hover:bg-primary-100' do %>
+                        <%= tag.name %>
+                      <% end %>
                     <% end %>
-                  <% end %>
+                  </div>
                 </div>
-              </div>
-            <% end %>
+              <% end %>
 
-            <% if @restaurant.notes.present? %>
-              <div class="">
-                <h3 class="text-sm font-medium text-surface-700 mb-2">Notes</h3>
-                <p class="text-surface-600"><%= @restaurant.notes %></p>
-              </div>
-            <% end %>
-          </div>
-          <% end %>
+              <%= render(NotesComponent.new(
+                record: @restaurant,
+                notes_field: :notes,
+                container_classes: "mt-4"
+              )) %>
+            </div>
 
           <!-- Images Section -->
           <% if @restaurant.images.any? %>
