@@ -1,0 +1,34 @@
+<%= turbo_frame_tag "modal" do %>
+  <div class="fixed inset-0 bg-surface-900/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-lg font-medium text-surface-900 mb-4">Change Cuisine Type</h3>
+        
+        <%= form_with(
+              model: restaurant,
+              url: restaurant_path(id: restaurant.id, locale: nil),
+              method: :patch,
+              class: "space-y-4"
+            ) do |f| %>
+          <%= f.select :cuisine_type_id,
+              CuisineType.all.map { |ct| [t(ct.name), ct.id] },
+              { selected: restaurant.cuisine_type_id },
+              class: "block w-full rounded-md border-surface-300 text-base 
+                     focus:border-primary-500 focus:outline-none focus:ring-primary-500" %>
+          
+          <div class="flex justify-end space-x-3">
+            <%= link_to "Cancel", 
+                restaurant_path(id: restaurant.id, locale: nil),
+                class: "px-4 py-2 text-surface-700 hover:text-surface-900",
+                data: { turbo_frame: "modal" } %>
+            
+            <%= f.submit "Save",
+                class: "px-4 py-2 bg-primary-600 text-white rounded-md 
+                       hover:bg-primary-700 focus:outline-none focus:ring-2 
+                       focus:ring-offset-2 focus:ring-primary-500" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

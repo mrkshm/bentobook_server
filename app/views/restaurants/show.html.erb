@@ -16,7 +16,7 @@
                 <% end %>
               </div>
             </div>
-            <p class="mt-0 text-lg text-surface-600"><%= t(@restaurant.cuisine_type&.name) %></p>
+            <%= render "restaurants/cuisine_type", restaurant: @restaurant %>
           </div>
         </div>
 

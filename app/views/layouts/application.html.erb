@@ -59,6 +59,7 @@
           <% else %>
             <%= yield %>
           <% end %>
+          <%= turbo_frame_tag "modal" %>
         </div>
       </div>
     </main>

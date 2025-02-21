@@ -27,6 +27,21 @@ class RestaurantsController < ApplicationController
     @all_tags = ActsAsTaggableOn::Tag.all
     @visits = @restaurant.visits
 
+    if params[:modal] == "cuisine_type"
+      Rails.logger.debug "Rendering cuisine type modal"
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update(
+            "modal",
+            partial: "restaurants/cuisine_type_modal",
+            locals: { restaurant: @restaurant }
+          )
+        end
+        format.html
+      end
+      return
+    end
+
     list_restaurants = ListRestaurant.where(restaurant_id: @restaurant.id)
     lists = List.where(id: list_restaurants.pluck(:list_id))
     @lists = List.accessible_by(current_user).containing_restaurant(@restaurant)
@@ -68,6 +83,15 @@ class RestaurantsController < ApplicationController
               partial: "restaurants/rating",
               locals: { restaurant: @restaurant }
             )
+          elsif restaurant_params.key?(:cuisine_type_id)
+            render turbo_stream: [
+              turbo_stream.replace(
+                dom_id(@restaurant, :cuisine_type),
+                partial: "restaurants/cuisine_type",
+                locals: { restaurant: @restaurant }
+              ),
+              turbo_stream.replace("modal", "")
+            ]
           end
         end
         format.html { redirect_to @restaurant }
