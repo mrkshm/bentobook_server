@@ -22,7 +22,12 @@
     </style>
   </head>
   <body data-theme="light" class="bg-surface-100 text-surface-700">
-    <%= render Shell::LoadingIndicatorComponent.new %>
+    <div id="loading-indicator" 
+     class="fixed inset-0 flex items-center justify-center bg-surface-300/50 z-50" 
+     style="display: none;"
+     data-turbo-permanent>
+      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
 
     <% if user_signed_in? %>
       <nav class="sticky top-0 z-50 text-surface-700 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
