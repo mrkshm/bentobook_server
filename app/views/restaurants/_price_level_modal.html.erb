@@ -16,7 +16,7 @@
                   data-value="<%= i %>"
                   data-action="click->price-level#setLevel">
             <%= heroicon "currency-dollar", 
-                options: { class: "w-8 h-8 #{i <= restaurant.price_level ? 'text-green-600' : 'text-gray-400'}" } %>
+                options: { class: "w-8 h-8 #{restaurant.price_level.present? && i <= restaurant.price_level ? 'text-green-600' : 'text-gray-400'}" } %>
           </button>
         <% end %>
       </div>
