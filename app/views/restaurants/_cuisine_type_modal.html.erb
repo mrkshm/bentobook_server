@@ -1,0 +1,49 @@
+<%= turbo_frame_tag "modal" do %>
+  <div class="fixed inset-0 bg-surface-900/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4 overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-lg font-medium text-surface-900 mb-4"><%= t("restaurants.change_cuisine") %></h3>
+        
+        <%= form_with(
+              model: restaurant,
+              url: restaurant_path(id: restaurant.id, locale: nil),
+              method: :patch,
+              class: "space-y-4"
+            ) do |f| %>
+          <div>
+            <%= f.label :cuisine_type_id, 
+                "Cuisine Type", 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2 grid grid-cols-1 relative">
+              <%= f.select :cuisine_type_id,
+                  CuisineType.all.map { |ct| [t(ct.name), ct.id] },
+                  { selected: restaurant.cuisine_type_id },
+                  class: "col-start-1 row-start-1 w-full appearance-none rounded-md 
+                         bg-white py-1.5 px-3 text-base text-surface-900
+                         outline-1 -outline-offset-1 outline-surface-300 
+                         focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 
+                         sm:text-sm/6" %>
+              <%= heroicon "chevron-down", 
+                  options: { 
+                    class: "pointer-events-none col-start-1 row-start-1 mr-2 size-5 
+                            self-center justify-self-end text-surface-500 sm:size-4" 
+                  } %>
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3 mt-6">
+            <%= link_to "Cancel", 
+                restaurant_path(id: restaurant.id, locale: nil),
+                class: "px-4 py-2 text-surface-700 hover:text-surface-900",
+                data: { turbo_frame: "modal" } %>
+            
+            <%= f.submit "Save",
+                class: "px-4 py-2 bg-primary-600 text-white rounded-md 
+                       hover:bg-primary-700 focus:outline-none focus:ring-2 
+                       focus:ring-primary-500 focus:ring-offset-2" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

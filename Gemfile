@@ -34,7 +34,7 @@ gem "vite_rails"
 
 gem "pagy"
 
-gem "alba"
+gem "alba", "~> 3"
 
 gem "pg_search"
 

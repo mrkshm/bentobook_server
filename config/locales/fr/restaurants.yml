@@ -2,6 +2,7 @@ fr:
   restaurants:
     create_restaurant_button: 'Créer un nouveau restaurant'
     select_price_level: 'Sélectionner le niveau de prix'
+    change_cuisine: 'Changer la cuisine'
     search_by:
       name: 'Nom'
       created_at: 'Créé le'
