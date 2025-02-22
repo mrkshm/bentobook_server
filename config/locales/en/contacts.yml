@@ -12,3 +12,7 @@ en:
     new:
       title: "Add a Contact"
       create_contact: "Create Contact"
+    visits:
+      zero: "no visits"
+      one: "1 visit"
+      other: "%{count} visits"
