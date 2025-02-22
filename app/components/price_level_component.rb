@@ -25,7 +25,7 @@ class PriceLevelComponent < ViewComponent::Base
   private
 
   def render_readonly_price_level
-    content_tag(:div, class: "flex items-center space-x-1", id: @dom_id) do
+    content_tag(:div, class: "flex items-center", id: @dom_id) do
       (1..4).map do |i|
         heroicon("currency-dollar",
                  options: { class: "w-5 h-5 #{i <= @price_level ? 'text-green-600' : 'text-gray-400'}" })
