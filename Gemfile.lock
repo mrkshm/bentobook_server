@@ -569,7 +569,7 @@ PLATFORMS
 DEPENDENCIES
   acts-as-taggable-on
   acts_as_list
-  alba
+  alba (~> 3)
   aws-sdk-rails (~> 4)
   bootsnap
   brakeman
