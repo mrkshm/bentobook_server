@@ -85,12 +85,12 @@ class RestaurantsController < ApplicationController
             )
           elsif restaurant_params.key?(:cuisine_type_id)
             render turbo_stream: [
+              turbo_stream.update("modal", ""),
               turbo_stream.replace(
                 dom_id(@restaurant, :cuisine_type),
                 partial: "restaurants/cuisine_type",
                 locals: { restaurant: @restaurant }
-              ),
-              turbo_stream.replace("modal", "")
+              )
             ]
           end
         end
