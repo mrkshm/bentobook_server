@@ -1,87 +1,164 @@
 <div class="max-w-2xl mx-auto p-4">
   <%= form_with(model: contact, 
     url: contact.new_record? ? contacts_path : contact_path(id: contact.id), 
-    local: true, class: "card bg-base-100 shadow-xl") do |form| %>
-    <div class="card-body">
-      <% if contact.errors.any? %>
-        <div class="alert alert-error shadow-lg mb-6">
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <div>
-              <h3 class="font-bold"><%= pluralize(contact.errors.count, "error") %> prohibited this contact from being saved:</h3>
-              <ul class="list-disc list-inside">
-                <% contact.errors.full_messages.each do |message| %>
-                  <li><%= message %></li>
+    local: true) do |form| %>
+    
+    <div class="space-y-12">
+      <%# Contact Information Section %>
+      <div class="border-b border-surface-900/10 pb-12">
+        <h2 class="text-base/7 font-semibold text-surface-900"><%= t("contacts.form.title") %></h2>
+        <p class="mt-1 text-sm/6 text-surface-600"><%= t("contacts.form.subtitle") %></p>
+
+        <%# Error Messages %>
+        <% if contact.errors.any? %>
+          <div class="mt-6 rounded-md bg-error-50 p-4">
+            <div class="flex">
+              <%= heroicon "exclamation-circle", options: { class: "h-5 w-5 text-error-400" } %>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-error-800">
+                  <%= pluralize(contact.errors.count, "error") %> prohibited this contact from being saved:
+                </h3>
+                <div class="mt-2 text-sm text-error-700">
+                  <ul class="list-disc space-y-1 pl-5">
+                    <% contact.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          <%# Avatar Upload %>
+          <div class="col-span-full">
+            <label class="block text-sm/6 font-medium text-surface-900"><%= t("contacts.form.photo") %></label>
+            <div class="mt-2 flex items-center gap-x-3">
+              <div class="relative size-12 overflow-hidden rounded-full bg-surface-100">
+                <% if contact.avatar.attached? %>
+                  <%= image_tag contact.avatar, 
+                      class: "h-full w-full object-cover", 
+                      id: "current-avatar" %>
+                <% else %>
+                  <%= heroicon "user-circle", options: { class: "size-12 text-surface-300" } %>
                 <% end %>
-              </ul>
+              </div>
+              <div class="relative">
+                <%= form.file_field :avatar,
+                  onchange: "previewAvatar(this);",
+                  class: "sr-only",
+                  accept: "image/*",
+                  id: "avatar-upload" %>
+                <label for="avatar-upload"
+                  class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-surface-900 
+                        shadow-sm ring-1 ring-inset ring-surface-300 hover:bg-surface-50 cursor-pointer">
+                  <%= t("contacts.form.change_photo") %>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <%# Name Field %>
+          <div class="sm:col-span-4">
+            <%= form.label :name, 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2">
+              <%= form.text_field :name, 
+                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
+                          text-surface-900 outline-1 outline-surface-300 
+                          placeholder:text-surface-400 focus:outline-2 
+                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
+            </div>
+          </div>
+
+          <%# Email Field %>
+          <div class="sm:col-span-4">
+            <%= form.label :email, 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2">
+              <%= form.email_field :email, 
+                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
+                          text-surface-900 outline-1 outline-surface-300 
+                          placeholder:text-surface-400 focus:outline-2 
+                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
+            </div>
+          </div>
+
+          <%# Location Fields %>
+          <div class="sm:col-span-3">
+            <%= form.label :city, 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2">
+              <%= form.text_field :city, 
+                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
+                          text-surface-900 outline-1 outline-surface-300 
+                          placeholder:text-surface-400 focus:outline-2 
+                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <%= form.label :country, 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2">
+              <%= form.text_field :country, 
+                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
+                          text-surface-900 outline-1 outline-surface-300 
+                          placeholder:text-surface-400 focus:outline-2 
+                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
+            </div>
+          </div>
+
+          <%# Phone Field %>
+          <div class="sm:col-span-4">
+            <%= form.label :phone, 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2">
+              <%= form.telephone_field :phone, 
+                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
+                          text-surface-900 outline-1 outline-surface-300 
+                          placeholder:text-surface-400 focus:outline-2 
+                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
+            </div>
+          </div>
+
+          <%# Notes Field %>
+          <div class="col-span-full">
+            <%= form.label :notes, 
+                class: "block text-sm/6 font-medium text-surface-900" %>
+            <div class="mt-2">
+              <%= form.text_area :notes, rows: 3,
+                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
+                          text-surface-900 outline-1 outline-surface-300 
+                          placeholder:text-surface-400 focus:outline-2 
+                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <%# Form Actions %>
+    <div class="mt-6 flex items-center justify-between gap-x-6">
+      
+      <%= link_to contact_path(id: @contact.id),
+            class: "inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600",
+            data: { 
+              turbo_method: :delete,
+              turbo_confirm: t("contacts.confirm_delete") 
+            } do %>
+        <%= heroicon "trash", options: { class: "w-5 h-5" } %>
+        <%= t("delete") %>
       <% end %>
-
-      <div class="flex flex-col items-center mb-6">
-        <div class="avatar mb-4">
-          <div class="w-24 h-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2" id="avatar-container">
-            <% if contact.avatar.attached? %>
-              <%= image_tag contact.avatar, id: "current-avatar" %>
-            <% end %>
-          </div>
-        </div>
-        <div class="form-control w-full max-w-xs">
-          <%= form.file_field :avatar, 
-                            onchange: "previewAvatar(this);", 
-                            class: "file-input file-input-bordered file-input-primary w-full",
-                            accept: "image/*" %>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="form-control">
-          <%= form.label :name, class: "label" do %>
-            <span class="label-text">Name</span>
-          <% end %>
-          <%= form.text_field :name, class: "input input-bordered w-full" %>
-        </div>
-
-        <div class="form-control">
-          <%= form.label :email, class: "label" do %>
-            <span class="label-text">Email</span>
-          <% end %>
-          <%= form.email_field :email, class: "input input-bordered w-full" %>
-        </div>
-
-        <div class="form-control">
-          <%= form.label :city, class: "label" do %>
-            <span class="label-text">City</span>
-          <% end %>
-          <%= form.text_field :city, class: "input input-bordered w-full" %>
-        </div>
-
-        <div class="form-control">
-          <%= form.label :country, class: "label" do %>
-            <span class="label-text">Country</span>
-          <% end %>
-          <%= form.text_field :country, class: "input input-bordered w-full" %>
-        </div>
-
-        <div class="form-control">
-          <%= form.label :phone, class: "label" do %>
-            <span class="label-text">Phone</span>
-          <% end %>
-          <%= form.telephone_field :phone, class: "input input-bordered w-full" %>
-        </div>
-      </div>
-
-      <div class="form-control mt-4">
-        <%= form.label :notes, class: "label" do %>
-          <span class="label-text">Notes</span>
-        <% end %>
-        <%= form.text_area :notes, class: "textarea textarea-bordered h-32" %>
-      </div>
-
-      <div class="card-actions justify-end mt-6">
-        <%= link_to "Cancel", contacts_path, class: "btn btn-ghost" %>
-        <%= form.submit submit_text, class: "btn btn-primary" %>
+      <div class="space-x-4
+      ">
+      <%= link_to t("cancel"), contacts_path,
+          class: "text-sm/6 font-semibold text-surface-900 hover:text-surface-700" %>
+      <%= form.submit submit_text,
+          class: "rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white 
+                 shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 
+                 focus-visible:outline-offset-2 focus-visible:outline-primary-600" %>
       </div>
     </div>
   <% end %>
@@ -89,36 +166,26 @@
 
 <script>
 function previewAvatar(input) {
-  const avatarContainer = document.getElementById('avatar-container');
-  const currentAvatar = document.getElementById('current-avatar');
-
   if (input.files && input.files[0]) {
     const reader = new FileReader();
-
+    
     reader.onload = function(e) {
-      if (currentAvatar) {
-        currentAvatar.style.display = 'none';
+      // Find the avatar container and create/update image
+      const container = document.querySelector('.size-12');
+      let previewImg = document.getElementById('current-avatar');
+      
+      if (!previewImg) {
+        previewImg = document.createElement('img');
+        previewImg.id = 'current-avatar';
+        previewImg.className = 'h-full w-full object-cover';
+        container.innerHTML = '';
+        container.appendChild(previewImg);
       }
-
-      let preview = avatarContainer.querySelector('.avatar-preview');
-      if (!preview) {
-        preview = document.createElement('img');
-        preview.className = 'w-24 h-24 rounded-full avatar-preview';
-        avatarContainer.appendChild(preview);
-      }
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    }
+      
+      previewImg.src = e.target.result;
+    };
 
     reader.readAsDataURL(input.files[0]);
-  } else {
-    if (currentAvatar) {
-      currentAvatar.style.display = 'block';
-    }
-    const preview = avatarContainer.querySelector('.avatar-preview');
-    if (preview) {
-      preview.style.display = 'none';
-    }
   }
 }
 </script>

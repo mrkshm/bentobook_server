@@ -1,68 +1,70 @@
 <div class="max-w-2xl mx-auto p-4">
-  <div class="card bg-base-100 shadow-xl">
-    <div class="card-body">
-      <div class="flex items-center gap-6 mb-6">
-        <%= render(AvatarComponent.new(user: @contact, size: :large)) %>
-        
-        <div>
-          <h1 class="card-title text-2xl mb-2"><%= @contact.name %></h1>
-          <div class="badge badge-primary"><%= @contact.email %></div>
-        </div>
+  <%# Main content container %>
+  <div class="rounded-lg bg-surface-50 shadow-sm p-6">
+    <%# Header with avatar and name %>
+    <div class="flex items-center gap-6 mb-6">
+      <%= render(AvatarComponent.new(
+                image: @contact.avatar,
+                text: @contact.name,
+                size: :xl
+              )) %>
+      
+      <div>
+        <h1 class="text-2xl font-semibold text-surface-900 mb-2"><%= @contact.name %></h1>
+        <span class="inline-flex items-center rounded-full bg-primary-100 px-2.5 py-0.5 text-sm font-medium text-primary-700">
+          <%= @contact.email %>
+        </span>
+      </div>
+    </div>
+
+    <%# Contact details grid %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <%# Location %>
+      <div class="rounded-lg bg-surface-100/50 p-4">
+        <p class="text-lg text-surface-900">
+          <% if @contact.city.present? && @contact.country.present? %>
+            <%= "#{@contact.city}, #{@contact.country}" %>
+          <% else %>
+            <%= @contact.city.presence || @contact.country %>
+          <% end %>
+        </p>
+        <p class="text-lg text-surface-900"><%= @contact.phone %></p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="stats shadow">
-          <div class="stat">
-            <div class="stat-title"><%= t("location") %></div>
-            <div class="stat-value text-lg"><%= @contact.city %>, <%= @contact.country %></div>
-          </div>
-        </div>
+    </div>
 
-        <div class="stats shadow">
-          <div class="stat">
-            <div class="stat-title"><%= t("phone") %></div>
-            <div class="stat-value text-lg"><%= @contact.phone %></div>
-          </div>
+    <%# Notes section %>
+    <% if @contact.notes.present? %>
+      <div class="mt-6">
+        <h2 class="text-lg font-medium text-surface-900 mb-2"><%= t("notes") %></h2>
+        <div class="rounded-lg bg-surface-100/50 p-4">
+          <p class="text-surface-600"><%= @contact.notes %></p>
         </div>
       </div>
+    <% end %>
 
-      <% if @contact.notes.present? %>
-        <div class="mt-6">
-          <h2 class="text-xl font-medium mb-2"><%= t("notes") %></h2>
-          <div class="bg-base-200 p-4 rounded-lg">
-            <p class="text-base-content"><%= @contact.notes %></p>
-          </div>
-        </div>
+    <%# Action buttons %>
+    <div class="mt-6 flex justify-end items-center gap-3">
+      <%= link_to contacts_path, 
+            class: "inline-flex items-center gap-2 px-4 py-2 text-surface-700 hover:text-surface-900" do %>
+        <%= heroicon "arrow-left", options: { class: "w-5 h-5" } %>
+        <%= t("back") %>
+      <% end %>
+      
+      <%= link_to edit_contact_path(id: @contact.id),
+            class: "inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600" do %>
+        <%= heroicon "pencil-square", options: { class: "w-5 h-5" } %>
+        <%= t("edit") %>
       <% end %>
 
-      <div class="card-actions justify-end mt-6 space-x-2">
-        <%= link_to contacts_path, class: "btn btn-ghost" do %>
-          <%= heroicon "arrow-left", options: { class: "h-6 w-6" } %>
-          <%= t("back") %>
-        <% end %>
-        
-        <%= link_to edit_contact_path(id: @contact.id), class: "btn btn-warning" do %>
-          <%= heroicon "pencil-square", options: { class: "h-6 w-6" } %>
-          <%= t("edit") %>
-        <% end %>
-
-        <%= link_to contact_path(@contact),
-            class: "btn btn-error", 
-            data: { 
-              turbo_method: :delete,
-              turbo_confirm: t("contacts.confirm_delete") 
-            } do %>
-          <%= heroicon "trash", options: { class: "h-6 w-6" } %>
-          <%= t("delete") %>
-        <% end %>
-      </div>
     </div>
   </div>
 
+  <%# Visits section %>
   <% if @contact.visits.any? %>
     <div class="mt-8">
-      <h2 class="text-2xl font-bold mb-4"><%= t("contacts.show.visits") %></h2>
-      <div class="grid grid-cols-1 gap-6">
+      <h2 class="text-2xl font-semibold text-surface-900 mb-4"><%= t("contacts.show.visits") %></h2>
+      <div class="grid grid-cols-1 gap-4">
         <% @contact.visits.order(date: :desc).each do |visit| %>
           <%= render(VisitCardComponent.new(visit: visit)) %>
         <% end %>

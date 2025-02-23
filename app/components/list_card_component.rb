@@ -14,8 +14,8 @@ class ListCardComponent < ViewComponent::Base
 
   def visibility_badge_class
     case list.visibility
-    when 'personal' then 'badge-neutral'
-    when 'discoverable' then 'badge-info'
+    when "personal" then "badge-neutral"
+    when "discoverable" then "badge-info"
     end
   end
 
@@ -23,9 +23,9 @@ class ListCardComponent < ViewComponent::Base
     return unless @is_shared
 
     render(AvatarComponent.new(
-      user: list.owner,
+      image: list.owner.avatar,
+      text: list.owner.name,
       size: :small,
-      tooltip: t('.shared_by', user: list.owner.profile.display_name)
     ))
   end
 end

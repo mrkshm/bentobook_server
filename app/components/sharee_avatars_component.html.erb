@@ -2,9 +2,9 @@
   <% shares.each do |share| %>
     <div class="<%= share.pending? ? 'opacity-50' : '' %> relative">
       <%= render(AvatarComponent.new(
-        user: share.recipient,
-        size: :small,
-        tooltip: tooltip_for(share)
+        image: share.recipient.avatar,
+        size: :sm,
+        text: share.recipient.name
       )) %>
     </div>
   <% end %>

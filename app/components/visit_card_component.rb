@@ -18,9 +18,9 @@ class VisitCardComponent < ViewComponent::Base
         link_to(contact_path(id: contact.id), class: "group flex flex-col items-center") do
           content_tag :div, class: "relative" do
             render(AvatarComponent.new(
-              user: contact,
-              size: :small,
-              tooltip: contact.name
+              image: contact.avatar,
+              text: contact.name,
+              size: :sm
             ))
           end
         end

@@ -34,7 +34,7 @@
             <label class="label cursor-pointer flex items-center">
               <%= b.check_box class: "checkbox mr-2" %>
               <div class="flex items-center">
-                <%= render(AvatarComponent.new(user: b.object, size: :small)) %>
+                <%= render(AvatarComponent.new(image: b.avatar, text: b.name, size: :sm)) %>
                 <span class="label-text ml-2"><%= b.text %></span>
               </div>
             </label>
