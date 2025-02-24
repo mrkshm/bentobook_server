@@ -39,9 +39,9 @@
               <%= link_to contact_path(id: contact.id), class: "group flex flex-col items-center p-4 hover:bg-base-200 rounded-lg transition-colors duration-200" do %>
                 <div class="relative z-10">
                   <%= render(AvatarComponent.new(
-                    user: contact,
-                    size: :large,
-                    tooltip: contact.name
+                    image: contact.avatar,
+                    text: contact.name,
+                    size: :lg
                   )) %>
                 </div>
                 <span class="mt-2 text-center font-medium group-hover:text-primary"><%= contact.name %></span>

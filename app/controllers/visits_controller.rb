@@ -1,11 +1,11 @@
 class VisitsController < ApplicationController
     include Pagy::Backend
     before_action :authenticate_user!
-    before_action :set_visit, only: [:show, :edit, :update, :destroy]
-    before_action :ensure_valid_restaurant, only: [:create, :update]
+    before_action :set_visit, only: [ :show, :edit, :update, :destroy ]
+    before_action :ensure_valid_restaurant, only: [ :create, :update ]
 
     def index
-      @pagy, @visits = pagy(current_user.visits.includes(:restaurant, :contacts, images: { file_attachment: :blob }))
+      @pagy, @visits = pagy(current_user.visits.includes(:restaurant, { contacts: { avatar_attachment: :blob } }, images: { file_attachment: :blob }))
     end
 
     def show
@@ -23,7 +23,7 @@ class VisitsController < ApplicationController
     end
 
     def edit
-        # @visit is already set by set_visit
+      # @visit is already set by set_visit
     end
 
     def update
@@ -36,7 +36,7 @@ class VisitsController < ApplicationController
 
     def destroy
       @visit.destroy
-      redirect_to visits_path, notice: I18n.t('notices.visits.deleted')
+      redirect_to visits_path, notice: I18n.t("notices.visits.deleted")
     end
 
     private
@@ -44,7 +44,7 @@ class VisitsController < ApplicationController
     def set_visit
       @visit = current_user.visits.find(params[:id])
       rescue ActiveRecord::RecordNotFound
-        flash[:alert] = I18n.t('errors.visits.not_found')
+        flash[:alert] = I18n.t("errors.visits.not_found")
         redirect_to visits_path
     end
 
@@ -60,7 +60,7 @@ class VisitsController < ApplicationController
         contact_ids: []
       ).tap do |whitelisted|
         if whitelisted[:price_paid].present?
-          whitelisted[:price_paid] = Money.from_amount(whitelisted[:price_paid].to_f, whitelisted[:price_paid_currency] || 'USD')
+          whitelisted[:price_paid] = Money.from_amount(whitelisted[:price_paid].to_f, whitelisted[:price_paid_currency] || "USD")
         end
       end
     end
@@ -72,7 +72,7 @@ class VisitsController < ApplicationController
     def ensure_valid_restaurant
       return if params[:visit].blank? || params[:visit][:restaurant_id].blank?
       unless valid_restaurant?(params[:visit][:restaurant_id])
-        flash.now[:alert] = I18n.t('errors.visits.invalid_restaurant')
+        flash.now[:alert] = I18n.t("errors.visits.invalid_restaurant")
         @visit ||= Visit.new
         @visit.errors.add(:restaurant_id, :invalid)
         render :new, status: :unprocessable_entity
@@ -81,7 +81,7 @@ class VisitsController < ApplicationController
 
     def save_visit(render_action)
       if @visit.restaurant_id.blank?
-        flash.now[:alert] = I18n.t('errors.visits.restaurant_required')
+        flash.now[:alert] = I18n.t("errors.visits.restaurant_required")
         @visit.errors.add(:restaurant_id, :blank)
         render render_action, status: :unprocessable_entity
       elsif @visit.persisted? || @visit.save
@@ -102,8 +102,8 @@ class VisitsController < ApplicationController
           redirect_to visits_path, notice: I18n.t("notices.visits.#{render_action == :new ? 'created' : 'updated'}")
         end
       else
-        flash.now[:alert] = I18n.t('errors.visits.save_failed')
+        flash.now[:alert] = I18n.t("errors.visits.save_failed")
         render render_action, status: :unprocessable_entity
       end
     end
-  end
+end

@@ -1,50 +1,40 @@
-<% content = capture do %>
-    <div class="card-body">
-      <div class="mb-4">
-        <h2 class="card-title text-primary"><%= visit.restaurant.name %></h2>
-        <p class="text-base-content/60"><%= visit.date.strftime("%B %d, %Y") %></p>
+<%= link_to visit_path(id: visit.id, locale: nil), 
+    class: "block rounded-lg bg-surface-50" do %>
+  <div class="p-6 space-y-4">
+    <%# Header with restaurant name and date %>
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-medium text-surface-900">
+        <%= visit.restaurant.name %>
+      </h3>
+      <span class="text-xs text-surface-700">
+        <%= formatted_date %>
+      </span>
+    </div>
+    <div>
+      <div class="text-md font-medium text-surface-600">
+        <%= visit.title %>
       </div>
-  
-      <% if visit.title.present? || visit.notes.present? %>
-        <div class="mb-4 prose prose-sm">
-          <% if visit.title.present? %>
-            <h3 class="font-medium mb-1"><%= visit.title %></h3>
-          <% end %>
-          <% if visit.notes.present? %>
-            <p class="text-base-content/70"><%= visit.notes %></p>
-          <% end %>
-        </div>
-      <% end %>
-  
-      <% if visit.images.any? %>
-        <div class="grid grid-cols-2 gap-2 mb-4">
-          <% visit.images.each do |image| %>
-            <div class="mask mask-squircle">
-              <%= render(S3ImageComponent.new(
-                image: image.file,
-                size: :small,
-                html_class: "w-full h-32 object-cover"
+      <p class="text-sm"><%= visit.notes %></p>
+    </div>
+    <div class="flex justify-between">
+      <div class="mt-2">
+          <%= render(RatingsComponent.new(
+                rating: visit.rating,
+                readonly: true,
+                size: :sm,
+                dom_id: dom_id(visit, :rating),
+                restaurant: visit
               )) %>
-            </div>
-          <% end %>
         </div>
-      <% end %>
-  
-      <div class="mt-2 divider"></div>
-  
-      <div class="flex items-center justify-between">
-        <%= render(RatingsComponent.new(rating: visit.rating, readonly: true)) %>
-        <%= render_contacts %>
+      <div class="flex -space-x-2 overflow-hidden">
+        <% visit.contacts.each do |contact| %>
+          <%= render(AvatarComponent.new(
+            image: contact.avatar,
+            text: contact.name,
+            size: :sm
+          )) %>
+        <% end %>
       </div>
     </div>
-  <% end %>
-  
-  <% if link_to_show %>
-    <%= link_to visit_path(id: visit.id), class: "card card-compact bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-200 relative" do %>
-      <%= content %>
-    <% end %>
-  <% else %>
-    <div class="card card-compact bg-base-100 shadow-xl">
-      <%= content %>
-    </div>
-  <% end %>
+  </div>
+<% end %>
