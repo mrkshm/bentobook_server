@@ -58,7 +58,7 @@
         <div class="space-y-4">
           <h2 class="text-xl font-semibold">Photos</h2>
           <%= render(GalleryComponent.new(
-            images: @visit.images.map(&:file),
+            images: @visit.images,  # Pass the attachments directly, not mapped to file
             columns: 3
           )) %>
         </div>
