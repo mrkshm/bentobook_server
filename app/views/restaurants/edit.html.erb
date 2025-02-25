@@ -3,14 +3,12 @@
               id: "restaurant-edit-form",
               local: true, 
               url: restaurant_path(id: @restaurant.id, locale: nil),
-              multipart: true,
-              data: { turbo: false },
               class: "space-y-6") do |form| %>
     
     <% if @restaurant.errors.any? %>
       <div class="rounded-md bg-error-50 p-4">
         <div class="flex">
-          <%= heroicon "exclamation-circle", option: { class: "h-5 w-5 text-error-400" } %>
+          <%= heroicon "exclamation-circle", options: { class: "h-5 w-5 text-error-400" } %>
           <div class="ml-3">
             <h3 class="text-sm font-medium text-error-800">
               <%= pluralize(@restaurant.errors.count, "error") %> prohibited this restaurant from being saved:
@@ -27,7 +25,7 @@
       </div>
     <% end %>
 
-    <!-- Name, Address and Contact Information -->
+    <!-- Address Information -->
     <div data-controller="editable-address-section">
       <div data-editable-address-section-target="readOnly">
         <div class="flex items-center justify-between mb-4">
@@ -112,65 +110,11 @@
       </div>
     </div>
 
-    <!-- Restaurant Details -->
-    <div class="bg-surface-100 shadow-sm rounded-lg p-4">
-      <div class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <%= form.label :rating, class: "block text-sm font-medium text-surface-900 mb-4" %>
-            <%= render(RatingsComponent.new(rating: @restaurant.rating, form: form)) %>
-          </div>
-          
-          <div>
-            <%= form.label :price_level, class: "block text-sm font-medium text-surface-900 mb-4" %>
-            <%= render(PriceLevelComponent.new(restaurant: @restaurant, form: form)) %>
-          </div>
-          
-          <div>
-  <%= form.label :cuisine_type_id, t("labels.cuisine_type"), class: "block text-sm/6 font-medium text-surface-900" %>
-  <div class="mt-2 grid grid-cols-1">
-    <%= form.select :cuisine_type_id,
-        CuisineType.all.map { |ct| [ct.translated_name, ct.id] },
-        { include_blank: t("placeholders.select_cuisine_type") },
-        class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6" %>
-    <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" data-slot="icon">
-      <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-    </svg>
-  </div>
-</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tags -->
-    <div class="bg-surface-100 shadow-sm rounded-lg p-4">
-      <h2 class="text-lg font-medium text-surface-900 mb-4">Tags</h2>
-      <%= render(TagInputComponent.new(tags: @restaurant.tag_list, input_name: "restaurant[tag_list]")) %>
-    </div>
-
-    <!-- Notes (always editable) -->
-    <div class="card bg-base-200 shadow-sm">
-      <div class="card-body p-4">
-        <h2 class="card-title text-lg mb-2">Notes</h2>
-        <%= form.text_area :notes, value: @restaurant.notes, rows: 3, class: "textarea textarea-bordered w-full" %>
-      </div>
-    </div>
-
-    <!-- Images (unchanged) -->
-    <div class="form-control mt-4">
-      <h2 class="text-lg font-semibold mb-2">Restaurant Images</h2>
-      <%= render(ImageUploadComponent.new(form, @restaurant, self)) %>
-    </div>
-
-    <div class="flex justify-between gap-3 items-center">
+    <div class="flex justify-between gap-3 items-center mt-8">
       <div>
         <%= button_to restaurant_path(id: @restaurant.id, locale: nil), 
             method: :delete,
-            form: {
-              data: {
-                turbo_confirm: t("restaurants.confirmations.delete")
-              }
-            },
+            data: { turbo_confirm: t("restaurants.confirmations.delete") },
             class: "rounded-md bg-error-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-error-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-error-600" do %>
           <%= heroicon "trash", options: { class: "w-5 h-5 inline-block -ml-0.5 mr-1" } %>
           <%= t("delete") %>
