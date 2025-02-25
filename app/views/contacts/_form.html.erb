@@ -1,4 +1,4 @@
-<div class="max-w-2xl mx-auto p-4">
+<div class="max-w-2xl mx-auto p-4 bg-surface-50">
   <%= form_with(model: contact, 
     url: contact.new_record? ? contacts_path : contact_path(id: contact.id), 
     local: true) do |form| %>
@@ -6,8 +6,6 @@
     <div class="space-y-12">
       <%# Contact Information Section %>
       <div class="border-b border-surface-900/10 pb-12">
-        <h2 class="text-base/7 font-semibold text-surface-900"><%= t("contacts.form.title") %></h2>
-        <p class="mt-1 text-sm/6 text-surface-600"><%= t("contacts.form.subtitle") %></p>
 
         <%# Error Messages %>
         <% if contact.errors.any? %>

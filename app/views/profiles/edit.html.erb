@@ -1,56 +1,75 @@
-<div class="card bg-base-100 shadow-xl max-w-2xl mx-auto mt-8">
-  <div class="card-body">
-    <h2 class="card-title text-2xl mb-6"><%= t('profiles.edit.title') %></h2>
+<div class="max-w-2xl mx-auto mt-8 p-4 bg-surface-50 shadow-xl">
+  <div class="space-y-6">
+    <h2 class="text-2xl font-semibold mb-6"><%= t('profiles.edit.title') %></h2>
 
     <%= form_with(model: @profile, url: profile_path, local: true, class: "space-y-6") do |form| %>
       <% if @profile.errors.any? %>
-        <div class="alert alert-error">
-          <h2><%= pluralize(@profile.errors.count, "error") %> prohibited this profile from being saved:</h2>
-          <ul>
-            <% @profile.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
+        <div class="rounded-md bg-error-50 p-4">
+          <div class="flex">
+            <%= heroicon "exclamation-circle", class: "h-5 w-5 text-error-400" %>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-error-800">
+                <%= pluralize(@profile.errors.count, "error") %> prohibited this profile from being saved:
+              </h3>
+              <div class="mt-2 text-sm text-error-700">
+                <ul class="list-disc space-y-1 pl-5">
+                  <% @profile.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       <% end %>
 
       <div class="form-control">
-        <%= form.label :avatar, class: "label" %>
-        <div id="avatar-container" class="mb-4">
+        <%= form.label :avatar, class: "block text-sm font-medium text-surface-900" %>
+        <div id="avatar-container" class="mt-2 flex items-center gap-x-3">
           <% if @profile.avatar.attached? %>
             <%= image_tag @profile.avatar, class: "w-24 h-24 object-cover rounded-full", id: "current-avatar" %>
+          <% else %>
+            <%= heroicon "user-circle", options: { class: "w-24 h-24 text-surface-300" } %>
           <% end %>
+          <div class="relative">
+            <%= form.file_field :avatar, onchange: "previewAvatar(this);", class: "sr-only", accept: "image/*", id: "avatar-upload" %>
+            <label for="avatar-upload" class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-surface-900 shadow-sm ring-1 ring-inset ring-surface-300 hover:bg-surface-50 cursor-pointer">
+              <%= t("profiles.edit.change_photo") %>
+            </label>
+          </div>
         </div>
-        <%= form.file_field :avatar, onchange: "previewAvatar(this);", class: "file-input file-input-bordered w-full max-w-xs" %>
       </div>
 
       <div class="form-control">
-        <%= form.label :username, class: "label", value: t('profiles.username') %>
-        <%= form.text_field :username, class: "input input-bordered" %>
+        <%= form.label :username, class: "block text-sm font-medium text-surface-900" %>
+        <%= form.text_field :username, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
       </div>
 
       <div class="form-control">
-        <%= form.label :first_name, class: "label", value: t('profiles.first_name') %>
-        <%= form.text_field :first_name, class: "input input-bordered" %>
+        <%= form.label :first_name, class: "block text-sm font-medium text-surface-900" %>
+        <%= form.text_field :first_name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
       </div>
 
       <div class="form-control">
-        <%= form.label :last_name, class: "label", value: t('profiles.last_name') %>
-        <%= form.text_field :last_name, class: "input input-bordered" %>
+        <%= form.label :last_name, class: "block text-sm font-medium text-surface-900" %>
+        <%= form.text_field :last_name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
       </div>
 
       <div class="form-control">
-        <%= form.label :about, class: "label", value: t('profiles.about') %>
-        <%= form.text_area :about, class: "textarea textarea-bordered h-24" %>
+        <%= form.label :about, class: "block text-sm font-medium text-surface-900" %>
+        <%= form.text_area :about, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm h-24" %>
       </div>
 
       <div class="form-control mt-6">
-        <%= form.submit t('profiles.edit.update_button'), class: "btn btn-primary" %>
+        <%= form.submit t('profiles.edit.update_button'), class: "rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600" %>
       </div>
     <% end %>
 
-    <div class="card-actions justify-end mt-6">
-      <%= link_to t('profiles.edit.back_button'), profile_path, class: "btn btn-ghost" %>
+    <div class="mt-6 flex justify-end">
+      <%= link_to profile_path(locale: nil), class: "inline-flex items-center gap-x-1.5 rounded-md bg-[var(--color-primary-600)] px-3 py-2 text-sm font-semibold text-[var(--color-surface-50)] shadow-xs hover:bg-[var(--color-primary-500)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-600)]" do %>
+        <%= heroicon "arrow-left", options: { class: "h-5 w-5" } %>
+        <%= t('profiles.edit.back_button') %>
+      <% end %>
     </div>
   </div>
 </div>
