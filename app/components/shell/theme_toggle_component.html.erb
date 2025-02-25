@@ -1,5 +1,6 @@
 <button id="theme-toggle" 
   class="p-2 rounded-lg text-surface-600 hover:bg-surface-200 transition-colors" 
-  aria-label="Toggle theme">
+  aria-label="Toggle theme"
+  <%= component_data.map { |key, value| "data-#{key}=\"#{value}\"" }.join(" ").html_safe if component_data %>>
   <!-- Icon will be inserted by JavaScript -->
 </button>

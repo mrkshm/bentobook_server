@@ -132,7 +132,9 @@ Rails.application.routes.draw do
     end
 
     # Profile routes
-    resource :profile, only: [ :show, :edit, :update ]
+    resource :profile, only: [ :show, :edit, :update ] do
+      patch :update_theme
+    end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
 
     # Static pages

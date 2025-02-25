@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   before_action :set_locale
   before_action :ensure_locale_matches_url
   before_action :configure_turbo_native_auth
+  before_action :debug_request
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
@@ -65,5 +66,14 @@ class ApplicationController < ActionController::Base
   def extract_locale
     parsed_locale = params[:locale] || session[:locale] || request.env["HTTP_ACCEPT_LANGUAGE"]&.scan(/^[a-z]{2}/)&.first
     I18n.available_locales.map(&:to_s).include?(parsed_locale) ? parsed_locale : nil
+  end
+
+  def debug_request
+    puts "====== DEBUG ======"
+    puts "Request path: #{request.path}"
+    puts "Request method: #{request.method}"
+    puts "Session: #{session}"
+    puts "Params: #{params}"
+    puts "=================="
   end
 end
