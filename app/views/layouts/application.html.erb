@@ -66,6 +66,7 @@
 
     <%= render Shell::FooterComponent.new %>
 
+
     <% if content_for?(:google_maps) %>
       <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_maps_api_key}&libraries=places&callback=initGooglePlaces", 
           defer: true,
@@ -74,6 +75,6 @@
     <% end %>
 
     <!-- Modals container -->
-<%= yield :modals if content_for?(:modals) %>
+    <%= yield :modals if content_for?(:modals) %>
   </body>
 </html>

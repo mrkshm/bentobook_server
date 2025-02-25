@@ -6,7 +6,6 @@ Rails.application.routes.draw do
     get :ios_v1, on: :collection
   end
 
-
   # API routes
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
@@ -134,6 +133,7 @@ Rails.application.routes.draw do
     # Profile routes
     resource :profile, only: [ :show, :edit, :update ] do
       patch :update_theme
+      post :change_locale
     end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
 
@@ -155,6 +155,4 @@ Rails.application.routes.draw do
 
   mount Rswag::Ui::Engine => "/api-docs"
   mount Rswag::Api::Engine => "/api-docs"
-
-  post "/profile/change_locale", to: "profiles#change_locale", as: :change_locale_profile
 end
