@@ -241,15 +241,24 @@ class RestaurantsController < ApplicationController
   end
 
   def build_restaurant
-    cuisine_type_name = restaurant_params[:cuisine_type_name]&.downcase
-
-    valid, result = validate_cuisine_type(cuisine_type_name)
-    unless valid
-      raise ActiveRecord::RecordNotFound, result
-    end
-
     restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name, :google_restaurant_attributes))
 
+    # Handle cuisine type
+    if restaurant_params[:cuisine_type_id].present?
+      restaurant.cuisine_type = CuisineType.find(restaurant_params[:cuisine_type_id])
+    elsif restaurant_params[:cuisine_type_name].present?
+      cuisine_type_name = restaurant_params[:cuisine_type_name]&.downcase
+      valid, result = validate_cuisine_type(cuisine_type_name)
+      unless valid
+        raise ActiveRecord::RecordNotFound, result
+      end
+      restaurant.cuisine_type = result
+    else
+      # Set default cuisine type if none provided
+      restaurant.cuisine_type = CuisineType.find_by!(name: "other")
+    end
+
+    # Handle google restaurant
     if restaurant_params[:google_restaurant_attributes]
       google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(
         restaurant_params[:google_restaurant_attributes]
@@ -257,7 +266,6 @@ class RestaurantsController < ApplicationController
       restaurant.google_restaurant = google_restaurant
     end
 
-    restaurant.cuisine_type = result
     restaurant
   end
 
