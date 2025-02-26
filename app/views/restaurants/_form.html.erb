@@ -1,121 +1,157 @@
 <%= form_with(model: @restaurant, url: restaurants_path(@restaurant), local: true, multipart: true, class: "space-y-6 max-w-xl mx-auto") do |form| %>
-    <div x-data="{ editing: false }">
-        <% if @restaurant.errors.any? %>
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong class="font-bold">Please correct the following errors:</strong>
-            <ul class="mt-2 list-disc list-inside">
-              <% @restaurant.errors.full_messages.each do |message| %>
-                <li><%= message %></li>
-              <% end %>
-            </ul>
-          </div>
-        <% end %>
+  <% if Rails.env.development? %>
+    <div class="bg-gray-100 p-4 rounded text-xs mb-4">
+      <p class="font-bold">Debug Info:</p>
+      <pre>Restaurant: <%= @restaurant.attributes.to_json %></pre>
+      <pre>Google Restaurant: <%= @restaurant.google_restaurant.attributes.to_json %></pre>
+    </div>
+  <% end %>
 
-        <%= render 'basic_info', form: form %>
-        
-        <%# Basic info fields are shown/hidden based on editing state %>
-        <div x-show="editing" x-transition>
-          <%= render 'basic_info_fields', form: form %>
+  <div>
+    <% if @restaurant.errors.any? %>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Please correct the following errors:</strong>
+        <ul class="mt-2 list-disc list-inside">
+          <% @restaurant.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# Basic Info %>
+    <div class="space-y-4">
+      <div>
+        <%= form.label :name, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+        <%= form.text_field :name, 
+            class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
+      </div>
+
+      <div class="grid grid-cols-4 gap-2">
+        <div class="col-span-1">
+          <%= form.label :street_number, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+          <%= form.text_field :street_number,
+              class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
         </div>
-        
+        <div class="col-span-3">
+          <%= form.label :street, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+          <%= form.text_field :street,
+              class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
         <div>
-          <%= form.label :cuisine_type_id, t("restaurants.form.cuisine_type"), class: "block text-sm/6 font-medium text-gray-900 mt-4" %>
-          <div class="mt-2 grid grid-cols-1">
-          <%= form.select :cuisine_type_id, 
-          @cuisine_types.map { |ct| [ct.name, ct.id] }, 
-          { include_blank: true }, 
-          class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
+          <%= form.label :postal_code, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+          <%= form.text_field :postal_code,
+              class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
+        </div>
+        <div>
+          <%= form.label :city, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+          <%= form.text_field :city,
+              class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
+        </div>
+      </div>
+
+      <div>
+        <%= form.label :state, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+        <%= form.text_field :state,
+            class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
+      </div>
+
+      <div>
+        <%= form.label :country, class: "block text-sm font-medium text-[var(--color-surface-700)]" %>
+        <%= form.text_field :country,
+            class: "mt-1 block w-full rounded-md border-[var(--color-surface-300)]" %>
+      </div>
+    </div>
+
+    <div>
+      <%= form.label :cuisine_type_id, t("restaurants.form.cuisine_type"), class: "block text-sm/6 font-medium text-gray-900 mt-4" %>
+      <div class="mt-2 grid grid-cols-1">
+      <%= form.select :cuisine_type_id, 
+      @cuisine_types.map { |ct| [ct.name, ct.id] }, 
+      { include_blank: true }, 
+      class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
+      %>
+      <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+      </svg>
+    </div>
+  </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= form.label :rating, t("restaurants.form.rating"), class: "block text-sm/6 font-medium text-gray-900" %>
+        <div class="mt-2 grid grid-cols-1">
+          <%= form.select :rating,
+          1.upto(5).map { |i| [pluralize(i, "star"), i] },
+          { include_blank: true },
+          class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
           %>
           <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
             <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
           </svg>
         </div>
       </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <%= form.label :rating, t("restaurants.form.rating"), class: "block text-sm/6 font-medium text-gray-900" %>
-            <div class="mt-2 grid grid-cols-1">
-              <%= form.select :rating,
-              1.upto(5).map { |i| [pluralize(i, "star"), i] },
-              { include_blank: true },
-              class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-              %>
-              <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-  
-          <div>
-            <%= form.label :price_level, t("restaurants.form.price_level"), class: "block text-sm/6 font-medium text-gray-900" %>
-            <div class="mt-2 grid grid-cols-1">
-              <%= form.select :price_level, 
-                price_level_options, 
-                { include_blank: true }, 
-                class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
-              %>
-              <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
+
+      <div>
+        <%= form.label :price_level, t("restaurants.form.price_level"), class: "block text-sm/6 font-medium text-gray-900" %>
+        <div class="mt-2 grid grid-cols-1">
+          <%= form.select :price_level, 
+            price_level_options, 
+            { include_blank: true }, 
+            class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
+          %>
+          <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
         </div>
-      
-        <div class="form-control">
-          <%= form.label :notes, t("restaurants.form.notes"), 
-              class: "block text-sm font-medium text-[var(--color-surface-900)]" %>
-          <%= form.text_area :notes, rows: 3, 
-              class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-[var(--color-surface-900)] outline-1 outline-[var(--color-surface-300)] placeholder:text-[var(--color-surface-400)] focus:outline-2 focus:-outline-offset-1 focus:outline-[var(--color-primary-600)] sm:text-sm h-24" %>
-        </div>
-      
-        <div class="form-control mt-4">
-          <%= form.label :tag_list, t("restaurants.form.tag_list"), 
-              class: "block text-sm font-medium text-[var(--color-surface-900)]" %>
-          <%= render(TagInputComponent.new(
-            tags: @restaurant.tag_list,
-            available_tags: current_user.restaurants.tag_counts_on(:tags).pluck(:name),
-            input_name: "restaurant[tag_list]"
-          )) %>
-        </div>
-      
-        <%= form.fields_for :google_restaurant_attributes do |gr_form| %>
-          <%= gr_form.hidden_field :google_place_id %>
-          <%= gr_form.hidden_field :name %>
-          <%= gr_form.hidden_field :address %>
-          <%= gr_form.hidden_field :latitude %>
-          <%= gr_form.hidden_field :longitude %>
-          <%= gr_form.hidden_field :street_number %>
-          <%= gr_form.hidden_field :street %>
-          <%= gr_form.hidden_field :postal_code %>
-          <%= gr_form.hidden_field :city %>
-          <%= gr_form.hidden_field :state %>
-          <%= gr_form.hidden_field :country %>
-          <%= gr_form.hidden_field :phone_number %>
-          <%= gr_form.hidden_field :url %>
-          <%= gr_form.hidden_field :business_status %>
-          <%= gr_form.hidden_field :google_rating %>
-          <%= gr_form.hidden_field :google_ratings_total %>
-          <%= gr_form.hidden_field :price_level %>
-          <%= gr_form.hidden_field :opening_hours %>
-          <%= gr_form.hidden_field :google_updated_at %>
-        <% end %>
-      
-        <div class="form-control space-y-2">
-          <h2 class="text-lg font-semibold text-[var(--color-surface-900)]">
-            <%= t("restaurants.form.images") %>
-          </h2>
-          <%= render(ImageUploadComponent.new(form, @restaurant, self)) %>
-        </div>
-      
-        <div class="flex items-center justify-end gap-x-3 mt-6">
-          <%= link_to t("cancel"), 
-              restaurants_path(locale: nil), 
-              class: "rounded-md bg-[var(--color-surface-100)] px-3 py-2 text-sm font-semibold text-[var(--color-surface-900)] shadow-sm hover:bg-[var(--color-surface-200)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-surface-500)]" %>
-          
-          <%= form.submit t("submit"), 
-              class: "rounded-md bg-[var(--color-primary-600)] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[var(--color-primary-500)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-600)]",
-              data: { turbo: false } %>
-        </div>
+      </div>
     </div>
+  
+    <div class="form-control">
+      <%= form.label :notes, t("restaurants.form.notes"), 
+          class: "block text-sm font-medium text-[var(--color-surface-900)]" %>
+      <%= form.text_area :notes, rows: 3, 
+          class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-[var(--color-surface-900)] outline-1 outline-[var(--color-surface-300)] placeholder:text-[var(--color-surface-400)] focus:outline-2 focus:-outline-offset-1 focus:outline-[var(--color-primary-600)] sm:text-sm h-24" %>
+    </div>
+  
+    <div class="form-control mt-4">
+      <%= form.label :tag_list, t("restaurants.form.tag_list"), 
+          class: "block text-sm font-medium text-[var(--color-surface-900)]" %>
+      <%= render(TagInputComponent.new(
+        tags: @restaurant.tag_list,
+        available_tags: current_user.restaurants.tag_counts_on(:tags).pluck(:name),
+        input_name: "restaurant[tag_list]"
+      )) %>
+    </div>
+  
+    <%= form.fields_for :google_restaurant do |gr_form| %>
+      <%= gr_form.hidden_field :google_place_id %>
+      <%= gr_form.hidden_field :name %>
+      <%= gr_form.hidden_field :latitude %>
+      <%= gr_form.hidden_field :longitude %>
+      <%= gr_form.hidden_field :google_rating %>
+      <%= gr_form.hidden_field :google_ratings_total %>
+      <%= gr_form.hidden_field :google_updated_at %>
+    <% end %>
+  
+    <div class="form-control space-y-2">
+      <h2 class="text-lg font-semibold text-[var(--color-surface-900)]">
+        <%= t("restaurants.form.images") %>
+      </h2>
+      <%= render(ImageUploadComponent.new(form, @restaurant, self)) %>
+    </div>
+  
+    <div class="flex items-center justify-end gap-x-3 mt-6">
+      <%= link_to t("cancel"), 
+          restaurants_path(locale: nil), 
+          class: "rounded-md bg-[var(--color-surface-100)] px-3 py-2 text-sm font-semibold text-[var(--color-surface-900)] shadow-sm hover:bg-[var(--color-surface-200)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-surface-500)]" %>
+      
+      <%= form.submit t("submit"), 
+          class: "rounded-md bg-[var(--color-primary-600)] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[var(--color-primary-500)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary-600)]",
+          data: { turbo: false } %>
+    </div>
+  </div>
 <% end %>

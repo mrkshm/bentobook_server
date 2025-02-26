@@ -60,6 +60,64 @@ class RestaurantsController < ApplicationController
     @restaurant.cuisine_type = CuisineType.find_by(name: "other")
   end
 
+  def new_form
+    @restaurant = current_user.restaurants.new
+    @restaurant.build_google_restaurant
+    @cuisine_types = CuisineType.all
+    @restaurant.cuisine_type = CuisineType.find_by(name: "other")
+
+    if params[:place].present?
+      place_params = params.require(:place).permit(
+        :google_place_id, :name, :latitude, :longitude,
+        :formatted_address, :phone_number, :website, :rating,
+        :user_ratings_total, :business_status, :street_number,
+        :street_name, :city, :state, :postal_code, :country
+      )
+
+      # Assign attributes to both models
+      @restaurant.assign_attributes(
+        name: place_params[:name],
+        street_number: place_params[:street_number],
+        street: place_params[:street_name],
+        city: place_params[:city],
+        state: place_params[:state],
+        postal_code: place_params[:postal_code],
+        country: place_params[:country],
+        phone_number: place_params[:phone_number],
+        business_status: place_params[:business_status],
+        latitude: place_params[:latitude],
+        longitude: place_params[:longitude]
+      )
+
+      @restaurant.google_restaurant.assign_attributes(
+        google_place_id: place_params[:google_place_id],
+        name: place_params[:name],
+        latitude: place_params[:latitude],
+        longitude: place_params[:longitude],
+        street_number: place_params[:street_number],
+        street: place_params[:street_name],
+        city: place_params[:city],
+        state: place_params[:state],
+        postal_code: place_params[:postal_code],
+        country: place_params[:country],
+        phone_number: place_params[:phone_number],
+        google_rating: place_params[:rating],
+        google_ratings_total: place_params[:user_ratings_total],
+        google_updated_at: Time.current
+      )
+    end
+
+    respond_to do |format|
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.update(
+          "restaurant_form",
+          partial: "form",
+          locals: { restaurant: @restaurant }
+        )
+      }
+    end
+  end
+
   def update
     if @restaurant.update(restaurant_params)
       respond_to do |format|

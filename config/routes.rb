@@ -89,6 +89,8 @@ Rails.application.routes.draw do
       end
       collection do
         get "tagged/:tag", action: :index, as: :tagged
+        get "new/form", action: :new_form
+        post "new/form", action: :new_form
       end
       resources :images, only: [ :create, :destroy ]
     end

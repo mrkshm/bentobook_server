@@ -35,6 +35,8 @@ function extractAddressFromGooglePlace(place) {
 }
 
 export default class extends Controller {
+  static targets = ["input"]
+
   connect() {
     // If Google is already loaded, initialize immediately
     if (window.google && window.google.maps && window.google.maps.places) {
@@ -66,91 +68,75 @@ export default class extends Controller {
   }
 
   placeSelected() {
-    const place = this.autocomplete.getPlace();
-    const form = document.querySelector('#restaurant-form form');
+    const place = this.autocomplete.getPlace()
+    if (!place.place_id) return
 
-    if (!place.geometry) {
-      console.error('No details available for input: ' + place.name);
-      return;
+    const frame = document.getElementById("restaurant_form")
+    if (!frame) {
+      console.error("Restaurant form frame not found")
+      return
     }
 
-    const extractedAddress = extractAddressFromGooglePlace(place);
-    const service = new google.maps.places.PlacesService(document.createElement('div'));
-    
-    service.getDetails(
-      {
-        placeId: place.place_id,
-        fields: [
-          'name',
-          'formatted_address',
-          'formatted_phone_number',
-          'website',
-          'business_status',
-          'price_level',
-          'rating',
-          'user_ratings_total',
-          'geometry',
-          'opening_hours',
-          'address_components',
-          'place_id'
-        ]
-      },
-      (detailedPlace, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-          const extractedAddress = extractAddressFromGooglePlace(detailedPlace);
-          const openingHours = detailedPlace.opening_hours ? {
-            isOpen: detailedPlace.opening_hours.isOpen(),
-            periods: detailedPlace.opening_hours.periods,
-            weekday_text: detailedPlace.opening_hours.weekday_text
-          } : null;
+    this.element.disabled = true
 
-          form.querySelector('#restaurant_name').value = detailedPlace.name;
-          form.querySelector('#restaurant_address').value = detailedPlace.formatted_address;
-          form.querySelector('#restaurant_street_number').value = extractedAddress.street_number || '';
-          form.querySelector('#restaurant_street').value = extractedAddress.street_name || '';
-          form.querySelector('#restaurant_postal_code').value = extractedAddress.postal_code || '';
-          form.querySelector('#restaurant_city').value = extractedAddress.city || '';
-          form.querySelector('#restaurant_state').value = extractedAddress.state || '';
-          form.querySelector('#restaurant_country').value = extractedAddress.country || '';
-          form.querySelector('#restaurant_phone_number').value = detailedPlace.formatted_phone_number || '';
-          form.querySelector('#restaurant_url').value = detailedPlace.website || '';
-          form.querySelector('#restaurant_business_status').value = detailedPlace.business_status || '';
-          form.querySelector('#restaurant_price_level').value = detailedPlace.price_level || '';
+    const addressData = extractAddressFromGooglePlace(place)
+    console.log("Extracted address:", addressData)
 
-          form.querySelector('#restaurant_google_restaurant_attributes_google_place_id').value = detailedPlace.place_id || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_name').value = detailedPlace.name;
-          form.querySelector('#restaurant_google_restaurant_attributes_address').value = detailedPlace.formatted_address;
-          form.querySelector('#restaurant_google_restaurant_attributes_latitude').value = detailedPlace.geometry.location.lat();
-          form.querySelector('#restaurant_google_restaurant_attributes_longitude').value = detailedPlace.geometry.location.lng();
-          form.querySelector('#restaurant_google_restaurant_attributes_street_number').value = extractedAddress.street_number || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_street').value = extractedAddress.street_name || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_postal_code').value = extractedAddress.postal_code || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_city').value = extractedAddress.city || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_state').value = extractedAddress.state || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_country').value = extractedAddress.country || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_phone_number').value = detailedPlace.formatted_phone_number || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_url').value = detailedPlace.website || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_business_status').value = detailedPlace.business_status || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_google_rating').value = detailedPlace.rating || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_google_ratings_total').value = detailedPlace.user_ratings_total || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_price_level').value = detailedPlace.price_level || '';
-          form.querySelector('#restaurant_google_restaurant_attributes_opening_hours').value = 
-            openingHours ? JSON.stringify(openingHours) : '';
-          form.querySelector('#restaurant_google_restaurant_attributes_google_updated_at').value = new Date().toISOString();
-
-          // Dispatch the place-selected event
-          const placeSelectedEvent = new CustomEvent('place-selected', { 
-            bubbles: true,
-            detail: { place }
-          });
-          window.dispatchEvent(placeSelectedEvent);
-
-          // Update display values immediately
-          if (typeof updateDisplayValues === 'function') {
-            updateDisplayValues();
-          }
-        }
+    const placeData = {
+      place: {
+        google_place_id: place.place_id,
+        name: place.name,
+        latitude: place.geometry?.location?.lat(),
+        longitude: place.geometry?.location?.lng(),
+        formatted_address: place.formatted_address,
+        phone_number: place.formatted_phone_number,
+        website: place.website,
+        rating: place.rating,
+        user_ratings_total: place.user_ratings_total,
+        price_level: place.price_level,
+        business_status: place.business_status,
+        street_number: addressData.street_number,
+        street_name: addressData.route || addressData.street_name,
+        city: addressData.locality || addressData.city,
+        state: addressData.administrative_area_level_1 || addressData.state,
+        postal_code: addressData.postal_code,
+        country: addressData.country
       }
-    );
+    }
+
+    console.log("Sending place data:", placeData)
+
+    fetch('/restaurants/new/form', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'text/vnd.turbo-stream.html',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify(placeData)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok')
+      return response.text()
+    })
+    .then(html => {
+      console.log("Received response, updating form")
+      Turbo.renderStreamMessage(html)
+    })
+    .catch(error => {
+      console.error("Error loading restaurant form:", error)
+      const errorDiv = document.createElement('div')
+      errorDiv.className = 'text-[var(--color-error-700)] bg-[var(--color-error-100)] p-4 rounded-md'
+      errorDiv.textContent = "Could not load restaurant details. Please try again."
+      frame.innerHTML = ''
+      frame.appendChild(errorDiv)
+    })
+    .finally(() => {
+      this.element.disabled = false
+    })
+  }
+
+  get locale() {
+    return document.documentElement.lang || "en"
   }
 }
