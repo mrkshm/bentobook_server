@@ -71,10 +71,13 @@ class RestaurantsController < ApplicationController
         :google_place_id, :name, :latitude, :longitude,
         :formatted_address, :phone_number, :website, :rating,
         :user_ratings_total, :business_status, :street_number,
-        :street_name, :city, :state, :postal_code, :country
+        :street_name, :city, :state, :postal_code, :country,
+        :price_level
       )
 
-      # Assign attributes to both models
+      # Convert Google's rating (float) to our rating (integer)
+      converted_rating = place_params[:rating].present? ? place_params[:rating].to_f.round : nil
+
       @restaurant.assign_attributes(
         name: place_params[:name],
         street_number: place_params[:street_number],
@@ -86,7 +89,9 @@ class RestaurantsController < ApplicationController
         phone_number: place_params[:phone_number],
         business_status: place_params[:business_status],
         latitude: place_params[:latitude],
-        longitude: place_params[:longitude]
+        longitude: place_params[:longitude],
+        rating: converted_rating,
+        price_level: place_params[:price_level]  # Google's price_level is already 1-4
       )
 
       @restaurant.google_restaurant.assign_attributes(
@@ -103,8 +108,13 @@ class RestaurantsController < ApplicationController
         phone_number: place_params[:phone_number],
         google_rating: place_params[:rating],
         google_ratings_total: place_params[:user_ratings_total],
+        price_level: place_params[:price_level],
+        business_status: place_params[:business_status],
         google_updated_at: Time.current
       )
+
+      Rails.logger.debug "Converted Google rating #{place_params[:rating]} to #{converted_rating}"
+      Rails.logger.debug "Using Google price level: #{place_params[:price_level]}"
     end
 
     respond_to do |format|
