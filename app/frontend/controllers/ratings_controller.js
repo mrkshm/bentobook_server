@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["star"]
@@ -68,6 +69,10 @@ export default class extends Controller {
               const modalController = this.application.getControllerForElementAndIdentifier(modal, 'modal')
               if (modalController) modalController.close()
             }
+            
+            // Clear Turbo cache to ensure fresh data on back navigation
+            Turbo.cache.clear()
+            
             Turbo.renderStreamMessage(html)
           })
         }
@@ -77,6 +82,10 @@ export default class extends Controller {
           console.log("Rating updated successfully:", data)
           this.rating = data.rating
           this.updateStars()
+          
+          // Clear Turbo cache to ensure fresh data on back navigation
+          Turbo.cache.clear()
+          
           // Close modal after successful update
           const modal = this.element.closest('[data-controller="modal"]')
           if (modal) {
