@@ -298,18 +298,32 @@ class RestaurantsController < ApplicationController
   end
 
   def restaurant_params
-    params.require(:restaurant).permit(
+    # First get the regular permitted params
+    permitted = params.require(:restaurant).permit(
       :name, :address, :notes, :cuisine_type_name, :cuisine_type_id,
       :rating, :price_level, :street_number, :street, :postal_code,
       :city, :state, :country, :phone_number, :url, :business_status,
-      :tag_list,
+      :tag_list, images: [],
       google_restaurant_attributes: [
         :google_place_id, :name, :address, :latitude, :longitude,
         :street_number, :street, :postal_code, :city, :state, :country,
         :phone_number, :url, :business_status, :google_rating,
         :google_ratings_total, :price_level, :opening_hours, :google_updated_at
       ]
-)
+    )
+
+    # Handle the special case of images - filter out any empty strings or nil values
+    if permitted[:images].present?
+      # Only keep actual file uploads, reject empty strings and nil values
+      permitted[:images] = Array(permitted[:images]).reject(&:blank?).select do |img|
+        img.is_a?(ActionDispatch::Http::UploadedFile) && img.size.positive?
+      end
+
+      # If after filtering we have an empty array, remove the key entirely
+      permitted.delete(:images) if permitted[:images].empty?
+    end
+
+    permitted
   end
 
   def build_restaurant
@@ -332,9 +346,25 @@ class RestaurantsController < ApplicationController
 
     # Handle google restaurant
     if restaurant_params[:google_restaurant_attributes]
-      google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(
-        restaurant_params[:google_restaurant_attributes]
-      )
+      google_attrs = restaurant_params[:google_restaurant_attributes].to_h
+
+      # Copy address fields from main params if missing in google_restaurant_attributes
+      address_components = {
+        address: [ restaurant_params[:street_number], restaurant_params[:street] ].compact.join(" "),
+        city: restaurant_params[:city],
+        street: restaurant_params[:street],
+        street_number: restaurant_params[:street_number],
+        postal_code: restaurant_params[:postal_code],
+        state: restaurant_params[:state],
+        country: restaurant_params[:country]
+      }
+
+      # Update any missing attributes
+      address_components.each do |key, value|
+        google_attrs[key] = value if value.present? && !google_attrs[key].present?
+      end
+
+      google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(google_attrs)
       restaurant.google_restaurant = google_restaurant
     end
 
@@ -374,32 +404,55 @@ class RestaurantsController < ApplicationController
 
   def save_restaurant(render_action)
     if @restaurant.persisted? || @restaurant.save
-      if params[:restaurant][:images].present?
-        begin
-          result = ImageProcessorService.new(@restaurant, params[:restaurant][:images]).process
-          unless result.success?
-            flash[:alert] = "Error updating the restaurant: Image processing failed"
-            @cuisine_types = CuisineType.all
+      # Restaurant saved successfully, now handle any images
+
+      # Extract image parameters
+      image_params = params.dig(:restaurant, :images)
+
+      # Only process images if we actually have valid file uploads
+      if image_params.present?
+        # Create a new array containing only actual uploaded files
+        # This ensures we completely ignore any empty strings or other invalid values
+        file_uploads = []
+
+        Array(image_params).each do |param|
+          # Only add actual file upload objects
+          if param.is_a?(ActionDispatch::Http::UploadedFile) && param.size.positive?
+            file_uploads << param
+          end
+        end
+
+        # Only proceed with image processing if we have valid files
+        if file_uploads.present?
+          begin
+            # Process only the validated file uploads
+            result = ImageProcessorService.new(@restaurant, file_uploads).process
+            unless result.success?
+              flash[:alert] = "Error updating the restaurant: Image processing failed"
+              @cuisine_types = CuisineType.all
+              if render_action == :edit
+                raise ActiveRecord::Rollback
+              else
+                raise StandardError, "Image processing failed"
+              end
+            end
+          rescue StandardError => e
+            Rails.logger.error "Image processing failed: #{e.message}"
+            @restaurant.destroy if render_action == :new
             if render_action == :edit
               raise ActiveRecord::Rollback
             else
-              raise StandardError, "Image processing failed"
+              raise # Re-raise the error to be handled by the parent action
             end
           end
-          redirect_to({ action: :show, id: @restaurant.id }, notice: "Restaurant was successfully #{render_action == :new ? 'created' : 'updated'}")
-        rescue StandardError => e
-          Rails.logger.error "Image processing failed: #{e.message}"
-          @restaurant.destroy if render_action == :new
-          if render_action == :edit
-            raise ActiveRecord::Rollback
-          else
-            raise # Re-raise the error to be handled by the parent action
-          end
         end
-      else
-        redirect_to({ action: :show, id: @restaurant.id }, notice: "Restaurant was successfully #{render_action == :new ? 'created' : 'updated'}")
       end
+
+      # Restaurant was saved successfully, redirect to show page
+      redirect_to(restaurant_path(id: @restaurant.id, locale: nil),
+                  notice: "Restaurant was successfully #{render_action == :new ? 'created' : 'updated'}")
     else
+      # Restaurant could not be saved
       Rails.logger.error "Restaurant save failed: #{@restaurant.errors.full_messages}"
       flash.now[:alert] = "Failed to save restaurant"
       @cuisine_types = CuisineType.all
