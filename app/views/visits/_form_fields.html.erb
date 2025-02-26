@@ -1,72 +1,85 @@
-<div class="space-y-6">
-  <div class="form-control">
-    <%= form.label :restaurant_id, t("select_restaurant"), class: "label" %>
-    <%= form.collection_select :restaurant_id, Restaurant.with_google, :id, :name, { prompt: t("select_restaurant_placeholder") }, { class: "select select-bordered w-full" } %>
-  </div>
-
-  <div class="form-control">
-    <%= form.label :date, t("date"), class: "label" %>
-    <div class="flex flex-wrap gap-2">
-      <%= form.date_select :date, 
-                          selected: visit.date || Date.current,
-                          order: [:day, :month, :year],
-                          use_month_names: t('date.month_names').compact,
-                          prompt: { 
-                            day: t('date.day'),
-                            month: t('date.month'),
-                            year: t('date.year')
-                          },
-                          class: "select select-bordered" %>
+<div class="space-y-6 py-4 px-4 bg-surface-50">
+  <div class="mb-4 max-w-lg">
+    <%= form.label :restaurant_id, t("select_restaurant"), class: "block text-sm/6 font-medium text-surface-900" %>
+    <div class="mt-2 grid grid-cols-1">
+      <%= form.collection_select :restaurant_id, Restaurant.with_google, :id, :name, 
+                               { prompt: t("select_restaurant_placeholder") }, 
+                               { class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6" } %>
+      <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+      </svg>
     </div>
   </div>
+
+  <div class="mb-4 max-w-lg">
+  <%= form.label :date, t("date"), class: "block text-sm font-medium text-surface-900 mb-1" %>
+  <%= form.date_field :date, value: visit.date || Date.current, 
+                     class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+</div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="form-control md:col-span-2">
-      <%= form.label :title, t("title"), class: "label" %>
-      <%= form.text_field :title, class: "input input-bordered w-full" %>
+    <div class="mb-4 md:col-span-2">
+      <%= form.label :title, t("title"), class: "block text-sm font-medium text-surface-900 mb-1" %>
+      <%= form.text_field :title, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
     </div>
 
-    <div class="form-control">
-      <%= form.label :contacts, t("select_contacts"), class: "label" %>
+    <div class="mb-4">
+      <%= form.label :contacts, t("select_contacts"), class: "block text-sm font-medium text-surface-900 mb-1" %>
       <div class="flex items-center">
-        <div class="overflow-y-auto max-h-48 bg-base-200 rounded-lg p-2 flex-grow">
+        <div class="overflow-y-auto max-h-48 bg-surface-100/50 rounded-lg p-3 flex-grow">
           <%= form.collection_check_boxes :contact_ids, Contact.all, :id, :name do |b| %>
-            <label class="label cursor-pointer flex items-center">
-              <%= b.check_box class: "checkbox mr-2" %>
+            <label class="flex items-center py-1.5 cursor-pointer hover:bg-surface-100 rounded px-2">
+              <%= b.check_box class: "h-4 w-4 rounded border-surface-300 text-primary-600 focus:ring-primary-600 mr-2" %>
               <div class="flex items-center">
-                <%= render(AvatarComponent.new(image: b.avatar, text: b.name, size: :sm)) %>
-                <span class="label-text ml-2"><%= b.text %></span>
+                <%= render(AvatarComponent.new(image: b.object.avatar, text: b.object.name, size: :sm)) %>
+                <span class="ml-2 text-sm text-surface-700"><%= b.text %></span>
               </div>
             </label>
           <% end %>
         </div>
-        <%= link_to new_contact_path, class: "btn btn-circle btn-sm ml-2", data: { turbo_frame: "new_contact" } do %>
-          <%= heroicon "plus", options: { class: "w-5 h-5" } %>
-        <% end %>
       </div>
     </div>
   </div>
 
-  <div class="form-control">
-    <%= form.label :notes, t("notes"), class: "label" %>
-    <%= form.text_area :notes, class: "textarea textarea-bordered h-24 w-full" %>
+  <div class="mb-4">
+    <%= form.label :notes, t("notes"), class: "block text-sm font-medium text-surface-900 mb-1" %>
+    <%= form.text_area :notes, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm h-24" %>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-    <div class="form-control">
-      <%= form.label :rating, t("visits.rate_visit"), class: "label" %>
-      <div class="mt-2">
-        <%= render(RatingsComponent.new(rating: visit.rating, form: form)) %>
+    <div class="mb-4">
+      <%= form.label :rating, t("visits.rate_visit"), class: "block text-sm font-medium text-surface-900 mb-1" %>
+      <div class="mt-2 grid grid-cols-1">
+        <%= form.select :rating, 
+                      options_for_select([
+                        ["⭐", 1],
+                        ["⭐⭐", 2],
+                        ["⭐⭐⭐", 3],
+                        ["⭐⭐⭐⭐", 4],
+                        ["⭐⭐⭐⭐⭐", 5]
+                      ], visit.rating),
+                      { include_blank: t('ratings.select_rating') },
+                      { class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6" } %>
+        <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
       </div>
     </div>
 
-    <div class="form-control">
-      <%= form.label :price_paid, t("visits.price_paid"), class: "label" %>
+    <div class="mb-4">
+      <%= form.label :price_paid, t("visits.price_paid"), class: "block text-sm font-medium text-surface-900 mb-1" %>
       <div class="flex space-x-2">
-        <%= form.number_field :price_paid, step: 0.01, class: "input input-bordered w-full md:w-32" %>
-        <%= form.text_field :price_paid_currency, list: "currency-list", autocomplete: "off", class: "input input-bordered w-full md:w-24" %>
+        <%= form.number_field :price_paid, step: 0.01, class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-32" %>
+        <%= form.text_field :price_paid_currency, 
+                           list: "currency-list", 
+                           autocomplete: "off", 
+                           class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-24",
+                           data: { 
+                             currency_validator_target: "input",
+                             action: "input->currency-validator#validate" 
+                           } %>
       </div>
-      <datalist id="currency-list">
+      <datalist id="currency-list" data-currency-validator-target="list">
         <% Money::Currency.all.each do |currency| %>
           <option value="<%= currency.iso_code %>"><%= "#{currency.iso_code} - #{currency.name}" %></option>
         <% end %>

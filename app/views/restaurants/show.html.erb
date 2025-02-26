@@ -159,9 +159,9 @@
         <!-- Action Buttons -->
         <div class="mt-8 flex space-x-4">
           <% if @restaurant.user == current_user %>
-            <%= link_to 'Edit Restaurant', edit_restaurant_path(id: @restaurant.id), class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-primary-600 text-primary-50 hover:bg-primary-700 transition-colors', data: { turbo: false } %>
+            <%= link_to t('restaurants.edit'), edit_restaurant_path(id: @restaurant.id), class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-primary-600 text-primary-50 hover:bg-primary-700 transition-colors' %>
           <% end %>
-          <%= link_to 'Back to Restaurants', restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors', data: { turbo: false } %>
+          <%= link_to t('common.back'), restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors' %>
         </div>
       </div>
     </div>
