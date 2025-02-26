@@ -112,9 +112,6 @@ class RestaurantsController < ApplicationController
         business_status: place_params[:business_status],
         google_updated_at: Time.current
       )
-
-      Rails.logger.debug "Converted Google rating #{place_params[:rating]} to #{converted_rating}"
-      Rails.logger.debug "Using Google price level: #{place_params[:price_level]}"
     end
 
     respond_to do |format|
