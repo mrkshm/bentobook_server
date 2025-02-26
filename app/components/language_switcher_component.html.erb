@@ -17,7 +17,7 @@
     <div class="py-1">
       <% available_locales.each do |locale| %>
         <% if helpers.user_signed_in? %>
-          <%= form_tag change_locale_profile_path(locale: nil), method: :post, class: "block", data: { turbo: false } do %>
+          <%= form_tag change_locale_profile_path(locale: nil), method: :post, class: "block" do %>
             <%= hidden_field_tag :locale, locale[:code] %>
             <button type="submit"
                   class="<%= 'bg-surface-100' if locale[:code] == @current_locale %> text-surface-700 block px-4 py-2 text-sm w-full text-left hover:bg-surface-100"
