@@ -1,5 +1,6 @@
 fr:
   restaurants:
+    edit: 'Modifier le restaurant'
     create_restaurant_button: 'Créer un nouveau restaurant'
     select_price_level: 'Sélectionner le niveau de prix'
     change_cuisine: 'Changer la cuisine'
