@@ -1,8 +1,4 @@
 import '../stylesheets/application.css';
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-Alpine.start();
 
 import { initializeNavbar } from '../scripts/navbar';
 import '../scripts/page_render';
