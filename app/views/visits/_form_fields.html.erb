@@ -37,11 +37,6 @@
             </label>
           <% end %>
         </div>
-        <%= link_to new_contact_path, 
-                    class: "rounded-full p-1.5 bg-primary-600 text-white hover:bg-primary-500 ml-2 flex items-center justify-center w-8 h-8 shadow-sm", 
-                    data: { turbo_frame: "new_contact" } do %>
-          <%= heroicon "plus", options: { class: "w-5 h-5" } %>
-        <% end %>
       </div>
     </div>
   </div>
@@ -54,8 +49,20 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
     <div class="mb-4">
       <%= form.label :rating, t("visits.rate_visit"), class: "block text-sm font-medium text-surface-900 mb-1" %>
-      <div class="mt-2">
-        <%= render(RatingsComponent.new(rating: visit.rating, form: form)) %>
+      <div class="mt-2 grid grid-cols-1">
+        <%= form.select :rating, 
+                      options_for_select([
+                        ["⭐", 1],
+                        ["⭐⭐", 2],
+                        ["⭐⭐⭐", 3],
+                        ["⭐⭐⭐⭐", 4],
+                        ["⭐⭐⭐⭐⭐", 5]
+                      ], visit.rating),
+                      { include_blank: t('ratings.select_rating') },
+                      { class: "col-start-1 row-start-1 w-full appearance-none rounded-md bg-white py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6" } %>
+        <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
       </div>
     </div>
 
@@ -63,9 +70,16 @@
       <%= form.label :price_paid, t("visits.price_paid"), class: "block text-sm font-medium text-surface-900 mb-1" %>
       <div class="flex space-x-2">
         <%= form.number_field :price_paid, step: 0.01, class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-32" %>
-        <%= form.text_field :price_paid_currency, list: "currency-list", autocomplete: "off", class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-24" %>
+        <%= form.text_field :price_paid_currency, 
+                           list: "currency-list", 
+                           autocomplete: "off", 
+                           class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-24",
+                           data: { 
+                             currency_validator_target: "input",
+                             action: "input->currency-validator#validate" 
+                           } %>
       </div>
-      <datalist id="currency-list">
+      <datalist id="currency-list" data-currency-validator-target="list">
         <% Money::Currency.all.each do |currency| %>
           <option value="<%= currency.iso_code %>"><%= "#{currency.iso_code} - #{currency.name}" %></option>
         <% end %>

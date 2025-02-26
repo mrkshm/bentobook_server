@@ -1,0 +1,6 @@
+{
+    "controllerFilesPath": "app/frontend/controllers",
+    "controllerSuffix": "_controller.js",
+    "ignoredAttributes": [],
+    "ignoredControllerIdentifiers": []
+  }
