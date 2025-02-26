@@ -1,7 +1,8 @@
 <div class="container mx-auto p-4">
   <div class="flex w-full justify-between items-center mb-6">
-    <h1 class="text-4xl mb-4"><%= t("contacts.index.title") %></h1>
-    <%= link_to new_contact_path, class: "btn btn-primary" do %>
+    <h1 class="text-2xl font-semibold text-surface-900"><%= t("contacts.index.title") %></h1>
+    <%= link_to new_contact_path, 
+          class: "inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600" do %>
       <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
       <%= t("add_contact") %>
     <% end %>
@@ -28,63 +29,80 @@
   </div>
 
   <% if @contacts.empty? %>
-    <% if params[:search].present? %>
-      <p class="text-center text-gray-500 my-8"><%= t("contacts.index.no_contacts_found") %></p>
-    <% else %>
-      <p class="text-center text-gray-500 my-8"><%= t("contacts.index.no_contacts") %></p>
-    <% end %>
+    <p class="text-center text-surface-600 my-8">
+      <%= params[:search].present? ? t("contacts.index.no_contacts_found") : t("contacts.index.no_contacts") %>
+    </p>
   <% else %>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <% @contacts.each do |contact| %>
-        <%= link_to contact_path(id: contact.id), class: "card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-200" do %>
-          <div class="card-body">
-            <div class="flex items-center justify-between w-full">
-              <div class="flex items-center gap-4">
-                <%= render(AvatarComponent.new(user: contact, size: :large)) %>
-                
-                <div>
-                  <h2 class="card-title"><%= contact.name %></h2>
-                  <p class="text-sm text-base-content/70"><%= contact.email %></p>
-                </div>
+        <%= link_to contact_path(id: contact.id), 
+              class: "block divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>
+          <div class="p-6">
+            <div class="flex gap-6">
+              <%# Avatar section - 1/3 width %>
+              <div class="w-1/3 flex items-center justify-center">
+                <%= render(AvatarComponent.new(
+                  image: contact.avatar,
+                  text: contact.name,
+                  size: :xl
+                )) %>
               </div>
 
-              <% if contact.visits_count.positive? %>
-                <div class="badge badge-secondary"><%= contact.visits_count %></div>
-              <% end %>
-            </div>
-
-            <div class="mt-4 space-y-2">
-              <% if contact.city.present? || contact.country.present? %>
-                <div class="flex items-center gap-2">
-                  <%= heroicon "map-pin", options: { class: "w-5 h-5 text-base-content/70" } %>
-                  <span><%= [contact.city, contact.country].compact.join(", ") %></span>
+              <%# Content section - 2/3 width %>
+              <div class="w-2/3">
+                <%# Name and visit count %>
+                <div class="flex items-start justify-between">
+                  <h3 class="text-lg font-medium text-surface-900"><%= contact.name %></h3>
+                  <% if contact.visits_count&.positive? %>
+                    <span class="inline-flex items-center rounded-full bg-surface-100 px-2.5 py-0.5 text-xs font-medium text-surface-700">
+                      <%= t("contacts.visits", count: contact.visits_count) %>
+                    </span>
+                  <% end %>
                 </div>
-              <% end %>
 
-              <% if contact.phone.present? %>
-                <div class="flex items-center gap-2">
-                  <%= heroicon "phone", options: { class: "w-5 h-5 text-base-content/70" } %>
-                  <span><%= contact.phone %></span>
-                </div>
-              <% end %>
+                <%# Contact details %>
+                <div class="mt-2 space-y-1 text-sm text-surface-600">
+                  <%# Email %>
+                  <div class="flex items-center gap-2">
+                    <%= heroicon "envelope", options: { class: "w-4 h-4 text-surface-400" } %>
+                    <span><%= contact.email %></span>
+                  </div>
 
-              <% if contact.notes.present? %>
-                <div class="flex items-start gap-2 mt-2">
-                  <%= heroicon "document-text", options: { class: "w-5 h-5 text-base-content/70" } %>
-                  <p class="text-sm"><%= truncate(contact.notes, length: 100) %></p>
+                  <%# Location - improved handling %>
+                  <% if contact.city.present? || contact.country.present? %>
+                    <div class="flex items-center gap-2">
+                      <%= heroicon "map-pin", options: { class: "w-4 h-4 text-surface-400" } %>
+                      <span>
+                        <% if contact.city.present? && contact.country.present? %>
+                          <%= "#{contact.city}, #{contact.country}" %>
+                        <% else %>
+                          <%= contact.city.presence || contact.country %>
+                        <% end %>
+                      </span>
+                    </div>
+                  <% end %>
+
+                  <%# Phone %>
+                  <% if contact.phone.present? %>
+                    <div class="flex items-center gap-2">
+                      <%= heroicon "phone", options: { class: "w-4 h-4 text-surface-400" } %>
+                      <span><%= contact.phone %></span>
+                    </div>
+                  <% end %>
                 </div>
-              <% end %>
+              </div>
             </div>
           </div>
         <% end %>
       <% end %>
     </div>
 
-    <div class="flex flex-col items-center space-y-4 mt-8">
-      <%== pagy_daisy_ui_nav(@pagy) %>
-      <div class="text-sm text-gray-600 bg-base-200 p-2 rounded-lg">
+    <%# Pagination - removed Daisy UI specific classes %>
+    <div class="mt-8 flex flex-col items-center space-y-4">
+      <%== pagy_nav(@pagy) %>
+      <p class="text-sm text-surface-600 bg-surface-100 px-3 py-2 rounded-md">
         <%== pagy_info(@pagy) %>
-      </div>
+      </p>
     </div>
   <% end %>
 </div>

@@ -17,23 +17,22 @@
     <div class="py-1">
       <% available_locales.each do |locale| %>
         <% if helpers.user_signed_in? %>
-          <%= form_tag change_locale_profile_path, method: :post, class: "block", data: { turbo: false } do %>
+          <%= form_tag change_locale_profile_path(locale: nil), method: :post, class: "block", data: { turbo: false } do %>
             <%= hidden_field_tag :locale, locale[:code] %>
             <button type="submit"
-                    class="block w-full px-3 py-1 text-left text-sm text-surface-700 hover:bg-surface-100 hover:text-surface-900 <%= 'font-medium' if current_locale == locale[:code] %>"
-                    role="menuitem">
+                  class="<%= 'bg-surface-100' if locale[:code] == @current_locale %> text-surface-700 block px-4 py-2 text-sm w-full text-left hover:bg-surface-100"
+                  role="menuitem">
               <%= locale[:name] %>
             </button>
           <% end %>
         <% else %>
-          <%= link_to locale[:name],
-              locale[:code] == :en ? "/" : "/fr",
-              class: "block px-3 py-1 text-base text-surface-700 hover:bg-surface-100 hover:text-surface-900 #{'font-medium' if current_locale == locale[:code]}",
-              role: "menuitem",
-              data: {
-                action: "language-switcher#switchLocale",
-                locale: locale[:code]
-              } %>
+          <a href="#" 
+             data-locale="<%= locale[:code] %>"
+             data-action="click->language-switcher#switchLocale"
+             class="<%= 'bg-surface-100' if locale[:code] == @current_locale %> text-surface-700 block px-4 py-2 text-sm hover:bg-surface-100"
+             role="menuitem">
+            <%= locale[:name] %>
+          </a>
         <% end %>
       <% end %>
     </div>

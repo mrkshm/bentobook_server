@@ -1,5 +1,3 @@
-<h1><%= t('contacts.edit.title') %></h1>
+<%= render('shared/header', title: t('contacts.edit.title')) %>
 
 <%= render 'form', contact: @contact, submit_text: t('update') %>
-
-<%= link_to t('back_to_contacts'), contacts_path, class: 'btn btn-secondary' %>

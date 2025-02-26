@@ -1,20 +1,34 @@
 <div class="container mx-auto px-4 py-8">
   <h1 class="text-3xl font-bold mb-6"><%= t("visits.index.title") %></h1>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <% @visits.each do |visit| %>
-      <%= render(VisitCardComponent.new(visit: visit)) %>
+<div class="min-h-screen bg-surface-100">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 hotwire-native:px-0">
+    <h1 class="text-2xl font-semibold text-surface-900 mb-6">
+      <%= t("visits.index.title") %>
+    </h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      <% @visits.each do |visit| %>
+        <%= render(VisitCardComponent.new(visit: visit)) %>
+      <% end %>
+    </div>
+
+    <div class="flex flex-col items-center space-y-4 mt-8">
+      <nav class="flex items-center space-x-2 gap-2 text-surface-500" role="navigation" aria-label="Pagination">
+        <%== pagy_nav(@pagy) %>
+      </nav>
+      <div class="text-sm text-surface-600 bg-surface-100 px-4 py-2 rounded-lg">
+        <%== pagy_info(@pagy) %>
+      </div>
+    </div>
+
+    <%= link_to new_visit_path, 
+        class: "fixed bottom-6 right-6 flex items-center justify-center w-14 h-14 rounded-full 
+                bg-primary-600 text-surface-50 shadow-lg hover:bg-primary-700 
+                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 
+                transition-colors" do %>
+      <%= heroicon "plus", options: { class: "h-6 w-6" } %>
     <% end %>
   </div>
-
-  <div class="flex flex-col items-center space-y-4 mt-8">
-    <%== pagy_daisy_ui_nav(@pagy) %>
-    <div class="badge badge-lg badge-ghost">
-      <%== pagy_info(@pagy) %>
-    </div>
-  </div>
-
-  <%= link_to new_visit_path, class: "btn btn-primary btn-circle fixed bottom-4 right-4" do %>
-    <%= heroicon "plus", options: { class: "w-6 h-6" } %>
-  <% end %>
+</div>
 </div>

@@ -4,7 +4,6 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 Alpine.start();
 
-import { initializeThemeSwitcher } from '../scripts/theme_switcher';
 import { initializeNavbar } from '../scripts/navbar';
 import '../scripts/page_render';
 import "lightgallery/css/lightgallery.css"
@@ -20,7 +19,6 @@ document.addEventListener("turbo:before-cache", () => {
 })
 
 document.addEventListener("turbo:load", () => {
-  initializeThemeSwitcher();
   initializeNavbar();
 })
 

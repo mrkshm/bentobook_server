@@ -1,0 +1,5 @@
+{
+  "editor.formatOnSave": true,
+  "notebook.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "elia.erb-formatter"
+}

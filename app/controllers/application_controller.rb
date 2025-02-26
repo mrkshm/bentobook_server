@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   before_action :set_locale
   before_action :ensure_locale_matches_url
   before_action :configure_turbo_native_auth
+  before_action :debug_request
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
@@ -39,14 +40,25 @@ class ApplicationController < ActionController::Base
   def ensure_locale_matches_url
     return if request.path.start_with?("/api") # Skip for API routes
 
+    # Special handling for root paths with locale
+    if (request.path == "/fr" || request.path == "/fr/") && I18n.locale == :fr
+      return # Don't redirect between /fr and /fr/
+    end
+
+    # Normalize paths by removing trailing slashes except for root
     current_path = request.path
-    expected_path = if I18n.locale == :en
+    current_path = current_path.chomp("/") unless current_path == "/"
+
+    normalized_path = if I18n.locale == :en
       current_path.gsub(/^\/fr/, "")
     else
       current_path.start_with?("/fr") ? current_path : "/fr#{current_path}"
     end
 
-    redirect_to expected_path if current_path != expected_path
+    # Also normalize the expected path
+    normalized_path = normalized_path.chomp("/") unless normalized_path == "/"
+
+    redirect_to normalized_path if current_path != normalized_path
   end
 
   def after_sign_in_path_for(resource)
@@ -65,5 +77,14 @@ class ApplicationController < ActionController::Base
   def extract_locale
     parsed_locale = params[:locale] || session[:locale] || request.env["HTTP_ACCEPT_LANGUAGE"]&.scan(/^[a-z]{2}/)&.first
     I18n.available_locales.map(&:to_s).include?(parsed_locale) ? parsed_locale : nil
+  end
+
+  def debug_request
+    puts "====== DEBUG ======"
+    puts "Request path: #{request.path}"
+    puts "Request method: #{request.method}"
+    puts "Session: #{session}"
+    puts "Params: #{params}"
+    puts "=================="
   end
 end

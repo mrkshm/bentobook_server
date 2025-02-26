@@ -1,18 +1,20 @@
 <div class="hidden lg:flex lg:items-center lg:space-x-4">
-  <%= render Shell::ThemeToggleComponent.new %>
+  <% unless user_signed_in? %>
+    <%= render Shell::ThemeToggleComponent.new %>
+  <% end %>
   
   <% if user_signed_in? %>
     <%= link_to restaurants_path, 
         class: "px-3 py-2 rounded-md text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-200" do %>
       <%= t("nav.restaurants") %>
     <% end %>
-
+<!-- 
     <%= link_to lists_path, 
         class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
       <%= t("nav.lists") %>
       <%= notification_dot %>
     <% end %>
-
+-->
     <%= link_to visits_path, 
         class: "px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" do %>
       <%= t("nav.visits") %>

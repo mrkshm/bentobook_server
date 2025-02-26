@@ -1,114 +1,53 @@
-<div class="card bg-base-100 shadow-xl">
-  <div class="card-body">
-    <h2 class="card-title text-2xl mb-4"><%= t('profiles.show.title') %></h2>
-
+<%= render 'shared/header', title: t('profiles.show.title') %>
+<div class="bg-surface-50 rounded-lg shadow-xl">
+  <div class="p-6">
     <div class="flex flex-col md:flex-row items-start md:items-center mb-6">
-      <% if @profile.avatar.attached? %>
-        <%= image_tag @profile.avatar, class: "avatar rounded-full w-24 h-24 mr-4 mb-4 md:mb-0" %>
-      <% else %>
-        <div class="avatar placeholder mr-4 mb-4 md:mb-0">
-          <div class="bg-neutral-focus text-neutral-content rounded-full w-24">
-            <span class="text-3xl"><%= @profile.display_name.first.upcase %></span>
-          </div>
-        </div>
-      <% end %>
-
-      <div>
-        <h3 class="text-xl font-semibold"><%= @profile.display_name %></h3>
+      <%= render(AvatarComponent.new(image: @profile.avatar, text: @profile.username, size: :xl)) %>
+      <div class="ml-8">
+        <h3 class="text-xl font-semibold text-surface-900"><%= @profile.display_name %></h3>
         <% if @profile.username.present? %>
-          <p class="text-sm text-base-content/70">@<%= @profile.username %></p>
+          <p class="text-sm text-surface-600">@<%= @profile.username %></p>
         <% end %>
       </div>
     </div>
 
     <% if @profile.about.present? %>
       <div class="mb-6">
-        <h4 class="font-semibold mb-2"><%= t('profiles.about') %></h4>
-        <p><%= @profile.about %></p>
+        <h4 class="font-semibold mb-2 text-surface-900"><%= t('profiles.about') %></h4>
+        <p class="text-surface-700"><%= @profile.about %></p>
       </div>
     <% end %>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <% if @profile.full_name.present? %>
         <div>
-          <h4 class="font-semibold mb-2"><%= t('profiles.full_name') %></h4>
-          <p><%= @profile.full_name %></p>
+          <h4 class="font-semibold mb-2 text-surface-900"><%= t('profiles.full_name') %></h4>
+          <p class="text-surface-700"><%= @profile.full_name %></p>
         </div>
       <% end %>
     </div>
+    <!-- Theme and Language switchers -->
+    <div class="mt-8 flex gap-16 items-start">
+      <div>
+        <h4 class="font-semibold text-surface-900"><%= t('profiles.theme') %></h4>
+        <div><%= render(Shell::ThemeToggleComponent.new) %></div>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-3 text-surface-900"><%= t('profiles.language') %></h4>
+        <%= render(LanguageSwitcherComponent.new(current_locale: @profile.preferred_language)) %>
+      </div>
+    </div>
 
-    <div class="card-actions justify-end mt-6 space-x-2">
-      <%= link_to t("profiles.edit_profile"), edit_profile_path, class: "btn btn-primary" %>
+    <div class="flex justify-end mt-6 space-x-2">
+      <%= link_to t("profiles.edit_profile"), 
+          edit_profile_path, 
+          class: "inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" %>
+      
       <%= button_to t("sign_out"), 
           destroy_user_session_path, 
           method: :delete, 
           data: { turbo_method: :delete, turbo_confirm: t("are_you_sure") }, 
-          class: "btn btn-ghost btn-outline" %>
+          class: "inline-flex items-center px-4 py-2 border border-surface-300 rounded-md shadow-sm text-sm font-medium text-surface-700 bg-surface-50 hover:bg-surface-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500" %>
     </div>
-  </div>
-</div>
-
-<!-- Theme and Language switchers -->
-<div class="mt-8 flex justify-center space-x-4"
-     x-data="{ 
-       theme: '<%= @profile.preferred_theme %>', 
-       language: '<%= @profile.preferred_language %>',
-       
-       setTheme(newTheme) {
-         // Update the theme visually first
-         document.documentElement.setAttribute('data-theme', newTheme)
-         this.theme = newTheme
-         localStorage.setItem('theme', newTheme)
-         
-         // Then update the database
-         fetch('<%= profile_path %>', {
-           method: 'PATCH',
-           headers: {
-             'Content-Type': 'application/json',
-             'X-CSRF-Token': document.querySelector('[name=csrf-token]').content
-           },
-           body: JSON.stringify({ profile: { preferred_theme: newTheme } })
-         }).catch(error => {
-           // Ignore the redirect error since we know it's working
-           if (!error.message.includes('NetworkError')) {
-             console.error('Theme update error:', error)
-           }
-         })
-       }
-     }"
-     x-init="$nextTick(() => {
-       // Sync with localStorage on init
-       localStorage.setItem('theme', theme)
-       document.querySelector('html').setAttribute('data-theme', theme)
-     })">
-  
-  <select x-model="theme" 
-          @change="setTheme($event.target.value)" 
-          class="select select-bordered w-full max-w-xs">
-    <% Profile::VALID_THEMES.each do |theme_option| %>
-      <option value="<%= theme_option %>"><%= theme_option.titleize %></option>
-    <% end %>
-  </select>
-
-  <div class="flex justify-center">
-    <%= button_to profile_path(locale: nil), 
-        method: :patch,
-        params: { profile: { preferred_language: 'en' } },
-        class: "btn btn-ghost",
-        ':disabled': "language === 'en'",
-        ':class': "{ 'opacity-50': language === 'en' }" do %>
-      <span class="text-2xl">🇬🇧</span>
-      <span class="ml-2">EN</span>
-    <% end %>
-
-    <%= button_to profile_path(locale: 'fr'), 
-        method: :patch,
-        params: { profile: { preferred_language: 'fr' } },
-        class: "btn btn-ghost",
-        ':disabled': "language === 'fr'",
-        ':class': "{ 'opacity-50': language === 'fr' }" do %>
-      <span class="text-2xl">🇫🇷</span>
-      <span class="ml-2">FR</span>
-    <% end %>
   </div>
 </div>
