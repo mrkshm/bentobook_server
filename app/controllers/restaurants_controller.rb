@@ -194,6 +194,13 @@ class RestaurantsController < ApplicationController
     end
   end
 
+  def search
+    respond_to do |format|
+      format.html { render partial: "search_form" }
+      format.turbo_stream
+    end
+  end
+
   private
 
   def parse_order_params
