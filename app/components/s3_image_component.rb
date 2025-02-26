@@ -16,20 +16,44 @@ class S3ImageComponent < ViewComponent::Base
       class: html_class,
       data: @data,
       loading: "lazy",
-      decoding: "async"
+      decoding: "async",
+      alt: "Image" # Adding alt text for accessibility
     )
   end
 
   private
 
   def valid_image?
-    @image.is_a?(ActiveStorage::Attached) ||
+    return false unless @image.present?
+
+    # Handle polymorphic Image model
+    if @image.respond_to?(:file) && @image.file.attached?
+      return true
+    end
+
+    # Handle direct ActiveStorage attachments
+    if @image.respond_to?(:attached?) && @image.attached?
+      return true
+    end
+
+    # Handle ActiveStorage variants
     @image.is_a?(ActiveStorage::VariantWithRecord) ||
     @image.is_a?(ActiveStorage::Variant)
   end
 
   def image_source
-    @image.is_a?(ActiveStorage::Attached) ? @image.variant(variant_options) : @image
+    # For our polymorphic Image model
+    if @image.respond_to?(:file) && @image.file.attached?
+      return @image.file.variant(variant_options)
+    end
+
+    # For direct ActiveStorage attachments
+    if @image.respond_to?(:attached?) && @image.attached?
+      return @image.variant(variant_options)
+    end
+
+    # For variants
+    @image
   end
 
   def html_class
@@ -39,13 +63,15 @@ class S3ImageComponent < ViewComponent::Base
   def variant_options
     case @size
     when :thumbnail
-      { resize_to_fill: [ 100, 100 ], format: :jpg }
+      { resize_to_fill: [ 100, 100 ], format: :webp, saver: { quality: 80 } }
     when :small
-      { resize_to_limit: [ 300, 200 ], format: :jpg }
+      { resize_to_limit: [ 300, 200 ], format: :webp, saver: { quality: 80 } }
     when :medium
-      { resize_to_limit: [ 600, 400 ], format: :jpg }
+      { resize_to_limit: [ 600, 400 ], format: :webp, saver: { quality: 80 } }
     when :large
-      { resize_to_limit: [ 1200, 800 ], format: :jpg }
+      { resize_to_limit: [ 1200, 800 ], format: :webp, saver: { quality: 80 } }
+    when :original
+      {} # Use the original format without resizing
     else
       {}
     end

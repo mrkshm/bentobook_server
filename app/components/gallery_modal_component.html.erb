@@ -27,7 +27,7 @@
         </svg>
       </button>
 
-      <!-- Image container - removed min-h-[50vh] -->
+      <!-- Image container -->
       <div class="relative w-full flex items-center justify-center">
         <!-- Navigation buttons -->
         <% if can_go_previous? %>
@@ -80,6 +80,9 @@
   </div>
 
   <% @preload_images.each do |index| %>
-    <link rel="prefetch" href="<%= url_for(@images[index]) %>" />
+    <% if @images[index].present? %>
+      <% preload_image = process_image(@images[index], :large) if defined?(process_image) %>
+      <link rel="prefetch" href="<%= preload_image ? url_for(preload_image) : '#' %>" />
+    <% end %>
   <% end %>
 </div>
