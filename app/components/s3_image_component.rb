@@ -12,8 +12,6 @@ class S3ImageComponent < ViewComponent::Base
     @data = data
   end
 
-  # No before_render method that calls controller methods
-
   def call
     return unless valid_image?
 
@@ -23,7 +21,7 @@ class S3ImageComponent < ViewComponent::Base
       data: @data,
       loading: "lazy",
       decoding: "async",
-      alt: "Image" # Adding alt text for accessibility
+      alt: "Image"
     )
   end
 
@@ -48,20 +46,32 @@ class S3ImageComponent < ViewComponent::Base
 
   # URL generation is only safe during rendering
   def url_for_image
+    # For original size, bypass variant processing completely
+    if @size == :original
+      if @image.respond_to?(:file) && @image.file.attached?
+        return Rails.application.routes.url_helpers.rails_blob_url(@image.file)
+      elsif @image.respond_to?(:attached?) && @image.attached?
+        return Rails.application.routes.url_helpers.rails_blob_url(@image)
+      elsif @image.is_a?(ActiveStorage::VariantWithRecord) || @image.is_a?(ActiveStorage::Variant)
+        return Rails.application.routes.url_helpers.rails_blob_url(@image.blob)
+      end
+    end
+
+    # For other sizes, use variant processing
     if @image.respond_to?(:file) && @image.file.attached?
       # For polymorphic Image model
-      rails_blob_url(@image.file.variant(variant_options))
+      Rails.application.routes.url_helpers.rails_blob_url(@image.file.variant(variant_options))
     elsif @image.respond_to?(:attached?) && @image.attached?
       # For direct ActiveStorage attachments
-      rails_blob_url(@image.variant(variant_options))
+      Rails.application.routes.url_helpers.rails_blob_url(@image.variant(variant_options))
     elsif @image.is_a?(ActiveStorage::VariantWithRecord) || @image.is_a?(ActiveStorage::Variant)
       # For variants that are already processed
-      rails_blob_url(@image)
+      Rails.application.routes.url_helpers.rails_blob_url(@image)
     end
   end
 
   def html_class
-    [ "object-cover", @html_class ].compact.join(" ")
+    [ @html_class, "s3-image", "s3-image-#{@size}" ].compact.join(" ")
   end
 
   def variant_options
@@ -77,7 +87,7 @@ class S3ImageComponent < ViewComponent::Base
     when :original
       {} # Use the original format without resizing
     else
-      {}
+      {} # Default empty options
     end
   end
 end

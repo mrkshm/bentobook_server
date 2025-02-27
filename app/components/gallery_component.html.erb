@@ -2,15 +2,29 @@
   <% @images.each do |image| %>
     <% if valid_image?(image) %>
       <div class="gallery-item-container relative">
-        <%= image_tag(image_url(image, :medium), 
-                      class: image_classes,
-                      loading: "lazy",
-                      decoding: "async",
-                      alt: "Image") %>
-        
-        <a href="<%= image_url(image, :large) %>" class="gallery-item absolute inset-0">
-          <span class="sr-only">View larger image</span>
-        </a>
+        <% if @use_originals %>
+          <!-- Show original image for debugging -->
+          <%= image_tag(original_image_url(image), 
+                        class: image_classes,
+                        loading: "lazy",
+                        decoding: "async",
+                        alt: "Image") %>
+          
+          <a href="<%= original_image_url(image) %>" class="gallery-item absolute inset-0">
+            <span class="sr-only">View larger image</span>
+          </a>
+        <% else %>
+          <!-- Regular variant-based rendering -->
+          <%= image_tag(image_url(image, :medium), 
+                        class: image_classes,
+                        loading: "lazy",
+                        decoding: "async",
+                        alt: "Image") %>
+          
+          <a href="<%= image_url(image, :large) %>" class="gallery-item absolute inset-0">
+            <span class="sr-only">View larger image</span>
+          </a>
+        <% end %>
       </div>
     <% end %>
   <% end %>
