@@ -1,11 +1,17 @@
 <div data-controller="lightbox" class="<%= grid_classes %>">
   <% @images.each do |image| %>
-    <a href="<%= render(S3ImageComponent.new(image: image, size: :large)) %>">
-      <%= render(S3ImageComponent.new(
-        image: image,
-        size: :medium,
-        html_class: image_classes
-      )) %>
-    </a>
+    <% if valid_image?(image) %>
+      <div class="gallery-item-container relative">
+        <%= image_tag(image_url(image, :medium), 
+                      class: image_classes,
+                      loading: "lazy",
+                      decoding: "async",
+                      alt: "Image") %>
+        
+        <a href="<%= image_url(image, :large) %>" class="gallery-item absolute inset-0">
+          <span class="sr-only">View larger image</span>
+        </a>
+      </div>
+    <% end %>
   <% end %>
 </div>

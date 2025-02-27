@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class S3ImageComponent < ViewComponent::Base
+  include Rails.application.routes.url_helpers
+
+  attr_reader :image, :size, :data
+
   def initialize(image:, size: :medium, html_class: nil, data: {})
     @image = image
     @size = size
@@ -8,11 +12,13 @@ class S3ImageComponent < ViewComponent::Base
     @data = data
   end
 
+  # No before_render method that calls controller methods
+
   def call
     return unless valid_image?
 
     image_tag(
-      image_source,
+      url_for_image,
       class: html_class,
       data: @data,
       loading: "lazy",
@@ -21,8 +27,7 @@ class S3ImageComponent < ViewComponent::Base
     )
   end
 
-  private
-
+  # Make this public so we can check before trying to render
   def valid_image?
     return false unless @image.present?
 
@@ -41,19 +46,18 @@ class S3ImageComponent < ViewComponent::Base
     @image.is_a?(ActiveStorage::Variant)
   end
 
-  def image_source
-    # For our polymorphic Image model
+  # URL generation is only safe during rendering
+  def url_for_image
     if @image.respond_to?(:file) && @image.file.attached?
-      return @image.file.variant(variant_options)
+      # For polymorphic Image model
+      rails_blob_url(@image.file.variant(variant_options))
+    elsif @image.respond_to?(:attached?) && @image.attached?
+      # For direct ActiveStorage attachments
+      rails_blob_url(@image.variant(variant_options))
+    elsif @image.is_a?(ActiveStorage::VariantWithRecord) || @image.is_a?(ActiveStorage::Variant)
+      # For variants that are already processed
+      rails_blob_url(@image)
     end
-
-    # For direct ActiveStorage attachments
-    if @image.respond_to?(:attached?) && @image.attached?
-      return @image.variant(variant_options)
-    end
-
-    # For variants
-    @image
   end
 
   def html_class

@@ -90,3 +90,18 @@ en:
       next: "Next »"
       page: "Page %{number}"
       gap: "…"
+  images:
+    add_photos: "Add Photos"
+    no_photos: "No photos available for this restaurant."
+    upload:
+      title: "Upload Photos"
+      header: "Upload Photos for %{restaurant}"
+      drop_files: "Click to upload or drag and drop"
+      file_types: "PNG, JPG, WEBP or HEIC"
+      upload: "Upload Photos"
+    notices:
+      uploaded: "Photos were successfully uploaded."
+      deleted: "Photo was successfully deleted."
+    errors:
+      processing_failed: "Failed to process images."
+      none_selected: "No images were selected."
