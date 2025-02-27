@@ -1,23 +1,11 @@
-<div class="<%= grid_classes %>" data-controller="gallery" data-gallery-total-count-value="<%= @images.size %>">
-  <% @images.each_with_index do |image, index| %>
-    <div class="aspect-w-3 aspect-h-2">
-      <%= render(S3ImageComponent.new(
-        image: process_image(image),
-        size: :original,
-        html_class: image_classes,
-        data: { 
-          controller: "gallery-image",
-          action: "click->gallery#openModal load->gallery#imageLoaded error->gallery#imageError",
-          gallery_index_param: index
-        }
-      )) %>
-    </div>
-
-    <%= render(GalleryModalComponent.new(
-      image: process_image(image, :large),
-      images: @images,
-      total_count: @images.size,
-      current_index: index
-    )) %>
+<div data-controller="lightbox" class="<%= grid_classes %>">
+  <% @images.each do |image| %>
+    <% if (url = image_url(image)) %>
+      <a href="<%= url %>">
+        <%= image_tag url, 
+            class: image_classes,
+            loading: "lazy" %>
+      </a>
+    <% end %>
   <% end %>
 </div>

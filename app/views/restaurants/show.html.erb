@@ -95,13 +95,9 @@
           <% if @restaurant.images.any? %>
             <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
               <h2 class="text-xl font-semibold text-surface-900 mb-4">Photos</h2>
-              <%= render(GalleryComponent.new(
-                images: @restaurant.images,
-                columns: 3
-              )) %>
+              <%= render(GalleryComponent.new(images: @restaurant.images)) %>
             </div>
           <% end %>
-
         </div>
       </div>
 
