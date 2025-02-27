@@ -11,18 +11,6 @@ class GalleryComponent < ViewComponent::Base
   end
 
   def image_classes
-    "w-full h-64 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
-  end
-
-  def image_url(image)
-    return nil unless image.present?
-
-    if image.respond_to?(:file) && image.file.attached?
-      url_for(image.file)
-    elsif image.respond_to?(:attached?) && image.attached?
-      url_for(image)
-    else
-      image
-    end
+    "w-full h-64 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
   end
 end

@@ -1,11 +1,11 @@
 <div data-controller="lightbox" class="<%= grid_classes %>">
   <% @images.each do |image| %>
-    <% if (url = image_url(image)) %>
-      <a href="<%= url %>">
-        <%= image_tag url, 
-            class: image_classes,
-            loading: "lazy" %>
-      </a>
-    <% end %>
+    <a href="<%= render(S3ImageComponent.new(image: image, size: :large)) %>">
+      <%= render(S3ImageComponent.new(
+        image: image,
+        size: :medium,
+        html_class: image_classes
+      )) %>
+    </a>
   <% end %>
 </div>
