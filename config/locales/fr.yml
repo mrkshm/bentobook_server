@@ -56,11 +56,28 @@ fr:
     dashboard_description: "Que souhaitez-vous faire aujourd'hui ?"
     profile_settings: "Profil | Paramètres"
   pagy:
+    loading: "Chargement en cours..."
+    end_of_list: "Vous avez atteint la fin de la liste"
     nav:
       previous: "« Précédent"
       next: "Suivant »"
       page: "Page %{number}"
       gap: "…"
+  images:
+    add_photos: "Ajouter des photos"
+    no_photos: "Aucune photo disponible pour ce restaurant."
+    upload:
+      title: "Télécharger des photos"
+      header: "Télécharger des photos pour %{restaurant}"
+      drop_files: "Cliquez pour télécharger ou glissez-déposez"
+      file_types: "PNG, JPG, WEBP ou HEIC"
+      upload: "Télécharger des photos"
+    notices:
+      uploaded: "Les photos ont été téléchargées avec succès."
+      deleted: "La photo a été supprimée avec succès."
+    errors:
+      processing_failed: "Échec du traitement des images."
+      none_selected: "Aucune image sélectionnée."
   activerecord:
     errors:
       messages:

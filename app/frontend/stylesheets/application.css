@@ -228,3 +228,90 @@
 .d-hotwire-native-block {
   display: block !important;
 }
+
+/* Google Places Autocomplete custom styling */
+.pac-container {
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-surface-300);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-top: 4px;
+  font-family: inherit;
+  z-index: 9999;
+}
+
+.pac-item {
+  padding: 10px 12px;
+  font-size: 1rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.pac-item:hover {
+  background-color: var(--color-surface-100);
+}
+
+.pac-item-selected {
+  background-color: var(--color-primary-50);
+}
+
+.pac-icon {
+  margin-right: 12px;
+}
+
+.pac-item-query {
+  font-size: 1rem;
+  padding-right: 8px;
+  color: var(--color-surface-900);
+}
+
+/* Improve tap targets on mobile */
+@media (max-width: 640px) {
+  .pac-item {
+    padding: 14px 16px;
+    min-height: 48px;
+  }
+}
+
+.pagy {
+  display: flex;
+  gap: 0.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-surface-500);
+}
+
+.pagy a:not(.gap) {
+  display: block;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--color-surface-200);
+}
+
+.pagy a:not(.gap):hover {
+  background-color: var(--color-surface-300);
+}
+
+.pagy a:not(.gap):not([href]) {
+  color: var(--color-surface-300);
+  background-color: var(--color-surface-100);
+  cursor: default;
+}
+
+.pagy a:not(.gap).current {
+  color: var(--color-surface-50);
+  background-color: var(--color-primary-600);
+}
+
+.pagy label {
+  display: inline-block;
+  white-space: nowrap;
+  background-color: var(--color-surface-200);
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.75rem;
+}
+
+.pagy label input {
+  background-color: var(--color-surface-100);
+  border: none;
+  border-radius: 0.375rem;
+}

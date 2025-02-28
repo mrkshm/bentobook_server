@@ -74,10 +74,24 @@ class ImageHandlingService
       .convert("jpg")
       .call
 
-    # Create the final blob with the processed image
-    compressed_blob = ActiveStorage::Blob.create_and_upload!(
-      io: File.open(processed_file.path),
+    # Create blob manually to avoid double checksum
+    service = ActiveStorage::Blob.service
+    key = SecureRandom.base58(24)
+    checksum = Digest::MD5.file(processed_file.path).base64digest
+
+    blob = ActiveStorage::Blob.create!(
+      key: key,
       filename: "#{File.basename(image.original_filename, '.*')}.jpg",
+      byte_size: File.size(processed_file.path),
+      checksum: checksum,
+      content_type: "image/jpeg",
+      service_name: service.name
+    )
+
+    # Upload the file separately
+    service.upload(
+      key,
+      processed_file,
       content_type: "image/jpeg"
     )
 
@@ -86,6 +100,6 @@ class ImageHandlingService
     temp_file.unlink
     File.unlink(processed_file.path) if File.exist?(processed_file.path)
 
-    compressed_blob
+    blob
   end
 end

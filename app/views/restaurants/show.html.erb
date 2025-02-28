@@ -92,28 +92,27 @@
             </div>
 
           <!-- Images Section -->
-          <% if @restaurant.images.any? %>
-            <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
-              
-              
-   <!-- Updated lightbox gallery -->
-    <div data-controller="lightbox" class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-      <% @restaurant.images.each do |image| %>
-        <% if image.file.attached? %>
-          <a href="<%= root_url.chomp('/') + url_for(image.file) %>" class="aspect-w-4 aspect-h-3 block">
-            <%= image_tag(
-              root_url.chomp('/') + url_for(image.file.variant(resize_to_limit: [600, 400])),
-              alt: "Restaurant image",
-              class: "w-full h-full object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200",
-              loading: "lazy"
-            ) %>
-          </a>
-        <% end %>
-      <% end %>
-    </div>
-  </div>
-<% end %>
-
+          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
+              <% if @restaurant.user == current_user %>
+                <%= link_to new_restaurant_image_path(restaurant_id: @restaurant.id), class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                  </svg>
+                  <%= t("images.add_photos") %>
+                <% end %>
+              <% end %>
+            </div>
+            
+            <% if @restaurant.images.any? %>
+              <%= render(GalleryComponent.new(images: @restaurant.images)) %>
+            <% else %>
+              <div class="text-center py-8 text-surface-500">
+                <p><%= t("images.no_photos") %></p>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
 

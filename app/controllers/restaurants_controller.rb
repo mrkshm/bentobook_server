@@ -11,15 +11,23 @@ class RestaurantsController < ApplicationController
     order_params = parse_order_params
     return if performed?
 
-    items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 10
+    items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
+    page = params[:page].to_i.positive? ? params[:page].to_i : 1
 
     restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
 
     query_params = search_params.merge(order_params)
     @restaurants = RestaurantQuery.new(restaurants_scope, query_params).call
-    @pagy, @restaurants = pagy(@restaurants, items: items_per_page)
+
+    # Use pagy_countless for better infinite scroll support
+    @pagy, @restaurants = pagy_countless(@restaurants, items: items_per_page, page: page)
 
     @tags = ActsAsTaggableOn::Tag.most_used(10)
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream
+    end
   end
 
   def show

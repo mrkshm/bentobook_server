@@ -92,7 +92,7 @@ Rails.application.routes.draw do
         get "new/form", action: :new_form
         post "new/form", action: :new_form
       end
-      resources :images, only: [ :create, :destroy ]
+      resources :images, only: [ :new, :create, :destroy ]
     end
 
     resources :visits do

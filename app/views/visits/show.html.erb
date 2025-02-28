@@ -54,15 +54,33 @@
       </div>
 
       <% if @visit.images.any? %>
-        <div class="border-t border-surface-200 my-6"></div>
-        <div class="space-y-4">
-          <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
-          <%= render(GalleryComponent.new(
-            images: @visit.images,
-            columns: 3
-          )) %>
+  <div class="border-t border-surface-200 my-6"></div>
+  <div class="space-y-4">
+    <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
+    <%= render(GalleryComponent.new(
+      images: @visit.images
+    )) %>
+    
+    <!-- Debug section -->
+    <div class="mt-8 p-4 bg-red-100 border border-red-300 rounded-lg">
+      <h3 class="font-bold">Debug Info:</h3>
+      <p>Total images: <%= @visit.images.count %></p>
+      
+      <div class="mt-4">
+        <h4 class="font-semibold">Direct Image Rendering:</h4>
+        <div class="grid grid-cols-3 gap-2 mt-2">
+          <% @visit.images.each_with_index do |image, index| %>
+            <div class="border border-dashed border-gray-400 p-2">
+              <p class="text-xs mb-2">Image <%= index + 1 %>:</p>
+              <%= render(S3ImageComponent.new(image: image, size: :small)) %>
+              <p class="text-xs mt-2 break-all">URL: <%= S3ImageComponent.new(image: image, size: :medium).url rescue "Error getting URL" %></p>
+            </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
 
       <div class="flex justify-end gap-3 mt-6">
         <%= link_to 'Edit', edit_visit_path(id: @visit.id), class: 'inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>

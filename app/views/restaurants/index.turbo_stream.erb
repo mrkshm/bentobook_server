@@ -1,0 +1,34 @@
+<% if @restaurants.any? %>
+  <%= turbo_stream.append "restaurants-list" do %>
+    <%= render partial: "restaurant_card", collection: @restaurants, as: :restaurant %>
+  <% end %>
+
+  <% if @pagy.next %>
+    <%= turbo_stream.replace "pagination" do %>
+      <%= turbo_frame_tag :pagination,
+        loading: :lazy,
+        src: restaurants_path(
+          format: :turbo_stream,
+          page: @pagy.next,
+          search: params[:search],
+          tag: params[:tag],
+          order_by: params[:order_by],
+          order_direction: params[:order_direction],
+          per_page: params[:per_page],
+          locale: nil
+        ) %>
+    <% end %>
+  <% else %>
+    <%= turbo_stream.replace "pagination" do %>
+      <div class="text-center py-4 text-surface-500 text-sm">
+        <%= t('pagy.end_of_list') %>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.replace "pagination" do %>
+    <div class="text-center py-4 text-surface-500 text-sm">
+      <%= t('pagy.end_of_list') %>
+    </div>
+  <% end %>
+<% end %>

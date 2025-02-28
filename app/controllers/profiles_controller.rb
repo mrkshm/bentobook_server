@@ -85,7 +85,7 @@ class ProfilesController < ApplicationController
   def profile_params_without_avatar
     params.require(:profile).permit(
       :username, :first_name, :last_name, :about,
-      :preferred_language, :preferred_theme
+     :preferred_language, :preferred_theme
     )
   end
 end
