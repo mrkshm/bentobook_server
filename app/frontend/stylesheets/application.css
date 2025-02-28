@@ -271,3 +271,47 @@
     min-height: 48px;
   }
 }
+
+.pagy {
+  display: flex;
+  gap: 0.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-surface-500);
+}
+
+.pagy a:not(.gap) {
+  display: block;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--color-surface-200);
+}
+
+.pagy a:not(.gap):hover {
+  background-color: var(--color-surface-300);
+}
+
+.pagy a:not(.gap):not([href]) {
+  color: var(--color-surface-300);
+  background-color: var(--color-surface-100);
+  cursor: default;
+}
+
+.pagy a:not(.gap).current {
+  color: var(--color-surface-50);
+  background-color: var(--color-primary-600);
+}
+
+.pagy label {
+  display: inline-block;
+  white-space: nowrap;
+  background-color: var(--color-surface-200);
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.75rem;
+}
+
+.pagy label input {
+  background-color: var(--color-surface-100);
+  border: none;
+  border-radius: 0.375rem;
+}

@@ -66,26 +66,41 @@
   <% end %>
 </div>
 
-<div class="min-h-screen bg-surface-100" data-controller="app--frontend--controllers--restaurants">
+<div class="min-h-screen bg-surface-100">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 hotwire-native:px-0">
     <% if @restaurants.empty? %>
       <p class="text-surface-600 text-center py-8"><%= t('restaurants.index.no_restaurants_found') %></p>
     <% else %>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" data-app--frontend--controllers--restaurants-target="list">
-        <% @restaurants.each do |restaurant| %>
-          <div class="w-full">
-            <%= render(RestaurantCardComponent.new(restaurant: restaurant)) %>
-          </div>
-        <% end %>
-      </div>
+      <%# Turbo frame for the restaurant list %>
+      <%= turbo_frame_tag "restaurants-list", class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" do %>
+        <%= render partial: "restaurant_card", collection: @restaurants, as: :restaurant %>
+      <% end %>
 
-      <div class="flex flex-col items-center space-y-4 mt-8">
-        <nav class="flex items-center space-x-2 gap-2 text-surface-500" role="navigation" aria-label="Pagination">
-          <%== pagy_nav(@pagy) %>
-        </nav>
-        <div class="text-sm text-surface-600 bg-surface-100 px-4 py-2 rounded-lg">
-          <%== pagy_info(@pagy) %>
-        </div>
+      <%# Loading indicator and pagination handler %>
+      <div class="mt-8 text-center" id="pagination-container">
+        <% if @pagy.next %>
+          <%= turbo_frame_tag :pagination,
+            loading: :lazy,
+            src: restaurants_path(
+              format: :turbo_stream,
+              page: @pagy.next,
+              search: params[:search],
+              tag: params[:tag],
+              order_by: params[:order_by],
+              order_direction: params[:order_direction],
+              per_page: params[:per_page],
+              locale: nil
+            ) do %>
+            <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
+              <div class="animate-pulse flex space-x-2">
+                <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+                <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+                <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              </div>
+              <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
+            </div>
+          <% end %>
+        <% end %>
       </div>
     <% end %>
   </div>

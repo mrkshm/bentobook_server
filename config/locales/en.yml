@@ -85,6 +85,8 @@ en:
     dashboard_description: "What would you like to do today?"
     profile_settings: "Profile | Settings"
   pagy:
+    loading: "Loading more..."
+    end_of_list: "You've reached the end of the list"
     nav:
       previous: "« Previous"
       next: "Next »"
