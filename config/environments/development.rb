@@ -29,7 +29,7 @@ Rails.application.configure do
   config.cache_store = :memory_store
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :cloudflare
+  config.active_storage.service = :amazon
 
   # Change this to true to see delivery errors
   config.action_mailer.raise_delivery_errors = true

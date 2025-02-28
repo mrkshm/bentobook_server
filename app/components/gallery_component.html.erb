@@ -1,31 +1,19 @@
 <div data-controller="lightbox" class="<%= grid_classes %>">
   <% @images.each do |image| %>
     <% if valid_image?(image) %>
-      <div class="gallery-item-container relative">
-        <% if @use_originals %>
-          <!-- Show original image for debugging -->
-          <%= image_tag(original_image_url(image), 
-                        class: image_classes,
-                        loading: "lazy",
-                        decoding: "async",
-                        alt: "Image") %>
-          
-          <a href="<%= original_image_url(image) %>" class="gallery-item absolute inset-0">
-            <span class="sr-only">View larger image</span>
-          </a>
-        <% else %>
-          <!-- Regular variant-based rendering -->
-          <%= image_tag(image_url(image, :medium), 
-                        class: image_classes,
-                        loading: "lazy",
-                        decoding: "async",
-                        alt: "Image") %>
-          
-          <a href="<%= image_url(image, :large) %>" class="gallery-item absolute inset-0">
-            <span class="sr-only">View larger image</span>
-          </a>
-        <% end %>
-      </div>
+      <a href="<%= image_url(image, :large) %>" 
+         data-lightbox-target="trigger"
+         class="block aspect-[4/3] relative group"
+         aria-label="View larger image">
+        
+        <%= image_tag(image_url(image, :medium), 
+                    class: "w-full h-full object-cover rounded-lg", 
+                    loading: "lazy",
+                    decoding: "async",
+                    alt: "") %>
+                    
+        <span class="absolute inset-0 bg-surface-950/0 group-hover:bg-surface-950/10 transition-colors duration-200 rounded-lg"></span>
+      </a>
     <% end %>
   <% end %>
 </div>

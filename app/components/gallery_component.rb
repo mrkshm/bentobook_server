@@ -1,20 +1,13 @@
 class GalleryComponent < ViewComponent::Base
   include Rails.application.routes.url_helpers
 
-  def initialize(images:, columns: 3, use_originals: true)
+  def initialize(images:, columns: 3)
     @images = images.is_a?(Array) ? images : Array(images)
     @columns = columns
-    @use_originals = use_originals
   end
 
-  # Generate image URL during rendering, when controller is available
   def image_url(image, size = :medium)
     return nil unless valid_image?(image)
-
-    # Bypass variant processing if use_originals is true
-    if @use_originals
-      return original_image_url(image)
-    end
 
     if image.respond_to?(:file) && image.file.attached?
       # For polymorphic Image model
@@ -22,20 +15,6 @@ class GalleryComponent < ViewComponent::Base
     elsif image.respond_to?(:attached?) && image.attached?
       # For direct ActiveStorage attachments
       rails_blob_url(image.variant(variant_options(size)))
-    elsif image.is_a?(ActiveStorage::VariantWithRecord) || image.is_a?(ActiveStorage::Variant)
-      # For variants that are already processed
-      rails_blob_url(image)
-    end
-  end
-
-  # Get direct URL to original image without variant processing
-  def original_image_url(image)
-    if image.respond_to?(:file) && image.file.attached?
-      # For polymorphic Image model
-      rails_blob_url(image.file)
-    elsif image.respond_to?(:attached?) && image.attached?
-      # For direct ActiveStorage attachments
-      rails_blob_url(image)
     elsif image.is_a?(ActiveStorage::VariantWithRecord) || image.is_a?(ActiveStorage::Variant)
       # For variants that are already processed
       rails_blob_url(image)

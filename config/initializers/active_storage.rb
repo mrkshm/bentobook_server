@@ -28,6 +28,18 @@ Rails.application.configure do
   # Configure default options for variants
   config.active_storage.web_image_content_types = %w[image/jpeg image/jpg image/png image/gif image/webp]
 
+  # Enable direct uploads (allows JavaScript to create direct upload URLs)
+  config.active_storage.service_urls_expire_in = 1.hour
+
+  # Enable streaming downloads (important for large files)
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
+
+  # Configure URL options for ActiveStorage
+  config.active_storage.routes_prefix = "/rails/active_storage"
+
+  # Force variant URLs to use the same host as the app
+  config.active_storage.resolve_model_to_route = :rails_storage_redirect
+
   # Enable debug logging in development
   if Rails.env.development?
     ActiveStorage::LogSubscriber.logger = Rails.logger

@@ -1,17 +1,6 @@
-<% content_for :title, t("images.upload.title") %>
+<% render 'shared/header', title: t("images.upload.title") %>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex items-center justify-between mb-6">
-    <%= link_to restaurant_path(id: @restaurant.id, locale: nil), class: "inline-flex items-center text-surface-600 hover:text-surface-800" do %>
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-      </svg>
-      <%= t("back") %>
-    <% end %>
-    
-    <h1 class="text-2xl font-bold text-surface-900"><%= t("images.upload.header", restaurant: @restaurant.name) %></h1>
-  </div>
-  
   <%= form_with url: restaurant_images_path(restaurant_id: @restaurant.id, locale: nil), method: :post, multipart: true, data: { controller: "image-upload", turbo: false } do |form| %>
     <div class="bg-surface-100/50 rounded-lg p-6 backdrop-blur-sm mb-6">
       <div class="flex flex-col items-center justify-center w-full">
@@ -25,19 +14,24 @@
             </p>
             <p class="text-xs text-surface-500"><%= t("images.upload.file_types") %></p>
           </div>
-          <%= form.file_field :images, multiple: true, class: "hidden", accept: "image/png,image/jpeg,image/webp,image/heic", data: { action: "change->image-upload#preview" } %>
+          <%= form.file_field :images, multiple: true, class: "hidden", accept: "image/png,image/jpeg,image/webp,image.heic", data: { action: "change->image-upload#preview" } %>
         </label>
       </div>
       
       <div data-image-upload-target="preview" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6"></div>
     </div>
-    
-    <div class="flex justify-end space-x-4">
-      <%= link_to t("cancel"), restaurant_path(id: @restaurant.id, locale: nil), class: "px-4 py-2 bg-surface-200 text-surface-700 rounded-md hover:bg-surface-300 transition-colors" %>
-      
-      <button type="submit" data-image-upload-target="uploadButton" disabled class="px-4 py-2 bg-primary-600 text-white rounded-md opacity-50 cursor-not-allowed transition-colors">
+
+    <div class="flex justify-end mt-6">
+      <button type="submit" data-image-upload-target="uploadButton" disabled class="ml-4 px-4 py-2 bg-primary-600 text-white rounded-md opacity-50 cursor-not-allowed transition-colors">
         <%= t("images.upload.upload") %>
       </button>
     </div>
   <% end %>
+  
+  <div class="flex justify-end -mt-10 mr-38">
+    <%= link_to t("cancel"), 
+        restaurant_path(id: @restaurant.id, locale: nil), 
+        data: { turbo_frame: "_top" },
+        class: "px-4 py-2 bg-surface-200 text-surface-700 rounded-md hover:bg-surface-300 transition-colors" %>
+  </div>
 </div>

@@ -1,5 +1,4 @@
 class Image < ApplicationRecord
-
   belongs_to :imageable, polymorphic: true
 
   validates :file, presence: true
@@ -8,7 +7,7 @@ class Image < ApplicationRecord
 
   after_create :set_filename
   before_destroy :purge_file
-  after_commit :process_file_variants, if: -> { saved_change_to_attribute?('file_id') }
+  after_commit :process_file_variants, if: -> { saved_change_to_attribute?("file_id") }
 
   private
 
@@ -16,12 +15,14 @@ class Image < ApplicationRecord
     return unless file.attached?
 
     begin
+      # Store creation timestamp to ensure consistency
+      @filename_timestamp ||= created_at.strftime("%Y%m%d%H%M%S")
+
       original_filename = file.blob.filename.to_s
       extension = File.extname(original_filename).downcase
       basename = File.basename(original_filename, extension)
-      truncated_name = basename.truncate(12, omission: '')
-      timestamp = Time.current.strftime("%Y%m%d%H%M%S")
-      new_filename = "#{timestamp}_#{truncated_name}#{extension}"
+      truncated_name = basename.truncate(12, omission: "")
+      new_filename = "#{@filename_timestamp}_#{truncated_name}#{extension}"
 
       # Store the original key before updating
       original_key = file.blob.key
@@ -53,7 +54,7 @@ class Image < ApplicationRecord
       Rails.logger.error "Error in set_filename: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
     end
-    
+
     true # Always return true to prevent callback chain from breaking
   end
 
