@@ -15,25 +15,14 @@ class RestaurantsController < ApplicationController
     page = params[:page].to_i.positive? ? params[:page].to_i : 1
 
     restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
-
     query_params = search_params.merge(order_params)
     @restaurants = RestaurantQuery.new(restaurants_scope, query_params).call
-
-    # Use pagy_countless for better infinite scroll support
     @pagy, @restaurants = pagy_countless(@restaurants, items: items_per_page, page: page)
-
     @tags = ActsAsTaggableOn::Tag.most_used(10)
 
     respond_to do |format|
       format.html
-      format.turbo_stream do
-        render turbo_stream: turbo_stream.append(
-          "restaurants-list",
-          partial: "restaurant_card",
-          collection: @restaurants,
-          as: :restaurant
-        )
-      end
+      format.turbo_stream
     end
   end
 

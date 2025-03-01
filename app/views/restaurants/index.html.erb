@@ -77,30 +77,28 @@
       <% end %>
 
       <%# Infinite scroll trigger %>
-      <% if @pagy.next %>
-        <%= turbo_frame_tag "pagination_frame_#{@pagy.next}",
-            loading: :lazy,
-            src: restaurants_path(
-              format: :turbo_stream,
-              page: @pagy.next,
-              search: params[:search],
-              tag: params[:tag],
-              order_by: params[:order_by],
-              order_direction: params[:order_direction],
-              per_page: params[:per_page],
-              locale: nil
-            ) do %>
-          <div class="mt-8 text-center">
-            <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
-              <div class="animate-pulse flex space-x-2">
-                <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
-                <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
-                <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
-              </div>
-              <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
+      <%= turbo_frame_tag :pagination,
+          loading: :lazy,
+          src: restaurants_path(
+            format: :turbo_stream,
+            page: @pagy.next,
+            search: params[:search],
+            tag: params[:tag],
+            order_by: params[:order_by],
+            order_direction: params[:order_direction],
+            per_page: params[:per_page],
+            locale: nil
+          ) do %>
+        <div class="mt-8 text-center">
+          <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
+            <div class="animate-pulse flex space-x-2">
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
             </div>
+            <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
           </div>
-        <% end %>
+        </div>
       <% end %>
     <% end %>
   </div>
