@@ -38,7 +38,7 @@ class ProfilesController < ApplicationController
       @profile&.update(preferred_language: locale)
 
       # Simple redirect based on platform
-      redirect_to(hotwire_native_app? ? home_dashboard_path(locale: nil) : profile_path(locale: locale))
+      redirect_to(hotwire_native_app? ? home_dashboard_path(locale: locale) : profile_path(locale: locale))
     else
       redirect_to profile_path(locale: nil), alert: t(".invalid_locale")
     end
