@@ -74,11 +74,12 @@ Rails.application.routes.draw do
   end
 
   # Web routes
-  scope "(:locale)", locale: /fr/ do
+  scope "(:locale)", locale: /#{I18n.available_locales.join("|")}/ do
     # Devise routes
     devise_for :users,
       controllers: {
-        confirmations: "users/confirmations"
+        confirmations: "users/confirmations",
+        sessions: "users/sessions"
       }
 
     # Restaurant routes

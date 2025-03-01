@@ -21,19 +21,12 @@ class ApplicationController < ActionController::Base
   end
 
   def set_locale
-    locale = if user_signed_in?
-      params[:locale] || session[:locale] || I18n.default_locale
+    I18n.locale = if params[:locale].present? && I18n.available_locales.include?(params[:locale].to_sym)
+      params[:locale]
+    elsif user_signed_in? && current_user.profile&.preferred_language.present?
+      current_user.profile.preferred_language
     else
-      params[:locale] || I18n.default_locale
-    end
-
-    locale = locale.to_s if locale
-
-    if locale && I18n.available_locales.include?(locale.to_sym)
-      session[:locale] = locale if user_signed_in?  # Only store in session if authenticated
-      I18n.locale = locale
-    else
-      I18n.locale = I18n.default_locale
+      I18n.default_locale
     end
   end
 
@@ -70,7 +63,7 @@ class ApplicationController < ActionController::Base
   end
 
   def default_url_options
-    return {} if I18n.locale == :en
+    return {} if I18n.locale == I18n.default_locale
     { locale: I18n.locale }
   end
 
