@@ -26,7 +26,14 @@ class RestaurantsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.turbo_stream
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.append(
+          "restaurants-list",
+          partial: "restaurant_card",
+          collection: @restaurants,
+          as: :restaurant
+        )
+      end
     end
   end
 
