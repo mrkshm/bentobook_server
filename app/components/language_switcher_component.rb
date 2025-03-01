@@ -18,4 +18,8 @@ class LanguageSwitcherComponent < ViewComponent::Base
     end
     locales
   end
+
+  def opposite_locale
+    @current_locale == "en" ? "fr" : "en"
+  end
 end

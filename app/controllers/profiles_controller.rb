@@ -12,53 +12,36 @@ class ProfilesController < ApplicationController
   end
 
   def update
-    if @profile.update(profile_params_without_avatar)
-      if params[:profile][:avatar].present?
-        ImageHandlingService.process_images(@profile, params, compress: true)
-      end
-      if params[:profile][:preferred_language].present?
-        session[:locale] = @profile.preferred_language
-        I18n.locale = @profile.preferred_language
-      end
-      respond_to do |format|
-        format.html { redirect_to profile_path, notice: I18n.t("notices.profile.updated") }
-        format.json { render json: { status: :ok } }
+    if @profile.update(profile_params)
+      if locale_changed? && hotwire_native_app?
+        # Clear navigation stack and redirect to dashboard
+        render turbo_stream: turbo_stream.append("body") do
+          tag.script(%(
+            window.localStorage.clear();
+            window.Turbo.clearCache();
+            window.Turbo.visit('#{home_dashboard_path(locale: nil)}', { action: 'replace' });
+          )).html_safe
+        end
+      else
+        redirect_to profile_path, notice: t(".updated")
       end
     else
-      respond_to do |format|
-        format.html do
-          flash.now[:alert] = I18n.t("errors.profile.update_failed")
-          render :edit, status: :unprocessable_entity
-        end
-        format.json { render json: { errors: @profile.errors }, status: :unprocessable_entity }
-      end
+      render :edit, status: :unprocessable_entity
     end
   end
 
   def change_locale
-    Rails.logger.debug "---- change_locale Debug ----"
-    Rails.logger.debug "Params: #{params.inspect}"
-    Rails.logger.debug "Current profile: #{@profile.inspect}"
-    Rails.logger.debug "Current preferred_language: #{@profile.preferred_language}"
-
     locale = params[:locale].to_s
 
     if I18n.available_locales.map(&:to_s).include?(locale)
-      Rails.logger.debug "Updating locale to: #{locale}"
       session[:locale] = locale
+      @profile&.update(preferred_language: locale)
 
-      if @profile&.update(preferred_language: locale)
-        Rails.logger.debug "Profile updated successfully"
-        Rails.logger.debug "New preferred_language: #{@profile.reload.preferred_language}"
-      else
-        Rails.logger.debug "Profile update failed: #{@profile.errors.full_messages}"
-      end
-
-      I18n.locale = locale
+      # Simple redirect based on platform
+      redirect_to(hotwire_native_app? ? home_dashboard_path(locale: locale) : profile_path(locale: locale))
+    else
+      redirect_to profile_path(locale: nil), alert: t(".invalid_locale")
     end
-
-    Rails.logger.debug "Redirecting with locale: #{locale}"
-    redirect_to profile_path(locale: nil)
   end
 
   def search
@@ -112,5 +95,12 @@ class ProfilesController < ApplicationController
       :username, :first_name, :last_name, :about,
      :preferred_language, :preferred_theme
     )
+  end
+
+  private
+
+  def locale_changed?
+    params[:profile][:preferred_language].present? &&
+      params[:profile][:preferred_language] != @profile.preferred_language
   end
 end

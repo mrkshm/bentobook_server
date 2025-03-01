@@ -71,15 +71,14 @@
     <% if @restaurants.empty? %>
       <p class="text-surface-600 text-center py-8"><%= t('restaurants.index.no_restaurants_found') %></p>
     <% else %>
-      <%# Turbo frame for the restaurant list %>
+      <%# Restaurant list container %>
       <%= turbo_frame_tag "restaurants-list", class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" do %>
         <%= render partial: "restaurant_card", collection: @restaurants, as: :restaurant %>
       <% end %>
 
-      <%# Loading indicator and pagination handler %>
-      <div class="mt-8 text-center" id="pagination-container">
-        <% if @pagy.next %>
-          <%= turbo_frame_tag :pagination,
+      <%# Infinite scroll trigger %>
+      <% if @pagy.next %>
+        <%= turbo_frame_tag "pagination_frame_#{@pagy.next}",
             loading: :lazy,
             src: restaurants_path(
               format: :turbo_stream,
@@ -91,6 +90,7 @@
               per_page: params[:per_page],
               locale: nil
             ) do %>
+          <div class="mt-8 text-center">
             <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
               <div class="animate-pulse flex space-x-2">
                 <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
@@ -99,9 +99,9 @@
               </div>
               <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
             </div>
-          <% end %>
+          </div>
         <% end %>
-      </div>
+      <% end %>
     <% end %>
   </div>
 </div>

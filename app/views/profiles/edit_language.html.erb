@@ -6,11 +6,11 @@
     
     <div class="space-y-2">
       <% @available_locales.each do |locale| %>
-        <!-- Debug for each locale -->
-        <!-- locale[:code]: <%= locale[:code].inspect %>, type: <%= locale[:code].class %> -->
         <% is_selected = locale[:code].to_s == @current_locale.to_s %>
-        <!-- is_selected: <%= is_selected %> -->
-        <%= form_tag change_locale_profile_path(locale: nil), method: :post, class: "w-full" do %>
+        <%= form_tag change_locale_profile_path(locale: nil), 
+                     method: :post, 
+                     class: "w-full",
+                     data: { turbo_action: "replace" } do %>
           <%= hidden_field_tag :locale, locale[:code] %>
           <button type="submit" 
                   class="w-full flex items-center justify-between px-4 py-3 rounded-md <%= is_selected ? 'bg-primary-50 text-primary-700' : 'bg-surface-100 text-surface-700' %> hover:bg-surface-200">
