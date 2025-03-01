@@ -3,6 +3,9 @@ class ProfilesController < ApplicationController
   before_action :set_profile, only: [ :show, :edit, :update, :change_locale ]
 
   def show
+    Rails.logger.debug "Profile preferred_language: #{@profile.preferred_language.inspect}, class: #{@profile.preferred_language.class}"
+    Rails.logger.debug "Before render - Profile preferred_language: #{@profile.preferred_language.inspect}"
+    Rails.logger.debug "Before render - I18n.locale: #{I18n.locale.inspect}"
   end
 
   def edit
@@ -33,12 +36,29 @@ class ProfilesController < ApplicationController
   end
 
   def change_locale
-    locale = params[:locale]
+    Rails.logger.debug "---- change_locale Debug ----"
+    Rails.logger.debug "Params: #{params.inspect}"
+    Rails.logger.debug "Current profile: #{@profile.inspect}"
+    Rails.logger.debug "Current preferred_language: #{@profile.preferred_language}"
+
+    locale = params[:locale].to_s
+
     if I18n.available_locales.map(&:to_s).include?(locale)
+      Rails.logger.debug "Updating locale to: #{locale}"
       session[:locale] = locale
+
+      if @profile&.update(preferred_language: locale)
+        Rails.logger.debug "Profile updated successfully"
+        Rails.logger.debug "New preferred_language: #{@profile.reload.preferred_language}"
+      else
+        Rails.logger.debug "Profile update failed: #{@profile.errors.full_messages}"
+      end
+
       I18n.locale = locale
     end
-    redirect_to profile_path(locale: nil) # Redirect to profile page without locale in the path
+
+    Rails.logger.debug "Redirecting with locale: #{locale}"
+    redirect_to profile_path(locale: nil)
   end
 
   def search
@@ -76,7 +96,12 @@ class ProfilesController < ApplicationController
     end
   end
 
-  private
+  def edit_language
+    @available_locales = I18n.available_locales.map do |locale|
+      { code: locale.to_s, name: I18n.t("locales.#{locale}") }
+    end
+    @current_locale = (current_user&.profile&.preferred_language || I18n.locale).to_s
+  end
 
   def set_profile
     @profile = current_user.profile

@@ -6,6 +6,9 @@ fr:
     last_name: "Nom"
     username: "Nom d'utilisateur"
     edit_profile: "Modifier le profil"
+    language: "Langue"
+    language_settings: "Paramètres de langue"
+    select_language: "Sélectionnez votre langue préférée"
     index:
       title: "Votre profil"
     edit:

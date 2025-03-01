@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
   before_action :set_locale
-  before_action :ensure_locale_matches_url
+  before_action :ensure_locale_matches_url, unless: :skip_locale_check?
   before_action :configure_turbo_native_auth
   before_action :debug_request
 
@@ -86,5 +86,11 @@ class ApplicationController < ActionController::Base
     puts "Session: #{session}"
     puts "Params: #{params}"
     puts "=================="
+  end
+
+  def skip_locale_check?
+    # Skip locale check for locale changing actions and API routes
+    controller_name == "profiles" && action_name == "change_locale" ||
+    request.path.start_with?("/api")
   end
 end

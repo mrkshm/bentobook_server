@@ -1,4 +1,15 @@
-<div class="relative" data-controller="language-switcher">
+<!-- iOS -->
+<div class="not-hotwire-native:hidden flex items-center">
+  <%= link_to edit_language_profile_path(locale: nil), class: "flex gap-2 ml-2 text-primary-600" do %>
+  <span class="text-sm font-medium text-surface-700"><%= current_locale_name %></span>
+    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+    </svg>
+  <% end %>
+</div>
+
+<!-- WEBAPP -->
+<div class="hotwire-native:hidden relative" data-controller="language-switcher">
   <button type="button" 
           class="flex items-center gap-x-1 text-sm font-medium text-surface-600 hover:text-surface-900"
           data-action="click->language-switcher#toggleDropdown"
@@ -17,10 +28,11 @@
     <div class="py-1">
       <% available_locales.each do |locale| %>
         <% if helpers.user_signed_in? %>
+          <% is_selected = locale[:code].to_s == @current_locale.to_s %>
           <%= form_tag change_locale_profile_path(locale: nil), method: :post, class: "block" do %>
             <%= hidden_field_tag :locale, locale[:code] %>
             <button type="submit"
-                  class="<%= 'bg-surface-100' if locale[:code] == @current_locale %> text-surface-700 block px-4 py-2 text-sm w-full text-left hover:bg-surface-100"
+                  class="<%= is_selected ? 'bg-surface-100' : '' %> text-surface-700 block px-4 py-2 text-sm w-full text-left hover:bg-surface-100"
                   role="menuitem">
               <%= locale[:name] %>
             </button>

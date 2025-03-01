@@ -136,6 +136,7 @@ Rails.application.routes.draw do
     resource :profile, only: [ :show, :edit, :update ] do
       patch :update_theme
       post :change_locale
+      get "/language/edit", to: "profiles#edit_language", as: :edit_language
     end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
 
@@ -143,6 +144,8 @@ Rails.application.routes.draw do
     get "/pages/terms", to: "pages#terms", as: :terms
     get "/pages/home", to: "pages#home", as: :pages_home
     get "/pages/privacy", to: "pages#privacy", as: :pages_privacy
+
+    get "/debug/test_s3/:blob_id", to: "debug#test_s3"
 
     resources :visits
     resources :contacts

@@ -5,6 +5,9 @@ en:
     last_name: "Last Name"
     username: "Username"
     edit_profile: "Edit Profile"
+    language: "Language"
+    language_settings: "Language Settings"
+    select_language: "Select your preferred language"
     index:
       title: "Your Profile"
     edit:
