@@ -9,12 +9,20 @@ fr:
     language: "Langue"
     language_settings: "Paramètres de langue"
     select_language: "Sélectionnez votre langue préférée"
+    update:
+       image_processing_error: "Une erreur s'est produite lors du traitement de l'image"
+       updated: "Profil mis à jour avec succès"
     index:
       title: "Votre profil"
     edit:
       title: "Modifier votre profil"
       update_button: "Mettre à jour"
       back_button: "Retour à votre profil"
+      change_photo: "Changer la photo"
+      remove_photo: "Supprimer"
+      confirm_avatar_delete: "Êtes-vous sûr de vouloir supprimer votre photo de profil ?"
+    delete_avatar:
+      avatar_removed: "Photo de profil supprimée avec succès"
     show:
       title: "Votre profil"
 

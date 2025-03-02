@@ -1,5 +1,6 @@
 en:
   contacts:
+    confirm_delete: "Are you sure you want delete this contact?"
     sort_by:
       created_at: "Date added"
       name: "Name"

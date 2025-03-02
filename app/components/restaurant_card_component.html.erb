@@ -19,7 +19,11 @@
             <span><%= t("cuisine_types.#{restaurant.cuisine_type.name.downcase}") %></span>
             <span class="mx-2">·</span>
           <% end %>
-          <%= render(PriceLevelComponent.new(restaurant: restaurant, readonly: true)) %>
+          <%= render(PriceLevelComponent.new(
+            price_level: restaurant.price_level,
+            restaurant: restaurant,
+            readonly: true
+          )) %>
         </div>
 
         <div class="mt-2">

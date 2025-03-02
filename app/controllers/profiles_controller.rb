@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_profile, only: [ :show, :edit, :update, :change_locale ]
+  before_action :set_profile, only: [ :show, :edit, :update, :change_locale, :delete_avatar ]  # Added delete_avatar
 
   def show
     Rails.logger.debug "Profile preferred_language: #{@profile.preferred_language.inspect}, class: #{@profile.preferred_language.class}"
@@ -12,7 +12,14 @@ class ProfilesController < ApplicationController
   end
 
   def update
-    if @profile.update(profile_params)
+    result = ImageHandlingService.process_images(@profile, params, compress: true)  # Set compress: true
+
+    unless result[:success]
+      flash.now[:alert] = t(".image_processing_error")
+      return render :edit, status: :unprocessable_entity
+    end
+
+    if @profile.update(profile_params_without_avatar)
       if locale_changed? && hotwire_native_app?
         # Clear navigation stack and redirect to dashboard
         render turbo_stream: turbo_stream.append("body") do
@@ -23,7 +30,7 @@ class ProfilesController < ApplicationController
           )).html_safe
         end
       else
-        redirect_to profile_path, notice: t(".updated")
+        redirect_to profile_path(locale: nil), notice: t(".updated")
       end
     else
       render :edit, status: :unprocessable_entity
@@ -86,14 +93,23 @@ class ProfilesController < ApplicationController
     @current_locale = (current_user&.profile&.preferred_language || I18n.locale).to_s
   end
 
+  def delete_avatar
+    @profile.avatar.purge
+    redirect_to edit_profile_path(locale: nil), notice: t(".avatar_removed")
+  end
+
   def set_profile
     @profile = current_user.profile
   end
 
   def profile_params_without_avatar
     params.require(:profile).permit(
-      :username, :first_name, :last_name, :about,
-     :preferred_language, :preferred_theme
+      :username,
+      :first_name,
+      :last_name,
+      :about,
+      :preferred_language,
+      :preferred_theme
     )
   end
 

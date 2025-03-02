@@ -33,7 +33,7 @@
       <%= params[:search].present? ? t("contacts.index.no_contacts_found") : t("contacts.index.no_contacts") %>
     </p>
   <% else %>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <% @contacts.each do |contact| %>
         <%= link_to contact_path(id: contact.id), 
               class: "block divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>

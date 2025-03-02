@@ -135,9 +135,12 @@ Rails.application.routes.draw do
 
     # Profile routes
     resource :profile, only: [ :show, :edit, :update ] do
-      patch :update_theme
-      post :change_locale
-      get "/language/edit", to: "profiles#edit_language", as: :edit_language
+      member do
+        patch :update_theme
+        post :change_locale
+        delete :avatar, action: :delete_avatar
+        get "/language/edit", to: "profiles#edit_language", as: :edit_language
+      end
     end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
 
