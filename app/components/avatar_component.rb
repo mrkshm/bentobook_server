@@ -21,9 +21,11 @@ class AvatarComponent < ViewComponent::Base
 
     content_tag :div, class: wrapper_classes.join(" ") do
       if @image&.attached?
-        image_tag @image,
-                 class: "rounded-full object-cover w-full h-full",
-                 alt: @text.presence || "Avatar"  # Add alt text for accessibility
+        # Add HTML comment with image size info before the image tag
+        comment = "<!-- Avatar: #{@image.blob.filename} (#{ActiveSupport::NumberHelper.number_to_human_size(@image.blob.byte_size)}) -->"
+        (comment + image_tag(@image,
+          class: "rounded-full object-cover w-full h-full",
+          alt: @text.presence || "Avatar")).html_safe
       else
         content_tag :div,
                    initials,

@@ -33,25 +33,26 @@ class ApplicationController < ActionController::Base
   def ensure_locale_matches_url
     return if request.path.start_with?("/api") # Skip for API routes
 
-    # Special handling for root paths with locale
-    if (request.path == "/fr" || request.path == "/fr/") && I18n.locale == :fr
-      return # Don't redirect between /fr and /fr/
-    end
+    # Get the current locale from the URL
+    url_locale = request.path.start_with?("/fr") ? :fr : :en
 
-    # Normalize paths by removing trailing slashes except for root
-    current_path = request.path
-    current_path = current_path.chomp("/") unless current_path == "/"
+    # If URL matches the current locale, no redirect needed
+    return if (I18n.locale == :fr && url_locale == :fr) ||
+              (I18n.locale == :en && url_locale == :en)
 
-    normalized_path = if I18n.locale == :en
+    # Normalize paths
+    current_path = request.path.chomp("/")
+    current_path = "/" if current_path.empty?
+
+    # Build the correct path based on locale
+    new_path = if I18n.locale == :en
       current_path.gsub(/^\/fr/, "")
     else
       current_path.start_with?("/fr") ? current_path : "/fr#{current_path}"
     end
 
-    # Also normalize the expected path
-    normalized_path = normalized_path.chomp("/") unless normalized_path == "/"
-
-    redirect_to normalized_path if current_path != normalized_path
+    # Only redirect if paths are different
+    redirect_to(new_path) if new_path != current_path
   end
 
   def after_sign_in_path_for(resource)

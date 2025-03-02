@@ -8,6 +8,9 @@ en:
     language: "Language"
     language_settings: "Language Settings"
     select_language: "Select your preferred language"
+    update:
+      image_processing_error: "There was an error processing the image"
+      updated: "Profile updated successfully"
     index:
       title: "Your Profile"
     edit:

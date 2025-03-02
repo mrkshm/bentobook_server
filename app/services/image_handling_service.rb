@@ -47,15 +47,28 @@ class ImageHandlingService
       imageable.send(attachment_name).purge
     end
 
+    # Generate standardized filename
+    timestamp = Time.current.strftime("%Y%m%d_%H%M%S")
+    entity_type = imageable.class.name.downcase
+    entity_id = imageable.id || "new"
+    extension = compress ? "jpg" : File.extname(image.original_filename)
+    new_filename = "#{attachment_name}_#{entity_type}_#{entity_id}_#{timestamp}#{extension}"
+
     if compress
-      processed_blob = compress_image(image)
+      processed_blob = compress_image(image, new_filename)
       imageable.send(attachment_name).attach(processed_blob)
     else
-      imageable.send(attachment_name).attach(image)
+      # For uncompressed files, attach with new filename
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: image,
+        filename: new_filename,
+        content_type: image.content_type
+      )
+      imageable.send(attachment_name).attach(blob)
     end
   end
 
-  def self.compress_image(image)
+  def self.compress_image(image, new_filename)
     Rails.logger.info "Compressing image: #{image.inspect}"
 
     # Read the file content into memory once
@@ -81,7 +94,7 @@ class ImageHandlingService
 
     blob = ActiveStorage::Blob.create!(
       key: key,
-      filename: "#{File.basename(image.original_filename, '.*')}.jpg",
+      filename: new_filename,
       byte_size: File.size(processed_file.path),
       checksum: checksum,
       content_type: "image/jpeg",

@@ -9,6 +9,9 @@ fr:
     language: "Langue"
     language_settings: "Paramètres de langue"
     select_language: "Sélectionnez votre langue préférée"
+    update:
+       image_processing_error: "Une erreur s'est produite lors du traitement de l'image"
+       updated: "Profil mis à jour avec succès"
     index:
       title: "Votre profil"
     edit:
