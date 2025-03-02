@@ -1,5 +1,6 @@
 fr:
   contacts:
+    confirm_delete: "Êtes-vous sûr de vouloir supprimer ce contact ?"
     sort_by:
       created_at: "Date ajouté"
       name: "Nom"

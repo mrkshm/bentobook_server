@@ -15,47 +15,32 @@ class Image < ApplicationRecord
     return unless file.attached?
 
     begin
-      # Store creation timestamp to ensure consistency
-      @filename_timestamp ||= created_at.strftime("%Y%m%d%H%M%S")
-
       original_filename = file.blob.filename.to_s
       extension = File.extname(original_filename).downcase
       basename = File.basename(original_filename, extension)
-      truncated_name = basename.truncate(12, omission: "")
-      new_filename = "#{@filename_timestamp}_#{truncated_name}#{extension}"
 
-      # Store the original key before updating
-      original_key = file.blob.key
+      # Create SEO-friendly base name
+      sanitized_name = basename
+        .unicode_normalize(:nfkd)
+        .encode("ASCII", replace: "")
+        .downcase
+        .gsub(/[^a-z0-9\-_]+/, "-")
+        .gsub(/-{2,}/, "-")
+        .truncate(50, omission: "")
+        .gsub(/\A-|-\z/, "")
 
-      # Update the blob attributes
-      file.blob.update!(
-        filename: new_filename,
-        key: new_filename
-      )
+      # Generate unique filename
+      unique_suffix = SecureRandom.hex(4)  # 8 characters, sufficient for uniqueness
+      new_filename = "#{sanitized_name}-#{unique_suffix}#{extension}"
 
-      # Verify the file exists in storage
-      unless file.blob.service.exist?(file.blob.key)
-        Rails.logger.error "File not found in storage after rename: #{file.blob.key}"
-        # Try to copy from original key if it exists
-        if file.blob.service.exist?(original_key)
-          begin
-            if file.blob.service.respond_to?(:copy)
-              file.blob.service.copy(original_key, file.blob.key)
-            else
-              # For test environment, just ignore the copy
-              true
-            end
-          rescue StandardError => e
-            Rails.logger.error "Failed to copy file: #{e.message}"
-          end
-        end
-      end
+      # Update blob directly without copying
+      file.blob.update!(filename: new_filename)
     rescue StandardError => e
       Rails.logger.error "Error in set_filename: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
     end
 
-    true # Always return true to prevent callback chain from breaking
+    true
   end
 
   def purge_file
