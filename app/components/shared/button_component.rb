@@ -10,9 +10,26 @@ module Shared
       xl: "rounded-lg px-4 py-3 text-base"
     }.freeze
 
-    def initialize(type: :button, size: :md, **options)
+    VARIANTS = {
+      primary: "bg-primary-600 text-surface-50 hover:bg-primary-500",
+      secondary: "bg-surface-50 text-surface-900 ring-1 ring-inset ring-surface-300 hover:bg-surface-100",
+      danger: "bg-error-600 text-surface-50 hover:bg-error-500",
+      ghost: "text-surface-900 hover:bg-surface-100"
+    }.freeze
+
+    def initialize(
+      type: :button,
+      size: :md,
+      variant: :primary,
+      confirm: false,
+      confirm_message: nil,
+      **options
+    )
       @type = type
       @size = size
+      @variant = variant
+      @confirm = confirm
+      @confirm_message = confirm_message
       @options = options
     end
 
@@ -21,17 +38,25 @@ module Shared
     def button_classes
       [
         SIZES[@size],
-        "bg-primary-600 font-semibold text-surface-50",
-        "shadow-xs hover:bg-primary-500",
+        VARIANTS[@variant],
+        "font-semibold",
+        "shadow-xs",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
       ].join(" ")
     end
 
     def html_options
-      @options.merge(
+      options = @options.merge(
         type: @type,
-        class: [@options[:class], button_classes].compact.join(" ")
+        class: [ @options[:class], button_classes ].compact.join(" ")
       )
+
+      if @confirm
+        options[:data] ||= {}
+        options[:data][:confirm] = @confirm_message || "Are you sure?"
+      end
+
+      options
     end
   end
 end

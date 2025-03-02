@@ -17,6 +17,11 @@ en:
       title: "Edit Your Profile"
       update_button: "Update Profile"
       back_button: "Back to Your Profile"
+      change_photo: "Change photo"
+      remove_photo: "Remove"
+      confirm_avatar_delete: "Are you sure you want to remove your profile photo?"
+    delete_avatar:
+      avatar_removed: "Profile photo removed successfully"
     show:
       title: "Your Profile"
       full_name: "Full Name"

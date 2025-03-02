@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_profile, only: [ :show, :edit, :update, :change_locale ]
+  before_action :set_profile, only: [ :show, :edit, :update, :change_locale, :delete_avatar ]  # Added delete_avatar
 
   def show
     Rails.logger.debug "Profile preferred_language: #{@profile.preferred_language.inspect}, class: #{@profile.preferred_language.class}"
@@ -91,6 +91,11 @@ class ProfilesController < ApplicationController
       { code: locale.to_s, name: I18n.t("locales.#{locale}") }
     end
     @current_locale = (current_user&.profile&.preferred_language || I18n.locale).to_s
+  end
+
+  def delete_avatar
+    @profile.avatar.purge
+    redirect_to edit_profile_path(locale: nil), notice: t(".avatar_removed")
   end
 
   def set_profile
