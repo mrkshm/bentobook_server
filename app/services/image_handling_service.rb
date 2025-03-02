@@ -3,10 +3,11 @@ require "securerandom"
 class ImageHandlingService
   DEFAULT_COMPRESSION_OPTIONS = {
     resize_to_limit: [ 1200, 1200 ],
-    format: :jpg,
+    format: :webp,  # Changed from :jpg
     saver: {
-      quality: 73,
-      strip: true
+      quality: 80,  # WebP can use slightly higher quality for same file size
+      strip: true,
+      effort: 4     # WebP-specific compression effort (0-6)
     }
   }
 
@@ -51,7 +52,7 @@ class ImageHandlingService
     timestamp = Time.current.strftime("%Y%m%d_%H%M%S")
     entity_type = imageable.class.name.downcase
     entity_id = imageable.id || "new"
-    extension = compress ? "jpg" : File.extname(image.original_filename)
+    extension = compress ? ".webp" : File.extname(image.original_filename)
     new_filename = "#{attachment_name}_#{entity_type}_#{entity_id}_#{timestamp}#{extension}"
 
     if compress
@@ -83,8 +84,8 @@ class ImageHandlingService
     # Process the image using ImageProcessing directly
     processed_file = ImageProcessing::Vips.source(temp_file.path)
       .resize_to_limit(1200, 1200)
-      .saver(quality: 73, strip: true)
-      .convert("jpg")
+      .saver(quality: 80, strip: true, effort: 4)
+      .convert("webp")
       .call
 
     # Create blob manually to avoid double checksum
@@ -97,7 +98,7 @@ class ImageHandlingService
       filename: new_filename,
       byte_size: File.size(processed_file.path),
       checksum: checksum,
-      content_type: "image/jpeg",
+      content_type: "image/webp",  # Updated content type
       service_name: service.name
     )
 
@@ -105,7 +106,7 @@ class ImageHandlingService
     service.upload(
       key,
       processed_file,
-      content_type: "image/jpeg"
+      content_type: "image/webp"  # Updated content type
     )
 
     # Clean up temporary files
