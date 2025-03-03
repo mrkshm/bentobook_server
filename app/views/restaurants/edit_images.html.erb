@@ -1,4 +1,7 @@
-<div class="p-4 md:p-6" data-controller="image-selector">
+<div class="p-4 md:p-6" 
+     data-controller="image-selector"
+     data-image-selector-restaurant-id-value="<%= @restaurant.id %>"
+     data-image-selector-current-locale-value="<%= I18n.locale == I18n.default_locale ? nil : I18n.locale %>">
   <%= render 'shared/header', title: t("images.edit_photos") %>
 
   <div class="mt-6">
@@ -41,7 +44,8 @@
     
     <button type="button"
             data-image-selector-target="deleteButton"
-            data-action="click->image-selector#showSelected"
+            data-action="click->image-selector#confirmAndDelete"
+            data-turbo-frame="_top"
             class="px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors">
       <%= t("common.delete") %>
     </button>
