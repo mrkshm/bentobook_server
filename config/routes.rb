@@ -93,7 +93,11 @@ Rails.application.routes.draw do
         get "new/form", action: :new_form
         post "new/form", action: :new_form
       end
-      resources :images, only: [ :new, :create, :destroy ]
+      resources :images, only: [ :new, :create, :destroy ] do
+        collection do
+          get :edit, to: "restaurants#edit_images", as: :edit
+        end
+      end
     end
 
     resources :visits do
@@ -102,7 +106,11 @@ Rails.application.routes.draw do
 
     resources :contacts
 
-    resources :images, only: [ :destroy ]
+    resources :images, only: [ :destroy ] do
+      collection do
+        delete :bulk_destroy
+      end
+    end
 
     # Share routes
     resources :shares, only: [ :create ] do

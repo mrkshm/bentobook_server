@@ -66,6 +66,39 @@ class ImagesController < ApplicationController
     end
   end
 
+  def bulk_destroy
+    image_ids = params[:image_ids]
+
+    unless image_ids.present?
+      render json: { error: "No images selected" }, status: :unprocessable_entity
+      return
+    end
+
+    images = Image.where(id: image_ids).includes(:imageable)
+
+    # Check permissions
+    unless images.all? { |image| image.imageable.user_id == current_user.id }
+      render json: { error: "Unauthorized" }, status: :forbidden
+      return
+    end
+
+    begin
+      Image.transaction do
+        images.each(&:destroy!)
+      end
+
+      render json: {
+        success: true,
+        deleted_count: images.size
+      }
+    rescue StandardError => e
+      Rails.logger.error "Bulk image deletion failed: #{e.message}"
+      render json: {
+        error: "Failed to delete some images. Please try again."
+      }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def create_blob_with_checksum(file)

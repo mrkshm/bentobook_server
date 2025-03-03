@@ -1,0 +1,53 @@
+<div class="p-4 md:p-6" 
+     data-controller="image-selector"
+     data-image-selector-restaurant-id-value="<%= @restaurant.id %>"
+     data-image-selector-current-locale-value="<%= I18n.locale == I18n.default_locale ? nil : I18n.locale %>">
+  <%= render 'shared/header', title: t("images.edit_photos") %>
+
+  <div class="mt-6">
+    <% if @restaurant.images.any? %>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <% @restaurant.images.each do |image| %>
+          <button type="button"
+                  class="relative aspect-square group cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+                  data-image-selector-target="image"
+                  data-action="click->image-selector#toggle"
+                  data-image-id="<%= image.id %>"
+                  aria-pressed="false">
+            <% if image.respond_to?(:file) && image.file.attached? %>
+              <%= image_tag rails_blob_url(image.file), class: "w-full h-full object-cover rounded-lg" %>
+            <% elsif image.respond_to?(:attached?) && image.attached? %>
+              <%= image_tag rails_blob_url(image), class: "w-full h-full object-cover rounded-lg" %>
+            <% end %>
+            
+            <%# Selection overlay %>
+            <div class="absolute inset-0 transition-colors duration-200 rounded-lg border-2 border-transparent group-hover:bg-surface-950/10 [&.selected]:border-error-600 [&.selected]:bg-surface-950/20">
+              <%# Checkmark icon (only visible when selected) %>
+              <div class="absolute top-2 right-2 p-1 rounded-full bg-error-600 text-white opacity-0 [.selected_&]:opacity-100 transition-opacity duration-200">
+                <%= heroicon "check", options: { class: "w-4 h-4" } %>
+              </div>
+            </div>
+          </button>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8 text-surface-500">
+        <p><%= t("images.no_photos") %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-6 flex justify-end gap-4">
+    <%= link_to t("common.cancel"), 
+        restaurant_path(id: @restaurant.id, locale: nil), 
+        class: "px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors" %>
+    
+    <button type="button"
+            data-image-selector-target="deleteButton"
+            data-action="click->image-selector#confirmAndDelete"
+            data-turbo-frame="_top"
+            class="px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors">
+      <%= t("common.delete") %>
+    </button>
+  </div>
+</div>

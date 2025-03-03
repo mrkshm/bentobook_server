@@ -36,6 +36,7 @@ application.register('lightbox', Lightbox, {
 // Register all Stimulus controllers
 const controllers = import.meta.glob("../controllers/**/*_controller.js", { eager: true })
 registerControllers(application, controllers)
+console.log("🎮 Registered controllers:", Object.keys(controllers))
 
 // Make available for Stimulus debugging in browser console
 window.Stimulus = application
