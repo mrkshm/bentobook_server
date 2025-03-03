@@ -1,0 +1,44 @@
+<%= turbo_frame_tag dom_id(restaurant, :notes) do %>
+  <div class="mt-4">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-medium text-surface-700">Notes</h3>
+      <% if restaurant.notes.present? %>
+        <% if hotwire_native_app? %>
+          <%= link_to edit_notes_restaurant_path(id: restaurant.id, locale: nil),
+                class: "text-surface-500 hover:text-surface-700 transition-colors",
+                data: { turbo_frame: "_top" } do %>
+            <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+          <% end %>
+        <% else %>
+          <%= link_to edit_notes_restaurant_path(id: restaurant.id, locale: nil),
+                class: "text-surface-500 hover:text-surface-700 transition-colors",
+                data: { turbo_frame: dom_id(restaurant, :notes) } do %>
+            <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if restaurant.notes.present? %>
+      <div class="text-surface-600 whitespace-pre-wrap">
+        <%= restaurant.notes %>
+      </div>
+    <% else %>
+      <% if hotwire_native_app? %>
+        <%= link_to edit_notes_restaurant_path(id: restaurant.id, locale: nil),
+              class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
+              data: { turbo_frame: "_top" } do %>
+          <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
+          Add a note
+        <% end %>
+      <% else %>
+        <%= link_to edit_notes_restaurant_path(id: restaurant.id, locale: nil),
+              class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
+              data: { turbo_frame: dom_id(restaurant, :notes) } do %>
+          <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
+          Add a note
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

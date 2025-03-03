@@ -32,6 +32,13 @@ en:
       sort_by: 'Sort by:'
       no_restaurants_found: 'No restaurants found.'
       search_placeholder: 'Search restaurants...'
+      sort_options:
+        name: "Name"
+        rating: "Rating"
+        price_level: "Price"
+        distance: "Distance"
+        created_at: "Creation Date"
+        updated_at: "Last Modified"
     new:
       title: 'Create a new restaurant'
       short_description: 'Please search for a restaurant here. Start with the name, if you do not see it add the city and other details.'

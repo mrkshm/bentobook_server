@@ -87,6 +87,8 @@ Rails.application.routes.draw do
       member do
         post :add_tag
         delete :remove_tag
+        patch :update_notes
+        get :edit_notes
       end
       collection do
         get "tagged/:tag", action: :index, as: :tagged

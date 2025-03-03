@@ -32,6 +32,13 @@ fr:
       sort_by: 'Trier par :'
       no_restaurants_found: 'Pas de restaurants trouvés.'
       search_placeholder: 'Rechercher...'
+      sort_options:
+        name: "Nom"
+        rating: "Note"
+        price_level: "Prix"
+        distance: "Distance"
+        created_at: "Date de création"
+        updated_at: "Dernière modification"
     new:
       title: 'Créer un nouveau restaurant'
       short_description: "Veuillez rechercher un restaurant ici. Commencez avec le nom, si vous ne le trouvez pas, ajoutez la ville et d'autres détails."
