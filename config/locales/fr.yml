@@ -66,6 +66,7 @@ fr:
       gap: "…"
   images:
     add_photos: "Ajouter des photos"
+    edit_photos: "Modifier des photos"
     no_photos: "Aucune photo disponible pour ce restaurant."
     upload:
       title: "Télécharger des photos"

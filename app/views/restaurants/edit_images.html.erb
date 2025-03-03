@@ -1,0 +1,34 @@
+<div class="p-4 md:p-6">
+  <%= render 'shared/header', title: t("images.edit_photos") %>
+
+  <div class="mt-6">
+    <% if @restaurant.images.any? %>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <% @restaurant.images.each do |image| %>
+          <div class="relative aspect-square">
+            <% if image.respond_to?(:file) && image.file.attached? %>
+              <%= image_tag rails_blob_url(image.file), class: "w-full h-full object-cover rounded-lg" %>
+            <% elsif image.respond_to?(:attached?) && image.attached? %>
+              <%= image_tag rails_blob_url(image), class: "w-full h-full object-cover rounded-lg" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8 text-surface-500">
+        <p><%= t("images.no_photos") %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-6 flex justify-end gap-4">
+    <%= link_to t("common.cancel"), 
+        restaurant_path(id: @restaurant.id, locale: nil), 
+        class: "px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors" %>
+    
+    <button type="button" 
+            class="px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors">
+      <%= t("common.delete") %>
+    </button>
+  </div>
+</div>

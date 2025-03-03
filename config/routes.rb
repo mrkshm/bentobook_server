@@ -93,7 +93,11 @@ Rails.application.routes.draw do
         get "new/form", action: :new_form
         post "new/form", action: :new_form
       end
-      resources :images, only: [ :new, :create, :destroy ]
+      resources :images, only: [ :new, :create, :destroy ] do
+        collection do
+          get :edit, to: "restaurants#edit_images", as: :edit
+        end
+      end
     end
 
     resources :visits do

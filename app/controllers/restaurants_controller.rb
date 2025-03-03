@@ -5,7 +5,7 @@ class RestaurantsController < ApplicationController
   include CuisineTypeValidation
 
   before_action :authenticate_user!
-  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level ]
+  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level, :edit_images ]
 
   def index
     order_params = parse_order_params
@@ -126,6 +126,15 @@ class RestaurantsController < ApplicationController
           locals: { restaurant: @restaurant }
         )
       }
+    end
+  end
+
+  def edit_images
+    @images = @restaurant.images.order(created_at: :desc)
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream # For Hotwire Native modal support
     end
   end
 
@@ -403,7 +412,9 @@ class RestaurantsController < ApplicationController
   end
 
   def set_restaurant
-    @restaurant = current_user.restaurants.find(params[:id])
+    # Use params[:restaurant_id] if it exists, otherwise fall back to params[:id]
+    id = params[:restaurant_id] || params[:id]
+    @restaurant = current_user.restaurants.find(id)
   end
 
   def save_restaurant(render_action)
