@@ -306,16 +306,35 @@ class RestaurantsController < ApplicationController
     @restaurant = Restaurant.find(params[:id])
 
     if @restaurant.update(notes_params)
-      respond_to do |format|
-        format.html { redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Notes updated successfully" }
-        format.turbo_stream { render turbo_stream: turbo_stream.replace(dom_id(@restaurant, :notes), partial: "notes", locals: { restaurant: @restaurant }) }
+      if hotwire_native_app?
+        # For native, redirect back to the restaurant page
+        redirect_to restaurant_path(id: @restaurant.id, locale: nil)
+      else
+        # For web, update the turbo frame
+        render turbo_stream: turbo_stream.replace(
+          dom_id(@restaurant, :notes),
+          partial: "notes",
+          locals: { restaurant: @restaurant }
+        )
       end
     else
-      render :edit_notes, status: :unprocessable_entity
+      # Handle validation errors
+      if hotwire_native_app?
+        render :edit_notes_native, status: :unprocessable_entity
+      else
+        render :edit_notes, status: :unprocessable_entity
+      end
     end
   end
 
   def edit_notes
+    @restaurant = Restaurant.find(params[:id])
+
+    if hotwire_native_app?
+      render :edit_notes_native
+    else
+      render :edit_notes
+    end
   end
 
   private

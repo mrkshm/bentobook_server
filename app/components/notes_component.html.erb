@@ -3,10 +3,20 @@
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-sm font-medium text-surface-700">Notes</h3>
       <% if has_notes? %>
-        <%= link_to edit_path, 
-              class: "text-surface-500 hover:text-surface-700 transition-colors",
-              data: { turbo_frame: frame_id } do %>
-          <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+        <% if hotwire_native_app? %>
+          <%# Native - use data-turbo-action="advance" to trigger native action view %>
+          <%= link_to edit_notes_restaurant_path(id: @record.id, locale: nil),
+                class: "text-surface-500 hover:text-surface-700 transition-colors",
+                data: { turbo_action: "advance" } do %>
+            <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+          <% end %>
+        <% else %>
+          <%# Web - turbo frame link for inline editing %>
+          <%= link_to edit_notes_restaurant_path(id: @record.id, locale: nil),
+                class: "text-surface-500 hover:text-surface-700 transition-colors",
+                data: { turbo_frame: frame_id } do %>
+            <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+          <% end %>
         <% end %>
       <% end %>
     </div>
@@ -18,11 +28,22 @@
             <%= notes_content %>
           </div>
         <% else %>
-          <%= link_to edit_path,
-                class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
-                data: { turbo_frame: frame_id } do %>
-            <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
-            Add a note
+          <% if hotwire_native_app? %>
+            <%# Native - use data-turbo-action="advance" %>
+            <%= link_to edit_notes_restaurant_path(id: @record.id, locale: nil),
+                  class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
+                  data: { turbo_action: "advance" } do %>
+              <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
+              Add a note
+            <% end %>
+          <% else %>
+            <%# Web - turbo frame link %>
+            <%= link_to edit_notes_restaurant_path(id: @record.id, locale: nil),
+                  class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
+                  data: { turbo_frame: frame_id } do %>
+              <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
+              Add a note
+            <% end %>
           <% end %>
         <% end %>
       </div>
@@ -33,15 +54,21 @@
                            value: notes_content,
                            class: "w-full px-3 py-2 text-surface-900 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500",
                            rows: 4,
-                           placeholder: "Add your notes here...",
-                           autofocus: true %>
+                           placeholder: "Add your notes here..." %>
           
           <div class="flex justify-end space-x-2 mt-2">
-            <%= link_to "Cancel", 
-                       show_path, 
-                       class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors inline-flex items-center",
-                       data: { turbo_frame: frame_id } %>
-                        
+            <% if hotwire_native_app? %>
+              <%= link_to "Cancel", 
+                        restaurant_path(id: @record.id, locale: nil),
+                        class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors inline-flex items-center",
+                        data: { turbo: false } %>
+            <% else %>
+              <%= link_to "Cancel", 
+                        restaurant_path(id: @record.id, locale: nil),
+                        class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors inline-flex items-center",
+                        data: { turbo_frame: frame_id } %>
+            <% end %>
+            
             <%= form.submit "Save", 
                           class: "px-3 py-1 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>
           </div>

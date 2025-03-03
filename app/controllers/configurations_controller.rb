@@ -25,7 +25,8 @@ class ConfigurationsController < ApplicationController
           # Forms should be modals
           patterns: [
             "/new$",
-            "/edit$"
+            "/edit$",
+            "/edit_notes$"
           ],
           properties: {
             context: "modal",
