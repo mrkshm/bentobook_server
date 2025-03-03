@@ -67,51 +67,35 @@ class ImagesController < ApplicationController
   end
 
   def bulk_destroy
-    image_ids = params[:image_ids]&.split(",")
+    image_ids = params[:image_ids]
 
     unless image_ids.present?
-      respond_to do |format|
-        format.html { redirect_back fallback_location: root_path, alert: t("images.errors.none_selected") }
-        format.json { render json: { success: false, error: "No images selected" }, status: :unprocessable_entity }
-      end
+      render json: { error: "No images selected" }, status: :unprocessable_entity
+      return
+    end
+
+    images = Image.where(id: image_ids).includes(:imageable)
+
+    # Check permissions
+    unless images.all? { |image| image.imageable.user_id == current_user.id }
+      render json: { error: "Unauthorized" }, status: :forbidden
       return
     end
 
     begin
-      # Find all images and check permissions
-      images = Image.where(id: image_ids).includes(:imageable)
-
-      unless images.all? { |image| image.imageable.user_id == current_user.id }
-        respond_to do |format|
-          format.html { redirect_back fallback_location: root_path, alert: t("errors.unauthorized") }
-          format.json { render json: { success: false, error: "Unauthorized" }, status: :forbidden }
-        end
-        return
-      end
-
       Image.transaction do
         images.each(&:destroy!)
       end
 
-      respond_to do |format|
-        format.html {
-          redirect_back fallback_location: root_path,
-          notice: t("images.notices.bulk_deleted", count: images.size)
-        }
-        format.json { render json: { success: true, deleted_count: images.size } }
-      end
-
-    rescue ActiveRecord::RecordNotFound
-      respond_to do |format|
-        format.html { redirect_back fallback_location: root_path, alert: t("errors.not_found") }
-        format.json { render json: { success: false, error: "Images not found" }, status: :not_found }
-      end
+      render json: {
+        success: true,
+        deleted_count: images.size
+      }
     rescue StandardError => e
       Rails.logger.error "Bulk image deletion failed: #{e.message}"
-      respond_to do |format|
-        format.html { redirect_back fallback_location: root_path, alert: t("images.errors.deletion_failed") }
-        format.json { render json: { success: false, error: e.message }, status: :unprocessable_entity }
-      end
+      render json: {
+        error: "Failed to delete some images. Please try again."
+      }, status: :unprocessable_entity
     end
   end
 
