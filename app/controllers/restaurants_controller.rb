@@ -5,7 +5,7 @@ class RestaurantsController < ApplicationController
   include CuisineTypeValidation
 
   before_action :authenticate_user!
-  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level, :edit_images ]
+  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level, :edit_images, :edit_notes ]
 
   def index
     order_params = parse_order_params
@@ -27,7 +27,21 @@ class RestaurantsController < ApplicationController
   end
 
   def show
-    @tags = @restaurant.tags
+    @restaurant = Restaurant.find(params[:id])
+    @notes_edit = params[:notes_edit].present?
+    @tags = @restaurant.tags || []
+
+    # Handle specific turbo frame request for notes
+    if turbo_frame_request? && request.headers["Turbo-Frame"] == "restaurant_#{@restaurant.id}_notes"
+      render partial: "components/notes_component", locals: {
+        record: @restaurant,
+        notes_field: :notes,
+        container_classes: "mt-4",
+        notes_edit: @notes_edit
+      }
+      return
+    end
+
     @all_tags = ActsAsTaggableOn::Tag.all
     @visits = @restaurant.visits
 
@@ -49,6 +63,15 @@ class RestaurantsController < ApplicationController
     list_restaurants = ListRestaurant.where(restaurant_id: @restaurant.id)
     lists = List.where(id: list_restaurants.pluck(:list_id))
     @lists = List.accessible_by(current_user).containing_restaurant(@restaurant)
+
+    if turbo_frame_request? && params[:turbo_frame] == dom_id(@restaurant, :notes)
+      render partial: "components/notes_component", locals: {
+        record: @restaurant,
+        notes_field: :notes,
+        container_classes: nil,
+        notes_edit: @notes_edit
+      }
+    end
   end
 
   def edit
@@ -279,7 +302,27 @@ class RestaurantsController < ApplicationController
     end
   end
 
+  def update_notes
+    @restaurant = Restaurant.find(params[:id])
+
+    if @restaurant.update(notes_params)
+      respond_to do |format|
+        format.html { redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Notes updated successfully" }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace(dom_id(@restaurant, :notes), partial: "notes", locals: { restaurant: @restaurant }) }
+      end
+    else
+      render :edit_notes, status: :unprocessable_entity
+    end
+  end
+
+  def edit_notes
+  end
+
   private
+
+  def notes_params
+    params.require(:restaurant).permit(:notes)
+  end
 
   def parse_order_params
     order_field = params[:order_by] || RestaurantQuery::DEFAULT_ORDER[:field]
@@ -473,5 +516,9 @@ class RestaurantsController < ApplicationController
       @cuisine_types = CuisineType.all
       render render_action, status: :unprocessable_entity
     end
+  end
+
+  def notes_params
+    params.require(:restaurant).permit(:notes)
   end
 end

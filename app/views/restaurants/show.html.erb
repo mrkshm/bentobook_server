@@ -84,11 +84,14 @@
                 </div>
               <% end %>
 
-              <%= render(NotesComponent.new(
+              <%# render(NotesComponent.new(
                 record: @restaurant,
                 notes_field: :notes,
                 container_classes: "mt-4"
               )) %>
+
+              <%# Add this where you want the notes to appear in your restaurant show.html.erb %>
+              <%= render partial: "notes", locals: { restaurant: @restaurant } %>
             </div>
 
           <!-- Images Section -->

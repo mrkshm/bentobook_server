@@ -1,54 +1,52 @@
-<div class="<%= @container_classes %>"
-     data-controller="notes"
-     data-notes-content-value="<%= notes_content %>"
-     data-notes-url-value="<%= update_url %>"
-     id="<%= component_id %>">
-  
-  <div class="flex items-center justify-between mb-2">
-    <h3 class="text-sm font-medium text-surface-700">Notes</h3>
-    <% if has_notes? %>
-      <button type="button" 
-              data-notes-target="editButton"
-              data-action="click->notes#toggleEdit"
-              class="text-surface-500 hover:text-surface-700 transition-colors">
-        <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
-      </button>
+<%= turbo_frame_tag frame_id, class: @container_classes do %>
+  <div>
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-medium text-surface-700">Notes</h3>
+      <% if has_notes? %>
+        <%= link_to edit_path, 
+              class: "text-surface-500 hover:text-surface-700 transition-colors",
+              data: { turbo_frame: frame_id } do %>
+          <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% unless editing? %>
+      <div>
+        <% if has_notes? %>
+          <div class="text-surface-600 whitespace-pre-wrap">
+            <%= notes_content %>
+          </div>
+        <% else %>
+          <%= link_to edit_path,
+                class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
+                data: { turbo_frame: frame_id } do %>
+            <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
+            Add a note
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div>
+        <%= form_with url: update_url, method: :patch, data: { turbo_frame: frame_id } do |form| %>
+          <%= form.text_area "#{@record.class.name.downcase}[#{@notes_field}]", 
+                           value: notes_content,
+                           class: "w-full px-3 py-2 text-surface-900 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500",
+                           rows: 4,
+                           placeholder: "Add your notes here...",
+                           autofocus: true %>
+          
+          <div class="flex justify-end space-x-2 mt-2">
+            <%= link_to "Cancel", 
+                       show_path, 
+                       class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors inline-flex items-center",
+                       data: { turbo_frame: frame_id } %>
+                        
+            <%= form.submit "Save", 
+                          class: "px-3 py-1 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>
+          </div>
+        <% end %>
+      </div>
     <% end %>
   </div>
-
-  <% if has_notes? %>
-    <div data-notes-target="display" class="text-surface-600 whitespace-pre-wrap">
-      <%= notes_content %>
-    </div>
-  <% else %>
-    <button type="button"
-            data-notes-target="addButton"
-            data-action="click->notes#showEditor"
-            class="w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left">
-      <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
-      Add a note
-    </button>
-  <% end %>
-
-  <div data-notes-target="editor" class="hidden">
-    <textarea data-notes-target="textarea"
-              class="w-full px-3 py-2 text-surface-900 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              rows="4"
-              placeholder="Add your notes here..."><%= notes_content %></textarea>
-    
-    <div class="flex justify-end space-x-2 mt-2">
-      <button type="button"
-              data-notes-target="cancelButton"
-              data-action="click->notes#cancel"
-              class="px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors">
-        Cancel
-      </button>
-      <button type="button"
-              data-notes-target="saveButton"
-              data-action="click->notes#save"
-              class="px-3 py-1 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors">
-        Save
-      </button>
-    </div>
-  </div>
-</div>
+<% end %>
