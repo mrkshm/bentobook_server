@@ -45,7 +45,9 @@
         'name' => t('restaurants.index.sort_options.name'),
         'rating' => t('restaurants.index.sort_options.rating'),
         'price_level' => t('restaurants.index.sort_options.price_level'),
-        'distance' => t('restaurants.index.sort_options.distance')
+        'distance' => t('restaurants.index.sort_options.distance'),
+        'created_at' => t('restaurants.index.sort_options.created_at'),
+        'updated_at' => t('restaurants.index.sort_options.updated_at')
       },
       current_order: params[:order_by] || 'name',
       current_direction: params[:order_direction] || 'asc',
@@ -77,6 +79,7 @@
       <% end %>
 
       <%# Infinite scroll trigger %>
+      <% if @pagy.next %>
       <%= turbo_frame_tag :pagination,
           loading: :lazy,
           src: restaurants_path(
@@ -100,6 +103,7 @@
           </div>
         </div>
       <% end %>
+    <% end %>
     <% end %>
   </div>
 </div>
