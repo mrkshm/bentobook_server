@@ -5,17 +5,14 @@ export default class extends Controller {
   static targets = ["input", "preview", "inputContainer"];
 
   connect() {
-    console.log("Image preview controller connected");
   }
 
   triggerFileInput(event) {
-    console.log("triggerFileInput called");
     event.preventDefault();
     this.inputTarget.click();
   }
 
   handleFiles() {
-    console.log("handleFiles called");
     const files = this.inputTarget.files;
     
     if (files?.length > 0) {

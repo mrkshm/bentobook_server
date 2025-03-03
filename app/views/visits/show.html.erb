@@ -49,42 +49,19 @@
             <% end %>
           </div>
         <% else %>
-          <p class="text-surface-600">No contacts associated with this visit.</p>
+          <p class="text-surface-600"><%= t('contacts.no_contacts_for_visit') %></p>
         <% end %>
       </div>
-
       <% if @visit.images.any? %>
-  <div class="border-t border-surface-200 my-6"></div>
-  <div class="space-y-4">
-    <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
-    <%= render(GalleryComponent.new(
-      images: @visit.images
-    )) %>
-    
-    <!-- Debug section -->
-    <div class="mt-8 p-4 bg-red-100 border border-red-300 rounded-lg">
-      <h3 class="font-bold">Debug Info:</h3>
-      <p>Total images: <%= @visit.images.count %></p>
-      
-      <div class="mt-4">
-        <h4 class="font-semibold">Direct Image Rendering:</h4>
-        <div class="grid grid-cols-3 gap-2 mt-2">
-          <% @visit.images.each_with_index do |image, index| %>
-            <div class="border border-dashed border-gray-400 p-2">
-              <p class="text-xs mb-2">Image <%= index + 1 %>:</p>
-              <%= render(S3ImageComponent.new(image: image, size: :small)) %>
-              <p class="text-xs mt-2 break-all">URL: <%= S3ImageComponent.new(image: image, size: :medium).url rescue "Error getting URL" %></p>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-  </div>
-<% end %>
+        <div class="border-t border-surface-200 my-6"></div>
+        <div class="space-y-4">
+          <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
+          <%= render(GalleryComponent.new(images: @visit.images)) %>
+      <% end %>
 
       <div class="flex justify-end gap-3 mt-6">
-        <%= link_to 'Edit', edit_visit_path(id: @visit.id), class: 'inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
-        <%= link_to 'Back to Visits', visits_path, class: 'inline-flex items-center px-4 py-2 rounded-md text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
+        <%= link_to t('edit'), edit_visit_path(id: @visit.id), class: 'inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
+        <%= link_to t('back'), visits_path, class: 'inline-flex items-center px-4 py-2 rounded-md text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
       </div>
     </div>
   </div>

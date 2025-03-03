@@ -80,6 +80,14 @@ fr:
     errors:
       processing_failed: "Échec du traitement des images."
       none_selected: "Aucune image sélectionnée."
+    successfully_deleted_photos:
+      one: "Une photo supprimée avec succès"
+      other: "%{count} photos supprimées avec succès"
+    deletion_failed: "Échec de la suppression des photos"
+    confirm_delete:
+      one: "Supprimer cette photo ?"
+      other: "Supprimer %{count} photos ?"
+    network_error: "Erreur réseau. Veuillez réessayer."
   activerecord:
     errors:
       messages:

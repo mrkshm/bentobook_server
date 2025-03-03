@@ -108,3 +108,11 @@ en:
     errors:
       processing_failed: "Failed to process images."
       none_selected: "No images were selected."
+    successfully_deleted_photos:
+      one: "Successfully deleted one photo"
+      other: "Successfully deleted %{count} photos"
+    deletion_failed: "Failed to delete photos"
+    confirm_delete:
+      one: "Delete this photo?"
+      other: "Delete %{count} photos?"
+    network_error: "Network error. Please try again."

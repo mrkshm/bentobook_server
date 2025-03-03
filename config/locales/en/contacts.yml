@@ -1,5 +1,6 @@
 en:
   contacts:
+    no_contacts_for_visit: "There are no contacts for this visit."
     confirm_delete: "Are you sure you want delete this contact?"
     sort_by:
       created_at: "Date added"
