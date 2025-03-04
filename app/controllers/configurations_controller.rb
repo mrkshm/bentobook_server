@@ -26,7 +26,8 @@ class ConfigurationsController < ApplicationController
           patterns: [
             "/new$",
             "/edit$",
-            "/edit_notes$"
+            "/edit_notes$",
+            "/edit_tags$"
           ],
           properties: {
             context: "modal",
