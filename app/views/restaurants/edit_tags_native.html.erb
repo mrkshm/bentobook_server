@@ -6,12 +6,13 @@
     
     <div data-controller="tag-editor"
          data-tag-editor-available-tags-value="<%= @available_tags.to_json %>"
-         data-tag-editor-current-tags-value="<%= @restaurant.tags.map(&:to_s).to_json %>">
+         data-tag-editor-current-tags-value="<%= @restaurant.tag_list.to_json %>">
       
       <%= form_with model: @restaurant, 
-                    url: update_tags_restaurant_path(id: @restaurant.id, locale: nil), 
-                    method: :patch,
-                    data: { tag_editor_target: "form", action: "submit->tag-editor#submitForm" } do |form| %>
+                   url: update_tags_restaurant_path(id: @restaurant.id, locale: nil), 
+                   method: :patch,
+                   data: { tag_editor_target: "form" },
+                   id: "tag-editor-form" do |form| %>
         
         <div class="mb-4">
           <div class="relative">
@@ -33,7 +34,8 @@
           <div class="mt-6">
             <h3 class="text-sm font-medium text-surface-700 mb-2">Suggested tags</h3>
             <div class="flex flex-wrap gap-2">
-              <% @available_tags.each do |tag| %>
+              <% current_tags = @restaurant.tag_list.map(&:downcase) %>
+              <% @available_tags.reject { |tag| current_tags.include?(tag.downcase) }.each do |tag| %>
                 <button type="button"
                       data-tag="<%= tag %>"
                       data-action="click->tag-editor#addSuggestedTag"
@@ -55,6 +57,7 @@
           
           <%= form.button "Save", 
                          type: "submit",
+                         data: { action: "click->tag-editor#submitForm" },
                          class: "px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>
         </div>
       <% end %>
