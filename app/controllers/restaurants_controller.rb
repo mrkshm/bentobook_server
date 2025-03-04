@@ -356,27 +356,49 @@ class RestaurantsController < ApplicationController
     @restaurant = Restaurant.find(params[:id])
 
     # Get the tags from params
-    new_tags = params[:restaurant][:tags] || []
-    new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
+    if params[:restaurant] && params[:restaurant][:tags].present?
+      new_tags = params[:restaurant][:tags]
+      new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
 
-    # Update the restaurant's tags
-    @restaurant.tag_list = new_tags
+      # Update the restaurant's tags
+      @restaurant.tag_list = new_tags
 
-    if @restaurant.save
-      if hotwire_native_app?
-        redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Tags updated successfully"
+      if @restaurant.save
+        if hotwire_native_app?
+          redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Tags updated successfully"
+        else
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@restaurant, :tags),
+            partial: "tags",
+            locals: { restaurant: @restaurant }
+          )
+        end
       else
-        render turbo_stream: turbo_stream.replace(
-          dom_id(@restaurant, :tags),
-          partial: "tags",
-          locals: { restaurant: @restaurant }
-        )
+        if hotwire_native_app?
+          render :edit_tags_native, status: :unprocessable_entity
+        else
+          render :edit_tags, status: :unprocessable_entity
+        end
       end
     else
-      if hotwire_native_app?
-        render :edit_tags_native, status: :unprocessable_entity
+      # Handle case where no tags were submitted
+      @restaurant.tag_list = []
+      if @restaurant.save
+        if hotwire_native_app?
+          redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Tags updated successfully"
+        else
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@restaurant, :tags),
+            partial: "tags",
+            locals: { restaurant: @restaurant }
+          )
+        end
       else
-        render :edit_tags, status: :unprocessable_entity
+        if hotwire_native_app?
+          render :edit_tags_native, status: :unprocessable_entity
+        else
+          render :edit_tags, status: :unprocessable_entity
+        end
       end
     end
   end

@@ -6,12 +6,12 @@
 
     <div data-controller="tag-editor"
          data-tag-editor-available-tags-value="<%= @available_tags.to_json %>"
-         data-tag-editor-current-tags-value="<%= @restaurant.tags.map(&:to_s).to_json %>">
+         data-tag-editor-current-tags-value="<%= @restaurant.tag_list.to_json %>">
       
       <%= form_with model: @restaurant, 
                     url: update_tags_restaurant_path(id: @restaurant.id, locale: nil), 
                     method: :patch,
-                    data: { tag_editor_target: "form", action: "submit->tag-editor#submitForm" } do |form| %>
+                    data: { tag_editor_target: "form" } do |form| %>
         
         <div class="mb-4">
           <div class="relative">
@@ -34,10 +34,11 @@
           <%= link_to "Cancel", 
                      restaurant_path(id: @restaurant.id, locale: nil), 
                      class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors",
-                     data: { turbo_frame: dom_id(@restaurant, :tags), action: "click->tag-editor#cancelChanges" } %>
+                     data: { turbo_frame: dom_id(@restaurant, :tags) } %>
           
           <%= form.button "Save", 
                          type: "submit",
+                         data: { action: "click->tag-editor#submitForm" },
                          class: "px-3 py-1 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>
         </div>
       <% end %>
