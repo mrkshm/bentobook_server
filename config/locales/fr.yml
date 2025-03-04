@@ -64,6 +64,18 @@ fr:
       next: "Suivant »"
       page: "Page %{number}"
       gap: "…"
+  tags:
+    edit_tags: "Modifier des tags"
+    successfully_updated: "Les tags ont été mis à jour avec succès."
+    errors:
+      max_length: "Le tag '%{tag}' dépasse la longueur maximale de %{max} caractères"
+      max_length_multiple: "Certains tags dépassent la longueur maximale de %{max} caractères"
+      max_count: "Vous pouvez ajouter un maximum de %{max} tags"
+      invalid_format: "Format de tag invalide"
+      save_failed: "Échec de l'enregistrement des tags : %{error}"
+      network_error: "Erreur réseau. Veuillez vérifier votre connexion et réessayer."
+      connection_error: "Échec de la connexion. Veuillez vérifier votre connexion internet."
+      permission_error: "Vous n'avez pas l'autorisation de modifier ces tags."
   images:
     add_photos: "Ajouter des photos"
     edit_photos: "Modifier des photos"
