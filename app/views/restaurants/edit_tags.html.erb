@@ -25,7 +25,7 @@
                   data-tag-editor-target="input"
                   data-action="keydown->tag-editor#addTag input->tag-editor#filterSuggestions"
                   class="w-full px-3 py-2 text-surface-900 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  placeholder="Add a tag...">
+                  placeholder="<%= t('add_tags_placeholder') %>">
             
             <div data-tag-editor-target="suggestions" 
                  class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md overflow-hidden"></div>
@@ -35,15 +35,32 @@
         
         <div data-tag-editor-target="tagList" class="flex flex-wrap gap-2 mb-4"></div>
         
+        <% if @available_tags.present? %>
+          <div class="mt-4">
+            <h3 class="text-sm font-medium text-surface-700 mb-2"><%= t('tags.suggested_tags') %></h3>
+            <div class="flex flex-wrap gap-2">
+              <% current_tags = @restaurant.tag_list.map(&:downcase) %>
+              <% @available_tags.reject { |tag| current_tags.include?(tag.downcase) }.each do |tag| %>
+                <button type="button"
+                      data-tag="<%= tag %>"
+                      data-action="click->tag-editor#addSuggestedTag"
+                      class="inline-flex items-center bg-surface-100 text-surface-800 rounded-full px-3 py-1 text-sm font-medium hover:bg-surface-200 transition-colors">
+                  <%= tag %>
+                </button>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
         <%= form.hidden_field :tags, data: { tag_editor_target: "hiddenInput" } %>
         
         <div class="flex justify-end space-x-2 mt-4">
-          <%= link_to "Cancel", 
+          <%= link_to t('cancel'), 
                      restaurant_path(id: @restaurant.id, locale: nil), 
                      class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors",
                      data: { turbo_frame: dom_id(@restaurant, :tags) } %>
           
-          <%= form.button "Save", 
+          <%= form.button t('save'), 
                          type: "submit",
                          data: { action: "click->tag-editor#submitForm" },
                          class: "px-3 py-1 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>

@@ -94,6 +94,16 @@ en:
       gap: "…"
   tags:
     edit_tags: "Edit Tags"
+    successfully_updated: "Tags were successfully updated."
+    errors:
+      max_length: "Tag '%{tag}' exceeds the maximum length of %{max} characters"
+      max_length_multiple: "Some tags exceed the maximum length of %{max} characters"
+      max_count: "You can add a maximum of %{max} tags"
+      invalid_format: "Invalid tag format"
+      save_failed: "Failed to save tags: %{error}"
+      network_error: "Network error. Please check your connection and try again."
+      connection_error: "Connection failed. Please check your internet connection."
+      permission_error: "You don't have permission to edit these tags."
   images:
     add_photos: "Add Photos"
     edit_photos: "Edit Photos"

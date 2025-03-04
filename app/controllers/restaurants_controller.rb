@@ -5,7 +5,7 @@ class RestaurantsController < ApplicationController
   include CuisineTypeValidation
 
   before_action :authenticate_user!
-  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level, :edit_images, :edit_notes ]
+  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level, :edit_images, :edit_notes, :edit_tags, :update_tags ]
 
   def index
     order_params = parse_order_params
@@ -363,9 +363,33 @@ class RestaurantsController < ApplicationController
         new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
 
         # Validate tags
-        if new_tags.any? { |tag| tag.length > 50 }
-          flash.now[:alert] = "Tags must be 50 characters or less"
-          return render_error_response
+        invalid_tags = new_tags.select { |tag| tag.length > 50 }
+        if invalid_tags.any?
+          error_message = invalid_tags.length == 1 ?
+            "Tag '#{invalid_tags.first}' exceeds the maximum length of 50 characters" :
+            "Some tags exceed the maximum length of 50 characters"
+
+          respond_to do |format|
+            format.html do
+              flash.now[:alert] = error_message
+              return render_error_response
+            end
+            format.json { render json: { error: error_message }, status: :unprocessable_entity }
+          end
+          return
+        end
+
+        # Validate maximum number of tags
+        if new_tags.length > 30
+          error_message = "You can add a maximum of 30 tags"
+          respond_to do |format|
+            format.html do
+              flash.now[:alert] = error_message
+              return render_error_response
+            end
+            format.json { render json: { error: error_message }, status: :unprocessable_entity }
+          end
+          return
         end
 
         # Update the restaurant's tags
@@ -377,24 +401,60 @@ class RestaurantsController < ApplicationController
 
       if @restaurant.save
         if hotwire_native_app?
-          redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Tags updated successfully"
+          redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: t("tags.successfully_updated")
         else
-          render turbo_stream: turbo_stream.replace(
-            dom_id(@restaurant, :tags),
-            partial: "tags",
-            locals: { restaurant: @restaurant }
-          )
+          respond_to do |format|
+            format.html do
+              flash[:notice] = t("tags.successfully_updated")
+              redirect_to restaurant_path(id: @restaurant.id, locale: nil)
+            end
+            format.turbo_stream do
+              render turbo_stream: turbo_stream.replace(
+                dom_id(@restaurant, :tags),
+                partial: "tags",
+                locals: { restaurant: @restaurant }
+              )
+            end
+            format.json { render json: { status: :ok, message: t("tags.successfully_updated") } }
+          end
         end
       else
-        flash.now[:alert] = @restaurant.errors.full_messages.join(", ")
-        render_error_response
+        error_message = @restaurant.errors.full_messages.join(", ")
+        respond_to do |format|
+          format.html do
+            flash.now[:alert] = error_message
+            render_error_response
+          end
+          format.json { render json: { error: error_message }, status: :unprocessable_entity }
+        end
       end
-    rescue JSON::ParserError
-      flash.now[:alert] = "Invalid tag format"
-      render_error_response
-    rescue => e
-      flash.now[:alert] = "An error occurred: #{e.message}"
-      render_error_response
+    rescue JSON::ParserError => e
+      error_message = "Invalid tag format"
+      respond_to do |format|
+        format.html do
+          flash.now[:alert] = error_message
+          render_error_response
+        end
+        format.json { render json: { error: error_message }, status: :unprocessable_entity }
+      end
+    rescue ActiveRecord::RecordNotFound => e
+      error_message = "Restaurant not found"
+      respond_to do |format|
+        format.html do
+          flash.now[:alert] = error_message
+          render_error_response
+        end
+        format.json { render json: { error: error_message }, status: :not_found }
+      end
+    rescue StandardError => e
+      error_message = "An error occurred: #{e.message}"
+      respond_to do |format|
+        format.html do
+          flash.now[:alert] = error_message
+          render_error_response
+        end
+        format.json { render json: { error: error_message }, status: :internal_server_error }
+      end
     end
   end
 
