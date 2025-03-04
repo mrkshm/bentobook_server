@@ -92,6 +92,8 @@ en:
       next: "Next »"
       page: "Page %{number}"
       gap: "…"
+  tags:
+    edit_tags: "Edit Tags"
   images:
     add_photos: "Add Photos"
     edit_photos: "Edit Photos"

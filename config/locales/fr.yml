@@ -64,6 +64,8 @@ fr:
       next: "Suivant »"
       page: "Page %{number}"
       gap: "…"
+  tags:
+    edit_tags: "Modifier des tags"
   images:
     add_photos: "Ajouter des photos"
     edit_photos: "Modifier des photos"

@@ -1,4 +1,4 @@
-<% content_for :title, "Edit Tags" %>
+<% render 'shared/header', title: t('tags.edit_tags') %>
 
 <div class="min-h-screen bg-surface-50">
   <div class="container mx-auto px-4 py-6">
@@ -8,13 +8,19 @@
          data-tag-editor-available-tags-value="<%= @available_tags.to_json %>"
          data-tag-editor-current-tags-value="<%= @restaurant.tag_list.to_json %>">
       
+      <% if flash[:alert].present? %>
+        <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-md border border-red-200">
+          <%= flash[:alert] %>
+        </div>
+      <% end %>
+      
       <%= form_with model: @restaurant, 
                    url: update_tags_restaurant_path(id: @restaurant.id, locale: nil), 
                    method: :patch,
                    data: { tag_editor_target: "form" },
                    id: "tag-editor-form" do |form| %>
         
-        <div class="mb-4">
+        <div class="mb-2">
           <div class="relative">
             <input type="text"
                   data-tag-editor-target="input"
@@ -26,6 +32,7 @@
             <div data-tag-editor-target="suggestions" 
                  class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md overflow-hidden"></div>
           </div>
+          <div data-tag-editor-target="error" class="mt-1 text-sm text-red-600 hidden"></div>
         </div>
         
         <div data-tag-editor-target="tagList" class="flex flex-wrap gap-2 mb-4"></div>

@@ -354,14 +354,26 @@ class RestaurantsController < ApplicationController
 
   def update_tags
     @restaurant = Restaurant.find(params[:id])
+    @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
 
-    # Get the tags from params
-    if params[:restaurant] && params[:restaurant][:tags].present?
-      new_tags = params[:restaurant][:tags]
-      new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
+    begin
+      # Get the tags from params
+      if params[:restaurant] && params[:restaurant][:tags].present?
+        new_tags = params[:restaurant][:tags]
+        new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
 
-      # Update the restaurant's tags
-      @restaurant.tag_list = new_tags
+        # Validate tags
+        if new_tags.any? { |tag| tag.length > 50 }
+          flash.now[:alert] = "Tags must be 50 characters or less"
+          return render_error_response
+        end
+
+        # Update the restaurant's tags
+        @restaurant.tag_list = new_tags
+      else
+        # Handle case where no tags were submitted
+        @restaurant.tag_list = []
+      end
 
       if @restaurant.save
         if hotwire_native_app?
@@ -374,36 +386,27 @@ class RestaurantsController < ApplicationController
           )
         end
       else
-        if hotwire_native_app?
-          render :edit_tags_native, status: :unprocessable_entity
-        else
-          render :edit_tags, status: :unprocessable_entity
-        end
+        flash.now[:alert] = @restaurant.errors.full_messages.join(", ")
+        render_error_response
       end
-    else
-      # Handle case where no tags were submitted
-      @restaurant.tag_list = []
-      if @restaurant.save
-        if hotwire_native_app?
-          redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Tags updated successfully"
-        else
-          render turbo_stream: turbo_stream.replace(
-            dom_id(@restaurant, :tags),
-            partial: "tags",
-            locals: { restaurant: @restaurant }
-          )
-        end
-      else
-        if hotwire_native_app?
-          render :edit_tags_native, status: :unprocessable_entity
-        else
-          render :edit_tags, status: :unprocessable_entity
-        end
-      end
+    rescue JSON::ParserError
+      flash.now[:alert] = "Invalid tag format"
+      render_error_response
+    rescue => e
+      flash.now[:alert] = "An error occurred: #{e.message}"
+      render_error_response
     end
   end
 
   private
+
+  def render_error_response
+    if hotwire_native_app?
+      render :edit_tags_native, status: :unprocessable_entity
+    else
+      render :edit_tags, status: :unprocessable_entity
+    end
+  end
 
   def notes_params
     params.require(:restaurant).permit(:notes)
