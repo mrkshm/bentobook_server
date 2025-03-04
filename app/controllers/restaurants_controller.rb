@@ -337,6 +337,50 @@ class RestaurantsController < ApplicationController
     end
   end
 
+  def edit_tags
+    @restaurant = Restaurant.find(params[:id])
+    @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
+
+    respond_to do |format|
+      format.html do
+        if hotwire_native_app?
+          render :edit_tags_native
+        else
+          render :edit_tags
+        end
+      end
+    end
+  end
+
+  def update_tags
+    @restaurant = Restaurant.find(params[:id])
+
+    # Get the tags from params
+    new_tags = params[:restaurant][:tags] || []
+    new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
+
+    # Update the restaurant's tags
+    @restaurant.tag_list = new_tags
+
+    if @restaurant.save
+      if hotwire_native_app?
+        redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: "Tags updated successfully"
+      else
+        render turbo_stream: turbo_stream.replace(
+          dom_id(@restaurant, :tags),
+          partial: "tags",
+          locals: { restaurant: @restaurant }
+        )
+      end
+    else
+      if hotwire_native_app?
+        render :edit_tags_native, status: :unprocessable_entity
+      else
+        render :edit_tags, status: :unprocessable_entity
+      end
+    end
+  end
+
   private
 
   def notes_params
@@ -384,7 +428,8 @@ class RestaurantsController < ApplicationController
         :street_number, :street, :postal_code, :city, :state, :country,
         :phone_number, :url, :business_status, :google_rating,
         :google_ratings_total, :price_level, :opening_hours, :google_updated_at
-      ]
+      ],
+      tags: []
     )
 
     # Handle the special case of images - filter out any empty strings or nil values
@@ -539,5 +584,9 @@ class RestaurantsController < ApplicationController
 
   def notes_params
     params.require(:restaurant).permit(:notes)
+  end
+
+  def tags_params
+    params.require(:restaurant).permit(tags: [])
   end
 end

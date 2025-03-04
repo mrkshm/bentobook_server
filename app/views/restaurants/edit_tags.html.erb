@@ -1,0 +1,46 @@
+<%= turbo_frame_tag dom_id(@restaurant, :tags) do %>
+  <div class="mt-4">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-sm font-medium text-surface-700">Tags</h3>
+    </div>
+
+    <div data-controller="tag-editor"
+         data-tag-editor-available-tags-value="<%= @available_tags.to_json %>"
+         data-tag-editor-current-tags-value="<%= @restaurant.tags.map(&:to_s).to_json %>">
+      
+      <%= form_with model: @restaurant, 
+                    url: update_tags_restaurant_path(id: @restaurant.id, locale: nil), 
+                    method: :patch,
+                    data: { tag_editor_target: "form", action: "submit->tag-editor#submitForm" } do |form| %>
+        
+        <div class="mb-4">
+          <div class="relative">
+            <input type="text"
+                  data-tag-editor-target="input"
+                  data-action="keydown->tag-editor#addTag input->tag-editor#filterSuggestions"
+                  class="w-full px-3 py-2 text-surface-900 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Add a tag...">
+            
+            <div data-tag-editor-target="suggestions" 
+                 class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md overflow-hidden"></div>
+          </div>
+        </div>
+        
+        <div data-tag-editor-target="tagList" class="flex flex-wrap gap-2 mb-4"></div>
+        
+        <%= form.hidden_field :tags, data: { tag_editor_target: "hiddenInput" } %>
+        
+        <div class="flex justify-end space-x-2 mt-4">
+          <%= link_to "Cancel", 
+                     restaurant_path(id: @restaurant.id, locale: nil), 
+                     class: "px-3 py-1 text-sm rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors",
+                     data: { turbo_frame: dom_id(@restaurant, :tags), action: "click->tag-editor#cancelChanges" } %>
+          
+          <%= form.button "Save", 
+                         type: "submit",
+                         class: "px-3 py-1 text-sm rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
