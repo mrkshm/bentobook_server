@@ -15,6 +15,10 @@ module Shared
       @icon = ICONS[@type] || ICONS[:notice]
     end
 
+    def call
+      heroicon icon, variant: :mini, options: { class: "w-5 h-5" }
+    end
+
     private
 
     attr_reader :type, :icon
