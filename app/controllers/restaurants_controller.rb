@@ -152,6 +152,23 @@ class RestaurantsController < ApplicationController
     end
   end
 
+  def new_confirm
+    @google_restaurant = Restaurants::GooglePlaceImportService.find_or_create(place_params)
+
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: [
+          turbo_stream.update("restaurant_search", ""),
+          turbo_stream.update(
+            "restaurant_form",
+            partial: "restaurants/new/restaurant_confirm",
+            locals: { google_restaurant: @google_restaurant }
+          )
+        ]
+      end
+    end
+  end
+
   def edit_images
     @images = @restaurant.images.order(created_at: :desc)
 
@@ -244,20 +261,22 @@ class RestaurantsController < ApplicationController
   end
 
   def create
-    ActiveRecord::Base.transaction do
-      begin
-        @restaurant = build_restaurant
-        save_restaurant(:new)
-      rescue ActiveRecord::RecordNotFound => e
-        @restaurant = current_user.restaurants.new(restaurant_params.except(:cuisine_type_name))
-        handle_invalid_cuisine_type
-      rescue StandardError => e
-        Rails.logger.error "Error creating restaurant: #{e.message}"
-        @restaurant&.destroy if @restaurant&.persisted?
-        flash[:alert] = e.message
-        handle_failed_save
-      end
-    end
+    google_restaurant = GoogleRestaurant.find(params[:restaurant][:google_restaurant_id])
+    @restaurant, status = Restaurants::StubCreatorService.create(
+      user: current_user,
+      google_restaurant: google_restaurant
+    )
+
+    flash_type = status == :new ? :success : :info
+    notice_key = status == :new ? "restaurants.created" : "restaurants.already_exists"
+    redirect_to restaurant_path(id: @restaurant.id, locale: nil),
+                flash: { flash_type => t(notice_key) }
+  rescue ActiveRecord::RecordNotFound => e
+    flash[:error] = t("restaurants.errors.google_restaurant_not_found")
+    redirect_to new_restaurant_path
+  rescue StandardError => e
+    flash[:error] = e.message
+    redirect_to new_restaurant_path
   end
 
   def destroy
@@ -673,5 +692,14 @@ class RestaurantsController < ApplicationController
 
   def tags_params
     params.require(:restaurant).permit(tags: [])
+  end
+
+  def place_params
+    params.require(:place).permit(
+      :google_place_id, :name, :formatted_address, :latitude, :longitude,
+      :phone_number, :website, :rating, :user_ratings_total,
+      :price_level, :business_status, :street_number, :street_name,
+      :city, :state, :postal_code, :country
+    )
   end
 end

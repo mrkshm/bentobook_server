@@ -1,5 +1,3 @@
 <% flash.each do |type, message| %>
-  <div class="alert alert-<%= type == 'notice' ? 'info' : type %> mb-4">
-    <span><%= message %></span>
-  </div>
+  <%= render Shared::FlashComponent.new(type: type, message: message) %>
 <% end %>

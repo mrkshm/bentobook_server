@@ -1,0 +1,19 @@
+<%= turbo_frame_tag "restaurant_search" do %>
+  <div class="mb-3">
+    <% t('restaurants.new.short_description').split('. ').each do |sentence| %>
+      <p class="mb-1 text-sm text-surface-700"><%= sentence %>.</p>
+    <% end %>
+  </div>
+
+  <%= form_with(url: '#', html: { data: { controller: "restaurant-search" } }) do |f| %>
+    <%= label_tag :restaurant_search, t("restaurants.form.search"), 
+        class: "block text-sm font-medium text-surface-700 mb-2" %>
+    <%= text_field_tag :restaurant_search, nil,
+        data: { 
+          controller: "places-autocomplete",
+          places_autocomplete_target: "input",
+          action: "places-autocomplete#onChange"
+        },
+        class: "block w-full bg-surface-50 rounded-md border-0 py-1.5 px-3 text-surface-900 shadow-sm ring-1 ring-inset ring-surface-200 placeholder:text-surface-400 focus:ring-2 focus:ring-inset focus:ring-primary-600" %>
+  <% end %>
+<% end %>

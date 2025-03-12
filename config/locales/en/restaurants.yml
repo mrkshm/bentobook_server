@@ -4,6 +4,8 @@ en:
     create_restaurant_button: 'Create New Restaurant'
     select_price_level: 'Select price level'
     change_cuisine: 'Change cuisine type'
+    created: "The restaurant was successfully added. You can add notes, rating etc. or simply start adding a visit right away."
+    already_exists: "The restaurant was already in your list. You can make a change or add a visit."
     confirmations:
       delete: "Are you sure you want to remove this restaurant?"
     form:
@@ -40,8 +42,10 @@ en:
         created_at: "Creation Date"
         updated_at: "Last Modified"
     new:
-      title: 'Create a new restaurant'
+      title: 'Find a restaurant'
       short_description: 'Please search for a restaurant here. Start with the name, if you do not see it add the city and other details.'
+      add_to_my_restaurants: "Yes, add it to my restaurants"
+      confirmation_question: "Is this the restaurant you are looking for?"
     attributes:
       name: 'Name'
       cuisine_type: 'Cuisine Type'

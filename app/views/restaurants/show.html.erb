@@ -1,4 +1,8 @@
-<% content_for :title, @restaurant.name %>
+<%= render 'shared/header', title: @restaurant.name %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <%= render "shared/flash" %>
+</div>
 
 <div class="relative isolate overflow-hidden bg-surface-50 pt-6 pb-12 sm:py-16 lg:overflow-visible">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -42,12 +46,12 @@
                 <div class="flex items-start space-x-3">
                   <%= heroicon "map-pin", options: { class: "w-5 h-5 text-primary-500 mt-1" } %>
                   <div>
-                    <p class="text-surface-700"><%= "#{@restaurant.street_number} #{@restaurant.street}" %></p>
-                    <p class="text-surface-700"><%= "#{@restaurant.postal_code} #{@restaurant.city}" %></p>
-                    <% if @restaurant.state.present? %>
-                      <p class="text-surface-700"><%= @restaurant.state %></p>
+                    <p class="text-surface-700"><%= "#{@restaurant.combined_street_number} #{@restaurant.combined_street}" %></p>
+                    <p class="text-surface-700"><%= "#{@restaurant.combined_postal_code} #{@restaurant.combined_city}" %></p>
+                    <% if @restaurant.combined_state.present? %>
+                      <p class="text-surface-700"><%= @restaurant.combined_state %></p>
                     <% end %>
-                    <p class="text-surface-700"><%= @restaurant.country %></p>
+                    <p class="text-surface-700"><%= @restaurant.combined_country %></p>
                   </div>
                 </div>
               </div>

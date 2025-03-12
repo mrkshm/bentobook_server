@@ -67,21 +67,17 @@ export default class extends Controller {
     this.autocomplete.addListener("place_changed", this.placeSelected.bind(this))
   }
 
+  reset() {
+    this.element.value = ""
+    this.element.disabled = false
+  }
+
   placeSelected() {
     const place = this.autocomplete.getPlace()
     if (!place.place_id) return
 
-    const frame = document.getElementById("restaurant_form")
-    if (!frame) {
-      console.error("Restaurant form frame not found")
-      return
-    }
-
-    this.element.disabled = true
-
     const addressData = extractAddressFromGooglePlace(place)
-    console.log("Extracted address:", addressData)
-
+    
     const placeData = {
       place: {
         google_place_id: place.place_id,
@@ -104,9 +100,7 @@ export default class extends Controller {
       }
     }
 
-    console.log("Sending place data:", placeData)
-
-    fetch('/restaurants/new/form', {
+    fetch('/restaurants/new/confirm', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +114,6 @@ export default class extends Controller {
       return response.text()
     })
     .then(html => {
-      console.log("Received response, updating form")
       Turbo.renderStreamMessage(html)
     })
     .catch(error => {
@@ -128,11 +121,7 @@ export default class extends Controller {
       const errorDiv = document.createElement('div')
       errorDiv.className = 'text-[var(--color-error-700)] bg-[var(--color-error-100)] p-4 rounded-md'
       errorDiv.textContent = "Could not load restaurant details. Please try again."
-      frame.innerHTML = ''
-      frame.appendChild(errorDiv)
-    })
-    .finally(() => {
-      this.element.disabled = false
+      document.getElementById("restaurant_form").innerHTML = errorDiv.outerHTML
     })
   }
 
