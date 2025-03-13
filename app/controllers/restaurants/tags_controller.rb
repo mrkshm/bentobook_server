@@ -40,28 +40,6 @@ module Restaurants
       handle_failed_update("Invalid tag format")
     end
 
-    def add
-      result = Restaurants::Tags::ManagerService.new(@restaurant).add(tag_params[:tag])
-
-      if result.success?
-        redirect_to restaurant_path(@restaurant), notice: "Tag added successfully."
-      else
-        flash[:alert] = result.error
-        render :show
-      end
-    end
-
-    def remove
-      result = Restaurants::Tags::ManagerService.new(@restaurant).remove(tag_params[:tag])
-
-      if result.success?
-        redirect_to restaurant_path(@restaurant), notice: "Tag removed successfully."
-      else
-        flash[:alert] = result.error
-        render :show
-      end
-    end
-
     private
 
     def set_restaurant
@@ -70,39 +48,13 @@ module Restaurants
       render json: { error: "Restaurant not found" }, status: :not_found
     end
 
-    def tag_params
-      params.permit(:tag)
-    end
-
-    def handle_successful_update
-      if hotwire_native_app?
-        redirect_to restaurant_path(id: @restaurant.id, locale: nil),
-                    notice: t("tags.successfully_updated")
-      else
-        respond_to do |format|
-          format.html do
-            redirect_to restaurant_path(id: @restaurant.id, locale: nil),
-                        notice: t("tags.successfully_updated")
-          end
-          format.turbo_stream do
-            render turbo_stream: turbo_stream.replace(
-              dom_id(@restaurant, :tags),
-              partial: "restaurants/tags/tags",
-              locals: { restaurant: @restaurant }
-            )
-          end
-          format.json { render json: { status: :ok } }
-        end
-      end
-    end
-
     def handle_failed_update(error_message)
       respond_to do |format|
         format.html do
           flash.now[:alert] = error_message
           render_error_response
         end
-        format.json { render json: { error: error_message }, status: :unprocessable_entity }
+        format.turbo_stream { render json: { error: error_message }, status: :unprocessable_entity }
       end
     end
 
