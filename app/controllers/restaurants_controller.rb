@@ -321,41 +321,6 @@ class RestaurantsController < ApplicationController
     end
   end
 
-  def update_notes
-    @restaurant = Restaurant.find(params[:id])
-
-    if @restaurant.update(notes_params)
-      if hotwire_native_app?
-        # For native, redirect back to the restaurant page
-        redirect_to restaurant_path(id: @restaurant.id, locale: nil)
-      else
-        # For web, update the turbo frame
-        render turbo_stream: turbo_stream.replace(
-          dom_id(@restaurant, :notes),
-          partial: "notes",
-          locals: { restaurant: @restaurant }
-        )
-      end
-    else
-      # Handle validation errors
-      if hotwire_native_app?
-        render :edit_notes_native, status: :unprocessable_entity
-      else
-        render :edit_notes, status: :unprocessable_entity
-      end
-    end
-  end
-
-  def edit_notes
-    @restaurant = Restaurant.find(params[:id])
-
-    if hotwire_native_app?
-      render :edit_notes_native
-    else
-      render :edit_notes
-    end
-  end
-
   def edit_tags
     @restaurant = Restaurant.find(params[:id])
     @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
@@ -485,10 +450,6 @@ class RestaurantsController < ApplicationController
     else
       render :edit_tags, status: :unprocessable_entity
     end
-  end
-
-  def notes_params
-    params.require(:restaurant).permit(:notes)
   end
 
   def parse_order_params

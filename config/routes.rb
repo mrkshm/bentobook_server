@@ -103,6 +103,7 @@ Rails.application.routes.draw do
           get :edit, to: "restaurants#edit_images", as: :edit
         end
       end
+      resource :notes, only: [ :edit, :update ], module: :restaurants
     end
 
     resources :visits do
