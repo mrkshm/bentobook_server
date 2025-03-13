@@ -36,8 +36,6 @@ module Restaurants
       else
         handle_failed_update(result.error)
       end
-    rescue JSON::ParserError
-      handle_failed_update(t("tags.invalid_format"))
     end
 
     private
@@ -54,7 +52,11 @@ module Restaurants
           flash.now[:alert] = error_message
           render_error_response
         end
-        format.turbo_stream { render json: { error: error_message }, status: :unprocessable_entity }
+        format.turbo_stream do
+          render json: { error: error_message },
+                 status: :unprocessable_entity,
+                 content_type: "application/json"
+        end
       end
     end
 
