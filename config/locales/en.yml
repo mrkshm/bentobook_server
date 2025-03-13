@@ -95,6 +95,8 @@ en:
   tags:
     edit_tags: "Edit Tags"
     successfully_updated: "Tags were successfully updated."
+    add_tags: "Add tags"
+    no_tags: "No tags yet"
     errors:
       max_length: "Tag '%{tag}' exceeds the maximum length of %{max} characters"
       max_length_multiple: "Some tags exceed the maximum length of %{max} characters"

@@ -2,11 +2,11 @@
 
 <div class="min-h-screen bg-surface-50">
   <div class="container mx-auto px-4 py-6">
-    <h1 class="text-2xl font-bold mb-6">Edit Tags</h1>
+    <h1 class="text-2xl font-bold mb-6"><%= t('tags.edit_tags') %></h1>
     
-    <div data-controller="tag-editor"
-         data-tag-editor-available-tags-value="<%= @available_tags.to_json %>"
-         data-tag-editor-current-tags-value="<%= @restaurant.tag_list.to_json %>">
+    <div data-controller="tags--editor"
+         data-tags--editor-available-tags-value="<%= @available_tags.to_json %>"
+         data-tags--editor-current-tags-value="<%= @restaurant.tag_list.to_json %>">
       
       <% if flash[:alert].present? %>
         <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-md border border-red-200">
@@ -15,27 +15,30 @@
       <% end %>
       
       <%= form_with model: @restaurant, 
-                   url: update_tags_restaurant_path(id: @restaurant.id, locale: nil), 
+                   url: restaurant_tags_path(restaurant_id: @restaurant.id, locale: nil), 
                    method: :patch,
-                   data: { tag_editor_target: "form" },
-                   id: "tag-editor-form" do |form| %>
+                   data: { 
+                     "tags--editor-target": "form",
+                     "success-url": restaurant_path(id: @restaurant.id, locale: nil)
+                   },
+                   id: "tags-editor-form" do |form| %>
         
         <div class="mb-2">
           <div class="relative">
             <input type="text"
-                  data-tag-editor-target="input"
-                  data-action="keydown->tag-editor#addTag input->tag-editor#filterSuggestions"
+                  data-tags--editor-target="input"
+                  data-action="keydown->tags--editor#addTag input->tags--editor#filterSuggestions"
                   class="w-full px-3 py-2 text-surface-900 border border-surface-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Add a tag..."
                   autofocus>
             
-            <div data-tag-editor-target="suggestions" 
+            <div data-tags--editor-target="suggestions" 
                  class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md overflow-hidden"></div>
           </div>
-          <div data-tag-editor-target="error" class="mt-1 text-sm text-red-600 hidden"></div>
+          <div data-tags--editor-target="error" class="mt-1 text-sm text-red-600 hidden"></div>
         </div>
         
-        <div data-tag-editor-target="tagList" class="flex flex-wrap gap-2 mb-4"></div>
+        <div data-tags--editor-target="tagList" class="flex flex-wrap gap-2 mb-4"></div>
         
         <% if @available_tags.present? %>
           <div class="mt-6">
@@ -45,7 +48,7 @@
               <% @available_tags.reject { |tag| current_tags.include?(tag.downcase) }.each do |tag| %>
                 <button type="button"
                       data-tag="<%= tag %>"
-                      data-action="click->tag-editor#addSuggestedTag"
+                      data-action="click->tags--editor#addSuggestedTag"
                       class="inline-flex items-center bg-surface-100 text-surface-800 rounded-full px-3 py-1 text-sm font-medium hover:bg-surface-200 transition-colors">
                   <%= tag %>
                 </button>
@@ -54,7 +57,7 @@
           </div>
         <% end %>
         
-        <%= form.hidden_field :tags, data: { tag_editor_target: "hiddenInput" } %>
+        <%= form.hidden_field :tags, data: { "tags--editor-target": "hiddenInput" } %>
         
         <div class="flex justify-between mt-6">
           <%= link_to "Cancel", 
@@ -64,7 +67,7 @@
           
           <%= form.button "Save", 
                          type: "submit",
-                         data: { action: "click->tag-editor#submitForm" },
+                         data: { action: "click->tags--editor#submitForm" },
                          class: "px-4 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors" %>
         </div>
       <% end %>

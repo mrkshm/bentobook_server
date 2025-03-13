@@ -1,8 +1,8 @@
-<%= turbo_frame_tag frame_id, class: @container_classes do %>
-  <div>
+<%= turbo_frame_tag frame_id do %>
+  <div class="<%= @container_classes %>">
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-sm font-medium text-surface-700">Tags</h3>
-      <% if hotwire_native_app? %>
+      <% if helpers.hotwire_native_app? %>
         <%= link_to edit_path,
               class: "text-surface-500 hover:text-surface-700 transition-colors",
               data: { turbo_frame: "_top" } do %>

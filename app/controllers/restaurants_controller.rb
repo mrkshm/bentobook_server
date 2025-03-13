@@ -5,7 +5,7 @@ class RestaurantsController < ApplicationController
   include CuisineTypeValidation
 
   before_action :authenticate_user!
-  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :add_tag, :remove_tag, :update_rating, :update_price_level, :edit_images, :edit_notes, :edit_tags, :update_tags ]
+  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :update_rating, :update_price_level, :edit_images ]
 
   def index
     order_params = parse_order_params
@@ -284,161 +284,10 @@ class RestaurantsController < ApplicationController
     redirect_to restaurants_path, notice: "Restaurant was successfully removed from your list."
   end
 
-  def add_tag
-    tag_name = tag_params[:tag]
-    if tag_name.present?
-      @restaurant.tag_list.add(tag_name) unless @restaurant.tag_list.include?(tag_name)
-      if @restaurant.save
-        redirect_to restaurant_path(@restaurant), notice: "Tag added successfully."
-      else
-        flash[:alert] = "Failed to add tag."
-        render :show
-      end
-    else
-      redirect_to restaurant_path(@restaurant), alert: "No tag provided."
-    end
-  end
-
-  def remove_tag
-    tag_name = tag_params[:tag]
-    if tag_name.present?
-      @restaurant.tag_list.remove(tag_name)
-      if @restaurant.save
-        redirect_to restaurant_path(@restaurant), notice: "Tag removed successfully."
-      else
-        flash[:alert] = "Failed to remove tag."
-        render :show
-      end
-    else
-      redirect_to restaurant_path(@restaurant), alert: "No tag provided."
-    end
-  end
-
   def search
     respond_to do |format|
       format.html { render partial: "search_form" }
       format.turbo_stream
-    end
-  end
-
-  def edit_tags
-    @restaurant = Restaurant.find(params[:id])
-    @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
-
-    respond_to do |format|
-      format.html do
-        if hotwire_native_app?
-          render :edit_tags_native
-        else
-          render :edit_tags
-        end
-      end
-    end
-  end
-
-  def update_tags
-    @restaurant = Restaurant.find(params[:id])
-    @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
-
-    begin
-      # Get the tags from params
-      if params[:restaurant] && params[:restaurant][:tags].present?
-        new_tags = params[:restaurant][:tags]
-        new_tags = JSON.parse(new_tags) if new_tags.is_a?(String)
-
-        # Validate tags
-        invalid_tags = new_tags.select { |tag| tag.length > 50 }
-        if invalid_tags.any?
-          error_message = invalid_tags.length == 1 ?
-            "Tag '#{invalid_tags.first}' exceeds the maximum length of 50 characters" :
-            "Some tags exceed the maximum length of 50 characters"
-
-          respond_to do |format|
-            format.html do
-              flash.now[:alert] = error_message
-              return render_error_response
-            end
-            format.json { render json: { error: error_message }, status: :unprocessable_entity }
-          end
-          return
-        end
-
-        # Validate maximum number of tags
-        if new_tags.length > 30
-          error_message = "You can add a maximum of 30 tags"
-          respond_to do |format|
-            format.html do
-              flash.now[:alert] = error_message
-              return render_error_response
-            end
-            format.json { render json: { error: error_message }, status: :unprocessable_entity }
-          end
-          return
-        end
-
-        # Update the restaurant's tags
-        @restaurant.tag_list = new_tags
-      else
-        # Handle case where no tags were submitted
-        @restaurant.tag_list = []
-      end
-
-      if @restaurant.save
-        if hotwire_native_app?
-          redirect_to restaurant_path(id: @restaurant.id, locale: nil), notice: t("tags.successfully_updated")
-        else
-          respond_to do |format|
-            format.html do
-              flash[:notice] = t("tags.successfully_updated")
-              redirect_to restaurant_path(id: @restaurant.id, locale: nil)
-            end
-            format.turbo_stream do
-              render turbo_stream: turbo_stream.replace(
-                dom_id(@restaurant, :tags),
-                partial: "tags",
-                locals: { restaurant: @restaurant }
-              )
-            end
-            format.json { render json: { status: :ok, message: t("tags.successfully_updated") } }
-          end
-        end
-      else
-        error_message = @restaurant.errors.full_messages.join(", ")
-        respond_to do |format|
-          format.html do
-            flash.now[:alert] = error_message
-            render_error_response
-          end
-          format.json { render json: { error: error_message }, status: :unprocessable_entity }
-        end
-      end
-    rescue JSON::ParserError => e
-      error_message = "Invalid tag format"
-      respond_to do |format|
-        format.html do
-          flash.now[:alert] = error_message
-          render_error_response
-        end
-        format.json { render json: { error: error_message }, status: :unprocessable_entity }
-      end
-    rescue ActiveRecord::RecordNotFound => e
-      error_message = "Restaurant not found"
-      respond_to do |format|
-        format.html do
-          flash.now[:alert] = error_message
-          render_error_response
-        end
-        format.json { render json: { error: error_message }, status: :not_found }
-      end
-    rescue StandardError => e
-      error_message = "An error occurred: #{e.message}"
-      respond_to do |format|
-        format.html do
-          flash.now[:alert] = error_message
-          render_error_response
-        end
-        format.json { render json: { error: error_message }, status: :internal_server_error }
-      end
     end
   end
 
@@ -475,10 +324,6 @@ class RestaurantsController < ApplicationController
 
   def search_params
     params.permit(:search, :tag, :latitude, :longitude, :order_by, :order_direction).merge(user: current_user)
-  end
-
-  def tag_params
-    params.permit(:tag)
   end
 
   def restaurant_params
@@ -645,14 +490,6 @@ class RestaurantsController < ApplicationController
       @cuisine_types = CuisineType.all
       render render_action, status: :unprocessable_entity
     end
-  end
-
-  def notes_params
-    params.require(:restaurant).permit(:notes)
-  end
-
-  def tags_params
-    params.require(:restaurant).permit(tags: [])
   end
 
   def place_params

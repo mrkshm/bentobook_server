@@ -84,14 +84,6 @@ Rails.application.routes.draw do
 
     # Restaurant routes
     resources :restaurants do
-      member do
-        post :add_tag
-        delete :remove_tag
-        patch :update_notes
-        get :edit_notes
-        get :edit_tags
-        patch :update_tags
-      end
       collection do
         get "tagged/:tag", action: :index, as: :tagged
         get "new/form", action: :new_form
@@ -104,6 +96,7 @@ Rails.application.routes.draw do
         end
       end
       resource :notes, only: [ :edit, :update ], module: :restaurants
+      resource :tags, only: [ :edit, :update ], module: :restaurants
     end
 
     resources :visits do
