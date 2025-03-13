@@ -74,6 +74,20 @@ RSpec.describe Restaurants::TagsController, type: :controller do
               xhr: true
         expect(response.parsed_body['error']).to be_present
       end
+
+      context "when JSON parsing fails" do
+        let(:invalid_json) { '{not valid json' }
+
+        it "handles JSON parse error" do
+          patch :update,
+                params: { restaurant_id: restaurant.id, restaurant: { tags: invalid_json } },
+                format: :turbo_stream,
+                xhr: true
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response.parsed_body['error']).to eq("Invalid tag format")
+        end
+      end
     end
   end
 end

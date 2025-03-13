@@ -37,7 +37,7 @@ module Restaurants
         handle_failed_update(result.error)
       end
     rescue JSON::ParserError
-      handle_failed_update("Invalid tag format")
+      handle_failed_update(t("tags.invalid_format"))
     end
 
     private
