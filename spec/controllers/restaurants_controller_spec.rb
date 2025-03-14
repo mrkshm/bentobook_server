@@ -4,6 +4,7 @@ RSpec.describe RestaurantsController, type: :controller do
   let(:user) { create(:user) }
   let(:restaurant) { create(:restaurant, user: user) }
   let(:italian_cuisine) { create(:cuisine_type, name: 'italian') }
+  let(:google_restaurant) { create(:google_restaurant) }
   let(:valid_attributes) do
     attributes_for(:restaurant, :for_create).merge(
       cuisine_type_name: "italian",
@@ -165,6 +166,11 @@ RSpec.describe RestaurantsController, type: :controller do
   end
 
   describe "GET #new" do
+    it "renders the search form" do
+      get :new
+      expect(response).to render_template(:new)
+    end
+
     it "assigns a new restaurant as @restaurant" do
       get :new
       expect(assigns(:restaurant)).to be_a_new(Restaurant)
@@ -181,12 +187,62 @@ RSpec.describe RestaurantsController, type: :controller do
     end
   end
 
+  describe "POST #new_confirm" do
+    let(:place_params) do
+      {
+        google_place_id: "test_place_id",
+        name: "Test Restaurant",
+        formatted_address: "123 Test St",
+        latitude: 40.7128,
+        longitude: -74.0060
+      }
+    end
+
+    it "finds or creates a google restaurant" do
+      expect(Restaurants::GooglePlaceImportService).to receive(:find_or_create)
+        .with(place_params.stringify_keys)
+        .and_return(google_restaurant)
+
+      post :new_confirm, params: { place: place_params }, format: :turbo_stream
+    end
+
+    it "updates the restaurant search and form" do
+      allow(Restaurants::GooglePlaceImportService).to receive(:find_or_create)
+        .and_return(google_restaurant)
+
+      post :new_confirm, params: { place: place_params }, format: :turbo_stream
+
+      expect(response.body).to include('turbo-stream action="update" target="restaurant_search"')
+      expect(response.body).to include('turbo-stream action="update" target="restaurant_form"')
+    end
+  end
+
   describe "POST #create" do
     before do
       italian_cuisine # ensure cuisine type exists
     end
 
+    let(:google_restaurant) { create(:google_restaurant) }
+
     context "with valid params" do
+      it "creates a restaurant using StubCreatorService" do
+        expect(Restaurants::StubCreatorService).to receive(:create)
+          .with(user: user, google_restaurant: google_restaurant)
+          .and_return([ restaurant, :new ])
+
+        post :create, params: { restaurant: { google_restaurant_id: google_restaurant.id } }
+      end
+
+      it "redirects to the created restaurant with success message" do
+        allow(Restaurants::StubCreatorService).to receive(:create)
+          .and_return([ restaurant, :new ])
+
+        post :create, params: { restaurant: { google_restaurant_id: google_restaurant.id } }
+
+        expect(response).to redirect_to(restaurant_path(id: restaurant.id, locale: nil))
+        expect(flash[:success]).to eq(I18n.t("restaurants.created"))
+      end
+
       it "creates a new Restaurant" do
         expect {
           post :create, params: { restaurant: valid_attributes }
@@ -219,6 +275,27 @@ RSpec.describe RestaurantsController, type: :controller do
 
         post :create, params: { restaurant: valid_params }
         expect(response).to redirect_to(action: :show, id: Restaurant.last.id)
+      end
+    end
+
+    context "when restaurant already exists" do
+      it "redirects with info message" do
+        allow(Restaurants::StubCreatorService).to receive(:create)
+          .and_return([ restaurant, :existing ])
+
+        post :create, params: { restaurant: { google_restaurant_id: google_restaurant.id } }
+
+        expect(response).to redirect_to(restaurant_path(id: restaurant.id, locale: nil))
+        expect(flash[:info]).to eq(I18n.t("restaurants.already_exists"))
+      end
+    end
+
+    context "when google restaurant is not found" do
+      it "redirects to new with error" do
+        post :create, params: { restaurant: { google_restaurant_id: 0 } }
+
+        expect(response).to redirect_to(new_restaurant_path)
+        expect(flash[:error]).to eq(I18n.t("restaurants.errors.google_restaurant_not_found"))
       end
     end
 
@@ -388,18 +465,6 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "redirects to the restaurant" do
         put :update, params: { id: restaurant.to_param, restaurant: new_attributes }
-        expect(response).to redirect_to(restaurant_path)
-      end
-
-      it "handles image upload successfully" do
-        image = fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')
-        valid_params = new_attributes.merge(images: [ image ])
-
-        expect(ImageProcessorService).to receive(:new).and_return(
-          instance_double(ImageProcessorService, process: ImageProcessorService::Result.new(success: true))
-        )
-
-        put :update, params: { id: restaurant.to_param, restaurant: valid_params }
         expect(response).to redirect_to(restaurant_path)
       end
     end

@@ -86,8 +86,6 @@ Rails.application.routes.draw do
     resources :restaurants do
       collection do
         get "tagged/:tag", action: :index, as: :tagged
-        get "new/form", action: :new_form
-        post "new/form", action: :new_form
         post "new/confirm", to: "restaurants#new_confirm"
       end
       resources :images, only: [ :new, :create, :destroy ] do
