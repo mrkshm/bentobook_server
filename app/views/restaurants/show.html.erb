@@ -30,11 +30,10 @@
         <div class="mt-8 grid grid-cols-1 gap-8">
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
             <div class="flex gap-8 hotwire-native:justify-between">
-              <%= render(PriceLevelComponent.new(
-                price_level: @restaurant.price_level,
-                restaurant: @restaurant
-              )) %>
-              <%= render partial: "restaurants/ratings/rating", locals: { restaurant: @restaurant } %>
+              <%= render partial: "restaurants/price_levels/price_level", 
+                        locals: { restaurant: @restaurant } %>
+              <%= render partial: "restaurants/ratings/rating", 
+                        locals: { restaurant: @restaurant } %>
             </div>
           </div>
           <!-- Address Section -->
