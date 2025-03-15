@@ -1,0 +1,25 @@
+<%= helpers.turbo_frame_tag dom_id(restaurant, :rating) do %>
+  <div class="flex items-center space-x-1">
+    <% rating_stars.each do |star| %>
+      <% if helpers.hotwire_native_app? %>
+        <%= link_to edit_path, class: "text-xl" do %>
+          <% if star[:filled] %>
+            <span class="text-primary-500">★</span>
+          <% else %>
+            <span class="text-surface-300">☆</span>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%= link_to edit_path, 
+                    data: { turbo_frame: "modal" },
+                    class: "text-xl focus:outline-none" do %>
+          <% if star[:filled] %>
+            <span class="text-primary-500">★</span>
+          <% else %>
+            <span class="text-surface-300">☆</span>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

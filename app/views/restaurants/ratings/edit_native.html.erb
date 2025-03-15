@@ -1,0 +1,21 @@
+<%= render partial: "shared/header", locals: { title: t("restaurants.rating.edit") } %>
+
+<div class="min-h-screen bg-surface-50 p-4">
+  <%= form_with model: @restaurant, 
+                url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: nil),
+                method: :patch,
+                class: "bg-white rounded-lg shadow p-4" do |f| %>
+    <div class="flex justify-center space-x-2">
+      <% 5.times do |i| %>
+        <%= f.button type: "submit",
+                    name: "restaurant[rating]",
+                    value: i + 1,
+                    class: "text-3xl focus:outline-none" do %>
+          <span class="<%= i < @restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %>">
+            <%= i < @restaurant.rating.to_i ? '★' : '☆' %>
+          </span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

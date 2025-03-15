@@ -95,6 +95,7 @@ Rails.application.routes.draw do
       end
       resource :notes, only: [ :edit, :update ], module: :restaurants
       resource :tags, only: [ :edit, :update ], module: :restaurants
+      resource :rating, only: [ :edit, :update ], module: :restaurants
     end
 
     resources :visits do

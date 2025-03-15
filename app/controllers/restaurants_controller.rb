@@ -5,7 +5,7 @@ class RestaurantsController < ApplicationController
   include CuisineTypeValidation
 
   before_action :authenticate_user!
-  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :update_rating, :update_price_level, :edit_images ]
+  before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :update_price_level, :edit_images ]
 
   def index
     order_params = parse_order_params
@@ -126,12 +126,6 @@ class RestaurantsController < ApplicationController
                 locals: { restaurant: @restaurant }
               )
             ]
-          elsif restaurant_params.key?(:rating)
-            render turbo_stream: turbo_stream.replace(
-              dom_id(@restaurant, :rating),
-              partial: "restaurants/rating",
-              locals: { restaurant: @restaurant }
-            )
           elsif restaurant_params.key?(:cuisine_type_id)
             render turbo_stream: [
               turbo_stream.update("modal", ""),
@@ -145,26 +139,6 @@ class RestaurantsController < ApplicationController
         end
         format.html { redirect_to @restaurant }
         format.json { render json: @restaurant }
-      end
-    else
-      head :unprocessable_entity
-    end
-  end
-
-  def update_rating
-    @restaurant = current_user.restaurants.find(params[:id])
-
-    if @restaurant.update(rating: params[:rating])
-      respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace(
-            dom_id(@restaurant, :rating),
-            partial: "restaurants/rating",
-            locals: { restaurant: @restaurant }
-          )
-        end
-        format.html { redirect_to @restaurant }
-        format.json { render json: { status: :ok, rating: @restaurant.rating } }
       end
     else
       head :unprocessable_entity
