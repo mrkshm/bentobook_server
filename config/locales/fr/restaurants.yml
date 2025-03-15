@@ -51,3 +51,5 @@ fr:
       cuisine_type: 'Type de cuisine'
       rating: 'Note'
       price_range: 'Prix'
+    rating:
+      edit: "Modifier la note"

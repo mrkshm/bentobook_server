@@ -51,3 +51,5 @@ en:
       cuisine_type: 'Cuisine Type'
       rating: 'Rating'
       price_range: 'Price Range'
+    rating:
+      edit: "Edit rating"

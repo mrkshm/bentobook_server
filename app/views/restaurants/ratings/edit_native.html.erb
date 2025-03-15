@@ -1,6 +1,6 @@
 <%= render partial: "shared/header", locals: { title: t("restaurants.rating.edit") } %>
 
-<div class="min-h-screen bg-surface-50 p-4">
+<div class="bg-surface-50 p-4">
   <%= form_with model: @restaurant, 
                 url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: nil),
                 method: :patch,
