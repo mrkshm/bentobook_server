@@ -1,29 +1,14 @@
-<% if helpers.hotwire_native_app? %>
-  <%# Native app: No turbo frame, direct navigation %>
-  <div class="flex items-center space-x-1" data-testid="rating-component">
-    <% rating_stars.each do |star| %>
-      <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
-      data: { turbo_frame: "_top"},
-      class: "text-xl focus:outline-none" do %>
-        <span class="<%= star[:filled] ? 'text-primary-500' : 'text-surface-300' %>">
-          <%= star[:filled] ? '★' : '☆' %>
-        </span>
-      <% end %>
-    <% end %>
-  </div>
-<% else %>
-  <%# Web app: Use turbo frame for modal %>
-  <%= turbo_frame_tag dom_id(restaurant, :rating) do %>
+<!-- START rating_component.html.erb -->
+<%= helpers.turbo_frame_tag frame_id do %>
+  <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+        data: { turbo_frame: frame_id } do %>
     <div class="flex items-center space-x-1" data-testid="rating-component">
-      <% rating_stars.each do |star| %>
-        <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
-              data: { turbo_frame: "modal" },
-              class: "text-xl focus:outline-none" do %>
-          <span class="<%= star[:filled] ? 'text-primary-500' : 'text-surface-300' %>">
-            <%= star[:filled] ? '★' : '☆' %>
-          </span>
-        <% end %>
+      <% 5.times do |i| %>
+        <span class="<%= i < restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
+          <%= i < restaurant.rating.to_i ? '★' : '☆' %>
+        </span>
       <% end %>
     </div>
   <% end %>
 <% end %>
+<!-- END _rating.html.erb -->

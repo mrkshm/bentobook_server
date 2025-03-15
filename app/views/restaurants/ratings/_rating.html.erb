@@ -1,26 +1,29 @@
+<!-- START _rating.html.erb -->
 <%= turbo_frame_tag dom_id(restaurant, :rating) do %>
-  <div class="flex items-center space-x-1">
-    <% rating_stars.each do |star| %>
-      <% if hotwire_native_app? %>
-        <%= link_to edit_path, class: "text-xl" do %>
-          <% if star[:filled] %>
-            <span class="text-primary-500">★</span>
-          <% else %>
-            <span class="text-surface-300">☆</span>
-          <% end %>
-        <% end %>
-      <% else %>
-        <button type="button" 
-                data-action="click->modal#open"
-                data-rating="<%= star[:value] %>"
-                class="text-xl focus:outline-none">
-          <% if star[:filled] %>
-            <span class="text-primary-500">★</span>
-          <% else %>
-            <span class="text-surface-300">☆</span>
-          <% end %>
-        </button>
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex">
+      <% 5.times do |i| %>
+        <span class="<%= i < restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
+          <%= i < restaurant.rating.to_i ? '★' : '☆' %>
+        </span>
+      <% end %>
+    </div>
+    <% if hotwire_native_app? %>
+      <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+            class: "ml-2 text-surface-500 hover:text-surface-700 transition-colors",
+            data: { turbo_frame: "_top" } do %>
+        <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
+      <% end %>
+    <% else %>
+      <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+            class: "ml-2 text-surface-500 hover:text-surface-700 transition-colors",
+            data: { 
+              turbo_prefetch: false,
+              turbo_action: "advance"
+            } do %>
+        <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
       <% end %>
     <% end %>
   </div>
 <% end %>
+<!-- END _rating.html.erb -->
