@@ -37,7 +37,9 @@
                   )) %>
               </div>
               <div class="flex items-center space-x-2">
-                <%= render(Restaurants::RatingComponent.new(restaurant: @restaurant)) %>
+                <%= turbo_frame_tag dom_id(@restaurant, :rating) do %>
+                  <%= render(Restaurants::RatingComponent.new(restaurant: @restaurant)) %>
+                <% end %>
               </div>
             </div>
           </div>

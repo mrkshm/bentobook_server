@@ -11,24 +11,27 @@ module Restaurants
 
     def update
       if @restaurant.update(rating_params)
-        respond_to do |format|
-          format.html { redirect_to restaurant_path(id: @restaurant.id, locale: nil) }
-          format.turbo_stream {
-            render turbo_stream: [
-              turbo_stream.replace(
-                dom_id(@restaurant, :rating),
-                partial: "restaurants/ratings/rating",
-                locals: {
-                  restaurant: @restaurant,
-                  rating_stars: rating_component.rating_stars
-                }
-              ),
-              turbo_stream.update("modal", "")  # This clears the modal
-            ]
-          }
+        if hotwire_native_app?
+          redirect_to restaurant_path(id: @restaurant.id, locale: nil)
+        else
+          render turbo_stream: [
+            turbo_stream.replace(
+              dom_id(@restaurant, :rating),
+              partial: "restaurants/ratings/rating",
+              locals: {
+                restaurant: @restaurant,
+                rating_stars: rating_stars(@restaurant)
+              }
+            ),
+            turbo_stream.update("modal", "")
+          ]
         end
       else
-        render :edit, status: :unprocessable_entity
+        if hotwire_native_app?
+          render :edit_native, status: :unprocessable_entity
+        else
+          render :edit, status: :unprocessable_entity
+        end
       end
     end
 
@@ -42,8 +45,13 @@ module Restaurants
       params.require(:restaurant).permit(:rating)
     end
 
-    def rating_component
-      @rating_component ||= RatingComponent.new(restaurant: @restaurant)
+    def rating_stars(restaurant)
+      5.times.map do |i|
+        {
+          filled: i < restaurant.rating.to_i,
+          value: i + 1
+        }
+      end
     end
   end
 end
