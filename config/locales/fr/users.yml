@@ -1,0 +1,6 @@
+fr:
+  users:
+    sessions:
+      signed_in: "Vous vous êtes connecté avec succès"
+      create:
+        signed_in: "Vous vous êtes connecté avec succès"

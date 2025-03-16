@@ -1,0 +1,6 @@
+<div class="p-4 mb-4 rounded-lg border <%= classes %>" role="alert">
+  <div class="flex items-center gap-2">
+    <%= render Shared::FlashIconComponent.new(type: type) if type %>
+    <p class="text-sm"><%= message %></p>
+  </div>
+</div>

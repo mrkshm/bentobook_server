@@ -1,0 +1,14 @@
+<!-- START rating_component.html.erb -->
+<%= helpers.turbo_frame_tag frame_id do %>
+  <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+        data: { turbo_frame: frame_id } do %>
+    <div class="flex items-center space-x-1" data-testid="rating-component">
+      <% 5.times do |i| %>
+        <span class="<%= i < restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
+          <%= i < restaurant.rating.to_i ? '★' : '☆' %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+<!-- END _rating.html.erb -->

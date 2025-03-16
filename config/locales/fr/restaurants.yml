@@ -4,6 +4,8 @@ fr:
     create_restaurant_button: 'Créer un nouveau restaurant'
     select_price_level: 'Sélectionner le niveau de prix'
     change_cuisine: 'Changer la cuisine'
+    created: "Le restaurant a été ajouté avec succès. Vous pouvez ajouter des details ou commencer à ajouter une visite immédiatement."
+    already_exists: "Le restaurant est déjà dans votre liste. Voulez-vous apporter une modification ou ajouter une visite ?"
     confirmations:
       delete: "Êtes-vous sur de vouloir supprimer ce restaurant?"
     search_by:
@@ -41,9 +43,15 @@ fr:
         updated_at: "Dernière modification"
     new:
       title: 'Créer un nouveau restaurant'
-      short_description: "Veuillez rechercher un restaurant ici. Commencez avec le nom, si vous ne le trouvez pas, ajoutez la ville et d'autres détails."
+      short_description: "Veuillez rechercher un restaurant ici. Commencez par le nom, si vous ne le trouvez pas, ajoutez la ville et d'autres détails."
+      add_to_my_restaurants: "Oui ! Ajouter à mes restaurants"
+      confirmation_question: "Est-ce le restaurant que vous cherchez ?"
     attributes:
       name: 'Nom'
       cuisine_type: 'Type de cuisine'
       rating: 'Note'
       price_range: 'Prix'
+    rating:
+      edit: "Modifier la note"
+    price_level:
+      edit: "Modifier le niveau de prix"

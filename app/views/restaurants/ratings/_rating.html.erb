@@ -1,0 +1,36 @@
+<!-- START _rating.html.erb -->
+<%= turbo_frame_tag dom_id(restaurant, :rating) do %>
+  <% if hotwire_native_app? %>
+    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+          class: "block",
+          data: { turbo_frame: "_top" } do %>
+      <div class="flex items-center" data-testid="rating-component">
+        <div class="flex">
+          <% 5.times do |i| %>
+            <span class="<%= i < restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
+              <%= i < restaurant.rating.to_i ? '★' : '☆' %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+          class: "block group",
+          data: { 
+            turbo_prefetch: false,
+            turbo_action: "advance"
+          } do %>
+      <div class="flex items-center" data-testid="rating-component">
+        <div class="flex">
+          <% 5.times do |i| %>
+            <span class="<%= i < restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
+              <%= i < restaurant.rating.to_i ? '★' : '☆' %>
+            </span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+<!-- END _rating.html.erb -->

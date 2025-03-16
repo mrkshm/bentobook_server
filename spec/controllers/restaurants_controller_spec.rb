@@ -4,6 +4,7 @@ RSpec.describe RestaurantsController, type: :controller do
   let(:user) { create(:user) }
   let(:restaurant) { create(:restaurant, user: user) }
   let(:italian_cuisine) { create(:cuisine_type, name: 'italian') }
+  let(:google_restaurant) { create(:google_restaurant) }
   let(:valid_attributes) do
     attributes_for(:restaurant, :for_create).merge(
       cuisine_type_name: "italian",
@@ -24,7 +25,7 @@ RSpec.describe RestaurantsController, type: :controller do
   describe "GET #index" do
     it "assigns @restaurants" do
       get :index
-      expect(assigns(:restaurants)).to eq([restaurant])
+      expect(assigns(:restaurants)).to eq([ restaurant ])
     end
 
     it "assigns @pagy" do
@@ -85,9 +86,9 @@ RSpec.describe RestaurantsController, type: :controller do
         expect(controller).not_to receive(:pagy)
         expect(RestaurantQuery).not_to receive(:new)  # Also shouldn't create a query
         expect(controller).not_to receive(:search_params)  # Shouldn't process search params
-        
+
         get :index
-        
+
         # Verify that none of the instance variables were set
         expect(assigns(:restaurants)).to be_nil
         expect(assigns(:pagy)).to be_nil
@@ -120,9 +121,9 @@ RSpec.describe RestaurantsController, type: :controller do
     context "performed? check" do
       it "returns early when performed? is true" do
         allow(controller).to receive(:performed?).and_return(true)
-        
+
         get :index
-        
+
         expect(assigns(:restaurants)).to be_nil
         expect(assigns(:pagy)).to be_nil
         expect(assigns(:tags)).to be_nil
@@ -132,10 +133,10 @@ RSpec.describe RestaurantsController, type: :controller do
       it "continues processing when performed? is false" do
         restaurant # ensure restaurant exists
         allow(controller).to receive(:performed?).and_return(false)
-        
+
         get :index
-        
-        expect(assigns(:restaurants)).to eq([restaurant])
+
+        expect(assigns(:restaurants)).to eq([ restaurant ])
         expect(assigns(:pagy)).to be_present
         expect(assigns(:tags)).to eq(ActsAsTaggableOn::Tag.most_used(10))
       end
@@ -165,6 +166,11 @@ RSpec.describe RestaurantsController, type: :controller do
   end
 
   describe "GET #new" do
+    it "renders the search form" do
+      get :new
+      expect(response).to render_template(:new)
+    end
+
     it "assigns a new restaurant as @restaurant" do
       get :new
       expect(assigns(:restaurant)).to be_a_new(Restaurant)
@@ -181,12 +187,62 @@ RSpec.describe RestaurantsController, type: :controller do
     end
   end
 
+  describe "POST #new_confirm" do
+    let(:place_params) do
+      {
+        google_place_id: "test_place_id",
+        name: "Test Restaurant",
+        formatted_address: "123 Test St",
+        latitude: 40.7128,
+        longitude: -74.0060
+      }
+    end
+
+    it "finds or creates a google restaurant" do
+      expect(Restaurants::GooglePlaceImportService).to receive(:find_or_create)
+        .with(place_params.stringify_keys)
+        .and_return(google_restaurant)
+
+      post :new_confirm, params: { place: place_params }, format: :turbo_stream
+    end
+
+    it "updates the restaurant search and form" do
+      allow(Restaurants::GooglePlaceImportService).to receive(:find_or_create)
+        .and_return(google_restaurant)
+
+      post :new_confirm, params: { place: place_params }, format: :turbo_stream
+
+      expect(response.body).to include('turbo-stream action="update" target="restaurant_search"')
+      expect(response.body).to include('turbo-stream action="update" target="restaurant_form"')
+    end
+  end
+
   describe "POST #create" do
     before do
       italian_cuisine # ensure cuisine type exists
     end
 
+    let(:google_restaurant) { create(:google_restaurant) }
+
     context "with valid params" do
+      it "creates a restaurant using StubCreatorService" do
+        expect(Restaurants::StubCreatorService).to receive(:create)
+          .with(user: user, google_restaurant: google_restaurant)
+          .and_return([ restaurant, :new ])
+
+        post :create, params: { restaurant: { google_restaurant_id: google_restaurant.id } }
+      end
+
+      it "redirects to the created restaurant with success message" do
+        allow(Restaurants::StubCreatorService).to receive(:create)
+          .and_return([ restaurant, :new ])
+
+        post :create, params: { restaurant: { google_restaurant_id: google_restaurant.id } }
+
+        expect(response).to redirect_to(restaurant_path(id: restaurant.id, locale: nil))
+        expect(flash[:success]).to eq(I18n.t("restaurants.created"))
+      end
+
       it "creates a new Restaurant" do
         expect {
           post :create, params: { restaurant: valid_attributes }
@@ -211,14 +267,35 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "handles image upload successfully" do
         image = fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')
-        valid_params = valid_attributes.merge(images: [image])
-        
+        valid_params = valid_attributes.merge(images: [ image ])
+
         expect(ImageProcessorService).to receive(:new).and_return(
           instance_double(ImageProcessorService, process: ImageProcessorService::Result.new(success: true))
         )
-        
+
         post :create, params: { restaurant: valid_params }
         expect(response).to redirect_to(action: :show, id: Restaurant.last.id)
+      end
+    end
+
+    context "when restaurant already exists" do
+      it "redirects with info message" do
+        allow(Restaurants::StubCreatorService).to receive(:create)
+          .and_return([ restaurant, :existing ])
+
+        post :create, params: { restaurant: { google_restaurant_id: google_restaurant.id } }
+
+        expect(response).to redirect_to(restaurant_path(id: restaurant.id, locale: nil))
+        expect(flash[:info]).to eq(I18n.t("restaurants.already_exists"))
+      end
+    end
+
+    context "when google restaurant is not found" do
+      it "redirects to new with error" do
+        post :create, params: { restaurant: { google_restaurant_id: 0 } }
+
+        expect(response).to redirect_to(new_restaurant_path)
+        expect(flash[:error]).to eq(I18n.t("restaurants.errors.google_restaurant_not_found"))
       end
     end
 
@@ -235,13 +312,13 @@ RSpec.describe RestaurantsController, type: :controller do
       end
 
       it "renders new template with error" do
-        post :create, params: { 
+        post :create, params: {
           restaurant: valid_attributes.merge(
             cuisine_type_name: "invalid_cuisine",
             google_restaurant_attributes: valid_google_restaurant_attributes
           )
         }
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response).to render_template(:new)
         expect(flash.now[:alert]).to eq("Invalid cuisine type: invalid_cuisine. Available types: italian")
@@ -297,17 +374,17 @@ RSpec.describe RestaurantsController, type: :controller do
 
     context "when a StandardError occurs" do
       let(:error_message) { "Something went wrong" }
-      
+
       it "logs the error message" do
         test_restaurant = build(:restaurant, user: user)
-        
+
         allow(controller).to receive(:build_restaurant) do
           controller.instance_variable_set(:@restaurant, test_restaurant)
           raise StandardError.new(error_message)
         end
 
         expect(Rails.logger).to receive(:error).with("Error creating restaurant: Something went wrong")
-        
+
         post :create, params: { restaurant: valid_attributes }
       end
 
@@ -315,15 +392,15 @@ RSpec.describe RestaurantsController, type: :controller do
         # Create a persisted restaurant
         test_restaurant = create(:restaurant, user: user)
         test_restaurant.errors.add(:base, error_message)
-        
+
         # Expect destroy to be called
         expect(test_restaurant).to receive(:destroy)
-        
+
         allow(controller).to receive(:build_restaurant) do
           controller.instance_variable_set(:@restaurant, test_restaurant)
           raise StandardError.new(error_message)
         end
-        
+
         post :create, params: { restaurant: valid_attributes }
       end
 
@@ -331,15 +408,15 @@ RSpec.describe RestaurantsController, type: :controller do
         # Create a non-persisted restaurant
         test_restaurant = build(:restaurant, user: user)
         test_restaurant.errors.add(:base, error_message)
-        
+
         # Expect destroy NOT to be called
         expect(test_restaurant).not_to receive(:destroy)
-        
+
         allow(controller).to receive(:build_restaurant) do
           controller.instance_variable_set(:@restaurant, test_restaurant)
           raise StandardError.new(error_message)
         end
-        
+
         post :create, params: { restaurant: valid_attributes }
       end
 
@@ -351,7 +428,7 @@ RSpec.describe RestaurantsController, type: :controller do
         end
 
         expect(Rails.logger).to receive(:error).with("Error creating restaurant: Something went wrong")
-        
+
         post :create, params: { restaurant: valid_attributes }
 
         expect(flash[:alert]).to eq(error_message)
@@ -361,9 +438,9 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "handles complete failure with nil @restaurant" do
         allow(controller).to receive(:build_restaurant).and_raise(StandardError.new(error_message))
-        
+
         expect(Rails.logger).to receive(:error).with("Error creating restaurant: Something went wrong")
-        
+
         post :create, params: { restaurant: valid_attributes }
 
         expect(flash[:alert]).to eq(error_message)
@@ -390,23 +467,11 @@ RSpec.describe RestaurantsController, type: :controller do
         put :update, params: { id: restaurant.to_param, restaurant: new_attributes }
         expect(response).to redirect_to(restaurant_path)
       end
-
-      it "handles image upload successfully" do
-        image = fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg')
-        valid_params = new_attributes.merge(images: [image])
-        
-        expect(ImageProcessorService).to receive(:new).and_return(
-          instance_double(ImageProcessorService, process: ImageProcessorService::Result.new(success: true))
-        )
-        
-        put :update, params: { id: restaurant.to_param, restaurant: valid_params }
-        expect(response).to redirect_to(restaurant_path)
-      end
     end
 
     context "with invalid params" do
       let(:invalid_attributes) do
-        { 
+        {
           price_level: "not_a_number",
           cuisine_type_name: "italian"
         }
@@ -414,19 +479,19 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "re-renders the 'edit' template" do
         create(:cuisine_type, name: 'italian')
-        
+
         # Mock the RestaurantUpdater service
         updater = instance_double(RestaurantUpdater)
         allow(RestaurantUpdater).to receive(:new).and_return(updater)
-        
+
         # Make update add an error to the @restaurant instance variable
         allow(updater).to receive(:update) do
           controller.instance_variable_get(:@restaurant).errors.add(:price_level, :not_a_number)
           false
         end
-        
+
         put :update, params: { id: restaurant.to_param, restaurant: invalid_attributes }
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response).to render_template(:edit)
         expect(flash[:alert]).to eq('Price level is not a number')
@@ -440,9 +505,9 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "logs the error and handles the failure" do
         expect(Rails.logger).to receive(:error).with(/Update error:/)
-        
+
         put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
-        
+
         expect(response).to have_http_status(:unprocessable_entity)
         expect(flash.now[:alert]).to eq("Cuisine type 'italian' is not valid")
         expect(response).to render_template(:edit)
@@ -451,14 +516,14 @@ RSpec.describe RestaurantsController, type: :controller do
 
     context "when a StandardError occurs during update" do
       let(:error_message) { "Test error message" }
-      
+
       before do
         allow_any_instance_of(RestaurantUpdater).to receive(:update).and_raise(StandardError.new(error_message))
       end
 
       it "handles the error correctly" do
         expect(Rails.logger).to receive(:error).with("Error updating restaurant #{restaurant.id}: #{error_message}")
-        
+
         begin
           put :update, params: { id: restaurant.to_param, restaurant: valid_attributes }
         rescue ActiveRecord::Rollback
@@ -480,8 +545,8 @@ RSpec.describe RestaurantsController, type: :controller do
     context "when image processing fails" do
       let(:failed_result) { double(success?: false, error: "Image processing error message") }
       let(:image_file) { fixture_file_upload('spec/fixtures/test_image.jpg', 'image/jpeg') }
-      let(:update_params) { valid_attributes.merge(images: [image_file]) }
-      
+      let(:update_params) { valid_attributes.merge(images: [ image_file ]) }
+
       before do
         allow_any_instance_of(RestaurantUpdater).to receive(:update).and_return(true)
         allow(ImageProcessorService).to receive(:new)
@@ -490,8 +555,8 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "raises ActiveRecord::Rollback and sets flash alert" do
         expect {
-          put :update, params: { 
-            id: restaurant.to_param, 
+          put :update, params: {
+            id: restaurant.to_param,
             restaurant: update_params
           }
         }.to raise_error(ActiveRecord::Rollback)
@@ -501,8 +566,8 @@ RSpec.describe RestaurantsController, type: :controller do
 
       it "prevents the update from being saved" do
         begin
-          put :update, params: { 
-            id: restaurant.to_param, 
+          put :update, params: {
+            id: restaurant.to_param,
             restaurant: update_params
           }
         rescue ActiveRecord::Rollback
@@ -526,85 +591,6 @@ RSpec.describe RestaurantsController, type: :controller do
     it "redirects to the restaurants list" do
       delete :destroy, params: { id: restaurant.to_param }
       expect(response).to redirect_to(restaurants_url)
-    end
-  end
-
-  describe "POST #add_tag" do
-    context "when tag is successfully added" do
-      it "adds the tag when it doesn't exist" do
-        expect {
-          post :add_tag, params: { id: restaurant.to_param, tag: "newtag" }
-        }.to change { restaurant.reload.tag_list.count }.by(1)
-        
-        expect(restaurant.tag_list).to include("newtag")
-        expect(response).to redirect_to(restaurant_path(restaurant))
-        expect(flash[:notice]).to eq('Tag added successfully.')
-      end
-
-      it "doesn't duplicate the tag when it already exists" do
-        restaurant.tag_list.add("existingtag")
-        restaurant.save
-        
-        expect {
-          post :add_tag, params: { id: restaurant.to_param, tag: "existingtag" }
-        }.not_to change { restaurant.reload.tag_list.count }
-        
-        expect(restaurant.tag_list).to include("existingtag")
-        expect(response).to redirect_to(restaurant_path(restaurant))
-        expect(flash[:notice]).to eq('Tag added successfully.')
-      end
-    end
-
-    context "when tag addition fails" do
-      before do
-        allow_any_instance_of(Restaurant).to receive(:save).and_return(false)
-      end
-
-      it "renders the show template with an alert" do
-        post :add_tag, params: { id: restaurant.to_param, tag: "newtag" }
-        expect(response).to render_template(:show)
-        expect(flash[:alert]).to eq('Failed to add tag.')
-      end
-    end
-
-    context "when no tag is provided" do
-      it "redirects to the restaurant page with an alert" do
-        post :add_tag, params: { id: restaurant.to_param, tag: "" }
-        expect(response).to redirect_to(restaurant_path(restaurant))
-        expect(flash[:alert]).to eq('No tag provided.')
-      end
-    end
-  end
-
-  describe "DELETE #remove_tag" do
-    before { restaurant.tag_list.add("existingtag"); restaurant.save }
-
-    context "when tag is successfully removed" do
-      it "redirects to the restaurant page with a success notice" do
-        delete :remove_tag, params: { id: restaurant.to_param, tag: "existingtag" }
-        expect(response).to redirect_to(restaurant_path(restaurant))
-        expect(flash[:notice]).to eq('Tag removed successfully.')
-      end
-    end
-
-    context "when tag removal fails" do
-      before do
-        allow_any_instance_of(Restaurant).to receive(:save).and_return(false)
-      end
-
-      it "renders the show template with an alert" do
-        delete :remove_tag, params: { id: restaurant.to_param, tag: "existingtag" }
-        expect(response).to render_template(:show)
-        expect(flash[:alert]).to eq('Failed to remove tag.')
-      end
-    end
-
-    context "when no tag is provided" do
-      it "redirects to the restaurant page with an alert" do
-        delete :remove_tag, params: { id: restaurant.to_param, tag: "" }
-        expect(response).to redirect_to(restaurant_path(restaurant))
-        expect(flash[:alert]).to eq('No tag provided.')
-      end
     end
   end
 
@@ -638,7 +624,7 @@ RSpec.describe RestaurantsController, type: :controller do
 
     it "builds a new restaurant with the given params" do
       restaurant = controller.send(:build_restaurant)
-      
+
       expect(restaurant).to be_a_new(Restaurant)
       expect(restaurant.name).to eq("Test Restaurant")
       expect(restaurant.address).to eq("123 Test St")

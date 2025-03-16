@@ -1,42 +1,42 @@
-<%= turbo_frame_tag dom_id(restaurant, :tags) do %>
-  <div class="mt-4">
+<%= turbo_frame_tag frame_id do %>
+  <div class="<%= @container_classes %>">
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-sm font-medium text-surface-700">Tags</h3>
-      <% if hotwire_native_app? %>
-        <%= link_to edit_tags_restaurant_path(id: restaurant.id, locale: nil),
+      <% if helpers.hotwire_native_app? %>
+        <%= link_to edit_path,
               class: "text-surface-500 hover:text-surface-700 transition-colors",
               data: { turbo_frame: "_top" } do %>
           <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
         <% end %>
       <% else %>
-        <%= link_to edit_tags_restaurant_path(id: restaurant.id, locale: nil),
+        <%= link_to edit_path,
               class: "text-surface-500 hover:text-surface-700 transition-colors",
-              data: { turbo_frame: dom_id(restaurant, :tags) } do %>
+              data: { turbo_frame: frame_id } do %>
           <%= heroicon "pencil", options: { class: "w-4 h-4" } %>
         <% end %>
       <% end %>
     </div>
 
-    <% if restaurant.tags.present? %>
+    <% if has_tags? %>
       <div class="flex flex-wrap gap-2">
-        <% restaurant.tags.each do |tag| %>
+        <% @record.tags.each do |tag| %>
           <span class="inline-flex items-center bg-primary-100 text-primary-800 rounded-full px-3 py-1 text-sm font-medium">
             <%= tag %>
           </span>
         <% end %>
       </div>
     <% else %>
-      <% if hotwire_native_app? %>
-        <%= link_to edit_tags_restaurant_path(id: restaurant.id, locale: nil),
+      <% if helpers.hotwire_native_app? %>
+        <%= link_to edit_path,
               class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
               data: { turbo_frame: "_top" } do %>
           <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
           Add tags
         <% end %>
       <% else %>
-        <%= link_to edit_tags_restaurant_path(id: restaurant.id, locale: nil),
+        <%= link_to edit_path,
               class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block",
-              data: { turbo_frame: dom_id(restaurant, :tags) } do %>
+              data: { turbo_frame: frame_id } do %>
           <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
           Add tags
         <% end %>

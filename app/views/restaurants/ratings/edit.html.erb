@@ -1,0 +1,14 @@
+<%= turbo_frame_tag dom_id(@restaurant, :rating) do %>
+  <div class="flex items-center space-x-2">
+    <% 5.times do |i| %>
+      <%= button_to restaurant_rating_path(restaurant_id: @restaurant.id, locale: nil),
+                    method: :patch,
+                    params: { restaurant: { rating: i + 1 } },
+                    class: "text-2xl focus:outline-none" do %>
+        <span class="<%= i < @restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %>">
+          <%= i < @restaurant.rating.to_i ? '★' : '☆' %>
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,47 @@
+<div class="p-6 mb-8 bg-white rounded-lg shadow-sm">
+  <div class="space-y-6">
+    <div>
+      <h3 class="text-lg font-medium text-[var(--color-surface-900)]">
+        <%= google_restaurant.name %>
+      </h3>
+      <p class="text-sm text-[var(--color-surface-600)]">
+        <%= google_restaurant.address %>
+      </p>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <% if google_restaurant.google_rating %>
+        <div class="flex items-center gap-1">
+          <span class="text-[var(--color-warning-500)]">★</span>
+          <span class="text-sm text-[var(--color-surface-700)]">
+            <%= google_restaurant.google_rating %> (<%= google_restaurant.google_ratings_total %>)
+          </span>
+        </div>
+      <% end %>
+
+      <% if google_restaurant.price_level %>
+        <div class="text-sm text-[var(--color-surface-700)]">
+          <%= "€" * google_restaurant.price_level %>
+        </div>
+      <% end %>
+    </div>
+
+    <h2 class="text-xl font-medium mb-4 text-[var(--color-surface-900)]">
+      <%= t("restaurants.new.confirmation_question") %>
+    </h2>
+
+    <div class="flex items-center justify-end gap-3 mt-6">
+      <%= link_to t("cancel"), 
+          new_restaurant_path(locale: nil), 
+          data: {turbo_frame: "_top"},
+          class: "px-4 py-2 text-sm font-medium text-[var(--color-surface-700)] hover:text-[var(--color-surface-900)]" %>
+      
+      <%= button_to t("restaurants.new.add_to_my_restaurants"),
+          restaurants_path(locale: nil),
+          method: :post,
+          data: { turbo_frame: "_top" },
+          class: "px-4 py-2 text-sm font-medium text-white bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] rounded-md",
+          params: { restaurant: { google_restaurant_id: google_restaurant.id } } %>
+    </div>
+  </div>
+</div>

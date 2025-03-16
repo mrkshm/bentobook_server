@@ -67,6 +67,9 @@ fr:
   tags:
     edit_tags: "Modifier des tags"
     successfully_updated: "Les tags ont été mis à jour avec succès."
+    add_tags: "Ajouter des tags"
+    no_tags: "Pas de tags"
+    invalid_format: "Ce tag n'est pas valide."
     errors:
       max_length: "Le tag '%{tag}' dépasse la longueur maximale de %{max} caractères"
       max_length_multiple: "Certains tags dépassent la longueur maximale de %{max} caractères"

@@ -85,6 +85,8 @@ RSpec.configure do |config|
   config.include ActiveSupport::Testing::TimeHelpers
   config.include AuthHelpers, type: :request
   config.include Warden::Test::Helpers
+  config.include ViewComponent::SystemTestHelpers, type: :component
+  config.include Heroicon::Engine.helpers, type: :component
 
   # If you're using DatabaseCleaner, make sure to clean the test database after each test
   config.use_transactional_fixtures = false
@@ -152,6 +154,7 @@ end
 require 'shoulda/matchers'
 require 'rails-controller-testing'
 require 'timecop'
+require "view_component/test_helpers"
 
 Shoulda::Matchers.configure do |config|
   config.integrate do |with|

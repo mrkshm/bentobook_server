@@ -1,4 +1,10 @@
-<% content_for :title, @restaurant.name %>
+<%= render 'shared/header', title: @restaurant.name %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <%= render "shared/flash" %>
+</div>
+
+<%= turbo_frame_tag "modal" %>
 
 <div class="relative isolate overflow-hidden bg-surface-50 pt-6 pb-12 sm:py-16 lg:overflow-visible">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -23,16 +29,11 @@
         <!-- Details Grid -->
         <div class="mt-8 grid grid-cols-1 gap-8">
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
-            <div class="flex gap-8">
-              <div class="flex items-center space-x-2">
-                <%= render(PriceLevelComponent.new(
-                  price_level: @restaurant.price_level,
-                  restaurant: @restaurant
-                  )) %>
-              </div>
-              <div class="flex items-center space-x-2">
-                <%= render(RatingsComponent.new(rating: @restaurant.rating, restaurant: @restaurant)) %>
-              </div>
+            <div class="flex gap-8 hotwire-native:justify-between">
+              <%= render partial: "restaurants/price_levels/price_level", 
+                        locals: { restaurant: @restaurant } %>
+              <%= render partial: "restaurants/ratings/rating", 
+                        locals: { restaurant: @restaurant } %>
             </div>
           </div>
           <!-- Address Section -->
@@ -42,12 +43,12 @@
                 <div class="flex items-start space-x-3">
                   <%= heroicon "map-pin", options: { class: "w-5 h-5 text-primary-500 mt-1" } %>
                   <div>
-                    <p class="text-surface-700"><%= "#{@restaurant.street_number} #{@restaurant.street}" %></p>
-                    <p class="text-surface-700"><%= "#{@restaurant.postal_code} #{@restaurant.city}" %></p>
-                    <% if @restaurant.state.present? %>
-                      <p class="text-surface-700"><%= @restaurant.state %></p>
+                    <p class="text-surface-700"><%= "#{@restaurant.combined_street_number} #{@restaurant.combined_street}" %></p>
+                    <p class="text-surface-700"><%= "#{@restaurant.combined_postal_code} #{@restaurant.combined_city}" %></p>
+                    <% if @restaurant.combined_state.present? %>
+                      <p class="text-surface-700"><%= @restaurant.combined_state %></p>
                     <% end %>
-                    <p class="text-surface-700"><%= @restaurant.country %></p>
+                    <p class="text-surface-700"><%= @restaurant.combined_country %></p>
                   </div>
                 </div>
               </div>
@@ -71,9 +72,9 @@
 
           <!-- Restaurant Details -->
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
-            <%= render partial: "tags", locals: { restaurant: @restaurant } %>
+            <%= render Restaurants::Tags::DisplayComponent.new(record: @restaurant) %>
 
-            <%= render partial: "notes", locals: { restaurant: @restaurant } %>
+            <%= render partial: "restaurants/notes/notes", locals: { restaurant: @restaurant } %>
           </div>
 
           <!-- Images Section -->

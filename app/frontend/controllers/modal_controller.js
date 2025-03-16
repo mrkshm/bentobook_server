@@ -6,6 +6,14 @@ export default class extends Controller {
   connect() {
     // Initialize modal in hidden state
     this.element.classList.add("hidden")
+
+    // Handle ESC key
+    this.boundKeyHandler = this.handleKeyup.bind(this)
+    document.addEventListener("keyup", this.boundKeyHandler)
+  }
+
+  disconnect() {
+    document.removeEventListener("keyup", this.boundKeyHandler)
   }
 
   open() {
@@ -54,5 +62,23 @@ export default class extends Controller {
       event.preventDefault()
       this.close()
     }
+  }
+
+  handleKeyup(event) {
+    if (event.key === "Escape") {
+      this.close()
+    }
+  }
+
+  // Close if clicking outside modal
+  closeBackground(event) {
+    if (event.target === this.element) {
+      this.close()
+    }
+  }
+
+  // Prevent closing when clicking inside modal
+  stopPropagation(event) {
+    event.stopPropagation()
   }
 }
