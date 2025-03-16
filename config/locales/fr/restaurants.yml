@@ -53,3 +53,5 @@ fr:
       price_range: 'Prix'
     rating:
       edit: "Modifier la note"
+    price_level:
+      edit: "Modifier le niveau de prix"

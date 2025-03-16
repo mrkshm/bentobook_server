@@ -53,3 +53,5 @@ en:
       price_range: 'Price Range'
     rating:
       edit: "Edit rating"
+    price_level:
+      edit: "Edit price level"
