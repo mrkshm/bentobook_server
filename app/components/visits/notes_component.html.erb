@@ -2,15 +2,22 @@
   <h3 class="text-xl font-semibold text-surface-900">Notes</h3>
   
   <%= turbo_frame_tag frame_id do %>
-    <div class="bg-surface-100/50 p-4 rounded-lg text-surface-700">
-      <% if @visit.notes.present? %>
-        <%= simple_format(@visit.notes) %>
-      <% else %>
-        <p class="text-surface-600">Click to add notes...</p>
+    <% if @visit.notes.present? %>
+      <%= link_to edit_visit_notes_path(visit_id: @visit.id, locale: nil),
+          class: "block bg-surface-100/50 p-4 rounded-lg text-surface-700 hover:bg-surface-100/75 transition-colors group" do %>
+        <div class="prose prose-surface max-w-none">
+          <%= simple_format(@visit.notes) %>
+        </div>
+        <span class="mt-2 text-sm text-primary-600 group-hover:text-primary-700 opacity-0 group-hover:opacity-100 transition-opacity">
+          Click to edit
+        </span>
       <% end %>
-      <%= link_to "Edit", 
-          edit_visit_notes_path(visit_id: @visit.id, locale: nil), 
-          class: "mt-2 text-sm text-primary-600 hover:text-primary-700" %>
-    </div>
+    <% else %>
+      <%= link_to edit_visit_notes_path(visit_id: @visit.id, locale: nil),
+          class: "w-full py-2 px-3 text-surface-500 border border-dashed border-surface-300 rounded-md hover:text-surface-700 hover:border-surface-400 transition-colors text-left inline-block" do %>
+        <%= heroicon "plus", options: { class: "inline w-4 h-4 mr-2" } %>
+        Add a note
+      <% end %>
+    <% end %>
   <% end %>
 </div>
