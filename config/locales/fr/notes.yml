@@ -1,0 +1,14 @@
+fr:
+  notes:
+    title: "Notes"
+    placeholder: "Ajoutez vos notes ici..."
+    empty_state: "Pas encore de notes"
+    add: "Ajouter une note"
+    edit: "Modifier la note"
+    actions:
+      save: "Enregistrer"
+      cancel: "Annuler"
+    web:
+      click_to_edit: "Cliquez pour modifier"
+    mobile:
+      tap_to_edit: "Appuyez pour modifier"

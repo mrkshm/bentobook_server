@@ -15,11 +15,15 @@ module Visits
     def update
       if @visit.update(notes_params)
         respond_to do |format|
-          format.turbo_stream do
-            render turbo_stream: turbo_stream.update(
-              dom_id(@visit, :notes),
-              Visits::NotesComponent.new(visit: @visit).render_in(view_context)
-            )
+          if hotwire_native_app?
+            format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
+          else
+            format.turbo_stream do
+              render turbo_stream: turbo_stream.update(
+                dom_id(@visit, :notes),
+                Visits::NotesComponent.new(visit: @visit).render_in(view_context)
+              )
+            end
           end
         end
       else

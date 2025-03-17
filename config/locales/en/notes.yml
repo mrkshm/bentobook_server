@@ -1,0 +1,14 @@
+en:
+  notes:
+    title: "Notes"
+    placeholder: "Add your notes here..."
+    empty_state: "No notes yet"
+    add: "Add a note"
+    edit: "Edit note"
+    actions:
+      save: "Save"
+      cancel: "Cancel"
+    web:
+      click_to_edit: "Click to edit"
+    mobile:
+      tap_to_edit: "Tap to edit"

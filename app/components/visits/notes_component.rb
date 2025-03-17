@@ -14,5 +14,9 @@ module Visits
     def frame_id
       dom_id(@visit, :notes)
     end
+
+    def edit_action_text
+      hotwire_native_app? ? "Tap to edit" : "Click to edit"
+    end
   end
 end
