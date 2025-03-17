@@ -101,6 +101,7 @@ Rails.application.routes.draw do
 
     resources :visits do
       resources :images, only: [ :destroy ]
+      resource :notes, only: [ :show, :edit, :update ], module: :visits
     end
 
     resources :contacts

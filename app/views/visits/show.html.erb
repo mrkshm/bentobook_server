@@ -30,6 +30,8 @@
       <% end %>
 
       <div class="border-t border-surface-200 my-6"></div>
+      <%= render(Visits::NotesComponent.new(visit: @visit)) %>
+      <div class="border-t border-surface-200 my-6"></div>
 
       <div class="space-y-4">
         <h3 class="text-xl font-semibold text-surface-900">Contacts</h3>

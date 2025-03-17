@@ -1,0 +1,16 @@
+<div class="space-y-4">
+  <h3 class="text-xl font-semibold text-surface-900">Notes</h3>
+  
+  <%= turbo_frame_tag frame_id do %>
+    <div class="bg-surface-100/50 p-4 rounded-lg text-surface-700">
+      <% if @visit.notes.present? %>
+        <%= simple_format(@visit.notes) %>
+      <% else %>
+        <p class="text-surface-600">Click to add notes...</p>
+      <% end %>
+      <%= link_to "Edit", 
+          edit_visit_notes_path(visit_id: @visit.id, locale: nil), 
+          class: "mt-2 text-sm text-primary-600 hover:text-primary-700" %>
+    </div>
+  <% end %>
+</div>

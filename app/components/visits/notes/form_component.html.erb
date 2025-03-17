@@ -1,0 +1,21 @@
+<%= turbo_frame_tag frame_id do %>
+  <%= form_with(model: @visit, 
+               url: visit_notes_path(visit_id: @visit.id, locale: nil),
+               data: { turbo_frame: frame_id }) do |f| %>
+    <div class="space-y-4">
+      <%= f.text_area :notes, 
+          class: "w-full rounded-lg border-surface-300 bg-surface-100/50 focus:border-primary-500 focus:ring-primary-500",
+          rows: 4,
+          placeholder: "Add your notes here..." %>
+      
+      <div class="flex justify-end gap-2">
+        <%= link_to "Cancel", 
+            visit_notes_path(visit_id: @visit.id, locale: nil),
+            class: "px-3 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-md" %>
+            
+        <%= f.submit "Save",
+            class: "px-3 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-md" %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
