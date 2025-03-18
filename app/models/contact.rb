@@ -19,14 +19,20 @@ class Contact < ApplicationRecord
   }
 
   def self.frequently_used_with(user, visit, limit: 5)
-    joins(:visit_contacts)
-      .joins(:visits)
-      .where(visits: { user_id: user.id })
-      .where.not(id: visit.contact_ids)
-      .group("contacts.id")
-      .select("contacts.*, COUNT(visit_contacts.id) as visit_count")
-      .order("visit_count DESC")
-      .limit(limit)
+    available_contacts = user.contacts.where.not(id: visit.contact_ids)
+    total_contacts = available_contacts.count
+
+    if total_contacts <= limit
+      available_contacts.order(:name)
+    else
+      available_contacts
+        .joins(:visit_contacts)
+        .joins(:visits)
+        .group("contacts.id")
+        .select("contacts.*, COUNT(visit_contacts.id) as visit_count")
+        .order("visit_count DESC, name ASC")
+        .limit(limit)
+    end
   end
 
   def visits_count

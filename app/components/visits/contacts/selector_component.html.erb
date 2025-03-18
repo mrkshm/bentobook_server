@@ -2,35 +2,42 @@
   <% content_for :title, t("contacts.selector.title") %>
   
   <div class="space-y-6 hotwire-native:mt-4" data-controller="contact-search">
-    <%# Search section - moved to top since we're in edit mode %>
-    <div class="relative">
-      <%= form_with url: search_visit_contacts_path(visit_id: @visit.id, locale: nil),
-          method: :get,
-          data: { turbo_frame: "search-results" } do |f| %>
-        <%= f.search_field :query,
-            class: "w-full px-4 py-2 pl-10 border-surface-300 rounded-lg",
-            placeholder: t("contacts.search.placeholder"),
-            data: { 
-              contact_search_target: "input",
-              action: "input->contact-search#performSearch"
-            } %>
-        <%= heroicon "magnifying-glass", 
-            options: { class: "absolute left-3 top-2.5 w-5 h-5 text-surface-400" } %>
-      <% end %>
+    <%# Search section with done button %>
+    <div class="flex items-start gap-4">
+      <div class="flex-grow relative">
+        <%= form_with url: search_visit_contacts_path(visit_id: @visit.id, locale: nil),
+            method: :get,
+            data: { turbo_frame: "search-results" } do |f| %>
+          <%= f.search_field :query,
+              class: "w-full px-4 py-2 pl-10 border-surface-300 rounded-lg",
+              placeholder: t("contacts.search.placeholder"),
+              data: { 
+                contact_search_target: "input",
+                action: "input->contact-search#performSearch"
+              } %>
+          <%= heroicon "magnifying-glass", 
+              options: { class: "absolute left-3 top-2.5 w-5 h-5 text-surface-400" } %>
+        <% end %>
+      </div>
+
+      <%= link_to t("common.done"),
+          visit_contacts_path(visit_id: @visit.id, locale: nil),
+          class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors hotwire-native:hidden",
+          data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
     </div>
 
     <%# Current contacts section %>
     <% if @visit.contacts.any? %>
       <div class="space-y-4">
         <h4 class="font-medium text-surface-900"><%= t("contacts.current") %></h4>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <% @visit.contacts.each do |contact| %>
             <div class="relative group">
               <%= render(::ContactCardComponent.new(contact: contact)) %>
               <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id, locale: nil),
                   method: :delete,
                   class: "absolute -top-2 -right-2 p-1 bg-surface-100 hover:bg-surface-200 rounded-full shadow-sm group-hover:opacity-100 opacity-0 transition-opacity",
-                  data: { turbo_frame: frame_id } do %>
+                  data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id, turbo_confirm: t("contacts.confirm_delete") } do %>
                 <%= heroicon "x-mark", options: { class: "w-4 h-4 text-surface-500" } %>
               <% end %>
             </div>
@@ -39,26 +46,20 @@
       </div>
     <% end %>
 
-    <%# Frequent contacts section %>
-    <div class="space-y-4">
-      <h4 class="font-medium text-surface-900"><%= t("contacts.frequent") %></h4>
-      <div data-contact-search-target="frequent">
-        <%= render(ContactListComponent.new(
-          contacts: @frequent_contacts,
-          visit: @visit
-        )) %>
+    <%# Suggested contacts section %>
+    <% if frequent_contacts? %>
+      <div class="space-y-4">
+        <h4 class="font-medium text-surface-900"><%= t("contacts.suggested") %></h4>
+        <div data-contact-search-target="frequent">
+          <%= render(ContactListComponent.new(
+            contacts: @frequent_contacts,
+            visit: @visit
+          )) %>
+        </div>
       </div>
-    </div>
+    <% end %>
 
     <%# Search results %>
     <%= turbo_frame_tag "search-results", class: "block mt-6" %>
-
-    <%# Cancel button %>
-    <div class="mt-6 flex items-center justify-end gap-4">
-      <%= link_to t("common.done"),
-          visit_contacts_path(visit_id: @visit.id, locale: nil),
-          class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors",
-          data: { turbo_frame: frame_id } %>
-    </div>
   </div>
 <% end %>

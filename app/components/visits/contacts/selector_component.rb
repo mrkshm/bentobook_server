@@ -15,9 +15,13 @@ module Visits
         )
       end
 
+      def frequent_contacts?
+        @frequent_contacts.any?
+      end
+
       private
 
-      attr_reader :visit
+      attr_reader :visit, :frequent_contacts
 
       def frame_id
         dom_id(@visit, :contacts)
