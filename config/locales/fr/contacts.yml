@@ -20,3 +20,5 @@ fr:
       zero: "pas de visited"
       one: "1 visite"
       other: "%{count} visites"
+    search:
+      placeholder: "Chercher un contact"

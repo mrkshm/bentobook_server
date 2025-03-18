@@ -106,6 +106,9 @@ Rails.application.routes.draw do
       resource :rating, only: [ :show, :update ], module: :visits
       resource :rating, only: [ :show, :edit, :update ], module: :visits
       resource :date, only: [ :show, :edit, :update ], module: :visits
+      resource :contacts, only: [ :show, :edit, :create, :destroy ], module: :visits do
+        get :search, on: :collection
+      end
     end
 
     resources :contacts
