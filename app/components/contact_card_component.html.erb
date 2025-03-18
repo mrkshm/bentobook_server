@@ -1,0 +1,18 @@
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface-50">
+  <%= render(AvatarComponent.new(
+    image: contact.avatar,
+    text: contact.name,
+    size: :md
+  )) %>
+  
+  <div class="flex-grow">
+    <p class="font-medium text-surface-900">
+      <%= contact.name %>
+    </p>
+    <% if contact.visits_count > 0 %>
+      <p class="text-sm text-surface-500">
+        <%= t("contacts.visits.other", count: contact.visits_count) %>
+      </p>
+    <% end %>
+  </div>
+</div>

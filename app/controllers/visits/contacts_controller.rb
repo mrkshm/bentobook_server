@@ -21,9 +21,9 @@ module Visits
           format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
         else
           format.turbo_stream do
-            render turbo_stream: turbo_stream.update(
+            render turbo_stream: turbo_stream.replace(
               dom_id(@visit, :contacts),
-              Visits::ContactsComponent.new(visit: @visit).render_in(view_context)
+              Visits::Contacts::SelectorComponent.new(visit: @visit).render_in(view_context)
             )
           end
         end
@@ -35,11 +35,15 @@ module Visits
       @visit.contacts.delete(contact)
 
       respond_to do |format|
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.update(
-            dom_id(@visit, :contacts),
-            Visits::ContactsComponent.new(visit: @visit).render_in(view_context)
-          )
+        if hotwire_native_app?
+          format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
+        else
+          format.turbo_stream do
+            render turbo_stream: turbo_stream.update(
+              dom_id(@visit, :contacts),
+              Visits::Contacts::SelectorComponent.new(visit: @visit).render_in(view_context)
+            )
+          end
         end
       end
     end

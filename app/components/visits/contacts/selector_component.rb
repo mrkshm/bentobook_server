@@ -4,6 +4,7 @@ module Visits
       include Turbo::FramesHelper
       include ActionView::RecordIdentifier
       include HeroiconHelper
+      include Rails.application.routes.url_helpers
 
       def initialize(visit:)
         @visit = visit
@@ -15,6 +16,8 @@ module Visits
       end
 
       private
+
+      attr_reader :visit
 
       def frame_id
         dom_id(@visit, :contacts)

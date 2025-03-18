@@ -11,8 +11,10 @@ module Visits
 
     private
 
+    attr_reader :visit
+
     def frame_id
-      dom_id(@visit, :contacts)
+      dom_id(visit, :contacts)
     end
   end
 end
