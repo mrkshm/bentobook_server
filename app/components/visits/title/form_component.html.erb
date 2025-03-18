@@ -1,0 +1,25 @@
+<%= turbo_frame_tag frame_id do %>
+  <%= form_with(
+        model: @visit,
+        url: visit_title_path(visit_id: @visit.id, locale: nil),
+        data: { 
+          turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id 
+        }
+      ) do |f| %>
+    <div class="space-y-4 hotwire-native:mt-4">
+      <%= f.text_field :title,
+          class: "w-full rounded-lg border-surface-300 bg-surface-100/50 focus:border-primary-500 focus:ring-primary-500",
+          placeholder: t('visits.title_placeholder') %>
+      
+      <div class="flex justify-end gap-2">
+        <%= button_to t('common.cancel'),
+            visit_title_path(visit_id: @visit.id, locale: nil),
+            class: "px-3 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-md",
+            data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
+            
+        <%= f.submit t('common.save'),
+            class: "px-3 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-md" %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

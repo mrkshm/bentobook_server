@@ -12,4 +12,10 @@ en:
       title: "Edit Visit"
     show:
       title: "Visit Details"
+    add_title: "Add a title"
+    title_placeholder: "Enter a title"
+    rating:
+      action_title: "Rate this visit"
+    date:
+      action_title: "Change the date"
 

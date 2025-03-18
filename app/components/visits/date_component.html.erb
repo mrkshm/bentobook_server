@@ -1,0 +1,8 @@
+<%= turbo_frame_tag frame_id do %>
+  <%= link_to edit_visit_date_path(visit_id: @visit.id, locale: nil),
+      class: "inline-flex items-center text-surface-700 hover:text-primary-600 group",
+      data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
+    <span class="font-semibold text-surface-900 group-hover:text-primary-600">Date:</span>
+    <span class="ml-2"><%= @visit.date.strftime("%B %d, %Y") %></span>
+  <% end %>
+<% end %>

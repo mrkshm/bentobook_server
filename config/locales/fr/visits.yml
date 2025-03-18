@@ -12,4 +12,10 @@ fr:
       title: "Modifier la Visite"
     show:
       title: "Détails de la Visite"
+    add_title: "Ajouter un titre"
+    title_placeholder: "Entrez un titre"
+    rating:
+      action_title: "Noter cette visite"
+    date:
+      action_title: "Changer la date"
 

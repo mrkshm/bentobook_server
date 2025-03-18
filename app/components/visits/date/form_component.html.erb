@@ -1,0 +1,28 @@
+<%= turbo_frame_tag frame_id do %>
+  <% content_for :title, t("visits.date.action_title") %>
+  
+  <div class="space-y-4 hotwire-native:bg-transparent hotwire-native:p-2 hotwire-native:mt-6 bg-surface-100/50 p-4 rounded-lg">
+    <%= form_with(
+          model: @visit,
+          url: visit_date_path(visit_id: @visit.id, locale: nil),
+          data: { 
+            turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id 
+          }
+        ) do |f| %>
+      <div class="space-y-4">
+        <%= f.date_field :date,
+            class: "w-full rounded-lg border-surface-300 bg-surface-100/50 focus:border-primary-500 focus:ring-primary-500" %>
+        
+        <div class="flex justify-end gap-2">
+          <%= button_to t("common.cancel"),
+              visit_date_path(visit_id: @visit.id, locale: nil),
+              class: "px-3 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-md",
+              data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
+              
+          <%= f.submit t("common.save"),
+              class: "px-3 py-2 bg-primary-600 text-white hover:bg-primary-700 rounded-md" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

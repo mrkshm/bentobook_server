@@ -4,14 +4,13 @@
   <div class="rounded-lg shadow-xl">
     <div class="p-2 md:p-6">
       <div class="flex items-center justify-between mb-6">
-        
-        <%= render(RatingsComponent.new(rating: @visit.rating, readonly: true)) %>
+        <%= render(Visits::RatingComponent.new(visit: @visit)) %>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <div class="space-y-2 text-surface-700">
-            <p><span class="font-semibold text-surface-900">Date:</span> <%= @visit.date.strftime("%B %d, %Y") %></p>
+            <%= render(Visits::DateComponent.new(visit: @visit)) %>
             <% if @visit.price_paid.present? %>
               <p><span class="font-semibold text-surface-900">Price Paid:</span> <%= @visit.price_paid.format %></p>
             <% end %>
@@ -19,7 +18,9 @@
         </div>
       </div>
 
-      <div class="border-t border-surface-200 my-6"></div>
+      <div class="border-t border-surface-200 my-6 pt-6">
+        <%= render(Visits::TitleComponent.new(visit: @visit)) %>
+      </div>
       <%= render(Visits::NotesComponent.new(visit: @visit)) %>
       <div class="border-t border-surface-200 my-6"></div>
 
