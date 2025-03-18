@@ -22,7 +22,7 @@
 
       <%= link_to t("common.done"),
           visit_contacts_path(visit_id: @visit.id, locale: nil),
-          class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors hotwire-native:hidden",
+          class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors",
           data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
     </div>
 
@@ -34,11 +34,27 @@
           <% @visit.contacts.each do |contact| %>
             <div class="relative group">
               <%= render(::ContactCardComponent.new(contact: contact)) %>
+              
+              <%# Desktop delete button (hidden on native) %>
               <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id, locale: nil),
                   method: :delete,
-                  class: "absolute -top-2 -right-2 p-1 bg-surface-100 hover:bg-surface-200 rounded-full shadow-sm group-hover:opacity-100 opacity-0 transition-opacity",
-                  data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id, turbo_confirm: t("contacts.confirm_delete") } do %>
+                  class: "hotwire-native:hidden absolute -top-2 -right-2 p-1 bg-surface-100 hover:bg-surface-200 rounded-full shadow-sm group-hover:opacity-100 opacity-0 transition-opacity",
+                  data: { 
+                    turbo_frame: frame_id,
+                    turbo_confirm: t("contacts.confirm_delete") 
+                  } do %>
                 <%= heroicon "x-mark", options: { class: "w-4 h-4 text-surface-500" } %>
+              <% end %>
+
+              <%# Mobile delete button (only shown on native) %>
+              <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id, locale: nil),
+                  method: :delete,
+                  class: "not-hotwire-native:hidden absolute right-2 inset-y-0 my-auto flex items-center justify-center w-10 h-10 bg-red-100 hover:bg-red-200 rounded-lg",
+                  data: { 
+                    turbo_frame: frame_id,
+                    turbo_confirm: t("contacts.confirm_delete") 
+                  } do %>
+                <%= heroicon "x-mark", options: { class: "w-6 h-6 text-red-600" } %>
               <% end %>
             </div>
           <% end %>
