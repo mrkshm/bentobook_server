@@ -4,6 +4,7 @@ en:
     create_visit: "Create Visit"
     price_paid: "Price Paid"
     rate_visit: "Rate this Visit"
+    edit_contacts: "Edit contacts"
     index:
       title: "Your Visits"
     new:
