@@ -2,67 +2,63 @@
   <%= render 'shared/header', title: @visit.restaurant.name %>
   
   <div class="rounded-lg shadow-xl">
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-6">
-        
-        <%= render(RatingsComponent.new(rating: @visit.rating, readonly: true)) %>
+    <div class="p-2 md:p-6">
+      <%# Title section %>
+      <div class="space-y-4 mb-6">
+        <% if @visit.title.present? %>
+          <%= render(Visits::TitleComponent.new(visit: @visit, primary: true)) %>
+          <div class="text-surface-700">
+            <%= render(Visits::DateComponent.new(visit: @visit, primary: false)) %>
+          </div>
+        <% else %>
+          <%= render(Visits::DateComponent.new(visit: @visit, primary: true)) %>
+          <%= render(Visits::TitleComponent.new(visit: @visit, primary: false)) %>
+        <% end %>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <div class="space-y-2 text-surface-700">
-            <p><span class="font-semibold text-surface-900">Date:</span> <%= @visit.date.strftime("%B %d, %Y") %></p>
-            <% if @visit.price_paid.present? %>
-              <p><span class="font-semibold text-surface-900">Price Paid:</span> <%= @visit.price_paid.format %></p>
-            <% end %>
-          </div>
-        </div>
+      <%# Rating and Price section %>
+      <div class="flex items-center justify-between pb-6 border-b border-surface-200 mr-2">
+        <%= render(Visits::RatingComponent.new(visit: @visit)) %>
+        <%= render(Visits::PricePaidComponent.new(visit: @visit)) %>
       </div>
 
-      <% if @visit.notes.present? %>
-        <div class="border-t border-surface-200 my-6"></div>
-        <div class="space-y-4">
-          <h3 class="text-xl font-semibold text-surface-900">Notes</h3>
-          <div class="bg-surface-100/50 p-4 rounded-lg text-surface-700">
-            <%= simple_format(@visit.notes) %>
-          </div>
-        </div>
-      <% end %>
-
+      <div class="my-6"></div>
+      <%= render(Visits::NotesComponent.new(visit: @visit)) %>
+      
       <div class="border-t border-surface-200 my-6"></div>
+      <%= render(Visits::ContactsComponent.new(visit: @visit)) %>
 
-      <div class="space-y-4">
-        <h3 class="text-xl font-semibold text-surface-900">Contacts</h3>
-        <% if @visit.contacts.any? %>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            <% @visit.contacts.each do |contact| %>
-              <%= link_to contact_path(id: contact.id), class: "group flex flex-col items-center p-4 hover:bg-surface-100 rounded-lg transition-colors duration-200" do %>
-                <div class="relative z-10">
-                  <%= render(AvatarComponent.new(
-                    image: contact.avatar,
-                    text: contact.name,
-                    size: :lg
-                  )) %>
-                </div>
-                <span class="mt-2 text-center font-medium text-surface-900 group-hover:text-primary-600"><%= contact.name %></span>
+      <div class="border-t border-surface-200 my-3"></div>
+      <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-surface-900"><%= t("images.title") %></h2>
+          <div class="flex gap-4">
+            <% if @visit.user == current_user %>
+              <% if @visit.images.exists? %>
+                <%= link_to edit_visit_images_path(visit_id: @visit.id, locale: nil),
+                    class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
+                  <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1 text-primary-600" } %>
+                  <%= t("images.edit_photos") %>
+                <% end %>
+              <% end %>
+              <%= link_to new_visit_image_path(visit_id: @visit.id, locale: nil),
+                  class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
+                <%= heroicon "plus-circle", options: { class: "h-5 w-5 mr-1" } %>
+                <%= t("images.add_photos") %>
               <% end %>
             <% end %>
           </div>
+        </div>
+
+        <% if @visit.images.any? %>
+          <%= render(GalleryComponent.new(images: @visit.images)) %>
         <% else %>
-          <p class="text-surface-600"><%= t('contacts.no_contacts_for_visit') %></p>
+          <div class="text-center py-8 text-surface-500">
+            <p><%= t("images.no_visit_photos") %></p>
+          </div>
         <% end %>
       </div>
-      <% if @visit.images.any? %>
-        <div class="border-t border-surface-200 my-6"></div>
-        <div class="space-y-4">
-          <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
-          <%= render(GalleryComponent.new(images: @visit.images)) %>
-      <% end %>
 
-      <div class="flex justify-end gap-3 mt-6">
-        <%= link_to t('edit'), edit_visit_path(id: @visit.id), class: 'inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
-        <%= link_to t('back'), visits_path, class: 'inline-flex items-center px-4 py-2 rounded-md text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
-      </div>
     </div>
   </div>
 </div>

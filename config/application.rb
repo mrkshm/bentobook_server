@@ -33,5 +33,8 @@ module Bentobook
 
     # Set default locale to something other than :en
     config.i18n.default_locale = :en
+
+    # Add lib to autoload paths
+    config.autoload_paths += %W[#{config.root}/lib]
   end
 end

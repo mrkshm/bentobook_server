@@ -2,11 +2,14 @@ en:
   contacts:
     no_contacts_for_visit: "There are no contacts for this visit."
     confirm_delete: "Are you sure you want delete this contact?"
+    title: "Your dining companions"
+    current: "Currently selected"
     sort_by:
       created_at: "Date added"
       name: "Name"
       email: "Email"
       visits: "Number of visits"
+    suggested: "Suggested contacts"
     index:
       title: "My Contacts"
       search_placeholder: "Search by name, email, city, country or notes..."
@@ -20,3 +23,7 @@ en:
       zero: "no visits"
       one: "1 visit"
       other: "%{count} visits"
+    search:
+      placeholder: "Search a contact"
+    selector:
+      title: "Select your dining companions"

@@ -4,12 +4,22 @@ fr:
     create_visit: "Créer une Visite"
     rate_visit: "Noter cette Visite"
     price_paid: "Prix payé"
+    edit_contacts: "Modifier contacts"
     index:
       title: "Vos Visites"
+      search_placeholder: "Trouver une visite"
     new:
       title: "Nouvelle Visite"
     edit:
       title: "Modifier la Visite"
     show:
       title: "Détails de la Visite"
+    add_title: "Ajouter un titre"
+    title_placeholder: "Entrez un titre"
+    rating:
+      action_title: "Noter cette visite"
+    date:
+      action_title: "Changer la date"
+    price_paid:
+      edit: "Modifier le prix payé"
 

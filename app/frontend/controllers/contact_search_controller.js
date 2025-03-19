@@ -1,0 +1,23 @@
+import { Controller } from "@hotwired/stimulus"
+import { debounce } from "lodash-es"
+
+export default class extends Controller {
+  static targets = ["input", "frequent"]
+  
+  connect() {
+    console.log("ContactSearchController connected")
+    this.performSearch = debounce(this.performSearch.bind(this), 300)
+  }
+
+  performSearch() {
+    const query = this.inputTarget.value
+    console.log("Performing search with query:", query)
+    if (query.length === 0) {
+      // Clear results when search is empty
+      const frame = document.getElementById("search-results")
+      frame.innerHTML = ""
+    } else if (query.length >= 2) {
+      this.inputTarget.form.requestSubmit()
+    }
+  }
+}

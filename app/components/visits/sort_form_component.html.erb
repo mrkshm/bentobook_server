@@ -1,0 +1,44 @@
+<%= form_tag @url, method: :get, class: 'w-full md:w-auto' do %>
+  <%= hidden_field_tag :search, params[:search] %>
+  
+  <% @additional_fields.each do |name, value| %>
+    <%= hidden_field_tag name, value %>
+  <% end %>
+  
+  <div class="flex items-end gap-4">
+    <div class="flex-1">
+      <label for="sort-select" class="block text-sm/6 font-medium text-surface-900 mb-2">
+        <%= t('common.sort.sort_by') %>
+      </label>
+      <div class="grid grid-cols-1">
+        <select id="sort-select" 
+                name="order_by" 
+                class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-surface-50 py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                onchange="this.form.requestSubmit()">
+          <% @fields.each do |value, label| %>
+            <option value="<%= value %>" <%= 'selected' if @current_order == value %>><%= label %></option>
+          <% end %>
+        </select>
+        <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="flex gap-2 h-[38px]">
+      <%= button_tag type: 'submit',
+                    name: 'order_direction',
+                    value: 'asc',
+                    class: "h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm #{@current_direction != 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+        <%= heroicon "arrow-down", options: { class: "w-4 h-4" } %>
+      <% end %>
+      
+      <%= button_tag type: 'submit',
+                    name: 'order_direction',
+                    value: 'desc',
+                    class: "h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm #{@current_direction == 'desc' ? 'bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
+        <%= heroicon "arrow-up", options: { class: "w-4 h-4" } %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

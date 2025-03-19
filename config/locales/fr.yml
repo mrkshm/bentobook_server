@@ -80,9 +80,11 @@ fr:
       connection_error: "Échec de la connexion. Veuillez vérifier votre connexion internet."
       permission_error: "Vous n'avez pas l'autorisation de modifier ces tags."
   images:
+    title: "Photos"
     add_photos: "Ajouter des photos"
     edit_photos: "Modifier des photos"
     no_photos: "Aucune photo disponible pour ce restaurant."
+    no_visit_photos: "Il n'y a pas encore de photos pour cette visite."
     upload:
       title: "Télécharger des photos"
       header: "Télécharger des photos pour %{restaurant}"

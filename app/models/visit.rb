@@ -1,4 +1,6 @@
 class Visit < ApplicationRecord
+  include PgSearch::Model
+
   belongs_to :user
   belongs_to :restaurant
   has_many :visit_contacts
@@ -9,4 +11,22 @@ class Visit < ApplicationRecord
   validates :date, presence: true
 
   monetize :price_paid_cents, with_currency: :price_paid_currency, allow_nil: true
+
+  # Add search functionality
+  pg_search_scope :search_by_full_text,
+    against: {
+      title: "A",
+      notes: "B"
+    },
+    associated_against: {
+      restaurant: {
+        name: "A"
+      },
+      contacts: {
+        name: "B"
+      }
+    },
+    using: {
+      tsearch: { prefix: true, dictionary: "english" }
+    }
 end

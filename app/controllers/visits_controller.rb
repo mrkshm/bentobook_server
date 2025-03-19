@@ -5,7 +5,38 @@ class VisitsController < ApplicationController
     before_action :ensure_valid_restaurant, only: [ :create, :update ]
 
     def index
-      @pagy, @visits = pagy(current_user.visits.includes(:restaurant, { contacts: { avatar_attachment: :blob } }, images: { file_attachment: :blob }))
+      @order_by = params[:order_by] || "date"
+      @order_direction = %w[asc desc].include?(params[:order_direction]) ? params[:order_direction] : "desc"
+      @search = params[:search]
+
+      items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
+      page = params[:page].to_i.positive? ? params[:page].to_i : 1
+
+      visits = current_user.visits
+        .includes(:restaurant, { contacts: { avatar_attachment: :blob } }, images: { file_attachment: :blob })
+
+      visits = visits.search_by_full_text(@search) if @search.present?
+
+      visits = case @order_by
+      when "date"
+                visits.order(Arel.sql("date #{@order_direction}"))
+      when "restaurant_name"
+                visits.joins(:restaurant)
+                     .order(Arel.sql("LOWER(restaurants.name) #{@order_direction}"))
+      when "rating"
+                visits.order(Arel.sql("rating #{@order_direction} NULLS LAST"))
+      when "created_at"
+                visits.order(Arel.sql("created_at #{@order_direction}"))
+      else
+                visits.order(Arel.sql("date DESC"))
+      end
+
+      @pagy, @visits = pagy_countless(visits, items: items_per_page, page: page)
+
+      respond_to do |format|
+        format.html
+        format.turbo_stream if params[:page]
+      end
     end
 
     def show

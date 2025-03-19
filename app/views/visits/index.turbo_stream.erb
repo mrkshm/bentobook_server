@@ -1,0 +1,33 @@
+<%= turbo_stream.append "visits-list" do %>
+  <% @visits.each do |visit| %>
+    <%= render(VisitCardComponent.new(visit: visit)) %>
+  <% end %>
+<% end %>
+
+<% if @pagy.next %>
+  <%= turbo_stream.replace "pagination" do %>
+    <%= turbo_frame_tag :pagination,
+        loading: :lazy,
+        src: visits_path(
+          format: :turbo_stream,
+          page: @pagy.next,
+          search: params[:search],
+          order_by: params[:order_by],
+          order_direction: params[:order_direction],
+          per_page: params[:per_page]
+        ) do %>
+      <div class="mt-8 text-center">
+        <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
+          <div class="animate-pulse flex space-x-2">
+            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+          </div>
+          <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.remove "pagination" %>
+<% end %>

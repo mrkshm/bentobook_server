@@ -108,9 +108,11 @@ en:
       connection_error: "Connection failed. Please check your internet connection."
       permission_error: "You don't have permission to edit these tags."
   images:
+    title: "Photos"
     add_photos: "Add Photos"
     edit_photos: "Edit Photos"
     no_photos: "No photos available for this restaurant."
+    no_visit_photos: "There are not yet any photos for this visit."
     upload:
       title: "Upload Photos"
       header: "Upload Photos for %{restaurant}"

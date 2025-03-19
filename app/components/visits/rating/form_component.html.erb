@@ -1,0 +1,24 @@
+<%= turbo_frame_tag frame_id do %>
+  <% content_for :title, I18n.t("visits.rating.action_title") %>
+  <div class="flex items-center gap-4 hotwire-native:bg-transparent hotwire-native:p-2 hotwire-native:mt-6 bg-surface-100/50 p-4 rounded-lg">
+    <div class="flex items-center gap-2">
+      <% (1..5).each do |rating_value| %>
+        <%= button_to visit_rating_path(visit_id: @visit.id, locale: nil),
+            method: :patch,
+            params: { visit: { rating: rating_value } },
+            class: "focus:outline-none",
+            data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
+          <%= heroicon "star", options: { 
+            class: "w-6 h-6 hotwire-native:w-6 hotwire-native:h-6 w-8 h-8 #{@visit.rating.present? && rating_value <= @visit.rating ? 'text-yellow-400' : 'text-surface-300'} hover:text-yellow-400 transition-colors" 
+          } %>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <%= link_to visit_rating_path(visit_id: @visit.id, locale: nil),
+        class: "text-sm text-surface-500 hover:text-surface-700 hotwire-native:hidden self-end",
+        data: { turbo_frame: frame_id } do %>
+      Cancel
+    <% end %>
+  </div>
+<% end %>

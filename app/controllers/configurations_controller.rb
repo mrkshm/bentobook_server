@@ -35,7 +35,17 @@ class ConfigurationsController < ApplicationController
             pull_to_refresh_enabled: false,
             modal_style: "large"
           }
+        },
+        {
+        patterns: [ "/visits/\\d+/contacts/edit$" ],
+        properties: {
+          context: "modal",
+          presentation: "default",
+          pull_to_refresh_enabled: false,
+          modal_style: "large",
+          modal_dismiss_gesture_enabled: false
         }
+      }
       ]
     }
   end

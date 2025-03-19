@@ -4,12 +4,22 @@ en:
     create_visit: "Create Visit"
     price_paid: "Price Paid"
     rate_visit: "Rate this Visit"
+    edit_contacts: "Edit contacts"
     index:
       title: "Your Visits"
+      search_placeholder: "Search for a visit"
     new:
       title: "New Visit"
     edit:
       title: "Edit Visit"
     show:
       title: "Visit Details"
+    add_title: "Add a title"
+    title_placeholder: "Enter a title"
+    rating:
+      action_title: "Rate this visit"
+    date:
+      action_title: "Change the date"
+    price_paid:
+      edit: "Edit price paid"
 

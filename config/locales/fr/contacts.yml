@@ -2,11 +2,14 @@ fr:
   contacts:
     no_contacts_for_visit: "Il n'y a pas de contacts pour cette visite."
     confirm_delete: "Êtes-vous sûr de vouloir supprimer ce contact ?"
+    title: "Votre tablee"
+    current: "Sélectionné"
     sort_by:
       created_at: "Date ajouté"
       name: "Nom"
       email: "Email"
       visits: "Nombre de visites"
+    suggested: "Suggéré pour vous"
     index:
       title: "Mes contacts"
       search_placeholder: "Rechercher par nom, email, ville, pays ou notes..."
@@ -20,3 +23,7 @@ fr:
       zero: "pas de visited"
       one: "1 visite"
       other: "%{count} visites"
+    search:
+      placeholder: "Chercher un contact"
+    selector:
+      title: "Sélectionnez vos compagnons de table"
