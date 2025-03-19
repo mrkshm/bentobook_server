@@ -25,3 +25,5 @@ en:
       other: "%{count} visits"
     search:
       placeholder: "Search a contact"
+    selector:
+      title: "Select your dining companions"

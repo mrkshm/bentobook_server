@@ -25,3 +25,5 @@ fr:
       other: "%{count} visites"
     search:
       placeholder: "Chercher un contact"
+    selector:
+      title: "Sélectionnez vos compagnons de table"
