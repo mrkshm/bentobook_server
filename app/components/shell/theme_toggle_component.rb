@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Shell
-  class ThemeToggleComponent < ViewComponent::Base
+  class ThemeToggleComponent < ApplicationComponent
     include Rails.application.routes.url_helpers
     include Devise::Controllers::Helpers
 
@@ -18,7 +18,7 @@ module Shell
 
       # Only add server sync path for authenticated users
       if user_signed_in?
-        data["theme-toggle-theme-path-value"] = update_theme_profile_path(locale: nil)
+        data["theme-toggle-theme-path-value"] = update_theme_profile_path(locale: current_locale)
       end
 
       data

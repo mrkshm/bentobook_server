@@ -1,6 +1,6 @@
 <%= turbo_frame_tag dom_id(restaurant, :price_level) do %>
   <% if hotwire_native_app? %>
-    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: nil),
+    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: current_locale),
           class: "block",
           data: { turbo_frame: "_top" } do %>
       <div class="flex items-center" data-testid="price-level-component">
@@ -14,7 +14,7 @@
       </div>
     <% end %>
   <% else %>
-    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: nil),
+    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: current_locale),
           class: "block group",
           data: { turbo_frame: dom_id(restaurant, :price_level),
           turbo_prefetch: false, turbo_action: "advance" } do %>

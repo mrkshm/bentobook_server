@@ -83,6 +83,7 @@ class VisitsController < ApplicationController
     def visit_params
       params.require(:visit).permit(
         :date,
+        :time_of_day,
         :title,
         :notes,
         :restaurant_id,

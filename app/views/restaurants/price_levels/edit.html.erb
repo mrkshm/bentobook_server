@@ -1,7 +1,7 @@
 <%= turbo_frame_tag dom_id(@restaurant, :price_level) do %>
   <div class="flex items-center space-x-2">
     <% 4.times do |i| %>
-      <%= button_to restaurant_price_level_path(restaurant_id: @restaurant.id, locale: nil),
+      <%= button_to restaurant_price_level_path(restaurant_id: @restaurant.id, locale: current_locale),
                     method: :patch,
                     params: { restaurant: { price_level: i + 1 } },
                     class: "text-2xl focus:outline-none" do %>

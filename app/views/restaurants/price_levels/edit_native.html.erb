@@ -2,7 +2,7 @@
 
 <div class="bg-surface-50 p-4">
   <%= form_with model: @restaurant, 
-                url: restaurant_price_level_path(restaurant_id: @restaurant.id, locale: nil),
+                url: restaurant_price_level_path(restaurant_id: @restaurant.id, locale: current_locale),
                 method: :patch,
                 class: "bg-white rounded-lg shadow p-4" do |f| %>
     <div class="flex justify-center space-x-2">

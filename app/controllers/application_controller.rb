@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Pagy::Backend
+  include LocaleHelper
   before_action :set_locale
   before_action :ensure_locale_matches_url, unless: :skip_locale_check?
   before_action :configure_turbo_native_auth

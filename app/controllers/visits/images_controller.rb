@@ -15,11 +15,11 @@ module Visits
         if result.success?
           respond_to do |format|
             format.turbo_stream {
-              redirect_to visit_path(id: @visit.id, locale: nil),
+              redirect_to visit_path(id: @visit.id, locale: current_locale),
                 notice: t("notices.images.created")
             }
             format.html {
-              redirect_to visit_path(id: @visit.id, locale: nil),
+              redirect_to visit_path(id: @visit.id, locale: current_locale),
                 notice: t("notices.images.created")
             }
           end

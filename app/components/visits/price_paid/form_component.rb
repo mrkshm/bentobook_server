@@ -1,9 +1,8 @@
 module Visits
   module PricePaid
-    class FormComponent < ViewComponent::Base
+    class FormComponent < ApplicationComponent
       include Turbo::FramesHelper
       include ActionView::RecordIdentifier
-      include HeroiconHelper
       include Rails.application.routes.url_helpers
 
       def initialize(visit:)

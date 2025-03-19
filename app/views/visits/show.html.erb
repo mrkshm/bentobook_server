@@ -35,13 +35,13 @@
           <div class="flex gap-4">
             <% if @visit.user == current_user %>
               <% if @visit.images.exists? %>
-                <%= link_to edit_visit_images_path(visit_id: @visit.id, locale: nil),
+                <%= link_to edit_visit_images_path(visit_id: @visit.id, locale: current_locale),
                     class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
                   <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1 text-primary-600" } %>
                   <%= t("images.edit_photos") %>
                 <% end %>
               <% end %>
-              <%= link_to new_visit_image_path(visit_id: @visit.id, locale: nil),
+              <%= link_to new_visit_image_path(visit_id: @visit.id, locale: current_locale),
                   class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
                 <%= heroicon "plus-circle", options: { class: "h-5 w-5 mr-1" } %>
                 <%= t("images.add_photos") %>

@@ -6,7 +6,7 @@
         
         <%= form_with(
               model: restaurant,
-              url: restaurant_path(id: restaurant.id, locale: nil),
+              url: restaurant_path(id: restaurant.id, locale: current_locale),
               method: :patch,
               class: "space-y-4"
             ) do |f| %>
@@ -33,7 +33,7 @@
           
           <div class="flex justify-end space-x-3 mt-6">
             <%= link_to "Cancel", 
-                restaurant_path(id: restaurant.id, locale: nil),
+                restaurant_path(id: restaurant.id, locale: current_locale),
                 class: "px-4 py-2 text-surface-700 hover:text-surface-900",
                 data: { turbo_frame: "modal" } %>
             

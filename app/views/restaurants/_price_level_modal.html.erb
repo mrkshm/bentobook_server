@@ -7,7 +7,7 @@
     <% modal.with_body do %>
       <div class="flex items-center justify-center gap-4 py-4"
            data-controller="price-level"
-           data-price-level-url-value="<%= restaurant_path(id: restaurant.id, locale: nil) %>"
+           data-price-level-url-value="<%= restaurant_path(id: restaurant.id, locale: current_locale) %>"
            data-price-level-level-value="<%= restaurant.price_level %>">
         <% (1..4).each do |i| %>
           <button type="button"

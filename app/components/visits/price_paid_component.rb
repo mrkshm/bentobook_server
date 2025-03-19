@@ -1,5 +1,5 @@
 module Visits
-  class PricePaidComponent < ViewComponent::Base
+  class PricePaidComponent < ApplicationComponent
     include Turbo::FramesHelper
     include ActionView::RecordIdentifier
     include Rails.application.routes.url_helpers

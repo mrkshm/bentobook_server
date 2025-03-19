@@ -2,7 +2,7 @@
 
 <div class="p-4">
   <%= form_with(model: @restaurant, 
-                url: restaurant_notes_path(restaurant_id: @restaurant.id, locale: nil), 
+                url: restaurant_notes_path(restaurant_id: @restaurant.id, locale: current_locale), 
                 method: :patch) do |f| %>
     <div class="space-y-4">
       <%= f.text_area :notes, 

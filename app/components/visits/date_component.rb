@@ -1,5 +1,5 @@
 module Visits
-  class DateComponent < ViewComponent::Base
+  class DateComponent < ApplicationComponent
     include Turbo::FramesHelper
     include ActionView::RecordIdentifier
     include Rails.application.routes.url_helpers

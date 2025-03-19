@@ -7,7 +7,7 @@
     <div class="space-y-2">
       <% @available_locales.each do |locale| %>
         <% is_selected = locale[:code].to_s == @current_locale.to_s %>
-        <%= form_tag change_locale_profile_path(locale: nil), 
+        <%= form_tag change_locale_profile_path(locale: current_locale), 
                      method: :post, 
                      class: "w-full",
                      data: { turbo_action: "replace" } do %>

@@ -26,7 +26,7 @@ module Visits
         end
 
         # Fallback for non-Turbo clients
-        format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
+        format.html { redirect_to visit_path(id: @visit.id, locale: current_locale) }
       end
     end
 
@@ -44,7 +44,7 @@ module Visits
         end
 
         # Fallback for non-Turbo clients
-        format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
+        format.html { redirect_to visit_path(id: @visit.id, locale: current_locale) }
       end
     end
 

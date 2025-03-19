@@ -13,7 +13,7 @@
 - Use Rails 8 conventions and Ruby idioms
 - Frontend located in app/frontend/ (not app/javascript/)
 - Use Tailwind 4 for styling with color variables from app/frontend/stylesheets/application.css
-- Constructor paths format: `restaurant_path(id: restaurant.id, locale: nil)` instead of `restaurant_path(restaurant)`
+- Constructor paths format: `restaurant_path(id: restaurant.id, locale: current_locale)` instead of `restaurant_path(restaurant)`
 - Write readable, maintainable code over performance optimizations
 - Use ViewComponent for UI components
 - Follow Rubocop-Rails-Omakase styles

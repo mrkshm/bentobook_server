@@ -26,11 +26,11 @@ class ProfilesController < ApplicationController
           tag.script(%(
             window.localStorage.clear();
             window.Turbo.clearCache();
-            window.Turbo.visit('#{home_dashboard_path(locale: nil)}', { action: 'replace' });
+            window.Turbo.visit('#{home_dashboard_path(locale: current_locale)}', { action: 'replace' });
           )).html_safe
         end
       else
-        redirect_to profile_path(locale: nil), notice: t(".updated")
+        redirect_to profile_path(locale: current_locale), notice: t(".updated")
       end
     else
       render :edit, status: :unprocessable_entity
@@ -47,7 +47,7 @@ class ProfilesController < ApplicationController
       # Simple redirect based on platform
       redirect_to(hotwire_native_app? ? home_dashboard_path(locale: locale) : profile_path(locale: locale))
     else
-      redirect_to profile_path(locale: nil), alert: t(".invalid_locale")
+      redirect_to profile_path(locale: current_locale), alert: t(".invalid_locale")
     end
   end
 
@@ -95,7 +95,7 @@ class ProfilesController < ApplicationController
 
   def delete_avatar
     @profile.avatar.purge
-    redirect_to edit_profile_path(locale: nil), notice: t(".avatar_removed")
+    redirect_to edit_profile_path(locale: current_locale), notice: t(".avatar_removed")
   end
 
   def set_profile

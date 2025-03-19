@@ -174,7 +174,7 @@ class RestaurantsController < ApplicationController
 
     flash_type = status == :new ? :success : :info
     notice_key = status == :new ? "restaurants.created" : "restaurants.already_exists"
-    redirect_to restaurant_path(id: @restaurant.id, locale: nil),
+    redirect_to restaurant_path(id: @restaurant.id, locale: current_locale),
                 flash: { flash_type => t(notice_key) }
   rescue ActiveRecord::RecordNotFound => e
     flash[:error] = t("restaurants.errors.google_restaurant_not_found")

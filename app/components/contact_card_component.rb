@@ -1,5 +1,4 @@
-class ContactCardComponent < ViewComponent::Base
-  include HeroiconHelper
+class ContactCardComponent < ApplicationComponent
   include ActionView::Helpers::TagHelper
 
   def initialize(contact:, interactive: false, visit: nil)

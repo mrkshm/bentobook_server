@@ -17,9 +17,9 @@ class Users::SessionsController < Devise::SessionsController
 
   def after_sign_in_path_for(resource)
     if turbo_native_app?
-      home_dashboard_path(locale: nil)
+      home_dashboard_path(locale: current_locale)
     else
-      restaurants_path(locale: nil)
+      restaurants_path(locale: current_locale)
     end
   end
 

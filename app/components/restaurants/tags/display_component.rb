@@ -1,8 +1,7 @@
 module Restaurants
   module Tags
-    class DisplayComponent < ViewComponent::Base
+    class DisplayComponent < ApplicationComponent
       include ActionView::RecordIdentifier
-      include HeroiconHelper
       include Turbo::FramesHelper
 
       def initialize(record:, container_classes: nil)
@@ -19,7 +18,7 @@ module Restaurants
       end
 
       def edit_path
-        edit_restaurant_tags_path(restaurant_id: @record.id, locale: nil)
+        edit_restaurant_tags_path(restaurant_id: @record.id, locale: current_locale)
       end
     end
   end

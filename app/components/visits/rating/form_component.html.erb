@@ -3,7 +3,7 @@
   <div class="flex items-center gap-4 hotwire-native:bg-transparent hotwire-native:p-2 hotwire-native:mt-6 bg-surface-100/50 p-4 rounded-lg">
     <div class="flex items-center gap-2">
       <% (1..5).each do |rating_value| %>
-        <%= button_to visit_rating_path(visit_id: @visit.id, locale: nil),
+        <%= button_to visit_rating_path(visit_id: @visit.id, locale: current_locale),
             method: :patch,
             params: { visit: { rating: rating_value } },
             class: "focus:outline-none",
@@ -15,7 +15,7 @@
       <% end %>
     </div>
     
-    <%= link_to visit_rating_path(visit_id: @visit.id, locale: nil),
+    <%= link_to visit_rating_path(visit_id: @visit.id, locale: current_locale),
         class: "text-sm text-surface-500 hover:text-surface-700 hotwire-native:hidden self-end",
         data: { turbo_frame: frame_id } do %>
       Cancel

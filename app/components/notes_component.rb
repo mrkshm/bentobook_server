@@ -1,6 +1,5 @@
-class NotesComponent < ViewComponent::Base
+class NotesComponent < ApplicationComponent
   include ActionView::RecordIdentifier
-  include HeroiconHelper
   include Turbo::FramesHelper  # Add this line to include turbo_frame_tag
 
   def initialize(record:, notes_field: :notes, container_classes: nil, notes_edit: false)
@@ -25,33 +24,33 @@ class NotesComponent < ViewComponent::Base
   def update_url
     case @record
     when Restaurant
-      update_notes_restaurant_path(id: @record.id, locale: nil)
+      update_notes_restaurant_path(id: @record.id, locale: current_locale)
     when Contact
-      contact_path(id: @record.id, locale: nil)
+      contact_path(id: @record.id, locale: current_locale)
     when Visit
-      visit_path(id: @record.id, locale: nil)
+      visit_path(id: @record.id, locale: current_locale)
     end
   end
 
   def edit_path
     case @record
     when Restaurant
-      restaurant_path(id: @record.id, locale: nil, notes_edit: true)
+      restaurant_path(id: @record.id, locale: current_locale, notes_edit: true)
     when Contact
-      contact_path(id: @record.id, locale: nil, notes_edit: true)
+      contact_path(id: @record.id, locale: current_locale, notes_edit: true)
     when Visit
-      visit_path(id: @record.id, locale: nil, notes_edit: true)
+      visit_path(id: @record.id, locale: current_locale, notes_edit: true)
     end
   end
 
   def show_path
     case @record
     when Restaurant
-      restaurant_path(id: @record.id, locale: nil)
+      restaurant_path(id: @record.id, locale: current_locale)
     when Contact
-      contact_path(id: @record.id, locale: nil)
+      contact_path(id: @record.id, locale: current_locale)
     when Visit
-      visit_path(id: @record.id, locale: nil)
+      visit_path(id: @record.id, locale: current_locale)
     end
   end
 

@@ -1,6 +1,6 @@
 module Visits
   module Date
-    class FormComponent < ViewComponent::Base
+    class FormComponent < ApplicationComponent
       include Turbo::FramesHelper
       include ActionView::RecordIdentifier
       include Rails.application.routes.url_helpers

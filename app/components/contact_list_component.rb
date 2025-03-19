@@ -1,6 +1,4 @@
-class ContactListComponent < ViewComponent::Base
-  include HeroiconHelper
-
+class ContactListComponent < ApplicationComponent
   def initialize(contacts:, visit:)
     @contacts = contacts
     @visit = visit

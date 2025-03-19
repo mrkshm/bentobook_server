@@ -1,12 +1,12 @@
 <%= turbo_frame_tag frame_id do %>
   <% if visit.title.present? && primary %>
-    <%= link_to edit_visit_title_path(visit_id: visit.id, locale: nil),
+    <%= link_to edit_visit_title_path(visit_id: visit.id, locale: current_locale),
         class: link_classes,
         data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
       <%= visit.title %>
     <% end %>
   <% else %>
-    <%= link_to edit_visit_title_path(visit_id: visit.id, locale: nil),
+    <%= link_to edit_visit_title_path(visit_id: visit.id, locale: current_locale),
         class: link_classes,
         data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
       <%= t('visits.add_title') %>

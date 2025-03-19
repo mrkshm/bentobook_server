@@ -1,6 +1,6 @@
 <div class="relative">
   <%= turbo_frame_tag dom_id(restaurant, :cuisine_type) do %>
-    <%= link_to restaurant_path(id: restaurant.id, locale: nil, modal: :cuisine_type),
+    <%= link_to restaurant_path(id: restaurant.id, locale: current_locale, modal: :cuisine_type),
           class: "text-lg text-surface-600 transition-colors focus:outline-none cursor-pointer",
           data: { 
             turbo: true,

@@ -22,7 +22,7 @@ module Restaurants
         respond_to do |format|
           format.html do
             flash[:notice] = t("tags.successfully_updated")
-            redirect_to restaurant_path(id: @restaurant.id, locale: nil)
+            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
           end
           format.turbo_stream do
             flash.now[:notice] = t("tags.successfully_updated")

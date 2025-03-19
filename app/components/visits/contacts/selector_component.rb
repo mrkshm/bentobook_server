@@ -1,9 +1,8 @@
 module Visits
   module Contacts
-    class SelectorComponent < ViewComponent::Base
+    class SelectorComponent < ApplicationComponent
       include Turbo::FramesHelper
       include ActionView::RecordIdentifier
-      include HeroiconHelper
       include Rails.application.routes.url_helpers
 
       def initialize(visit:)

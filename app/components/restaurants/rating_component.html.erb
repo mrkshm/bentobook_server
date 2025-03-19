@@ -1,6 +1,6 @@
 <!-- START rating_component.html.erb -->
 <%= helpers.turbo_frame_tag frame_id do %>
-  <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+  <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: current_locale),
         data: { turbo_frame: frame_id } do %>
     <div class="flex items-center space-x-1" data-testid="rating-component">
       <% 5.times do |i| %>

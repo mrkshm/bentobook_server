@@ -1,10 +1,9 @@
 module Visits
   module Rating
-    class FormComponent < ViewComponent::Base
+    class FormComponent < ApplicationComponent
       include Turbo::FramesHelper
       include ActionView::RecordIdentifier
       include Rails.application.routes.url_helpers
-      include HeroiconHelper
 
       def initialize(visit:)
         @visit = visit

@@ -12,7 +12,8 @@
         data: { 
           controller: "places-autocomplete",
           places_autocomplete_target: "input",
-          action: "places-autocomplete#onChange"
+          action: "places-autocomplete#onChange",
+          places_autocomplete_locale_value: I18n.locale  # Add this line
         },
         class: "block w-full bg-surface-50 rounded-md border-0 py-1.5 px-3 text-surface-900 shadow-sm ring-1 ring-inset ring-surface-200 placeholder:text-surface-400 focus:ring-2 focus:ring-inset focus:ring-primary-600" %>
   <% end %>

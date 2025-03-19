@@ -1,5 +1,5 @@
 module Restaurants
-  class RatingComponent < ViewComponent::Base
+  class RatingComponent < ApplicationComponent
     include ActionView::RecordIdentifier
 
     attr_reader :restaurant

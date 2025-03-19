@@ -1,7 +1,7 @@
 <%= render 'shared/header', title: t("images.upload.title") %>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <%= form_with url: visit_images_path(visit_id: @visit.id, locale: nil), 
+  <%= form_with url: visit_images_path(visit_id: @visit.id, locale: current_locale), 
       method: :post, 
       multipart: true, 
       data: { 
@@ -44,7 +44,7 @@
   <%# Keep cancel button outside form %>
   <div class="flex justify-end -mt-10 mr-38">
     <%= link_to t("cancel"), 
-        visit_path(id: @visit.id, locale: nil), 
+        visit_path(id: @visit.id, locale: current_locale), 
         data: { turbo_frame: "_top" },
         class: "px-4 py-2 bg-surface-200 text-surface-700 rounded-md hover:bg-surface-300 transition-colors" %>
   </div>

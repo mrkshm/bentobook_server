@@ -36,6 +36,9 @@ function extractAddressFromGooglePlace(place) {
 
 export default class extends Controller {
   static targets = ["input"]
+  static values = {
+    locale: String
+  }
 
   connect() {
     // If Google is already loaded, initialize immediately
@@ -100,7 +103,7 @@ export default class extends Controller {
       }
     }
 
-    fetch('/restaurants/new/confirm', {
+    fetch(`/${this.localeValue}/restaurants/new/confirm`, {  // Use the existing locale getter
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -123,9 +126,5 @@ export default class extends Controller {
       errorDiv.textContent = "Could not load restaurant details. Please try again."
       document.getElementById("restaurant_form").innerHTML = errorDiv.outerHTML
     })
-  }
-
-  get locale() {
-    return document.documentElement.lang || "en"
   }
 }

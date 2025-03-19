@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CuisineTypeSelectComponent < ViewComponent::Base
+class CuisineTypeSelectComponent < ApplicationComponent
     def initialize(form:, cuisine_types:)
       @form = form
       @cuisine_types = cuisine_types

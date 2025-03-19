@@ -15,7 +15,7 @@ module Restaurants
     def update
       if @restaurant.update(notes_params)
         if hotwire_native_app?
-          redirect_to restaurant_path(id: @restaurant.id, locale: nil)
+          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
         else
           render turbo_stream: turbo_stream.replace(
             dom_id(@restaurant, :notes),

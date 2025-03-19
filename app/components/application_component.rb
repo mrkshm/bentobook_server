@@ -2,6 +2,7 @@
 
 class ApplicationComponent < ViewComponent::Base
     include HeroiconHelper
+    include LocaleHelper
 
     def call
         content

@@ -1,7 +1,7 @@
 <!-- START _rating.html.erb -->
 <%= turbo_frame_tag dom_id(restaurant, :rating) do %>
   <% if hotwire_native_app? %>
-    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: current_locale),
           class: "block",
           data: { turbo_frame: "_top" } do %>
       <div class="flex items-center" data-testid="rating-component">
@@ -15,7 +15,7 @@
       </div>
     <% end %>
   <% else %>
-    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: nil),
+    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: current_locale),
           class: "block group",
           data: { 
             turbo_prefetch: false,

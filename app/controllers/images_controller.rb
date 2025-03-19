@@ -32,7 +32,7 @@ class ImagesController < ApplicationController
         end
 
         # All uploads successful, redirect to restaurant page
-        redirect_to restaurant_path(id: @restaurant.id, locale: nil),
+        redirect_to restaurant_path(id: @restaurant.id, locale: current_locale),
           notice: t("images.notices.uploaded", count: images_added)
       rescue StandardError => e
         # Clean up any orphaned blobs if transaction failed
@@ -138,7 +138,7 @@ class ImagesController < ApplicationController
   def set_restaurant
     @restaurant = current_user.restaurants.find(params[:restaurant_id])
   rescue ActiveRecord::RecordNotFound
-    redirect_to restaurants_path(locale: nil), alert: t("errors.restaurants.not_found")
+    redirect_to restaurants_path(locale: current_locale), alert: t("errors.restaurants.not_found")
   end
 
   def set_image_and_imageable
@@ -166,9 +166,9 @@ class ImagesController < ApplicationController
   def edit_polymorphic_path(imageable)
     case imageable
     when Restaurant
-      edit_restaurant_path(id: imageable.id, locale: nil)
+      edit_restaurant_path(id: imageable.id, locale: current_locale)
     when Visit
-      edit_visit_path(id: imageable.id, locale: nil)
+      edit_visit_path(id: imageable.id, locale: current_locale)
     else
       root_path
     end
