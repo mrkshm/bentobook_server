@@ -9,6 +9,9 @@ class VisitsController < ApplicationController
       @order_direction = %w[asc desc].include?(params[:order_direction]) ? params[:order_direction] : "desc"
       @search = params[:search]
 
+      items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
+      page = params[:page].to_i.positive? ? params[:page].to_i : 1
+
       visits = current_user.visits
         .includes(:restaurant, { contacts: { avatar_attachment: :blob } }, images: { file_attachment: :blob })
 
@@ -28,7 +31,7 @@ class VisitsController < ApplicationController
                 visits.order(Arel.sql("date DESC"))
       end
 
-      @pagy, @visits = pagy(visits)
+      @pagy, @visits = pagy_countless(visits, items: items_per_page, page: page)
 
       respond_to do |format|
         format.html
