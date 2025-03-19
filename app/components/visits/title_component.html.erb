@@ -1,13 +1,13 @@
 <%= turbo_frame_tag frame_id do %>
-  <% if @visit.title.present? %>
-    <%= link_to edit_visit_title_path(visit_id: @visit.id, locale: nil),
-        class: "block text-2xl font-medium text-surface-900 hover:text-primary-600 transition-colors",
+  <% if visit.title.present? && primary %>
+    <%= link_to edit_visit_title_path(visit_id: visit.id, locale: nil),
+        class: link_classes,
         data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
-      <%= @visit.title %>
+      <%= visit.title %>
     <% end %>
   <% else %>
-    <%= link_to edit_visit_title_path(visit_id: @visit.id, locale: nil),
-        class: "block text-surface-500 hover:text-primary-600 transition-colors",
+    <%= link_to edit_visit_title_path(visit_id: visit.id, locale: nil),
+        class: link_classes,
         data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
       <%= t('visits.add_title') %>
     <% end %>

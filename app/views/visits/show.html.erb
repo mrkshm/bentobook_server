@@ -3,25 +3,33 @@
   
   <div class="rounded-lg shadow-xl">
     <div class="p-2 md:p-6">
-      <%# Title with date underneath %>
+      <%# Title section %>
       <div class="space-y-4 mb-6">
-        <%= render(Visits::TitleComponent.new(visit: @visit)) %>
-        <div class="text-surface-700">
-          <%= render(Visits::DateComponent.new(visit: @visit)) %>
-        </div>
+        <% if @visit.title.present? %>
+          <%= render(Visits::TitleComponent.new(visit: @visit, primary: true)) %>
+          <div class="text-surface-700">
+            <%= render(Visits::DateComponent.new(visit: @visit, primary: false)) %>
+          </div>
+        <% else %>
+          <%= render(Visits::DateComponent.new(visit: @visit, primary: true)) %>
+          <%= render(Visits::TitleComponent.new(visit: @visit, primary: false)) %>
+        <% end %>
       </div>
 
-      <%# Rating with bottom border %>
+      <%# Rating section %>
       <div class="flex items-center justify-between pb-6 border-b border-surface-200">
         <%= render(Visits::RatingComponent.new(visit: @visit)) %>
       </div>
 
-
-      <div class="flex items-center justify-between pb-6 border-b border-surface-200">
-          <% if @visit.price_paid.present? %>
-            <p class="mt-2"><span class="font-semibold text-surface-900">Price Paid:</span> <%= @visit.price_paid.format %></p>
-          <% end %>
-      </div>
+      <%# Price section %>
+      <% if @visit.price_paid.present? %>
+        <div class="mt-6">
+          <p class="text-surface-700">
+            <span class="font-semibold text-surface-900">Price Paid:</span>
+            <%= @visit.price_paid.format %>
+          </p>
+        </div>
+      <% end %>
 
       <div class="border-t border-surface-200 my-6"></div>
       <%= render(Visits::NotesComponent.new(visit: @visit)) %>
@@ -38,8 +46,7 @@
       <% end %>
 
       <div class="flex justify-end gap-3 mt-6">
-        <%# link_to t('edit'), edit_visit_path(id: @visit.id), class: 'inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
-        <%# link_to t('back'), visits_path, class: 'inline-flex items-center px-4 py-2 rounded-md text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
+        <%# ...existing buttons... %>
       </div>
     </div>
   </div>
