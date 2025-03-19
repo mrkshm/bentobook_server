@@ -34,17 +34,17 @@ module Visits
       contact = @visit.contacts.find(params[:contact_id])
       @visit.contacts.delete(contact)
 
+      # Both native and web should use turbo_stream to update in place
       respond_to do |format|
-        if hotwire_native_app?
-          format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
-        else
-          format.turbo_stream do
-            render turbo_stream: turbo_stream.update(
-              dom_id(@visit, :contacts),
-              Visits::Contacts::SelectorComponent.new(visit: @visit).render_in(view_context)
-            )
-          end
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@visit, :contacts),
+            Visits::Contacts::SelectorComponent.new(visit: @visit).render_in(view_context)
+          )
         end
+
+        # Fallback for non-Turbo clients
+        format.html { redirect_to visit_path(id: @visit.id, locale: nil) }
       end
     end
 

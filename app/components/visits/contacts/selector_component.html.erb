@@ -21,7 +21,7 @@
       </div>
 
       <%= link_to t("common.done"),
-          visit_contacts_path(visit_id: @visit.id, locale: nil),
+          helpers.hotwire_native_app? ? visit_path(id: @visit.id, locale: nil) : visit_contacts_path(visit_id: @visit.id, locale: nil),
           class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors",
           data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
     </div>
