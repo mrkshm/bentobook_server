@@ -51,7 +51,7 @@
         </div>
 
         <% if @visit.images.any? %>
-          <%# render(GalleryComponent.new(images: @visit.images)) %>
+          <%= render(GalleryComponent.new(images: @visit.images)) %>
         <% else %>
           <div class="text-center py-8 text-surface-500">
             <p><%= t("images.no_visit_photos") %></p>
