@@ -1,31 +1,62 @@
 <div class="container mx-auto px-2 md:px-4 py-2">
-<%= render "shared/header", title: t("visits.index.title") %>
+  <%= render "shared/header", title: t("visits.index.title") %>
 
-<div class="min-h-screen bg-surface-100">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 hotwire-native:px-0">
+  <div class="min-h-screen bg-surface-100">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 hotwire-native:px-0">
+      <%# Search and sort forms %>
+      <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
+        <%= form_tag visits_path, method: :get, class: "relative" do %>
+          <%= hidden_field_tag :order_by, params[:order_by] %>
+          <%= hidden_field_tag :order_direction, params[:order_direction] %>
+          
+          <div class="relative">
+            <%= text_field_tag :search, params[:search], 
+                class: "w-full px-4 py-2 pr-10 border border-surface-300 rounded-lg bg-surface-50 text-surface-900 focus:outline-none focus:ring-2 focus:ring-primary-500",
+                placeholder: t('visits.index.search_placeholder') %>
+            <button type="submit" class="absolute inset-y-0 right-0 flex items-center px-3 text-surface-400 hover:text-surface-600">
+              <%= heroicon "magnifying-glass", options: { class: "w-5 h-5" } %>
+            </button>
+          </div>
+        <% end %>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-      <% @visits.each do |visit| %>
-        <%= render(VisitCardComponent.new(visit: visit)) %>
+        <%= render VisitsSortFormComponent.new(
+          url: visits_path,
+          fields: {
+            'date' => t('visits.index.sort_options.date'),
+            'restaurant_name' => t('visits.index.sort_options.restaurant'),
+            'rating' => t('visits.index.sort_options.rating'),
+            'created_at' => t('visits.index.sort_options.created_at')
+          },
+          current_order: params[:order_by] || 'date',
+          current_direction: params[:order_direction] || 'desc',
+          additional_fields: {
+            search: params[:search]
+          }
+        ) %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <% @visits.each do |visit| %>
+          <%= render(VisitCardComponent.new(visit: visit)) %>
+        <% end %>
+      </div>
+
+      <div class="flex flex-col items-center space-y-4 mt-8">
+        <nav class="flex items-center space-x-2 gap-2 text-surface-500" role="navigation" aria-label="Pagination">
+          <%== pagy_nav(@pagy) %>
+        </nav>
+        <div class="text-sm text-surface-600 bg-surface-100 px-4 py-2 rounded-lg">
+          <%== pagy_info(@pagy) %>
+        </div>
+      </div>
+
+      <%= link_to new_visit_path, 
+          class: "fixed bottom-6 right-6 flex items-center justify-center w-14 h-14 rounded-full 
+                  bg-primary-600 text-surface-50 shadow-lg hover:bg-primary-700 
+                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 
+                  transition-colors" do %>
+        <%= heroicon "plus", options: { class: "h-6 w-6" } %>
       <% end %>
     </div>
-
-    <div class="flex flex-col items-center space-y-4 mt-8">
-      <nav class="flex items-center space-x-2 gap-2 text-surface-500" role="navigation" aria-label="Pagination">
-        <%== pagy_nav(@pagy) %>
-      </nav>
-      <div class="text-sm text-surface-600 bg-surface-100 px-4 py-2 rounded-lg">
-        <%== pagy_info(@pagy) %>
-      </div>
-    </div>
-
-    <%= link_to new_visit_path, 
-        class: "fixed bottom-6 right-6 flex items-center justify-center w-14 h-14 rounded-full 
-                bg-primary-600 text-surface-50 shadow-lg hover:bg-primary-700 
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 
-                transition-colors" do %>
-      <%= heroicon "plus", options: { class: "h-6 w-6" } %>
-    <% end %>
   </div>
-</div>
 </div>
