@@ -22,4 +22,8 @@ fr:
       action_title: "Changer la date"
     price_paid:
       edit: "Modifier le prix payé"
+    form:
+      quick_create: "Créer une nouvelle visite"
+      adding_visit_to: "Ajouter une nouvelle visite pour "
+      select_restaurant_prompt: "Veuillez sélectionner un restaurant"
 

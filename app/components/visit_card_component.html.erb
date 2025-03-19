@@ -1,4 +1,5 @@
-<%= link_to visit_path(id: visit.id, locale: nil), 
+<%= link_to visit_path(id: visit.id, locale: nil),
+data: {turbo_frame: "_top"}, 
     class: "block rounded-lg bg-surface-50" do %>
   <div class="p-6 space-y-4">
     <%# Header with restaurant name and date %>

@@ -45,6 +45,7 @@ class VisitsController < ApplicationController
 
     def new
       @visit = Visit.new
+      @restaurant = current_user.restaurants.find(params[:restaurant_id]) if params[:restaurant_id]
       @visit.restaurant_id = params[:restaurant_id] if params[:restaurant_id].present?
     end
 

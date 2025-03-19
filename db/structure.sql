@@ -832,7 +832,8 @@ CREATE TABLE public.visits (
     price_paid_cents integer,
     price_paid_currency character varying,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    time_of_day time without time zone NOT NULL
 );
 
 
@@ -1884,6 +1885,7 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250319140828'),
 ('20241129140719'),
 ('20241122082306'),
 ('20241121201805'),

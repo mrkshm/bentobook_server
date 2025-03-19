@@ -1,26 +1,67 @@
-<div class="max-w-5xl mx-auto mt-8 bg-surface-50 rounded-lg shadow-xl">
+<div class="max-w-lg mx-auto mt-8 bg-surface-50 rounded-lg shadow-xl">
   <%= render 'shared/header', title: t('visits.new.title') %>
   
   <div class="p-6">
     <%= form_with(model: @visit, 
                   url: visits_path,
                   local: true, 
-                  class: "space-y-8",
-                  data: { controller: "currency-validator" }) do |form| %>
+                  class: "space-y-6") do |form| %>
       <%= render 'form_errors', object: @visit %>
 
-      <div class="grid grid-cols-1 gap-8">
-        <%= render 'form_fields', form: form, visit: @visit %>
+      <%# Restaurant Selection %>
+      <% if params[:restaurant_id].present? %>
+        <div class="mb-6 text-center">
+          <div class="text-sm font-medium text-surface-600">
+            <%= t("visits.form.adding_visit_to") %>
+          </div>
+          <div class="mt-1 text-lg font-semibold text-surface-900">
+            <%= @restaurant.name %>
+          </div>
+        </div>
+        <%= form.hidden_field :restaurant_id, value: params[:restaurant_id] %>
+      <% else %>
+        <div>
+          <%= form.label :restaurant_id, t("visits.form.select_restaurant"), 
+              class: "block text-sm/6 font-medium text-surface-900" %>
+          <div class="mt-2 relative">
+            <%= form.collection_select :restaurant_id, 
+                current_user.restaurants.order('name'),
+                :id, 
+                :name, 
+                { prompt: t("visits.form.select_restaurant_prompt") }, 
+                { class: "block w-full rounded-md bg-white py-1.5 pl-3 pr-10 text-surface-900 outline-1 outline-surface-300 focus:outline-2 focus:outline-primary-600 sm:text-sm/6" } %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Date and Time Selection %>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <%= form.label :date, t("visits.form.date"), 
+              class: "block text-sm font-medium text-surface-900 mb-1" %>
+          <%= form.date_field :date, 
+              value: @visit.date || Date.current,
+              class: "block w-full rounded-md bg-white px-3 py-1.5 text-surface-900 outline-1 outline-surface-300 focus:outline-2 focus:outline-primary-600 sm:text-sm" %>
+        </div>
+
+        <div>
+          <%= form.label :time_of_day, t("visits.form.time"), 
+              class: "block text-sm font-medium text-surface-900 mb-1" %>
+          <%= form.time_field :time_of_day,
+              value: form.object.time_of_day&.in_time_zone(Time.zone)&.strftime("%H:%M") || rounded_current_time,
+              step: 900, # 15 minutes in seconds
+              pattern: "[0-9]{2}:[0-9]{2}", # Force HH:MM format
+              class: "block w-full rounded-md bg-white px-3 py-1.5 text-surface-900 outline-1 outline-surface-300 focus:outline-2 focus:outline-primary-600 sm:text-sm" %>
+        </div>
       </div>
 
-      <div class="mt-8 space-y-2">
-        <h2 class="text-xl font-semibold mb-4 text-surface-900"><%= t("add_images") %></h2>
-        <%= render(ImageUploadComponent.new(form, @visit, self)) %>
-      </div>
-
-      <div class="flex justify-between items-center mt-8">
-        <%= form.submit t("visits.create_visit"), class: 'rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
-        <%= link_to t('visits.back_to_visits'), visits_path(locale: nil), class: 'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
+      <%# Action Buttons %>
+      <div class="flex justify-end items-center gap-3 mt-8">
+        <%= link_to t('common.cancel'), 
+            params[:restaurant_id] ? restaurant_path(id: params[:restaurant_id], locale: nil) : visits_path(locale: nil), 
+            class: 'rounded-md px-4 py-2 text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
+        <%= form.submit t("visits.form.quick_create"), 
+            class: 'rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
       </div>
     <% end %>
   </div>
