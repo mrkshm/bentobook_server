@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class LanguageSwitcherComponent < ViewComponent::Base
+class LanguageSwitcherComponent < ApplicationComponent
   include Devise::Controllers::Helpers
 
   def initialize(current_locale:)
