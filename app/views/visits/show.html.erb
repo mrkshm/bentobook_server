@@ -22,14 +22,9 @@
       </div>
 
       <%# Price section %>
-      <% if @visit.price_paid.present? %>
-        <div class="mt-6">
-          <p class="text-surface-700">
-            <span class="font-semibold text-surface-900">Price Paid:</span>
-            <%= @visit.price_paid.format %>
-          </p>
-        </div>
-      <% end %>
+      <div class="mt-6">
+        <%= render(Visits::PricePaidComponent.new(visit: @visit)) %>
+      </div>
 
       <div class="border-t border-surface-200 my-6"></div>
       <%= render(Visits::NotesComponent.new(visit: @visit)) %>
