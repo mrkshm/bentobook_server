@@ -1,10 +1,12 @@
 <%= turbo_frame_tag frame_id do %>
+<%= content_for :title, t('visits.price_paid.edit') %>
+  
   <%= form_with model: visit,
       url: visit_price_paid_path(visit_id: visit.id, locale: nil),
       method: :patch,
       class: "space-y-4" do |f| %>
     
-    <div class="space-y-2">
+    <div class="space-y-2 hotwire-native:mt-4">
       <%= f.label :price_paid, class: "block text-sm font-medium text-surface-700" %>
       <div class="flex space-x-2">
         <%= f.number_field :price_paid,
@@ -23,7 +25,7 @@
 
     <div class="flex items-center justify-end gap-3">
       <%= link_to t("common.cancel"),
-          visit_price_paid_path(visit_id: visit.id, locale: nil),
+          helpers.hotwire_native_app? ? visit_path(id: visit.id, locale: nil) : visit_price_paid_path(visit_id: visit.id, locale: nil),
           class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors",
           data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
       

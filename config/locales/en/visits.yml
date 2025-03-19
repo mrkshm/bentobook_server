@@ -18,4 +18,6 @@ en:
       action_title: "Rate this visit"
     date:
       action_title: "Change the date"
+    price_paid:
+      edit: "Edit price paid"
 

@@ -16,13 +16,9 @@
         <% end %>
       </div>
 
-      <%# Rating section %>
-      <div class="flex items-center justify-between pb-6 border-b border-surface-200">
+      <%# Rating and Price section %>
+      <div class="flex items-center justify-between pb-6 border-b border-surface-200 mr-2">
         <%= render(Visits::RatingComponent.new(visit: @visit)) %>
-      </div>
-
-      <%# Price section %>
-      <div class="mt-6">
         <%= render(Visits::PricePaidComponent.new(visit: @visit)) %>
       </div>
 

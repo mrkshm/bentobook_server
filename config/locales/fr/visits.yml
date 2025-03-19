@@ -18,4 +18,6 @@ fr:
       action_title: "Noter cette visite"
     date:
       action_title: "Changer la date"
+    price_paid:
+      edit: "Modifier le prix payé"
 

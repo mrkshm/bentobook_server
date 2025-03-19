@@ -1,4 +1,5 @@
 <%= turbo_frame_tag frame_id do %>
+  <% content_for :title, t("notes.edit") %>
   <%= form_with(
         model: @visit,
         url: visit_notes_path(visit_id: @visit.id, locale: nil),
@@ -13,8 +14,8 @@
           placeholder: t('notes.placeholder') %>
       
       <div class="flex justify-end gap-2">
-        <%= button_to t('common.cancel'), 
-            visit_notes_path(visit_id: @visit.id, locale: nil),
+        <%= link_to t('common.cancel'), 
+            helpers.hotwire_native_app? ? visit_path(id: @visit.id, locale: nil) : visit_notes_path(visit_id: @visit.id, locale: nil),
             class: "px-3 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-md",
             data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
             
