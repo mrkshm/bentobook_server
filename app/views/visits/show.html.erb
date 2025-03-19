@@ -22,23 +22,43 @@
         <%= render(Visits::PricePaidComponent.new(visit: @visit)) %>
       </div>
 
-      <div class="border-t border-surface-200 my-6"></div>
+      <div class="my-6"></div>
       <%= render(Visits::NotesComponent.new(visit: @visit)) %>
       
       <div class="border-t border-surface-200 my-6"></div>
       <%= render(Visits::ContactsComponent.new(visit: @visit)) %>
 
-      <% if @visit.images.any? %>
-        <div class="border-t border-surface-200 my-6"></div>
-        <div class="space-y-4">
-          <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
-          <%= render(GalleryComponent.new(images: @visit.images)) %>
+      <div class="border-t border-surface-200 my-3"></div>
+      <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-surface-900"><%= t("images.title") %></h2>
+          <div class="flex gap-4">
+            <% if @visit.user == current_user %>
+              <% if @visit.images.exists? %>
+                <%= link_to edit_visit_images_path(visit_id: @visit.id, locale: nil),
+                    class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
+                  <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1 text-primary-600" } %>
+                  <%= t("images.edit_photos") %>
+                <% end %>
+              <% end %>
+              <%= link_to new_visit_image_path(visit_id: @visit.id, locale: nil),
+                  class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
+                <%= heroicon "plus-circle", options: { class: "h-5 w-5 mr-1" } %>
+                <%= t("images.add_photos") %>
+              <% end %>
+            <% end %>
+          </div>
         </div>
-      <% end %>
 
-      <div class="flex justify-end gap-3 mt-6">
-        <%# ...existing buttons... %>
+        <% if @visit.images.any? %>
+          <%= render(GalleryComponent.new(images: @visit.images)) %>
+        <% else %>
+          <div class="text-center py-8 text-surface-500">
+            <p><%= t("images.no_visit_photos") %></p>
+          </div>
+        <% end %>
       </div>
+
     </div>
   </div>
 </div>

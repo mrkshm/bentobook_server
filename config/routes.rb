@@ -100,10 +100,13 @@ Rails.application.routes.draw do
     end
 
     resources :visits do
-      resources :images, only: [ :destroy ]
+      resources :images, only: [ :new, :create, :edit, :destroy ], module: :visits do
+        collection do
+          get :edit, to: "images#edit"
+        end
+      end
       resource :notes, only: [ :show, :edit, :update ], module: :visits
       resource :title, only: [ :show, :edit, :update ], module: :visits
-      resource :rating, only: [ :show, :update ], module: :visits
       resource :rating, only: [ :show, :edit, :update ], module: :visits
       resource :date, only: [ :show, :edit, :update ], module: :visits
       resource :contacts, only: [ :show, :edit, :create, :destroy ], module: :visits do
@@ -167,9 +170,6 @@ Rails.application.routes.draw do
 
     get "/debug/test_s3/:blob_id", to: "debug#test_s3"
 
-    resources :visits
-    resources :contacts
-    resources :lists
     get "home/dashboard", as: :home_dashboard
 
     root to: "pages#home"

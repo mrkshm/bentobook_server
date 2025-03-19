@@ -1,7 +1,7 @@
 <%= render 'shared/header', title: t("images.upload.title") %>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <%= form_with url: restaurant_images_path(restaurant_id: @restaurant.id, locale: nil), 
+  <%= form_with url: visit_images_path(visit_id: @visit.id, locale: nil), 
       method: :post, 
       multipart: true, 
       data: { 
@@ -32,15 +32,19 @@
     </div>
 
     <div class="flex justify-end mt-6">
-      <button type="submit" data-image-upload-target="uploadButton" disabled class="ml-4 px-4 py-2 bg-primary-600 text-white rounded-md opacity-50 cursor-not-allowed transition-colors">
+      <button type="submit" 
+              data-image-upload-target="uploadButton" 
+              disabled 
+              class="ml-4 px-4 py-2 bg-primary-600 text-white rounded-md opacity-50 cursor-not-allowed transition-colors">
         <%= t("images.upload.upload") %>
       </button>
     </div>
   <% end %>
   
+  <%# Keep cancel button outside form %>
   <div class="flex justify-end -mt-10 mr-38">
     <%= link_to t("cancel"), 
-        restaurant_path(id: @restaurant.id, locale: nil), 
+        visit_path(id: @visit.id, locale: nil), 
         data: { turbo_frame: "_top" },
         class: "px-4 py-2 bg-surface-200 text-surface-700 rounded-md hover:bg-surface-300 transition-colors" %>
   </div>
