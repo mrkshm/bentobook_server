@@ -23,7 +23,7 @@ module Visits
       end
 
       def supported_currencies
-        Bentobook::SUPPORTED_CURRENCIES.flatten(1)  # Flatten because map creates nested array
+        Bentobook::Currencies::SUPPORTED_CURRENCIES.flatten(1)  # Flatten because map creates nested array
       end
 
       def formatted_amount
