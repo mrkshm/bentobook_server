@@ -7,6 +7,7 @@ fr:
     edit_contacts: "Modifier contacts"
     index:
       title: "Vos Visites"
+      search_placeholder: "Trouver une visite"
     new:
       title: "Nouvelle Visite"
     edit:

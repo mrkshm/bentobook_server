@@ -19,7 +19,7 @@
           </div>
         <% end %>
 
-        <%= render VisitsSortFormComponent.new(
+        <%= render Visits::SortFormComponent.new(
           url: visits_path,
           fields: {
             'date' => t('visits.index.sort_options.date'),
@@ -30,7 +30,7 @@
           current_order: params[:order_by] || 'date',
           current_direction: params[:order_direction] || 'desc',
           additional_fields: {
-            search: params[:search]
+          search: params[:search]
           }
         ) %>
       </div>
