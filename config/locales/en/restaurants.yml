@@ -55,3 +55,6 @@ en:
       edit: "Edit rating"
     price_level:
       edit: "Edit price level"
+    notes:
+      edit:
+        title: "Edit notes"

@@ -55,3 +55,6 @@ fr:
       edit: "Modifier la note"
     price_level:
       edit: "Modifier le niveau de prix"
+    notes:
+      edit:
+        title: "Modifier les notes"

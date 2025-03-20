@@ -6,14 +6,7 @@ module Restaurants
     before_action :set_restaurant
 
     def edit
-      if hotwire_native_app?
-        render template: "restaurants/ratings/edit_native"
-      else
-        render turbo_stream: turbo_stream.replace(
-          dom_id(@restaurant, :rating),
-          template: "restaurants/ratings/edit"
-        )
-      end
+      render template: "restaurants/ratings/edit"
     end
 
     def update
@@ -28,13 +21,7 @@ module Restaurants
           )
         end
       else
-        if hotwire_native_app?
-          render template: "restaurants/ratings/edit_native",
-                 status: :unprocessable_entity
-        else
-          render template: "restaurants/ratings/edit",
-                 status: :unprocessable_entity
-        end
+        render template: "restaurants/ratings/edit"
       end
     end
 

@@ -1,14 +1,24 @@
+<%= render partial: "shared/header", locals: { title: t("restaurants.rating.edit") } %>
+
 <%= turbo_frame_tag dom_id(@restaurant, :rating) do %>
-  <div class="flex items-center space-x-2">
-    <% 5.times do |i| %>
-      <%= button_to restaurant_rating_path(restaurant_id: @restaurant.id, locale: current_locale),
-                    method: :patch,
-                    params: { restaurant: { rating: i + 1 } },
-                    class: "text-2xl focus:outline-none" do %>
-        <span class="<%= i < @restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %>">
-          <%= i < @restaurant.rating.to_i ? '★' : '☆' %>
-        </span>
+<div class="bg-surface-50 p-4">
+  <%= form_with model: @restaurant, 
+                url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: current_locale),
+                data: { turbo_frame: hotwire_native_app? ? "_top" : nil},
+                method: :patch,
+                class: "bg-white rounded-lg shadow p-4" do |f| %>
+    <div class="flex justify-center space-x-2">
+      <% 5.times do |i| %>
+        <%= f.button type: "submit",
+                    name: "restaurant[rating]",
+                    value: i + 1,
+                    class: "text-3xl focus:outline-none" do %>
+          <span class="<%= i < @restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %>">
+            <%= i < @restaurant.rating.to_i ? '★' : '☆' %>
+          </span>
+        <% end %>
       <% end %>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
+</div>
 <% end %>
