@@ -3,7 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["image", "deleteButton"]
   static values = {
-    restaurantId: String,
+    visitId: { type: String, default: '' },
+    restaurantId: { type: String, default: '' },
     currentLocale: String,
     successMessage: String,
     errorMessage: String,
@@ -43,13 +44,13 @@ export default class extends Controller {
     event.preventDefault()
     
     const count = this.selectedImageIds.size
+    if (count === 0) return
+
     const confirmMessage = count === 1 ? 
       this.confirmMessageSingleValue : 
       this.confirmMessageMultipleValue.replace('%{count}', count)
     
-    if (!confirm(confirmMessage)) {
-      return
-    }
+    if (!confirm(confirmMessage)) return
 
     const button = this.deleteButtonTarget
     const originalText = button.textContent
@@ -57,7 +58,7 @@ export default class extends Controller {
     button.textContent = "Deleting..."
 
     try {
-      const response = await fetch('/images/bulk_destroy', {
+      const response = await fetch(`/${this.currentLocaleValue}/images/bulk_destroy`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -70,38 +71,44 @@ export default class extends Controller {
       })
 
       if (response.ok) {
-        const currentPath = window.location.pathname
-        const restaurantPath = currentPath.replace('/images/edit', '')
-        
         const successMessage = count === 1 ? 
           this.successMessageValue : 
           this.successMessageValue.replace('%{count}', count)
 
-        Turbo.visit(restaurantPath, { 
+        // Determine redirect path based on whether we have a visit or restaurant
+        const redirectPath = this.getRedirectPath()
+        
+        Turbo.visit(redirectPath, { 
           action: "replace",
           flash: { notice: successMessage }
         })
       } else {
-        button.disabled = false
-        button.textContent = originalText
-        
-        const flash = document.createElement('turbo-frame')
-        flash.id = 'flash'
-        flash.innerHTML = `<div class="mb-4 p-4 rounded-md bg-error-50 border border-error-200">
-          <p class="text-sm text-error-700">${this.errorMessageValue}</p>
-        </div>`
-        document.querySelector('main').prepend(flash)
+        this.showError(button, originalText, this.errorMessageValue)
       }
     } catch (error) {
-      button.disabled = false
-      button.textContent = originalText
-      
-      const flash = document.createElement('turbo-frame')
-      flash.id = 'flash'
-      flash.innerHTML = `<div class="mb-4 p-4 rounded-md bg-error-50 border border-error-200">
-        <p class="text-sm text-error-700">${this.networkErrorMessageValue}</p>
-      </div>`
-      document.querySelector('main').prepend(flash)
+      this.showError(button, originalText, this.networkErrorMessageValue)
     }
+  }
+
+  getRedirectPath() {
+    if (this.visitIdValue) {
+      return `/${this.currentLocaleValue}/visits/${this.visitIdValue}`
+    }
+    if (this.restaurantIdValue) {
+      return `/${this.currentLocaleValue}/restaurants/${this.restaurantIdValue}`
+    }
+    throw new Error('Neither visitId nor restaurantId was provided')
+  }
+
+  showError(button, originalText, message) {
+    button.disabled = false
+    button.textContent = originalText
+    
+    const flash = document.createElement('turbo-frame')
+    flash.id = 'flash'
+    flash.innerHTML = `<div class="mb-4 p-4 rounded-md bg-error-50 border border-error-200">
+      <p class="text-sm text-error-700">${message}</p>
+    </div>`
+    document.querySelector('main').prepend(flash)
   }
 }

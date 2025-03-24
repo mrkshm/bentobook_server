@@ -30,6 +30,7 @@
           data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
       
       <%= f.submit t("common.save"),
+      data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id },
           class: "px-4 py-2 text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors" %>
     </div>
   <% end %>

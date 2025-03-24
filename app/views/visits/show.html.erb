@@ -59,6 +59,36 @@
         <% end %>
       </div>
 
+      <%# Danger Zone - after all other content %>
+      <div class="mt-8 border-t border-surface-200 pt-6">
+        <details class="group">
+          <summary class="flex items-center gap-2 text-surface-700 hover:text-surface-900 cursor-pointer">
+            <span class="font-medium"><%= t("visits.danger_zone") %></span>
+            <%= heroicon "chevron-right", 
+                options: { class: "h-4 w-4 transition-transform group-open:rotate-90" } %>
+          </summary>
+          
+          <div class="mt-4 pl-7">
+            <p class="text-sm text-surface-600 mb-4">
+              <%= t("visits.delete_warning") %>
+            </p>
+            
+            <%= button_to visit_path(id: @visit.id, locale: current_locale),
+                  method: :delete,
+                  class: "inline-flex items-center px-4 py-2 rounded-md border 
+                         border-error-300 text-error-700 hover:bg-error-50 
+                         focus:outline-none focus:ring-2 focus:ring-offset-2 
+                         focus:ring-error-500 transition-colors",
+                  data: { 
+                    turbo_confirm: t("visits.confirm_delete"),
+                    turbo_frame: "_top"
+                  } do %>
+              <%= heroicon "trash", options: { class: "h-4 w-4 mr-2" } %>
+              <%= t("visits.delete_visit") %>
+            <% end %>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 </div>

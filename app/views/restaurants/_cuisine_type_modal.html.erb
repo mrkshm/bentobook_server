@@ -12,11 +12,11 @@
             ) do |f| %>
           <div>
             <%= f.label :cuisine_type_id, 
-                "Cuisine Type", 
+                t("restaurants.attributes.cuisine_type"), 
                 class: "block text-sm/6 font-medium text-surface-900" %>
             <div class="mt-2 grid grid-cols-1 relative">
               <%= f.select :cuisine_type_id,
-                  CuisineType.all.map { |ct| [t(ct.name), ct.id] },
+                  CuisineType.all.map { |ct| [t("cuisine_types.#{ct.name}"), ct.id] },
                   { selected: restaurant.cuisine_type_id },
                   class: "col-start-1 row-start-1 w-full appearance-none rounded-md 
                          bg-white py-1.5 px-3 text-base text-surface-900
