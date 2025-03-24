@@ -4,8 +4,8 @@
     <div class="flex items-end justify-between mb-4">
       <h3 class="text-lg font-medium text-surface-900"><%= restaurant.name %></h3>
       <% if visit_count.positive? %>
-        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs text-surface-700">
-          visited <%= visit_count %>&nbsp; time
+        <span class="inline-flex items-center rounded-full py-0.5 text-xs text-surface-700">
+          <%= t("visits.count", count: visit_count) %>
         </span>
       <% end %>
     </div>
@@ -47,17 +47,16 @@
         <% end %>
       </div>
 
-      <%# Right side: address info %>
       <div class="text-sm text-surface-600 text-right">
         <div>
-          <span><%= "#{restaurant.street_number} #{restaurant.street}" %></span>
+          <span><%= "#{restaurant.combined_street_number} #{restaurant.combined_street}" %></span>
         </div>
         <div class="">
-          <span><%= [restaurant.postal_code, restaurant.city].compact.join(' ') %></span>
+          <span><%= [restaurant.combined_postal_code, restaurant.combined_city].compact.join(' ') %></span>
         </div>
-        <% if restaurant.state.present? || restaurant.country.present? %>
+        <% if restaurant.combined_state.present? || restaurant.combined_country.present? %>
           <div class="">
-            <span><%= [restaurant.state, restaurant.country].compact.reject(&:empty?).join(', ') %></span>
+            <span><%= [restaurant.combined_state, restaurant.combined_country].compact.reject(&:empty?).join(', ') %></span>
           </div>
         <% end %>
       </div>
