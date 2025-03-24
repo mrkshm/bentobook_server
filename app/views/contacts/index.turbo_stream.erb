@@ -1,0 +1,35 @@
+<%= turbo_stream.append "contacts-list" do %>
+  <% @contacts.each do |contact| %>
+    <%= link_to contact_path(id: contact.id, locale: current_locale), 
+          class: "block divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>
+      <%# ... existing contact card content ... %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<% if @pagy.next %>
+  <%= turbo_stream.replace "pagination" do %>
+    <%= turbo_frame_tag :pagination,
+        loading: :lazy,
+        src: contacts_path(
+          format: :turbo_stream,
+          page: @pagy.next,
+          search: params[:search],
+          order_by: params[:order_by],
+          order_direction: params[:order_direction],
+          per_page: params[:per_page],
+          locale: current_locale
+        ) do %>
+      <div class="mt-8 text-center">
+        <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
+          <div class="animate-pulse flex space-x-2">
+            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+          </div>
+          <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

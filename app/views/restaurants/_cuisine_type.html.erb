@@ -1,12 +1,15 @@
 <div class="relative">
   <%= turbo_frame_tag dom_id(restaurant, :cuisine_type) do %>
+  <div class="flex flex-col">
+  <p class="text-sm"><%= t("restaurants.attributes.cuisine_type") %></p>
     <%= link_to restaurant_path(id: restaurant.id, locale: current_locale, modal: :cuisine_type),
           class: "text-lg text-surface-600 transition-colors focus:outline-none cursor-pointer",
           data: { 
             turbo: true,
             turbo_stream: true
           } do %>
-      <%= t(restaurant.cuisine_type&.name) %>
+      <%= t("cuisine_types.#{restaurant.cuisine_type&.name}") %>
     <% end %>
+    </div>
   <% end %>
 </div>

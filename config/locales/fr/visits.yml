@@ -1,5 +1,9 @@
 fr:
   visits:
+    danger_zone: "Plus d'options"
+    delete_warning: "Une fois la visite supprimée, il n'y a pas de retour possible. Veuillez être certain."
+    confirm_delete: "Êtes-vous sûr de vouloir supprimer cette visite ? Cette action est irréversible."
+    delete_visit: "Supprimer cette visite"
     back_to_visits: "Retour aux visites"
     create_visit: "Créer une Visite"
     rate_visit: "Noter cette Visite"

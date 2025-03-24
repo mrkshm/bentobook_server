@@ -3,7 +3,7 @@ class Visit < ApplicationRecord
 
   belongs_to :user
   belongs_to :restaurant
-  has_many :visit_contacts
+  has_many :visit_contacts, dependent: :destroy
   has_many :contacts, through: :visit_contacts
   has_many :images, as: :imageable, dependent: :destroy
 

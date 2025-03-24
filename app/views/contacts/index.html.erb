@@ -1,3 +1,4 @@
+<%= render "shared/header", title: t('contacts.index.title') %>
 <div class="container mx-auto p-4">
   <div class="flex w-full justify-between items-center mb-6">
     <h1 class="text-2xl font-semibold text-surface-900"><%= t("contacts.index.title") %></h1>
@@ -33,9 +34,9 @@
       <%= params[:search].present? ? t("contacts.index.no_contacts_found") : t("contacts.index.no_contacts") %>
     </p>
   <% else %>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <%= turbo_frame_tag "contacts-list", class: "grid grid-cols-1 md:grid-cols-2 gap-4" do %>
       <% @contacts.each do |contact| %>
-        <%= link_to contact_path(id: contact.id), 
+        <%= link_to contact_path(id: contact.id, locale: current_locale), 
               class: "block divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>
           <div class="p-6">
             <div class="flex gap-6">
@@ -95,14 +96,32 @@
           </div>
         <% end %>
       <% end %>
-    </div>
+    <% end %>
 
-    <%# Pagination - removed Daisy UI specific classes %>
-    <div class="mt-8 flex flex-col items-center space-y-4">
-      <%== pagy_nav(@pagy) %>
-      <p class="text-sm text-surface-600 bg-surface-100 px-3 py-2 rounded-md">
-        <%== pagy_info(@pagy) %>
-      </p>
-    </div>
+    <%# Infinite scroll trigger %>
+    <% if @pagy.next %>
+      <%= turbo_frame_tag :pagination,
+          loading: :lazy,
+          src: contacts_path(
+            format: :turbo_stream,
+            page: @pagy.next,
+            search: params[:search],
+            order_by: params[:order_by],
+            order_direction: params[:order_direction],
+            per_page: params[:per_page],
+            locale: current_locale
+          ) do %>
+        <div class="mt-8 text-center">
+          <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
+            <div class="animate-pulse flex space-x-2">
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+            </div>
+            <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
   <% end %>
 </div>

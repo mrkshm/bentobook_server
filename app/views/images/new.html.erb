@@ -37,8 +37,8 @@
       </button>
     </div>
   <% end %>
-  
-  <div class="flex justify-end -mt-10 mr-38">
+
+  <div class="flex justify-end mt-4">
     <%= link_to t("cancel"), 
         restaurant_path(id: @restaurant.id, locale: current_locale), 
         data: { turbo_frame: "_top" },
