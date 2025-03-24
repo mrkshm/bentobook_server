@@ -1,6 +1,18 @@
 fr:
   pages:
     home:
+      subscription_form:
+        email_placeholder: "Entrez votre email"
+        button: "S'abonner"
+        privacy_notice: "En vous inscrivant, vous acceptez notre"
+        privacy_link: "politique de confidentialité"
+      subscriptions:
+        success:
+          title: "Merci de votre inscription !"
+          description: "Nous vous tiendrons informé des actualités de Bentobook."
+        create:
+          captcha_failed: "La vérification a échoué. Veuillez réessayer."
+          invalid_email: "Veuillez entrer une adresse email valide"
       hero:
         title: 'BentoBook'
         tagline: 'Pas seulement où vous avez mangé, mais comment vous vous êtes senti.'

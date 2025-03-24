@@ -100,3 +100,5 @@ group :test do
 end
 
 gem "rack-attack", "~> 6.7"
+
+gem "recaptcha", "~> 5.19"

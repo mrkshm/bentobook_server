@@ -1,7 +1,4 @@
 Rails.application.routes.draw do
-  # Subscription
-  post "/subscribe", to: "subscriptions#create"
-
   resources :configurations, only: [] do
     get :ios_v1, on: :collection
   end
@@ -75,6 +72,8 @@ Rails.application.routes.draw do
 
   # Web routes
   scope "(:locale)", locale: /#{I18n.available_locales.join("|")}/ do
+    post "/subscribe", to: "subscriptions#create", as: :subscribe
+
     # Devise routes
     devise_for :users,
       controllers: {
