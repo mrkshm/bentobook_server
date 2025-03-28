@@ -47,3 +47,61 @@ IMPLEMENTATION NOTES
 5. Profile deletion should cascade from user deletion
 6. JSONB used for flexible notification settings structure
 */
+
+/*
+RESTAURANTS
+----------
+Core tables for restaurant data management.
+*/
+
+-- Restaurant information
+CREATE TABLE restaurants (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address TEXT,
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    notes TEXT,
+    user_id UUID NOT NULL,  -- Restaurant creator
+    cuisine_type_id UUID,  -- Optional cuisine type
+    street VARCHAR(255),
+    street_number VARCHAR(50),
+    postal_code VARCHAR(50),
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    phone_number VARCHAR(100),
+    url VARCHAR(255),
+    business_status VARCHAR(50),
+    rating INTEGER,  -- User rating, not Google rating
+    price_level INTEGER,
+    opening_hours JSONB,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (cuisine_type_id) REFERENCES cuisine_types(id)
+);
+
+/*
+VISITS
+-----
+Tables for tracking restaurant visits.
+*/
+
+-- Visit records
+CREATE TABLE visits (
+    id UUID PRIMARY KEY,
+    date DATE NOT NULL,  -- Visit date
+    time_of_day TIME NOT NULL,  -- Time of visit
+    title VARCHAR(255),
+    notes TEXT,
+    user_id UUID NOT NULL,  -- Visit creator
+    restaurant_id UUID NOT NULL,  -- Restaurant visited
+    rating INTEGER,  -- User rating (1-5)
+    price_paid_cents INTEGER,
+    price_paid_currency VARCHAR(3),
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
+);

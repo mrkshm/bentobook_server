@@ -174,6 +174,7 @@ This document provides a human-readable overview of the BentoBook database schem
 ### Visits
 - **id**: bigint, primary key
 - **date**: date
+- **time_of_day**: time, not null
 - **title**: varchar
 - **notes**: text
 - **user_id**: bigint, not null (FK → users.id)
