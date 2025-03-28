@@ -153,6 +153,26 @@ The `ImageDeletionController` (Stimulus) handles:
 - DOM updates after successful deletion
 - Error handling
 
+## Image Metadata and Time
+BentoBook extracts and stores relevant metadata from uploaded images:
+
+### EXIF Data Processing
+When images are uploaded, the system extracts EXIF data including:
+- Date and time the photo was taken
+- Camera model
+- Location data (if available)
+
+### Time Handling with Visits
+When a visit is created with new images:
+1. If no time is specified and images have time metadata, the earliest image time is suggested as the default visit time
+2. The user can override this suggestion with a manual time entry
+3. All times are stored in UTC and displayed in the user's local timezone
+
+### Privacy Considerations
+- By default, EXIF data including timestamps is stripped from public-facing image variants
+- Original images with metadata are preserved in storage but not publicly exposed
+- Users can opt to remove all metadata from their uploaded images via profile settings
+
 ## Best Practices
 1. Always use the appropriate variant size for the context to optimize bandwidth
 2. Use the `lazy` loading attribute for images below the fold
@@ -160,3 +180,4 @@ The `ImageDeletionController` (Stimulus) handles:
 4. Use WebP format for variants to optimize delivery
 5. Consider accessibility by including proper alt text
 6. Validate file types and sizes on both client and server side
+7. When creating visits with images, use image metadata to suggest visit times but allow user overrides
