@@ -13,7 +13,7 @@ module Visits
     end
 
     def create
-      contact = current_user.contacts.find(params[:contact_id])
+      contact = Current.organization.contacts.find(params[:contact_id])
       @visit.contacts << contact unless @visit.contacts.include?(contact)
 
       # Both native and web should use turbo_stream to update in place
@@ -49,7 +49,7 @@ module Visits
     end
 
     def search
-      @contacts = current_user.contacts
+      @contacts = Current.organization.contacts
                             .where.not(id: @visit.contact_ids)
                             .search(params[:query])
                             .order(:name)
@@ -65,7 +65,7 @@ module Visits
     private
 
     def set_visit
-      @visit = current_user.visits.find(params[:visit_id])
+      @visit = Current.organization.visits.find(params[:visit_id])
     rescue ActiveRecord::RecordNotFound
       redirect_to visits_path, alert: t("errors.visits.not_found")
     end

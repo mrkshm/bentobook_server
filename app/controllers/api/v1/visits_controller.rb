@@ -5,7 +5,7 @@ module Api
       before_action :ensure_valid_restaurant, only: [ :create, :update ]
 
       def index
-        base_scope = current_user.visits
+        base_scope = Current.organization.visits
           .select("visits.*")
           .includes(
             restaurant: { cuisine_type: {} },
@@ -17,7 +17,7 @@ module Api
           search: params[:search],
           order_by: params[:order_by],
           order_direction: params[:order_direction],
-          user: current_user
+          organization: Current.organization
         ).call
 
         if visits_scope.empty?
@@ -66,7 +66,7 @@ module Api
       end
 
       def show
-        visit = current_user.visits.includes(:contacts, :images).find(params[:id])
+        visit = Current.organization.visits.includes(:contacts, :images).find(params[:id])
         render json: VisitSerializer.render_success(visit)
       rescue ActiveRecord::RecordNotFound
         render_error("Visit not found", :not_found)
@@ -76,7 +76,7 @@ module Api
       end
 
       def create
-        visit = current_user.visits.build(visit_params)
+        visit = Current.organization.visits.build(visit_params)
 
         ActiveRecord::Base.transaction do
           if visit.save
@@ -130,7 +130,7 @@ module Api
       private
 
       def set_visit
-        @visit = current_user.visits.find(params[:id])
+        @visit = Current.organization.visits.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render_error("Visit not found", :not_found)
       end
@@ -152,7 +152,7 @@ module Api
         restaurant_id = params.dig(:visit, :restaurant_id)
         return if restaurant_id.blank?
 
-        unless current_user.restaurants.exists?(restaurant_id)
+        unless Current.organization.restaurants.exists?(restaurant_id)
           render json: BaseSerializer.render_error(
             "Invalid restaurant",
             :invalid_restaurant

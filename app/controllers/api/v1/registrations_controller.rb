@@ -1,10 +1,10 @@
 module Api
   module V1
     class RegistrationsController < BaseController
-      skip_before_action :authenticate_user!
+      skip_before_action :authenticate_user!, only: [:create]
 
       def create
-        user = User.new(sign_up_params)
+        user = User.new(user_params)
 
         if user.save
           handle_successful_registration(user)
@@ -17,8 +17,11 @@ module Api
 
       def handle_successful_registration(user)
         if user.active_for_authentication?
-          session = create_user_session(user)
-          token = generate_jwt_token(user, session)
+          # Sign in the user which will trigger JWT generation via devise-jwt
+          sign_in(user)
+          
+          # Get the latest token
+          token = user.allowlisted_jwts.order(created_at: :desc).first
 
           render json: RegistrationSerializer.render_success(user, token), status: :ok
         else
@@ -31,39 +34,8 @@ module Api
                status: :unprocessable_entity
       end
 
-      def sign_up_params
+      def user_params
         params.require(:user).permit(:email, :password, :password_confirmation)
-      end
-
-      def create_user_session(user)
-        browser = Browser.new(request.user_agent)
-        client_info = {
-          name: params.dig(:client, :name) || request.user_agent || "Unknown",
-          user_agent: request.user_agent,
-          ip_address: request.remote_ip,
-          device_type: browser.device.mobile? ? "mobile" : (browser.device.tablet? ? "tablet" : "desktop"),
-          os_name: browser.platform.name,
-          os_version: browser.platform.version,
-          browser_name: browser.name,
-          browser_version: browser.version
-        }
-
-        UserSession.create_session(user, client_info)
-      end
-
-      def generate_jwt_token(user, session)
-        payload = {
-          sub: user.id,
-          jti: session.jti,
-          exp: 24.hours.from_now.to_i,
-          iat: Time.current.to_i
-        }
-
-        JWT.encode(
-          payload,
-          Rails.application.credentials.devise_jwt_secret_key,
-          "HS256"
-        )
       end
     end
   end

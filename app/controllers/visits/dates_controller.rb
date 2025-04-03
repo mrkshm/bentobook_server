@@ -34,7 +34,7 @@ module Visits
     private
 
     def set_visit
-      @visit = current_user.visits.find(params[:visit_id])
+      @visit = Current.organization.visits.find(params[:visit_id])
     rescue ActiveRecord::RecordNotFound
       redirect_to visits_path, alert: t("errors.visits.not_found")
     end

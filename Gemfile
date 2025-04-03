@@ -58,6 +58,8 @@ gem "sidekiq"
 gem "sidekiq-cron"
 
 gem "devise-jwt"
+gem "rack-cors"
+
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
 gem "thruster", require: false
 

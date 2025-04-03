@@ -7,7 +7,7 @@ module RestaurantManagement
     ].freeze
 
     def set_restaurant
-      @restaurant = current_user.restaurants.with_google.find(params[:id])
+      @restaurant = Current.organization.restaurants.with_google.find(params[:id])
     rescue ActiveRecord::RecordNotFound
       if request.format.json?
         render json: { error: "Restaurant not found or you don't have permission to view it" }, status: :not_found
@@ -18,7 +18,7 @@ module RestaurantManagement
     end
 
     def build_restaurant
-      @restaurant = current_user.restaurants.new(restaurant_params.except(:images))
+      @restaurant = Current.organization.restaurants.new(restaurant_params.except(:images))
 
       if restaurant_params[:images].present?
         restaurant_params[:images].each do |image|

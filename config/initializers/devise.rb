@@ -305,17 +305,15 @@ Devise.setup do |config|
   # config.sign_in_after_change_password = true
 
   config.jwt do |jwt|
-    jwt.secret = ENV.fetch("DEVISE_JWT_SECRET_KEY") { Rails.application.credentials.devise_jwt_secret_key! }
+    jwt.secret = Rails.application.credentials.devise_jwt_secret_key!
 
     # Configure which requests should generate a token
     jwt.dispatch_requests = [
-      [ "POST", %r{^/api/v1/sessions$} ],
-      [ "POST", %r{^/api/v1/refresh_token$} ]
+      [ "POST", %r{^/api/v1/sessions$} ]
     ]
 
     # Configure which requests should revoke a token
     jwt.revocation_requests = [
-      [ "DELETE", %r{^/api/v1/sessions/.*$} ],
       [ "DELETE", %r{^/api/v1/sessions$} ]
     ]
 
@@ -324,5 +322,19 @@ Devise.setup do |config|
 
     # Only process JWT for JSON requests
     jwt.request_formats = { user: [ :json ] }
+  end
+
+  # Add Warden hook to set JWT in response header
+  Warden::Manager.after_authentication do |user, auth, opts|
+    if auth.env["devise.skip_jwt"] || !auth.env["devise.jwt_scope"]
+      next
+    end
+    
+    aud = opts[:scope]
+    token = Warden::JWTAuth::UserEncoder.new.call(
+      user, aud, auth.env["devise.jwt_scope"]
+    ).first
+    auth.env["warden.jwt.token"] = token
+    auth.env["warden-jwt_auth.token"] = token
   end
 end

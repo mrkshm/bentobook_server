@@ -1,7 +1,7 @@
 class Visit < ApplicationRecord
   include PgSearch::Model
 
-  belongs_to :user
+  belongs_to :organization
   belongs_to :restaurant
   has_many :visit_contacts, dependent: :destroy
   has_many :contacts, through: :visit_contacts

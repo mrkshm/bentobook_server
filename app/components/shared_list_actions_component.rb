@@ -16,9 +16,8 @@ class SharedListActionsComponent < ViewComponent::Base
   def any_restaurants_to_import?
     list.restaurants.exists?(
       ['NOT EXISTS (?)', 
-        RestaurantCopy.where(
-          'restaurant_copies.user_id = ? AND restaurant_copies.restaurant_id = restaurants.id', 
-          current_user.id
+        Current.organization.restaurants.where(
+          'restaurants.id = list_restaurants.restaurant_id'
         )
       ]
     )

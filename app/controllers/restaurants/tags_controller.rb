@@ -5,7 +5,7 @@ module Restaurants
     before_action :set_restaurant
 
     def edit
-      @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
+      @available_tags = Current.organization.restaurants.tag_counts_on(:tags).map(&:name)
 
       if hotwire_native_app?
         render :edit_native
@@ -15,7 +15,7 @@ module Restaurants
     end
 
     def update
-      @available_tags = current_user.restaurants.tag_counts_on(:tags).map(&:name)
+      @available_tags = Current.organization.restaurants.tag_counts_on(:tags).map(&:name)
       result = Restaurants::Tags::ManagerService.new(@restaurant).update(params[:restaurant][:tags])
 
       if result.success?
@@ -41,7 +41,7 @@ module Restaurants
     private
 
     def set_restaurant
-      @restaurant = current_user.restaurants.find(params[:restaurant_id])
+      @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
     rescue ActiveRecord::RecordNotFound
       render json: { error: "Restaurant not found" }, status: :not_found
     end
