@@ -12,7 +12,7 @@ class RestaurantQuery
     def call
       scoped = relation
       scoped = scoped.joins(:google_restaurant)
-      scoped = filter_by_user(scoped)
+      scoped = filter_by_organization(scoped)
       scoped = search(scoped)
       scoped = filter_by_tag(scoped)
       scoped = sort(scoped)
@@ -21,8 +21,8 @@ class RestaurantQuery
 
     private
 
-    def filter_by_user(scoped)
-      params[:user] ? scoped.where(user_id: params[:user].id) : scoped
+    def filter_by_organization(scoped)
+      params[:organization] ? scoped.where(organization_id: params[:organization].id) : scoped
     end
 
     def search(scoped)
@@ -63,6 +63,6 @@ class RestaurantQuery
 
       scoped
         .select("restaurants.*, ST_Distance(google_restaurants.location, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)) as distance")
-        .order('distance')
+        .order("distance")
     end
 end

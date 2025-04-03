@@ -14,7 +14,7 @@ class RestaurantsController < ApplicationController
     items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
     page = params[:page].to_i.positive? ? params[:page].to_i : 1
 
-    restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
+    restaurants_scope = Current.organization.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
     query_params = search_params.merge(order_params)
     @restaurants = RestaurantQuery.new(restaurants_scope, query_params).call
     @pagy, @restaurants = pagy_countless(@restaurants, items: items_per_page, page: page)
@@ -62,7 +62,7 @@ class RestaurantsController < ApplicationController
 
     list_restaurants = ListRestaurant.where(restaurant_id: @restaurant.id)
     lists = List.where(id: list_restaurants.pluck(:list_id))
-    @lists = List.accessible_by(current_user).containing_restaurant(@restaurant)
+    @lists = List.accessible_by(Current.organization).containing_restaurant(@restaurant)
 
     if turbo_frame_request? && params[:turbo_frame] == dom_id(@restaurant, :notes)
       render partial: "components/notes_component", locals: {
@@ -75,7 +75,7 @@ class RestaurantsController < ApplicationController
   end
 
   def edit
-    @restaurant = current_user.restaurants.with_google.includes(:images).find(params[:id])
+    @restaurant = Current.organization.restaurants.with_google.includes(:images).find(params[:id])
     @cuisine_types = CuisineType.all
     Rails.logger.debug "Cuisine types: #{@cuisine_types.inspect}"
   end
@@ -146,7 +146,7 @@ class RestaurantsController < ApplicationController
   end
 
   def update_price_level
-    @restaurant = current_user.restaurants.find(params[:id])
+    @restaurant = Current.organization.restaurants.find(params[:id])
 
     if @restaurant.update(price_level: params[:restaurant][:price_level])
       respond_to do |format|
@@ -228,7 +228,7 @@ class RestaurantsController < ApplicationController
   end
 
   def search_params
-    params.permit(:search, :tag, :latitude, :longitude, :order_by, :order_direction).merge(user: current_user)
+    params.permit(:search, :tag, :latitude, :longitude, :order_by, :order_direction).merge(organization: Current.organization)
   end
 
   def restaurant_params
@@ -291,7 +291,7 @@ class RestaurantsController < ApplicationController
   def set_restaurant
     # Use params[:restaurant_id] if it exists, otherwise fall back to params[:id]
     id = params[:restaurant_id] || params[:id]
-    @restaurant = current_user.restaurants.find(id)
+    @restaurant = Current.organization.restaurants.find(id)
   end
 
   def place_params

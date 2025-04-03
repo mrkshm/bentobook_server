@@ -152,7 +152,8 @@ CREATE TABLE public.contacts (
     notes text,
     user_id bigint NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    organization_id bigint NOT NULL
 );
 
 
@@ -538,7 +539,6 @@ CREATE TABLE public.restaurants (
     latitude numeric(10,8),
     longitude numeric(11,8),
     notes text,
-    user_id bigint,
     google_restaurant_id bigint,
     cuisine_type_id bigint,
     street character varying,
@@ -556,7 +556,8 @@ CREATE TABLE public.restaurants (
     favorite boolean DEFAULT false,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    original_restaurant_id bigint
+    original_restaurant_id bigint,
+    organization_id bigint
 );
 
 
@@ -826,14 +827,14 @@ CREATE TABLE public.visits (
     date date,
     title character varying,
     notes text,
-    user_id bigint NOT NULL,
     restaurant_id bigint NOT NULL,
     rating integer,
     price_paid_cents integer,
     price_paid_currency character varying,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    time_of_day time without time zone NOT NULL
+    time_of_day time without time zone NOT NULL,
+    organization_id bigint NOT NULL
 );
 
 
@@ -1231,6 +1232,20 @@ CREATE UNIQUE INDEX index_active_storage_variant_records_uniqueness ON public.ac
 
 
 --
+-- Name: index_contacts_on_name_and_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_contacts_on_name_and_organization_id ON public.contacts USING btree (name, organization_id);
+
+
+--
+-- Name: index_contacts_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_contacts_on_organization_id ON public.contacts USING btree (organization_id);
+
+
+--
 -- Name: index_contacts_on_user_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1434,24 +1449,17 @@ CREATE INDEX index_restaurants_on_notes ON public.restaurants USING btree (notes
 
 
 --
+-- Name: index_restaurants_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurants_on_organization_id ON public.restaurants USING btree (organization_id);
+
+
+--
 -- Name: index_restaurants_on_original_restaurant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_restaurants_on_original_restaurant_id ON public.restaurants USING btree (original_restaurant_id);
-
-
---
--- Name: index_restaurants_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_restaurants_on_user_id ON public.restaurants USING btree (user_id);
-
-
---
--- Name: index_restaurants_on_user_id_and_google_restaurant_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_restaurants_on_user_id_and_google_restaurant_id ON public.restaurants USING btree (user_id, google_restaurant_id);
 
 
 --
@@ -1644,17 +1652,17 @@ CREATE INDEX index_visit_contacts_on_visit_id ON public.visit_contacts USING btr
 
 
 --
+-- Name: index_visits_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_visits_on_organization_id ON public.visits USING btree (organization_id);
+
+
+--
 -- Name: index_visits_on_restaurant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_visits_on_restaurant_id ON public.visits USING btree (restaurant_id);
-
-
---
--- Name: index_visits_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_visits_on_user_id ON public.visits USING btree (user_id);
 
 
 --
@@ -1695,19 +1703,19 @@ ALTER TABLE ONLY public.list_restaurants
 
 
 --
--- Name: visits fk_rails_09e5e7c20b; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.visits
-    ADD CONSTRAINT fk_rails_09e5e7c20b FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- Name: restaurant_copies fk_rails_0ee957d258; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.restaurant_copies
     ADD CONSTRAINT fk_rails_0ee957d258 FOREIGN KEY (copied_restaurant_id) REFERENCES public.restaurants(id);
+
+
+--
+-- Name: restaurants fk_rails_1289b51deb; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurants
+    ADD CONSTRAINT fk_rails_1289b51deb FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -1740,6 +1748,14 @@ ALTER TABLE ONLY public.memberships
 
 ALTER TABLE ONLY public.restaurants
     ADD CONSTRAINT fk_rails_6459e3b9d7 FOREIGN KEY (google_restaurant_id) REFERENCES public.google_restaurants(id);
+
+
+--
+-- Name: visits fk_rails_6efda2cfb2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.visits
+    ADD CONSTRAINT fk_rails_6efda2cfb2 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -1799,19 +1815,19 @@ ALTER TABLE ONLY public.visits
 
 
 --
--- Name: restaurants fk_rails_aef57e41ec; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.restaurants
-    ADD CONSTRAINT fk_rails_aef57e41ec FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- Name: visit_contacts fk_rails_b4070a404c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.visit_contacts
     ADD CONSTRAINT fk_rails_b4070a404c FOREIGN KEY (contact_id) REFERENCES public.contacts(id);
+
+
+--
+-- Name: contacts fk_rails_b7db93c1c3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contacts
+    ADD CONSTRAINT fk_rails_b7db93c1c3 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
 
 
 --
@@ -1885,6 +1901,11 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250403210138'),
+('20250403150436'),
+('20250403140909'),
+('20250403140810'),
+('20250403140711'),
 ('20250319140828'),
 ('20241129140719'),
 ('20241122082306'),

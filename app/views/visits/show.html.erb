@@ -33,7 +33,7 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-surface-900"><%= t("images.title") %></h2>
           <div class="flex gap-4">
-            <% if @visit.user == current_user %>
+            <% if @visit.organization == Current.organization %>
               <% if @visit.images.exists? %>
                 <%= link_to edit_visit_images_path(visit_id: @visit.id, locale: current_locale),
                     class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>

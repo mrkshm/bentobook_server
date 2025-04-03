@@ -5,11 +5,17 @@ class ApplicationController < ActionController::Base
   before_action :ensure_locale_matches_url, unless: :skip_locale_check?
   before_action :configure_turbo_native_auth
   before_action :debug_request
+  before_action :set_current_attributes
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
   private
+
+  def set_current_attributes
+    Current.user = current_user
+    Current.organization = current_user&.organizations&.first
+  end
 
   def configure_turbo_native_auth
     if turbo_native_app?

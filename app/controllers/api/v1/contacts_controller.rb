@@ -6,7 +6,7 @@ module Api
       before_action :set_contact, only: [ :update, :destroy ]
 
       def index
-        contacts = current_user.contacts
+        contacts = Current.organization.contacts
         contacts = contacts.search(params[:search]) if params[:search].present?
 
         contacts = case params[:order_by]
@@ -41,7 +41,7 @@ module Api
       end
 
       def show
-        @contact = current_user.contacts.find(params[:id])
+        @contact = Current.organization.contacts.find(params[:id])
 
         if params[:include]&.include?("visits")
           @contact = Contact.includes(
@@ -96,7 +96,7 @@ module Api
         contact = nil
 
         Contact.transaction do
-          contact = current_user.contacts.build(contact_params_without_avatar)
+          contact = Current.organization.contacts.build(contact_params_without_avatar)
           contact.save!
 
           if params.dig(:contact, :avatar).present?
@@ -214,7 +214,7 @@ module Api
 
       def search
         query = params[:query].to_s.strip
-        contacts = current_user.contacts
+        contacts = Current.organization.contacts
 
         if query.present?
           contacts = contacts.search(query)
@@ -237,7 +237,7 @@ module Api
       private
 
       def set_contact
-        @contact = current_user.contacts.find(params[:id])
+        @contact = Current.organization.contacts.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render json: {
           status: "error",

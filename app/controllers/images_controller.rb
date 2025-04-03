@@ -77,7 +77,7 @@ class ImagesController < ApplicationController
     images = Image.where(id: image_ids).includes(:imageable)
 
     # Check permissions
-    unless images.all? { |image| image.imageable.user_id == current_user.id }
+    unless images.all? { |image| image.imageable.organization == Current.organization }
       render json: { error: "Unauthorized" }, status: :forbidden
       return
     end
@@ -136,7 +136,7 @@ class ImagesController < ApplicationController
   end
 
   def set_restaurant
-    @restaurant = current_user.restaurants.find(params[:restaurant_id])
+    @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
   rescue ActiveRecord::RecordNotFound
     redirect_to restaurants_path(locale: current_locale), alert: t("errors.restaurants.not_found")
   end
@@ -157,7 +157,7 @@ class ImagesController < ApplicationController
   def current_user_can_delete_image?
     case @imageable
     when Restaurant, Visit
-      @imageable.user == current_user
+      @imageable.organization == Current.organization
     else
       false
     end

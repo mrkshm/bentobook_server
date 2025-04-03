@@ -1,10 +1,11 @@
 class Contact < ApplicationRecord
-  belongs_to :user
+  belongs_to :organization
+  belongs_to :user, optional: true  # Keep this for now to track who created the contact
   has_one_attached :avatar
   has_many :visit_contacts
   has_many :visits, through: :visit_contacts
 
-  validates :name, presence: true, uniqueness: { scope: :user_id }
+  validates :name, presence: true, uniqueness: { scope: :organization_id }
 
   scope :search, ->(query) {
     return all unless query.present?
@@ -18,8 +19,8 @@ class Contact < ApplicationRecord
     )
   }
 
-  def self.frequently_used_with(user, visit, limit: 5)
-    available_contacts = user.contacts.where.not(id: visit.contact_ids)
+  def self.frequently_used_with(organization, visit, limit: 5)
+    available_contacts = organization.contacts.where.not(id: visit.contact_ids)
     total_contacts = available_contacts.count
 
     if total_contacts <= limit

@@ -7,7 +7,7 @@ module Api
       before_action :set_restaurant, only: [ :show, :update, :destroy, :add_tag, :remove_tag ]
 
       def index
-        restaurants_scope = current_user.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
+        restaurants_scope = Current.organization.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
         order_params = parse_order_params
         return if performed?
 
@@ -115,14 +115,14 @@ module Api
       private
 
       def set_restaurant
-        @restaurant = current_user.restaurants.find(params[:id])
+        @restaurant = Current.organization.restaurants.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render_error("Restaurant not found", status: :not_found)
       end
 
       def build_restaurant
         # Create restaurant with basic attributes only
-        restaurant = current_user.restaurants.new(
+        restaurant = Current.organization.restaurants.new(
           name: restaurant_params[:name],
           notes: restaurant_params[:notes],
           rating: restaurant_params[:rating].present? ? restaurant_params[:rating].to_i : nil,
@@ -172,7 +172,7 @@ module Api
       def search_params
         params.permit(
           :search, :tag, :latitude, :longitude, :per_page
-        ).merge(user: current_user)
+        ).merge(organization: Current.organization)
       end
 
       def restaurant_params

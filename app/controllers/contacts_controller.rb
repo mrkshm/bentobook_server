@@ -7,7 +7,7 @@ class ContactsController < ApplicationController
     items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
     page = params[:page].to_i.positive? ? params[:page].to_i : 1
 
-    contacts = current_user.contacts
+    contacts = Current.organization.contacts
     contacts = contacts.search(params[:search]) if params[:search].present?
 
     contacts = case params[:order_by]
@@ -32,11 +32,12 @@ class ContactsController < ApplicationController
   end
 
   def new
-    @contact = current_user.contacts.build
+    @contact = Current.organization.contacts.build
   end
 
   def create
-    @contact = current_user.contacts.build(contact_params_without_avatar)
+    @contact = Current.organization.contacts.build(contact_params_without_avatar)
+    @contact.user = current_user  # Track who created the contact
     if @contact.save
       if params[:contact][:avatar].present?
         ImageHandlingService.process_images(@contact, params, compress: true)
@@ -50,9 +51,9 @@ class ContactsController < ApplicationController
   end
 
   def show
-    @contact = current_user.contacts.includes(visits: [ :restaurant, :images, :contacts ]).find(params[:id])
+    @contact = Current.organization.contacts.includes(visits: [ :restaurant, :images, :contacts ]).find(params[:id])
   rescue ActiveRecord::RecordNotFound
-    Rails.logger.error "Attempted to access invalid contact #{params[:id]} for user #{current_user.id}"
+    Rails.logger.error "Attempted to access invalid contact #{params[:id]} for organization #{Current.organization.id}"
     redirect_to contacts_path, alert: "Contact not found."
   end
 
@@ -83,10 +84,10 @@ class ContactsController < ApplicationController
   private
 
   def set_contact
-    @contact = current_user.contacts.find(params[:id])
-    rescue ActiveRecord::RecordNotFound
-      Rails.logger.error "Attempted to access invalid contact #{params[:id]} for user #{current_user.id}"
-      redirect_to contacts_path, alert: "Contact not found."
+    @contact = Current.organization.contacts.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    Rails.logger.error "Attempted to access invalid contact #{params[:id]} for organization #{Current.organization.id}"
+    redirect_to contacts_path, alert: "Contact not found."
   end
 
   def contact_params_without_avatar

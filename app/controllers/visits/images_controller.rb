@@ -40,7 +40,7 @@ module Visits
     private
 
     def set_visit
-      @visit = current_user.visits.find(params[:visit_id])
+      @visit = Current.organization.visits.find(params[:visit_id])
     end
   end
 end

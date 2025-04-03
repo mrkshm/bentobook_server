@@ -87,10 +87,10 @@
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
               <div class="flex gap-4">
-              <% if @restaurant.user == current_user %>
+              <% if @restaurant.organization == Current.organization %>
                 <% if @restaurant.images.exists? %>
                 <%= link_to edit_restaurant_images_path(restaurant_id: @restaurant.id), class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
-                  <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1 text-primary-600" } %>
+                  <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1" } %>
                   <%= t("images.edit_photos") %>
                 <% end %>
                 <% end %>
@@ -156,7 +156,7 @@
 
         <!-- Action Buttons -->
         <div class="mt-8 flex space-x-4">
-          <% if @restaurant.user == current_user %>
+          <% if @restaurant.organization == Current.organization %>
             <%= link_to t('restaurants.edit'), edit_restaurant_path(id: @restaurant.id), class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-primary-600 text-primary-50 hover:bg-primary-700 transition-colors' %>
           <% end %>
           <%= link_to t('common.back'), restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors' %>

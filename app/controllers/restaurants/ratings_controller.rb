@@ -28,7 +28,7 @@ module Restaurants
     private
 
     def set_restaurant
-      @restaurant = current_user.restaurants.find(params[:restaurant_id])
+      @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
     end
 
     def rating_params

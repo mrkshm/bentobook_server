@@ -1,7 +1,7 @@
 class Restaurant < ApplicationRecord
     include PgSearch::Model
 
-    belongs_to :user
+    belongs_to :organization
     belongs_to :google_restaurant
     accepts_nested_attributes_for :google_restaurant
     has_many :visits, dependent: :restrict_with_error
@@ -14,7 +14,6 @@ class Restaurant < ApplicationRecord
     has_many :restaurant_copies_as_copy, class_name: "RestaurantCopy", foreign_key: :copied_restaurant_id, dependent: :destroy
 
     acts_as_taggable_on :tags
-
     delegate :latitude, :longitude, :location, to: :google_restaurant, allow_nil: true
 
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true

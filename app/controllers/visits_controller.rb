@@ -12,7 +12,7 @@ class VisitsController < ApplicationController
       items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
       page = params[:page].to_i.positive? ? params[:page].to_i : 1
 
-      visits = current_user.visits
+      visits = Current.organization.visits
         .includes(:restaurant, { contacts: { avatar_attachment: :blob } }, images: { file_attachment: :blob })
 
       visits = visits.search_by_full_text(@search) if @search.present?
@@ -45,12 +45,12 @@ class VisitsController < ApplicationController
 
     def new
       @visit = Visit.new
-      @restaurant = current_user.restaurants.find(params[:restaurant_id]) if params[:restaurant_id]
+      @restaurant = Current.organization.restaurants.find(params[:restaurant_id]) if params[:restaurant_id]
       @visit.restaurant_id = params[:restaurant_id] if params[:restaurant_id].present?
     end
 
     def create
-      @visit = current_user.visits.build(visit_params)
+      @visit = Current.organization.visits.build(visit_params)
       save_visit(:new)
     end
 
@@ -74,7 +74,7 @@ class VisitsController < ApplicationController
     private
 
     def set_visit
-      @visit = current_user.visits.find(params[:id])
+      @visit = Current.organization.visits.find(params[:id])
       rescue ActiveRecord::RecordNotFound
         flash[:alert] = I18n.t("errors.visits.not_found")
         redirect_to visits_path
@@ -99,7 +99,7 @@ class VisitsController < ApplicationController
     end
 
     def valid_restaurant?(restaurant_id)
-      current_user.restaurants.exists?(restaurant_id)
+      Current.organization.restaurants.exists?(restaurant_id)
     end
 
     def ensure_valid_restaurant

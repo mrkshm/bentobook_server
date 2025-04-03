@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :images, as: :imageable, dependent: :destroy
   has_one :profile, dependent: :destroy
   after_create :ensure_profile
+  after_create :create_organization
 
   has_many :lists, as: :owner, dependent: :destroy
   has_many :shares, foreign_key: :recipient_id
@@ -72,5 +73,15 @@ class User < ApplicationRecord
 
   def ensure_profile
     create_profile if profile.nil?
+  end
+
+  def create_organization
+    org = Organization.new(id: id)
+    org.save(validate: false)
+
+    memberships.create!(organization: org)
+  rescue => e
+    Rails.logger.error "Failed to create organization for user #{id}: #{e.message}"
+    raise e
   end
 end
