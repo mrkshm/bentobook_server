@@ -127,6 +127,41 @@ ALTER SEQUENCE public.active_storage_variant_records_id_seq OWNED BY public.acti
 
 
 --
+-- Name: allowlisted_jwts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.allowlisted_jwts (
+    id bigint NOT NULL,
+    jti character varying NOT NULL,
+    exp timestamp(6) without time zone,
+    user_id bigint NOT NULL,
+    metadata json,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    aud character varying
+);
+
+
+--
+-- Name: allowlisted_jwts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.allowlisted_jwts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: allowlisted_jwts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.allowlisted_jwts_id_seq OWNED BY public.allowlisted_jwts.id;
+
+
+--
 -- Name: ar_internal_metadata; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -339,7 +374,8 @@ CREATE TABLE public.lists (
     premium boolean DEFAULT false,
     "position" integer,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    organization_id bigint NOT NULL
 );
 
 
@@ -695,51 +731,6 @@ ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
 
 
 --
--- Name: user_sessions; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.user_sessions (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    jti character varying NOT NULL,
-    client_name character varying NOT NULL,
-    last_used_at timestamp(6) without time zone NOT NULL,
-    ip_address character varying,
-    user_agent character varying,
-    active boolean DEFAULT true NOT NULL,
-    created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL,
-    device_type character varying,
-    os_name character varying,
-    os_version character varying,
-    browser_name character varying,
-    browser_version character varying,
-    last_ip_address character varying,
-    location_country character varying,
-    suspicious boolean DEFAULT false
-);
-
-
---
--- Name: user_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.user_sessions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: user_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.user_sessions_id_seq OWNED BY public.user_sessions.id;
-
-
---
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -879,6 +870,13 @@ ALTER TABLE ONLY public.active_storage_variant_records ALTER COLUMN id SET DEFAU
 
 
 --
+-- Name: allowlisted_jwts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.allowlisted_jwts ALTER COLUMN id SET DEFAULT nextval('public.allowlisted_jwts_id_seq'::regclass);
+
+
+--
 -- Name: contacts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -984,13 +982,6 @@ ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id
 
 
 --
--- Name: user_sessions id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.user_sessions ALTER COLUMN id SET DEFAULT nextval('public.user_sessions_id_seq'::regclass);
-
-
---
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1033,6 +1024,14 @@ ALTER TABLE ONLY public.active_storage_blobs
 
 ALTER TABLE ONLY public.active_storage_variant_records
     ADD CONSTRAINT active_storage_variant_records_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: allowlisted_jwts allowlisted_jwts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.allowlisted_jwts
+    ADD CONSTRAINT allowlisted_jwts_pkey PRIMARY KEY (id);
 
 
 --
@@ -1172,14 +1171,6 @@ ALTER TABLE ONLY public.tags
 
 
 --
--- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.user_sessions
-    ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (id);
-
-
---
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1229,6 +1220,34 @@ CREATE UNIQUE INDEX index_active_storage_blobs_on_key ON public.active_storage_b
 --
 
 CREATE UNIQUE INDEX index_active_storage_variant_records_uniqueness ON public.active_storage_variant_records USING btree (blob_id, variation_digest);
+
+
+--
+-- Name: index_allowlisted_jwts_on_aud_and_jti; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_allowlisted_jwts_on_aud_and_jti ON public.allowlisted_jwts USING btree (aud, jti);
+
+
+--
+-- Name: index_allowlisted_jwts_on_exp; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_allowlisted_jwts_on_exp ON public.allowlisted_jwts USING btree (exp);
+
+
+--
+-- Name: index_allowlisted_jwts_on_jti; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_allowlisted_jwts_on_jti ON public.allowlisted_jwts USING btree (jti);
+
+
+--
+-- Name: index_allowlisted_jwts_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_allowlisted_jwts_on_user_id ON public.allowlisted_jwts USING btree (user_id);
 
 
 --
@@ -1327,6 +1346,13 @@ CREATE UNIQUE INDEX index_list_restaurants_on_list_id_and_restaurant_id ON publi
 --
 
 CREATE INDEX index_list_restaurants_on_restaurant_id ON public.list_restaurants USING btree (restaurant_id);
+
+
+--
+-- Name: index_lists_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_lists_on_organization_id ON public.lists USING btree (organization_id);
 
 
 --
@@ -1561,55 +1587,6 @@ CREATE UNIQUE INDEX index_tags_on_name ON public.tags USING btree (name);
 
 
 --
--- Name: index_user_sessions_on_active; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_user_sessions_on_active ON public.user_sessions USING btree (active);
-
-
---
--- Name: index_user_sessions_on_device_type; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_user_sessions_on_device_type ON public.user_sessions USING btree (device_type);
-
-
---
--- Name: index_user_sessions_on_jti; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_user_sessions_on_jti ON public.user_sessions USING btree (jti);
-
-
---
--- Name: index_user_sessions_on_last_used_at; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_user_sessions_on_last_used_at ON public.user_sessions USING btree (last_used_at);
-
-
---
--- Name: index_user_sessions_on_suspicious; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_user_sessions_on_suspicious ON public.user_sessions USING btree (suspicious);
-
-
---
--- Name: index_user_sessions_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_user_sessions_on_user_id ON public.user_sessions USING btree (user_id);
-
-
---
--- Name: index_user_sessions_on_user_id_and_client_name; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_user_sessions_on_user_id_and_client_name ON public.user_sessions USING btree (user_id, client_name);
-
-
---
 -- Name: index_users_on_confirmation_token; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1759,6 +1736,14 @@ ALTER TABLE ONLY public.visits
 
 
 --
+-- Name: allowlisted_jwts fk_rails_77afa78cd5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.allowlisted_jwts
+    ADD CONSTRAINT fk_rails_77afa78cd5 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: contacts fk_rails_8d2134e55e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1788,14 +1773,6 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 ALTER TABLE ONLY public.restaurant_copies
     ADD CONSTRAINT fk_rails_9d4e535f93 FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
--- Name: user_sessions fk_rails_9fa262d742; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.user_sessions
-    ADD CONSTRAINT fk_rails_9fa262d742 FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -1871,6 +1848,14 @@ ALTER TABLE ONLY public.restaurants
 
 
 --
+-- Name: lists fk_rails_dff59680c7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lists
+    ADD CONSTRAINT fk_rails_dff59680c7 FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: profiles fk_rails_e424190865; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1901,6 +1886,10 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250403223501'),
+('20250403223500'),
+('20250403210140'),
+('20250403210139'),
 ('20250403210138'),
 ('20250403150436'),
 ('20250403140909'),

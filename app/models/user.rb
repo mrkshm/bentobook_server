@@ -1,11 +1,12 @@
 class User < ApplicationRecord
-  include JwtRevocationStrategy
+  include Devise::JWT::RevocationStrategies::Allowlist
 
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
-         :confirmable, :trackable, :lockable
+         :confirmable, :trackable, :lockable,
+         :jwt_authenticatable, jwt_revocation_strategy: self
 
-  has_many :user_sessions, dependent: :destroy
+  has_many :allowlisted_jwts, dependent: :destroy
   has_many :restaurants
   has_many :google_restaurants, through: :restaurants
   has_many :memberships
@@ -43,30 +44,11 @@ class User < ApplicationRecord
     Rails.env.production? ? super : nil
   end
 
-  # Session management methods
-  def create_session!(client_name:, ip_address: "127.0.0.1", user_agent: nil)
-    session = user_sessions.create!(
-      client_name: client_name,
-      ip_address: ip_address,
-      user_agent: user_agent,
-      active: true
+  # JWT callback - add custom claims
+  def on_jwt_dispatch(_token, payload)
+    payload.merge!(
+      'client_info' => current_sign_in_ip
     )
-
-    # Generate token but return session
-    generate_jwt_token(session)
-    session
-  end
-
-  def active_sessions
-    user_sessions.active
-  end
-
-  def revoke_session!(jti)
-    user_sessions.find_by(jti: jti)&.update!(active: false)
-  end
-
-  def revoke_all_sessions!
-    user_sessions.active.update_all(active: false)
   end
 
   private
