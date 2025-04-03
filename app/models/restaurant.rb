@@ -19,6 +19,7 @@ class Restaurant < ApplicationRecord
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
     validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
     validates :business_status, inclusion: { in: [ "OPERATIONAL", "CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY" ] }, allow_nil: true
+    validates :organization, presence: true
 
     scope :favorites, -> { where(favorite: true) }
 
@@ -96,7 +97,6 @@ class Restaurant < ApplicationRecord
     def distance_to(lat, lon)
       return nil unless google_restaurant&.location
 
-      point = "POINT(#{lon} #{lat})"
       GoogleRestaurant
         .select("ST_Distance(location, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)::geography) as distance")
         .find(google_restaurant_id)
@@ -113,21 +113,22 @@ class Restaurant < ApplicationRecord
         .order(Arel.sql("COUNT(visits.id) #{direction}"))
     }
 
-    def copy_for_user(user)
-      return self if user == self.user
+    # Copy a restaurant to another organization
+    def copy_for_organization(target_organization)
+      return self if target_organization == self.organization
 
       transaction do
         # Check if a copy already exists
-        existing_copy = RestaurantCopy.find_by(user: user, restaurant: self)
+        existing_copy = RestaurantCopy.find_by(organization: target_organization, restaurant: self)
         return existing_copy.copied_restaurant if existing_copy
 
         copy = self.dup
-        copy.user = user
+        copy.organization = target_organization
         copy.original_restaurant = self
         copy.save!
 
         RestaurantCopy.create!(
-          user: user,
+          organization: target_organization,
           restaurant: self,
           copied_restaurant: copy
         )
@@ -136,6 +137,6 @@ class Restaurant < ApplicationRecord
       end
     rescue ActiveRecord::RecordNotUnique
       # If we hit a race condition, try to find the existing copy
-      RestaurantCopy.find_by!(user: user, restaurant: self).copied_restaurant
+      RestaurantCopy.find_by!(organization: target_organization, restaurant: self).copied_restaurant
     end
 end

@@ -6,9 +6,9 @@ module Api
 
       def index
         lists = if params[:include]&.include?("shared")
-                 List.accessible_by(current_user).includes(:restaurants)
+                 Current.organization.lists.accessible_by(current_user).includes(:restaurants)
         else
-                 current_user.lists.includes(:restaurants)
+                 Current.organization.lists.where(creator: current_user).includes(:restaurants)
         end
 
         if lists.empty?
@@ -52,7 +52,7 @@ module Api
       end
 
       def show
-        list = List.accessible_by(current_user).includes(:restaurants).find(params[:id])
+        list = Current.organization.lists.accessible_by(current_user).includes(:restaurants).find(params[:id])
         render json: ListSerializer.render_success(list)
       rescue ActiveRecord::RecordNotFound
         render json: {
@@ -67,7 +67,7 @@ module Api
       end
 
       def create
-        list = current_user.lists.build(list_params)
+        list = Current.organization.lists.build(list_params.merge(creator: current_user))
         if list.save
           render json: ListSerializer.render_success(list), status: :created
         else
@@ -97,7 +97,7 @@ module Api
       private
 
       def set_list
-        @list = current_user.lists.find(params[:id])
+        @list = Current.organization.lists.where(creator: current_user).find(params[:id])
       rescue ActiveRecord::RecordNotFound
         render json: {
           status: "error",

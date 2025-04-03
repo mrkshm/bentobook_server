@@ -1,8 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe ImageProcessorService do
-  let(:user) { create(:user) }
-  let(:restaurant) { create(:restaurant, user: user) }
+  let(:organization) { create(:organization) }
+  let(:user) { create(:user, organization: organization) }
+  let(:restaurant) { create(:restaurant, organization: organization) }
   
   # Create a proper test file
   let(:valid_image) do
