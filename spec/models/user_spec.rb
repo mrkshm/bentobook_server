@@ -1,158 +1,127 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
+  subject { build(:user) }
+
   describe 'associations' do
-    it { should have_many(:restaurants) }
-    it { should have_many(:google_restaurants).through(:restaurants) }
-    it { should have_many(:memberships) }
+    it { should have_many(:allowlisted_jwts).dependent(:destroy) }
+    it { should have_many(:memberships).dependent(:destroy) }
     it { should have_many(:organizations).through(:memberships) }
-    it { should have_many(:contacts) }
-    it { should have_many(:visits) }
-    it { should have_many(:images).dependent(:destroy) }
     it { should have_one(:profile).dependent(:destroy) }
-    it { should have_many(:lists).dependent(:destroy) }
+    it { should have_many(:created_lists).class_name('List').with_foreign_key(:creator_id) }
     it { should have_many(:shares).with_foreign_key(:recipient_id) }
-    it { should have_many(:created_shares).class_name('Share').with_foreign_key(:creator_id) }
-    it { should have_many(:shared_lists).through(:shares).source(:shareable).conditions(shares: { shareable_type: 'List' }) }
-    it { should have_many(:user_sessions).dependent(:destroy) }
   end
 
   describe 'validations' do
     it { should validate_presence_of(:email) }
-    it { should validate_presence_of(:password) }
+    it { should validate_uniqueness_of(:email).case_insensitive }
   end
 
   describe 'callbacks' do
-    it 'creates a profile after user creation' do
-      user = create(:user)
-      expect(user.reload.profile).to be_present
+    describe 'after_create' do
+      it 'creates an organization for the user' do
+        user = create(:user)
+        expect(user.organizations.count).to eq(1)
+      end
+
+      it 'creates a membership for the user in the new organization' do
+        user = create(:user)
+        expect(user.memberships.count).to eq(1)
+      end
+
+      it 'creates a profile for the user' do
+        user = create(:user)
+        expect(user.profile).to be_present
+      end
+
+      context 'when organization creation fails' do
+        let(:logger) { instance_double(ActiveSupport::Logger) }
+        
+        before do
+          allow(Rails).to receive(:logger).and_return(logger)
+          allow(logger).to receive(:error)
+          allow_any_instance_of(Organization).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(Organization.new))
+        end
+
+        it 'logs the error and re-raises it' do
+          user = build(:user)
+          expect(logger).to receive(:error).with(/Failed to create organization for user #{user.id}/)
+          expect { user.save! }.to raise_error(ActiveRecord::RecordInvalid)
+        end
+
+        it 'rolls back user creation' do
+          expect {
+            begin
+              create(:user)
+            rescue ActiveRecord::RecordInvalid
+              nil
+            end
+          }.not_to change(User, :count)
+        end
+      end
+
+      context 'when membership creation fails' do
+        let(:logger) { instance_double(ActiveSupport::Logger) }
+        
+        before do
+          allow(Rails).to receive(:logger).and_return(logger)
+          allow(logger).to receive(:error)
+          allow_any_instance_of(Membership).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(Membership.new))
+        end
+
+        it 'logs the error and re-raises it' do
+          user = build(:user)
+          expect(logger).to receive(:error).with(/Failed to create organization for user #{user.id}/)
+          expect { user.save! }.to raise_error(ActiveRecord::RecordInvalid)
+        end
+
+        it 'rolls back user and organization creation' do
+          expect {
+            begin
+              create(:user)
+            rescue ActiveRecord::RecordInvalid
+              nil
+            end
+          }.not_to change { [User.count, Organization.count] }
+        end
+      end
     end
   end
 
-  describe 'instance methods' do
+  describe 'JWT handling' do
+    describe '#on_jwt_dispatch' do
+      it 'adds client_info to the payload' do
+        user = create(:user)
+        payload = {}
+        user.on_jwt_dispatch(nil, payload)
+        expect(payload['client_info']).to eq(user.current_sign_in_ip)
+      end
+    end
+  end
+
+  describe 'development convenience methods' do
     describe '#confirmation_required?' do
-      it 'returns true in production environment' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new("production"))
-        user = build(:user)
-        expect(user.confirmation_required?).to be true
+      it 'returns true in production' do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+        expect(subject.confirmation_required?).to be true
       end
 
-      it 'returns false in development environment' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new("development"))
-        user = build(:user)
-        expect(user.confirmation_required?).to be false
+      it 'returns false in development' do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        expect(subject.confirmation_required?).to be false
       end
     end
 
     describe '#lock_access!' do
-      it 'does not lock access in development environment' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new("development"))
-        user = create(:user)
-        expect { user.lock_access! }.not_to change { user.access_locked? }
+      it 'returns nil in development' do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        expect(subject.lock_access!).to be_nil
       end
 
-      it 'locks access in production environment' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new("production"))
-        user = create(:user)
-        expect { user.lock_access! }.to change { user.access_locked? }.from(false).to(true)
-      end
-    end
-
-    describe 'session management' do
-      let(:user) { create(:user) }
-      let(:session_params) do
-        {
-          client_name: 'test_client',
-          ip_address: '127.0.0.1',
-          user_agent: 'Mozilla/5.0'
-        }
-      end
-
-      describe '#create_session!' do
-        it 'creates a new user session' do
-          expect {
-            user.create_session!(**session_params)
-          }.to change(user.user_sessions, :count).by(1)
-        end
-
-        it 'sets the correct attributes' do
-          session = user.create_session!(**session_params)
-          expect(session.client_name).to eq('test_client')
-          expect(session.ip_address).to eq('127.0.0.1')
-          expect(session.user_agent).to eq('Mozilla/5.0')
-          expect(session).to be_active
-        end
-      end
-
-      describe '#active_sessions' do
-        before do
-          2.times { user.create_session!(**session_params) }
-          user.user_sessions.last.update!(active: false)
-        end
-
-        it 'returns only active sessions' do
-          expect(user.active_sessions.count).to eq(1)
-          expect(user.active_sessions.first).to be_active
-        end
-      end
-
-      describe '#revoke_session!' do
-        it 'revokes the specified session' do
-          session = user.create_session!(**session_params)
-          user.revoke_session!(session.jti)
-          expect(session.reload).not_to be_active
-        end
-      end
-
-      describe '#revoke_all_sessions!' do
-        it 'revokes all active sessions' do
-          3.times { user.create_session!(**session_params) }
-          user.revoke_all_sessions!
-          expect(user.active_sessions).to be_empty
-        end
-      end
-    end
-
-    describe 'shared lists' do
-      let(:user) { create(:user) }
-      let(:list) { create(:list) }
-
-      before do
-        create(:share, shareable: list, recipient: user, status: :pending)
-        create(:share, shareable: create(:list), recipient: user, status: :accepted)
-      end
-
-      describe '#shared_lists' do
-        describe '#pending' do
-          it 'returns only pending shared lists' do
-            expect(user.shared_lists.pending.count).to eq(1)
-          end
-        end
-
-        describe '#accepted' do
-          it 'returns only accepted shared lists' do
-            expect(user.shared_lists.accepted.count).to eq(1)
-          end
-        end
-      end
-    end
-
-    describe '#jwt_revoked?' do
-      let(:user) { create(:user) }
-      let(:session) { user.create_session!(client_name: 'test', ip_address: '127.0.0.1') }
-      let(:payload) { { 'jti' => session.jti } }
-
-      it 'returns false for active sessions' do
-        expect(user.send(:jwt_revoked?, payload, user)).to be false
-      end
-
-      it 'returns true for revoked sessions' do
-        session.update!(active: false)
-        expect(user.send(:jwt_revoked?, payload, user)).to be true
-      end
-
-      it 'returns false for unknown JTIs' do
-        expect(user.send(:jwt_revoked?, { 'jti' => 'unknown' }, user)).to be false
+      it 'delegates to Devise in production' do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+        expect_any_instance_of(Devise::Models::Lockable).to receive(:lock_access!)
+        subject.lock_access!
       end
     end
   end

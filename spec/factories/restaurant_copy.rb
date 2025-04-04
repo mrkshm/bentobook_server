@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :restaurant_copy do
-    user
+    organization
     association :restaurant
     association :copied_restaurant, factory: :restaurant
   end

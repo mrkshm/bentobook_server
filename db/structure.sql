@@ -10,6 +10,20 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+
+
+--
 -- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -21,6 +35,20 @@ CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
+
+
+--
+-- Name: unaccent; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION unaccent; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION unaccent IS 'text search dictionary that removes accents';
 
 
 SET default_tablespace = '';
@@ -185,7 +213,6 @@ CREATE TABLE public.contacts (
     country character varying,
     phone character varying,
     notes text,
-    user_id bigint NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     organization_id bigint NOT NULL
@@ -368,14 +395,13 @@ CREATE TABLE public.lists (
     id bigint NOT NULL,
     name character varying NOT NULL,
     description text,
-    owner_type character varying NOT NULL,
-    owner_id bigint NOT NULL,
     visibility integer DEFAULT 0,
     premium boolean DEFAULT false,
     "position" integer,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    organization_id bigint NOT NULL
+    organization_id bigint NOT NULL,
+    creator_id bigint NOT NULL
 );
 
 
@@ -537,11 +563,11 @@ ALTER SEQUENCE public.profiles_id_seq OWNED BY public.profiles.id;
 
 CREATE TABLE public.restaurant_copies (
     id bigint NOT NULL,
-    user_id bigint NOT NULL,
     restaurant_id bigint NOT NULL,
     copied_restaurant_id bigint NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    organization_id bigint NOT NULL
 );
 
 
@@ -593,7 +619,8 @@ CREATE TABLE public.restaurants (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     original_restaurant_id bigint,
-    organization_id bigint
+    organization_id bigint,
+    tsv tsvector
 );
 
 
@@ -1265,13 +1292,6 @@ CREATE INDEX index_contacts_on_organization_id ON public.contacts USING btree (o
 
 
 --
--- Name: index_contacts_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_contacts_on_user_id ON public.contacts USING btree (user_id);
-
-
---
 -- Name: index_cuisine_types_on_name; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1349,24 +1369,17 @@ CREATE INDEX index_list_restaurants_on_restaurant_id ON public.list_restaurants 
 
 
 --
+-- Name: index_lists_on_creator_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_lists_on_creator_id ON public.lists USING btree (creator_id);
+
+
+--
 -- Name: index_lists_on_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_lists_on_organization_id ON public.lists USING btree (organization_id);
-
-
---
--- Name: index_lists_on_owner; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_lists_on_owner ON public.lists USING btree (owner_type, owner_id);
-
-
---
--- Name: index_lists_on_owner_type_and_owner_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_lists_on_owner_type_and_owner_id ON public.lists USING btree (owner_type, owner_id);
 
 
 --
@@ -1405,24 +1418,24 @@ CREATE INDEX index_restaurant_copies_on_copied_restaurant_id ON public.restauran
 
 
 --
+-- Name: index_restaurant_copies_on_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurant_copies_on_organization_id ON public.restaurant_copies USING btree (organization_id);
+
+
+--
+-- Name: index_restaurant_copies_on_organization_id_and_restaurant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_restaurant_copies_on_organization_id_and_restaurant_id ON public.restaurant_copies USING btree (organization_id, restaurant_id);
+
+
+--
 -- Name: index_restaurant_copies_on_restaurant_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_restaurant_copies_on_restaurant_id ON public.restaurant_copies USING btree (restaurant_id);
-
-
---
--- Name: index_restaurant_copies_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_restaurant_copies_on_user_id ON public.restaurant_copies USING btree (user_id);
-
-
---
--- Name: index_restaurant_copies_on_user_id_and_restaurant_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_restaurant_copies_on_user_id_and_restaurant_id ON public.restaurant_copies USING btree (user_id, restaurant_id);
 
 
 --
@@ -1643,6 +1656,13 @@ CREATE INDEX index_visits_on_restaurant_id ON public.visits USING btree (restaur
 
 
 --
+-- Name: restaurants_tsv_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX restaurants_tsv_idx ON public.restaurants USING gin (tsv);
+
+
+--
 -- Name: taggings_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1661,6 +1681,13 @@ CREATE INDEX taggings_idy ON public.taggings USING btree (taggable_id, taggable_
 --
 
 CREATE INDEX taggings_taggable_context_idx ON public.taggings USING btree (taggable_id, taggable_type, context);
+
+
+--
+-- Name: restaurants tsvectorupdate; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE ON public.restaurants FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('tsv', 'pg_catalog.english', 'name', 'address');
 
 
 --
@@ -1736,19 +1763,19 @@ ALTER TABLE ONLY public.visits
 
 
 --
+-- Name: restaurant_copies fk_rails_6f10117c5e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_copies
+    ADD CONSTRAINT fk_rails_6f10117c5e FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: allowlisted_jwts fk_rails_77afa78cd5; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.allowlisted_jwts
     ADD CONSTRAINT fk_rails_77afa78cd5 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: contacts fk_rails_8d2134e55e; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.contacts
-    ADD CONSTRAINT fk_rails_8d2134e55e FOREIGN KEY (user_id) REFERENCES public.users(id);
 
 
 --
@@ -1768,14 +1795,6 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
--- Name: restaurant_copies fk_rails_9d4e535f93; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.restaurant_copies
-    ADD CONSTRAINT fk_rails_9d4e535f93 FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- Name: taggings fk_rails_9fcd2e236b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1789,6 +1808,14 @@ ALTER TABLE ONLY public.taggings
 
 ALTER TABLE ONLY public.visits
     ADD CONSTRAINT fk_rails_9feab3f441 FOREIGN KEY (restaurant_id) REFERENCES public.restaurants(id);
+
+
+--
+-- Name: lists fk_rails_aee8c45fb9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.lists
+    ADD CONSTRAINT fk_rails_aee8c45fb9 FOREIGN KEY (creator_id) REFERENCES public.users(id);
 
 
 --
@@ -1886,6 +1913,13 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250404133041'),
+('20250404124930'),
+('20250404124651'),
+('20250404124537'),
+('20250404112449'),
+('20250404091747'),
+('20250404091131'),
 ('20250403223501'),
 ('20250403223500'),
 ('20250403210140'),

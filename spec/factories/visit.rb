@@ -1,8 +1,9 @@
 FactoryBot.define do
   factory :visit do
-    user
+    association :organization
     restaurant
     date { Date.today }
+    time_of_day { Time.current }
     title { "Visit to Restaurant" }
     notes { "Had a great time" }
     rating { rand(1..5) }

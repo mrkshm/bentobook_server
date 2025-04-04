@@ -10,7 +10,7 @@ class ListStatistics
 
   def visited_count
     @visited_count ||= list.restaurants.joins(:visits)
-                          .where(visits: { organization_id: user.organization_id })
+                          .where(visits: { organization: user.organizations })
                           .distinct.count
   end
 
@@ -22,7 +22,7 @@ class ListStatistics
   def last_visited_at
     @last_visited_at ||= list.restaurants
                             .joins(:visits)
-                            .where(visits: { organization_id: user.organization_id })
+                            .where(visits: { organization: user.organizations })
                             .maximum('visits.created_at')
   end
 

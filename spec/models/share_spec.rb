@@ -2,9 +2,14 @@ require 'rails_helper'
 
 RSpec.describe Share, type: :model do
   describe 'validations' do
+    let(:organization) { create(:organization) }
     let(:creator) { create(:user) }
     let(:recipient) { create(:user) }
-    let(:list) { create(:list, owner: creator) }
+    let(:list) { create(:list, organization: organization, creator: creator) }
+    
+    before do
+      create(:membership, user: creator, organization: organization)
+    end
     
     it { should belong_to(:creator).class_name('User') }
     it { should belong_to(:recipient).class_name('User') }

@@ -2,20 +2,21 @@ class Restaurant < ApplicationRecord
     include PgSearch::Model
 
     belongs_to :organization
-    belongs_to :google_restaurant
+    belongs_to :google_restaurant, optional: true
     accepts_nested_attributes_for :google_restaurant
+    belongs_to :cuisine_type, optional: true
     has_many :visits, dependent: :restrict_with_error
     has_many :images, as: :imageable, dependent: :destroy
     has_many :list_restaurants, class_name: "ListRestaurant", dependent: :destroy
     has_many :lists, through: :list_restaurants
     has_many :copies, class_name: "Restaurant", foreign_key: :original_restaurant_id
     belongs_to :original_restaurant, class_name: "Restaurant", optional: true
-    belongs_to :cuisine_type
     has_many :restaurant_copies_as_copy, class_name: "RestaurantCopy", foreign_key: :copied_restaurant_id, dependent: :destroy
 
     acts_as_taggable_on :tags
     delegate :latitude, :longitude, :location, to: :google_restaurant, allow_nil: true
 
+    validates :name, presence: true, unless: -> { google_restaurant.present? }
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
     validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
     validates :business_status, inclusion: { in: [ "OPERATIONAL", "CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY" ] }, allow_nil: true
@@ -23,26 +24,48 @@ class Restaurant < ApplicationRecord
 
     scope :favorites, -> { where(favorite: true) }
 
-    pg_search_scope :search_by_full_text,
+    pg_search_scope :search_by_all_fields,
                     against: {
                       name: "A",
-                      notes: "B"
+                      address: "B",
+                      notes: "D"
                     },
                     associated_against: {
                       google_restaurant: {
                         name: "A",
-                        city: "B",
-                        postal_code: "B",
-                        address: "C"
+                        address: "B",
+                        city: "C",
+                        country: "C"
                       }
                     },
                     using: {
-                      tsearch: { prefix: true, dictionary: "english" }
+                      tsearch: {
+                        prefix: true,
+                        dictionary: "english",
+                        tsvector_column: "tsv"
+                      }
                     }
 
-    scope :search_by_name_and_address, ->(query) {
+    def self.search_by_name_and_address(query, organization)
+      search_by_all_fields(query).where(organization_id: organization.id)
+    end
+
+    scope :near, ->(lat, lon, distance_in_meters = 50000) {
       joins(:google_restaurant)
-        .where("restaurants.name ILIKE :query OR restaurants.address ILIKE :query OR google_restaurants.name ILIKE :query OR google_restaurants.address ILIKE :query", query: "%#{query}%")
+        .where(
+          "ST_DWithin(google_restaurants.location::geography, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography, :distance)",
+          lat: lat.to_f,
+          lon: lon.to_f,
+          distance: distance_in_meters.to_f
+        )
+    }
+
+    scope :order_by_distance_from, ->(lat, lon) {
+      lon_val = lon.to_f
+      lat_val = lat.to_f
+      joins(:google_restaurant)
+        .select("restaurants.*, ST_Distance(google_restaurants.location::geography, ST_SetSRID(ST_MakePoint(#{lon_val}, #{lat_val}), 4326)::geography) as distance")
+        .order('distance')
     }
 
     GOOGLE_FALLBACK_ATTRIBUTES = [
@@ -63,25 +86,6 @@ class Restaurant < ApplicationRecord
                   "COALESCE(restaurants.#{attr}, google_restaurants.#{attr}) AS combined_#{attr}"
                 }.join(", ") +
                 ", restaurants.price_level AS restaurant_price_level, restaurants.rating AS restaurant_rating")
-    end
-
-    def self.near(center_lat, center_lon, distance = 50000, options = {})
-      # Convert km to meters if units option is provided
-      distance_in_meters = if options[:units] == :km
-        distance * 1000
-      else
-        distance
-      end
-
-      with_google
-        .joins(:google_restaurant)
-        .merge(GoogleRestaurant.nearby(center_lat, center_lon, distance_in_meters))
-    end
-
-    def self.order_by_distance_from(lat, lon)
-      with_google
-        .joins(:google_restaurant)
-        .merge(GoogleRestaurant.order_by_distance_from(lat, lon))
     end
 
     def visit_count
@@ -109,8 +113,8 @@ class Restaurant < ApplicationRecord
 
     scope :order_by_visits, ->(direction = :desc) {
       left_joins(:visits)
-        .group(:id)
-        .order(Arel.sql("COUNT(visits.id) #{direction}"))
+        .group("restaurants.id")
+        .order(Arel.sql("COUNT(visits.id) #{direction.to_s.upcase}"))
     }
 
     # Copy a restaurant to another organization
@@ -119,7 +123,7 @@ class Restaurant < ApplicationRecord
 
       transaction do
         # Check if a copy already exists
-        existing_copy = RestaurantCopy.find_by(organization: target_organization, restaurant: self)
+        existing_copy = RestaurantCopy.find_by(organization_id: target_organization.id, restaurant_id: self.id)
         return existing_copy.copied_restaurant if existing_copy
 
         copy = self.dup
@@ -128,8 +132,8 @@ class Restaurant < ApplicationRecord
         copy.save!
 
         RestaurantCopy.create!(
-          organization: target_organization,
-          restaurant: self,
+          organization_id: target_organization.id,
+          restaurant_id: self.id,
           copied_restaurant: copy
         )
 
@@ -137,6 +141,6 @@ class Restaurant < ApplicationRecord
       end
     rescue ActiveRecord::RecordNotUnique
       # If we hit a race condition, try to find the existing copy
-      RestaurantCopy.find_by!(organization: target_organization, restaurant: self).copied_restaurant
+      RestaurantCopy.find_by!(organization_id: target_organization.id, restaurant_id: self.id).copied_restaurant
     end
 end

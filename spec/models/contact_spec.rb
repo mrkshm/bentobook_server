@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Contact, type: :model do
   describe 'associations' do
-    it { should belong_to(:user) }
+    it { should belong_to(:organization) }
     it { should have_many(:visit_contacts) }
     it { should have_many(:visits).through(:visit_contacts) }
     it { should have_one_attached(:avatar) }
@@ -11,65 +11,125 @@ RSpec.describe Contact, type: :model do
   describe 'validations' do
     it { should validate_presence_of(:name) }
     
-    it 'validates uniqueness of name scoped to user_id' do
-      user = create(:user)
-      create(:contact, name: 'John', user: user)
-      duplicate_contact = build(:contact, name: 'John', user: user)
+    it 'validates uniqueness of name scoped to organization_id' do
+      organization = create(:organization)
+      create(:contact, name: 'John', organization: organization)
+      duplicate_contact = build(:contact, name: 'John', organization: organization)
       expect(duplicate_contact).not_to be_valid
     end
   end
 
+  describe '.frequently_used_with' do
+    let(:organization) { create(:organization) }
+    let(:visit) { create(:visit, organization: organization) }
+    let!(:contact1) { create(:contact, name: 'Alice', organization: organization) }
+    let!(:contact2) { create(:contact, name: 'Bob', organization: organization) }
+    let!(:contact3) { create(:contact, name: 'Charlie', organization: organization) }
+    let!(:contact4) { create(:contact, name: 'David', organization: organization) }
+    let!(:contact5) { create(:contact, name: 'Eve', organization: organization) }
+    let!(:contact6) { create(:contact, name: 'Frank', organization: organization) }
+
+    before do
+      # Create some visit history
+      other_visits = create_list(:visit, 3, organization: organization)
+      
+      # contact1 has 3 visits
+      other_visits.each do |v|
+        create(:visit_contact, contact: contact1, visit: v)
+      end
+
+      # contact2 has 2 visits
+      create(:visit_contact, contact: contact2, visit: other_visits[0])
+      create(:visit_contact, contact: contact2, visit: other_visits[1])
+
+      # contact3 has 1 visit
+      create(:visit_contact, contact: contact3, visit: other_visits[0])
+
+      # contact4, contact5, contact6 have no visits
+    end
+
+    context 'when total available contacts is less than or equal to limit' do
+      before do
+        # Add some contacts to the current visit
+        create(:visit_contact, contact: contact5, visit: visit)
+        create(:visit_contact, contact: contact6, visit: visit)
+      end
+
+      it 'returns all available contacts ordered by name' do
+        result = Contact.frequently_used_with(organization, visit)
+        expect(result).to eq([contact1, contact2, contact3, contact4])
+      end
+    end
+
+    context 'when total available contacts is more than limit' do
+      it 'returns contacts ordered by visit count and name' do
+        result = Contact.frequently_used_with(organization, visit, limit: 3)
+        expect(result).to eq([contact1, contact2, contact3])
+      end
+    end
+
+    context 'when contacts belong to different organization' do
+      let(:other_org) { create(:organization) }
+      let!(:other_contact) { create(:contact, organization: other_org) }
+
+      it 'does not include contacts from other organizations' do
+        result = Contact.frequently_used_with(organization, visit)
+        expect(result).not_to include(other_contact)
+      end
+    end
+  end
+
   describe '.search' do
-    let(:user) { create(:user) }
+    let(:organization) { create(:organization) }
     
     it 'returns all records when query is blank' do
-      contacts = create_list(:contact, 3, user: user)
+      contacts = create_list(:contact, 3, organization: organization)
       expect(Contact.search(nil)).to match_array(contacts)
       expect(Contact.search('')).to match_array(contacts)
     end
 
     it 'searches by name' do
-      contact = create(:contact, name: 'John Doe', user: user)
-      create(:contact, name: 'Jane Smith', user: user)
+      contact = create(:contact, name: 'John Doe', organization: organization)
+      create(:contact, name: 'Jane Smith', organization: organization)
       
       results = Contact.search('John')
       expect(results).to contain_exactly(contact)
     end
 
     it 'searches by email' do
-      contact = create(:contact, email: 'john@example.com', user: user)
-      create(:contact, email: 'jane@example.com', user: user)
+      contact = create(:contact, email: 'john@example.com', organization: organization)
+      create(:contact, email: 'jane@example.com', organization: organization)
       
       results = Contact.search('john@')
       expect(results).to contain_exactly(contact)
     end
 
     it 'searches by city' do
-      contact = create(:contact, city: 'New York', user: user)
-      create(:contact, city: 'London', user: user)
+      contact = create(:contact, city: 'New York', organization: organization)
+      create(:contact, city: 'London', organization: organization)
       
       results = Contact.search('New')
       expect(results).to contain_exactly(contact)
     end
 
     it 'searches by country' do
-      contact = create(:contact, country: 'USA', user: user)
-      create(:contact, country: 'UK', user: user)
+      contact = create(:contact, country: 'USA', organization: organization)
+      create(:contact, country: 'UK', organization: organization)
       
       results = Contact.search('USA')
       expect(results).to contain_exactly(contact)
     end
 
     it 'searches by notes' do
-      contact = create(:contact, notes: 'Met at conference', user: user)
-      create(:contact, notes: 'College friend', user: user)
+      contact = create(:contact, notes: 'Met at conference', organization: organization)
+      create(:contact, notes: 'College friend', organization: organization)
       
       results = Contact.search('conference')
       expect(results).to contain_exactly(contact)
     end
 
     it 'is case insensitive' do
-      contact = create(:contact, name: 'John Doe', user: user)
+      contact = create(:contact, name: 'John Doe', organization: organization)
       
       results = Contact.search('john')
       expect(results).to contain_exactly(contact)
@@ -77,14 +137,15 @@ RSpec.describe Contact, type: :model do
   end
 
   describe '#visits_count' do
-    let(:contact) { create(:contact) }
+    let(:organization) { create(:organization) }
+    let(:contact) { create(:contact, organization: organization) }
 
     it 'returns 0 when contact has no visits' do
       expect(contact.visits_count).to eq(0)
     end
 
     it 'returns the correct count of visits' do
-      visits = create_list(:visit, 3)
+      visits = create_list(:visit, 3, organization: organization)
       visits.each do |visit|
         create(:visit_contact, contact: contact, visit: visit)
       end

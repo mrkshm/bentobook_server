@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :list do
-    owner { association :user }
+    organization
+    creator { association :user }
     sequence(:name) { |n| "Test List #{n}" }
     description { "A test list description" }
     visibility { :personal }

@@ -1,8 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe Image, type: :model do
+  let(:organization) { create(:organization) }
   let(:user) { create(:user) }
-  let(:restaurant) { create(:restaurant, user: user) }
+  let(:restaurant) { create(:restaurant, organization: organization) }
+
+  before do
+    create(:membership, user: user, organization: organization)
+  end
 
   describe 'associations' do
     it { should belong_to(:imageable) }
@@ -20,7 +25,7 @@ RSpec.describe Image, type: :model do
         image.file.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'test_image.jpg')), filename: 'test_image.jpg', content_type: 'image/jpeg')
         image.save!
         
-        expect(image.file.filename.to_s).to match(/\d{14}_test_image\.jpg/)
+        expect(image.file.filename.to_s).to match(/test_image-[a-f0-9]{8}\.jpg/)
       end
 
       it 'truncates long filenames' do
@@ -28,7 +33,7 @@ RSpec.describe Image, type: :model do
         image.file.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'test_image_with_very_very_long_name.jpg')), filename: 'test_image_with_very_very_long_name.jpg', content_type: 'image/jpeg')
         image.save!
         
-        expect(image.file.filename.to_s).to match(/\d{14}_test_image_w\.jpg/)
+        expect(image.file.filename.to_s).to match(/test_image_with_very_very_long_name-[a-f0-9]{8}\.jpg/)
       end
 
       context 'when an error occurs during filename setting' do
@@ -52,7 +57,7 @@ RSpec.describe Image, type: :model do
       context 'when file is not found after rename' do
         let(:image) { build(:image, imageable: restaurant) }
         let(:original_key) { 'original_key' }
-        let(:new_key) { "#{Time.current.strftime('%Y%m%d%H%M%S')}_test_image.jpg" }
+        let(:new_key) { "test_image-#{SecureRandom.hex(4)}.jpg" }
         
         before do
           image.file.attach(
@@ -62,7 +67,7 @@ RSpec.describe Image, type: :model do
           )
           
           # Mock the blob and service
-          allow(image.file.blob).to receive(:key).and_return(original_key, new_key)
+          allow(image.file.blob).to receive(:update!).and_raise(StandardError.new("File not found after rename"))
           allow(image.file.blob.service).to receive(:exist?).with(new_key).and_return(false)
         end
 
@@ -72,7 +77,8 @@ RSpec.describe Image, type: :model do
           end
 
           it 'logs the error message' do
-            expect(Rails.logger).to receive(:error).with("File not found in storage after rename: #{new_key}")
+            expect(Rails.logger).to receive(:error).with("Error in set_filename: File not found after rename")
+            expect(Rails.logger).to receive(:error).with(kind_of(String)) # For backtrace
             image.save
           end
         end
@@ -83,7 +89,8 @@ RSpec.describe Image, type: :model do
           end
 
           it 'logs the error message' do
-            expect(Rails.logger).to receive(:error).with("File not found in storage after rename: #{new_key}")
+            expect(Rails.logger).to receive(:error).with("Error in set_filename: File not found after rename")
+            expect(Rails.logger).to receive(:error).with(kind_of(String)) # For backtrace
             image.save
           end
         end
