@@ -38,7 +38,25 @@ module Api
         restaurant = nil
 
         ActiveRecord::Base.transaction do
-          restaurant = build_restaurant
+          restaurant = Current.organization.restaurants.new(restaurant_params)
+          
+          # Handle location data
+          if params[:google_restaurant_id].present?
+            # Use existing Google restaurant
+            restaurant.google_restaurant = GoogleRestaurant.find(params[:google_restaurant_id])
+          elsif location_params.present?
+            # Create a new google_restaurant record for non-Google location
+            restaurant.google_restaurant = GoogleRestaurant.new(
+              name: restaurant.name,
+              address: location_params[:address],
+              city: location_params[:city],
+              street: location_params[:street],
+              postal_code: location_params[:postal_code],
+              country: location_params[:country],
+              latitude: location_params[:latitude],
+              longitude: location_params[:longitude]
+            )
+          end
 
           unless restaurant.save
             return render_error(restaurant.errors.full_messages.join(", "))
@@ -177,11 +195,24 @@ module Api
 
       def restaurant_params
         params.require(:restaurant).permit(
-          :name, :address, :city, :latitude, :longitude,
-          :notes, :rating, :price_level, :google_place_id,
+          :name, :notes, :rating, :price_level,
           :cuisine_type_name, :favorite,
           tag_list: [],
           images: []
+        )
+      end
+
+      def location_params
+        return nil unless params[:location].present?
+        
+        params.require(:location).permit(
+          :address,
+          :city,
+          :street,
+          :postal_code,
+          :country,
+          :latitude,
+          :longitude
         )
       end
 

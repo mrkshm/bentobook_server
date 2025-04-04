@@ -1,6 +1,5 @@
 class Contact < ApplicationRecord
   belongs_to :organization
-  belongs_to :user, optional: true  # Keep this for now to track who created the contact
   has_one_attached :avatar
   has_many :visit_contacts
   has_many :visits, through: :visit_contacts
@@ -27,8 +26,7 @@ class Contact < ApplicationRecord
       available_contacts.order(:name)
     else
       available_contacts
-        .joins(:visit_contacts)
-        .joins(:visits)
+        .left_joins(:visit_contacts)
         .group("contacts.id")
         .select("contacts.*, COUNT(visit_contacts.id) as visit_count")
         .order("visit_count DESC, name ASC")

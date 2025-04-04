@@ -14,7 +14,7 @@ class Visit < ApplicationRecord
   def local_datetime
     return nil unless date && time_of_day
 
-    # Combine date and time in user's timezone
+    # Combine date and time in organization's timezone
     Time.zone.local(
       date.year,
       date.month,

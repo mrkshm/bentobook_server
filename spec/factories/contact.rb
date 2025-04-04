@@ -6,6 +6,6 @@ FactoryBot.define do
       country { "Country" }
       phone { "1234567890" }
       notes { "Some notes" }
-      user
+      organization
     end
   end

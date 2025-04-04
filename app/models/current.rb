@@ -16,5 +16,12 @@ class Current < ActiveSupport::CurrentAttributes
       raise "Organization must belong to current user" if org && user && !user.organizations.include?(org)
       super
     end
+
+    # Override user= to ensure organization is reset when user changes
+    def user=(value)
+      was_set = user.present?
+      super
+      self.organization = nil if was_set && !value
+    end
   end
 end

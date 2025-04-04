@@ -13,13 +13,19 @@ All API endpoints are namespaced under `/api/v1` and return JSON responses.
 
 ### Authentication & Session Management
 
-- `POST /api/v1/sessions` - Create a new session (login)
-- `GET /api/v1/sessions` - List all sessions
-- `DELETE /api/v1/session` - Logout current session
-- `DELETE /api/v1/sessions/:id` - Logout specific session
-- `DELETE /api/v1/sessions` - Logout all other sessions
-- `POST /api/v1/refresh_token` - Refresh authentication token
-- `POST /api/v1/register` - Register a new user
+- `POST /api/v1/auth/register` - Register a new user (creates personal org)
+- `POST /api/v1/auth/login` - Create new session
+- `POST /api/v1/auth/password/reset` - Request password reset
+- `POST /api/v1/auth/password/reset/:token` - Reset password with token
+- `POST /api/v1/auth/email/verify` - Request email verification
+- `GET /api/v1/auth/email/verify/:token` - Verify email with token
+
+#### Session Management
+- `GET /api/v1/auth/sessions` - List all sessions
+- `DELETE /api/v1/auth/session/current` - Logout current session
+- `DELETE /api/v1/auth/sessions/:id` - Logout specific session
+- `DELETE /api/v1/auth/sessions/others` - Logout all other sessions
+- `POST /api/v1/auth/token/refresh` - Refresh auth token
 
 ### Profile Management
 
@@ -37,6 +43,60 @@ All API endpoints are namespaced under `/api/v1` and return JSON responses.
 
 - `GET /api/v1/restaurants` - List restaurants
 - `POST /api/v1/restaurants` - Create restaurant
+  ```json
+  // Option 1: With Google Restaurant
+  {
+    "restaurant": {
+      "name": "Restaurant Name",
+      "notes": "Great place!",
+      "rating": 5,
+      "price_level": 2,
+      "cuisine_type_name": "Italian",
+      "favorite": false,
+      "tag_list": ["pasta", "wine"],
+      "images": []  // Base64 encoded images
+    },
+    "google_restaurant_id": "123"  // ID from previous Google Restaurant creation
+  }
+
+  // Option 2: With Manual Location
+  {
+    "restaurant": {
+      "name": "Local Restaurant",
+      "notes": "Hidden gem",
+      "rating": 5,
+      "price_level": 2,
+      "cuisine_type_name": "Local",
+      "favorite": false,
+      "tag_list": ["local", "authentic"],
+      "images": []
+    },
+    "location": {
+      "address": "123 Main St",
+      "city": "New York",
+      "street": "Main St",
+      "postal_code": "10001",
+      "country": "USA",
+      "latitude": 40.7128,
+      "longitude": -74.0060
+    }
+  }
+
+  // Option 3: Basic Info Only
+  {
+    "restaurant": {
+      "name": "New Restaurant",
+      "notes": "Need to find the address",
+      "rating": 5,
+      "price_level": 2,
+      "cuisine_type_name": "Unknown",
+      "favorite": false,
+      "tag_list": [],
+      "images": []
+    }
+  }
+  ```
+
 - `GET /api/v1/restaurants/:id` - Show restaurant
 - `PATCH /api/v1/restaurants/:id` - Update restaurant
 - `PUT /api/v1/restaurants/:id` - Update restaurant (alternate)
@@ -49,6 +109,29 @@ All API endpoints are namespaced under `/api/v1` and return JSON responses.
 
 - `POST /api/v1/restaurants/:restaurant_id/images` - Add image to restaurant
 - `DELETE /api/v1/restaurants/:restaurant_id/images/:id` - Remove image from restaurant
+
+### Google Restaurants
+
+- `POST /api/v1/google_restaurants` - Create or find Google restaurant
+  ```json
+  {
+    "google_restaurant": {
+      "name": "Restaurant Name",
+      "google_place_id": "ChIJ...",  // Google Places API ID
+      "address": "Full Address",
+      "city": "City Name",
+      "street": "Street Name",
+      "postal_code": "12345",
+      "country": "Country Name",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "google_rating": 4.5,
+      "phone": "+1234567890",
+      "website": "https://restaurant.com"
+    }
+  }
+  ```
+- `GET /api/v1/google_restaurants/:id` - Get Google restaurant details
 
 ### Contacts
 

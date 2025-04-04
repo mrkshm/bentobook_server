@@ -11,18 +11,6 @@ FactoryBot.define do
       end
     end
 
-    trait :with_restaurants do
-      after(:create) do |user|
-        create_list(:restaurant, 2, user: user)
-      end
-    end
-
-    trait :with_visits do
-      after(:create) do |user|
-        create_list(:visit, 2, user: user)
-      end
-    end
-
     trait :with_lists do
       after(:create) do |user|
         create_list(:list, 2, owner: user)
@@ -44,12 +32,6 @@ FactoryBot.define do
 
     trait :unconfirmed do
       confirmed_at { nil }
-    end
-
-    trait :with_contacts do
-      after(:create) do |user|
-        create_list(:contact, 2, user: user)
-      end
     end
 
     after(:create) { |user| user.send(:ensure_profile) }
