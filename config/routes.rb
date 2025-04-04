@@ -6,16 +6,23 @@ Rails.application.routes.draw do
   # API routes
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      # Session management
-      post "/sessions", to: "sessions#create"
-      get "/sessions", to: "sessions#index"
-      delete "/session", to: "sessions#destroy_current"  # Logout current session
-      delete "/sessions/:id", to: "sessions#destroy"     # Logout specific session
-      delete "/sessions", to: "sessions#destroy_all"     # Logout all other sessions
-      post "/refresh_token", to: "sessions#refresh"
+      # Authentication routes
+      scope :auth do
+        # Authentication
+        post "/register", to: "registrations#create"
+        post "/login", to: "sessions#create"
+        post "/password/reset", to: "passwords#create"
+        post "/password/reset/:token", to: "passwords#update"
+        post "/email/verify", to: "confirmations#create"
+        get "/email/verify/:token", to: "confirmations#show"
 
-      # Registration
-      post "/register", to: "registrations#create"
+        # Session management
+        get "/sessions", to: "sessions#index"
+        delete "/session/current", to: "sessions#destroy_current"
+        delete "/sessions/:id", to: "sessions#destroy"
+        delete "/sessions/others", to: "sessions#destroy_all"
+        post "/token/refresh", to: "sessions#refresh"
+      end
 
       # Protected resources
       get "/profile", to: "profiles#show"
@@ -35,6 +42,8 @@ Rails.application.routes.draw do
         end
         resources :images, only: [ :create, :destroy ]
       end
+
+      resources :google_restaurants, only: [ :create, :show ]
 
       resources :contacts, only: [ :index, :show, :create, :update, :destroy ] do
         collection do
