@@ -41,7 +41,7 @@ class Profile < ApplicationRecord
 
   def generate_url(attachment)
     return nil unless attachment.attached?
-    
+
     Rails.application.routes.url_helpers.rails_blob_url(
       attachment,
       host: Rails.application.config.action_mailer.default_url_options[:host]

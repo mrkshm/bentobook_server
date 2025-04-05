@@ -59,14 +59,23 @@ class ContactSerializer < BaseSerializer
   end
 
   attribute :avatar_urls do |contact|
-    if contact.avatar.attached?
-      {
-        original: Rails.application.routes.url_helpers.rails_blob_url(
-          contact.avatar,
-          host: Rails.application.config.action_mailer.default_url_options[:host]
-        )
-      }
+    urls = {}
+
+    if contact.avatar_thumbnail.attached?
+      urls[:thumbnail] = Rails.application.routes.url_helpers.rails_blob_url(
+        contact.avatar_thumbnail,
+        host: Rails.application.config.action_mailer.default_url_options[:host]
+      )
     end
+
+    if contact.avatar_medium.attached?
+      urls[:medium] = Rails.application.routes.url_helpers.rails_blob_url(
+        contact.avatar_medium,
+        host: Rails.application.config.action_mailer.default_url_options[:host]
+      )
+    end
+
+    urls.present? ? urls : nil
   end
 
   def self.render_collection(resources, meta: {}, pagy: nil)

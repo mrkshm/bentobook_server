@@ -33,10 +33,7 @@ module Api
         Rails.logger.error e.backtrace.join("\n")
         render json: {
           status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: e.message
-          } ]
+          errors: [{ code: "general_error", detail: e.message }]
         }, status: :internal_server_error
       end
 
@@ -58,37 +55,14 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: {
           status: "error",
-          errors: [ {
-            code: "not_found",
-            detail: "Contact not found"
-          } ]
+          errors: [{ code: "not_found", detail: "Contact not found" }]
         }, status: :not_found
-      rescue ActiveRecord::ConnectionTimeoutError, ActiveRecord::StatementInvalid => e
-        Rails.logger.error "Database error in show action: #{e.class.name}: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-
-        render json: {
-          status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: "Database error"
-          } ],
-          meta: {
-            timestamp: Time.current.iso8601
-          }
-        }, status: :internal_server_error
       rescue StandardError => e
         Rails.logger.error "Show error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
         render json: {
           status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: e.message
-          } ],
-          meta: {
-            timestamp: Time.current.iso8601
-          }
+          errors: [{ code: "general_error", detail: e.message }]
         }, status: :internal_server_error
       end
 
@@ -100,15 +74,13 @@ module Api
           contact.save!
 
           if params.dig(:contact, :avatar).present?
-            Rails.logger.info "Processing avatar with ImageHandlingService"
-            begin
-              result = ImageHandlingService.process_images(contact, params, compress: true)
-              unless result[:success]
-                contact.errors.add(:avatar, result[:message])
-                raise ActiveRecord::RecordInvalid.new(contact)
-              end
-            rescue Vips::Error => e
-              contact.errors.add(:avatar, "must be a valid image file")
+            avatar = params.dig(:contact, :avatar)
+            result = PreprocessAvatarService.call(avatar)
+            if result[:success]
+              contact.avatar_medium.attach(result[:variants][:medium])
+              contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
+            else
+              contact.errors.add(:avatar, result[:error])
               raise ActiveRecord::RecordInvalid.new(contact)
             end
           end
@@ -133,29 +105,27 @@ module Api
         Rails.logger.error e.backtrace.join("\n")
         render json: {
           status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: e.message
-          } ]
+          errors: [{ code: "general_error", detail: e.message }]
         }, status: :internal_server_error
       end
 
       def update
         Contact.transaction do
+          @contact = Current.organization.contacts.find(params[:id])
           @contact.update!(contact_params_without_avatar)
 
-          if params.dig(:contact, :remove_avatar)
-            @contact.avatar.purge if @contact.avatar.attached?
-          elsif params.dig(:contact, :avatar).present?
-            Rails.logger.info "Processing avatar with ImageHandlingService"
-            begin
-              result = ImageHandlingService.process_images(@contact, params, compress: true)
-              unless result[:success]
-                @contact.errors.add(:avatar, result[:message])
-                raise ActiveRecord::RecordInvalid.new(@contact)
-              end
-            rescue Vips::Error => e
-              @contact.errors.add(:avatar, "must be a valid image file")
+          if params.dig(:contact, :avatar).present?
+            # Remove old avatars if they exist
+            @contact.avatar_medium.purge if @contact.avatar_medium.attached?
+            @contact.avatar_thumbnail.purge if @contact.avatar_thumbnail.attached?
+
+            avatar = params.dig(:contact, :avatar)
+            result = PreprocessAvatarService.call(avatar)
+            if result[:success]
+              @contact.avatar_medium.attach(result[:variants][:medium])
+              @contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
+            else
+              @contact.errors.add(:avatar, result[:error])
               raise ActiveRecord::RecordInvalid.new(@contact)
             end
           end
@@ -175,25 +145,12 @@ module Api
           status: "error",
           errors: errors
         }, status: :unprocessable_entity
-      rescue ActiveRecord::ConnectionTimeoutError, ActiveRecord::StatementInvalid => e
-        Rails.logger.error "Database error in update action: #{e.class.name}: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-        render json: {
-          status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: "Update failed"
-          } ]
-        }, status: :internal_server_error
       rescue StandardError => e
         Rails.logger.error "Update error: #{e.class.name}: #{e.message}"
         Rails.logger.error e.backtrace.join("\n")
         render json: {
           status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: e.message
-          } ]
+          errors: [{ code: "general_error", detail: e.message }]
         }, status: :internal_server_error
       end
 
@@ -205,10 +162,7 @@ module Api
         Rails.logger.error e.backtrace.join("\n")
         render json: {
           status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: e.message
-          } ]
+          errors: [{ code: "general_error", detail: e.message }]
         }, status: :internal_server_error
       end
 
@@ -227,10 +181,7 @@ module Api
         Rails.logger.error e.backtrace.join("\n")
         render json: {
           status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: e.message
-          } ]
+          errors: [{ code: "general_error", detail: e.message }]
         }, status: :internal_server_error
       end
 
@@ -241,21 +192,8 @@ module Api
       rescue ActiveRecord::RecordNotFound
         render json: {
           status: "error",
-          errors: [ {
-            code: "not_found",
-            detail: "Contact not found"
-          } ]
+          errors: [{ code: "not_found", detail: "Contact not found" }]
         }, status: :not_found
-      rescue ActiveRecord::ConnectionTimeoutError, ActiveRecord::StatementInvalid => e
-        Rails.logger.error "Database error in set_contact: #{e.class.name}: #{e.message}"
-        Rails.logger.error e.backtrace.join("\n")
-        render json: {
-          status: "error",
-          errors: [ {
-            code: "general_error",
-            detail: "Database error"
-          } ]
-        }, status: :internal_server_error
       end
 
       def contact_params_without_avatar

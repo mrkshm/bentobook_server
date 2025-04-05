@@ -9,15 +9,15 @@ class ProfileSerializer < BaseSerializer
 
   attribute :avatar_urls do |profile|
     urls = {}
-    
+
     if profile.avatar_thumbnail.attached?
       urls[:thumbnail] = blob_path(profile.avatar_thumbnail)
     end
-    
+
     if profile.avatar_medium.attached?
       urls[:medium] = blob_path(profile.avatar_medium)
     end
-    
+
     urls.present? ? urls : nil
   end
 

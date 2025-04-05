@@ -4,7 +4,7 @@
     <%# Header with avatar and name %>
     <div class="flex items-center gap-6 mb-6">
       <%= render(AvatarComponent.new(
-                image: @contact.avatar,
+                profile: @contact,
                 text: @contact.name,
                 size: :xl
               )) %>

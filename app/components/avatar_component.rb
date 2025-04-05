@@ -9,21 +9,23 @@ class AvatarComponent < ViewComponent::Base
     xl: "size-14"    # 56px
   }.freeze
 
-  def initialize(image: nil, text: "", size: :md)
-    @image = image
+  def initialize(profile: nil, text: "", size: :md)
+    @profile = profile
     @text = text.to_s  # Convert nil to empty string immediately
     @size = size
   end
 
   def call
     wrapper_classes = [ "inline-block", SIZES[@size], "rounded-full" ]
-    wrapper_classes << "bg-surface-100" unless @image&.attached?
+    wrapper_classes << "bg-surface-100" unless has_avatar?
 
     content_tag :div, class: wrapper_classes.join(" ") do
-      if @image&.attached?
+      if has_avatar?
+        # Use thumbnail for small sizes, medium for larger ones
+        avatar = %i[xs sm md].include?(@size) ? @profile.avatar_thumbnail : @profile.avatar_medium
         # Add HTML comment with image size info before the image tag
-        comment = "<!-- Avatar: #{@image.blob.filename} (#{ActiveSupport::NumberHelper.number_to_human_size(@image.blob.byte_size)}) -->"
-        (comment + image_tag(@image,
+        comment = "<!-- Avatar: #{avatar.blob.filename} (#{ActiveSupport::NumberHelper.number_to_human_size(avatar.blob.byte_size)}) -->"
+        (comment + image_tag(avatar,
           class: "rounded-full object-cover w-full h-full",
           alt: @text.presence || "Avatar")).html_safe
       else
@@ -36,6 +38,10 @@ class AvatarComponent < ViewComponent::Base
   end
 
   private
+
+  def has_avatar?
+    @profile&.avatar_medium&.attached? && @profile&.avatar_thumbnail&.attached?
+  end
 
   def initials
     @text.strip[0, 2].upcase.presence || "??"

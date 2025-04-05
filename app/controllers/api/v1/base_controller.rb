@@ -5,12 +5,17 @@ module Api
       # Devise JWT handles the authentication automatically
       before_action :authenticate_user!
       before_action :set_default_format
+      before_action :set_current_organization
       rescue_from ActiveRecord::RecordNotFound, with: :not_found_response
 
       protected
 
       def set_default_format
         request.format = :json unless params[:format]
+      end
+
+      def set_current_organization
+        Current.organization = current_user.organizations.first
       end
 
       def not_found_response(exception)

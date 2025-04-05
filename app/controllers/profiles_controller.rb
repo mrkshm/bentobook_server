@@ -28,7 +28,7 @@ class ProfilesController < ApplicationController
         # Remove old avatars if they exist
         @profile.avatar_medium.purge if @profile.avatar_medium.attached?
         @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
-        
+
         # Attach new variants
         @profile.avatar_medium.attach(result[:variants][:medium])
         @profile.avatar_thumbnail.attach(result[:variants][:thumbnail])
