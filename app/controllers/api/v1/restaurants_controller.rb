@@ -7,6 +7,9 @@ module Api
       before_action :set_restaurant, only: [ :show, :update, :destroy, :add_tag, :remove_tag ]
 
       def index
+        puts "DEBUG: Current user: #{current_user.inspect}"
+        puts "DEBUG: Current organization: #{Current.organization.inspect}"
+        puts "DEBUG: Headers: #{request.headers.to_h.select { |k,v| k.start_with?('HTTP_') }}"
         restaurants_scope = Current.organization.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
         order_params = parse_order_params
         return if performed?
@@ -58,19 +61,18 @@ module Api
             )
           end
 
-          unless restaurant.save
-            return render_error(restaurant.errors.full_messages.join(", "))
-          end
-
-          if restaurant_params[:images].present?
-            result = ImageProcessorService.new(restaurant, restaurant_params[:images]).process
-            unless result.success?
-              raise StandardError, result.error
+          if restaurant.save
+            if restaurant_params[:images].present?
+              result = ImageProcessorService.new(restaurant, restaurant_params[:images]).process
+              unless result.success?
+                raise StandardError, result.error
+              end
             end
+            render json: RestaurantSerializer.render_success(restaurant), status: :created
+          else
+            render_error(restaurant.errors.full_messages.join(", "), :unprocessable_entity)
           end
         end
-
-        render json: RestaurantSerializer.render_success(restaurant), status: :created
       rescue StandardError => e
         restaurant&.destroy if restaurant&.persisted?
         render_error(e.message)
@@ -89,11 +91,11 @@ module Api
             end
             render_success(@restaurant)
           else
-            render_error(@restaurant.errors.full_messages.join(", "), status: :unprocessable_entity)
+            render_error(@restaurant.errors.full_messages.join(", "), :unprocessable_entity)
           end
         end
       rescue StandardError => e
-        render_error(e.message, status: :unprocessable_entity)
+        render_error(e.message, :unprocessable_entity)
       end
 
       def destroy

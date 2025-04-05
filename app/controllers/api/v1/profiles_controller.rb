@@ -3,7 +3,7 @@ module Api
     class ProfilesController < Api::V1::BaseController
       include Pagy::Backend
 
-      before_action :set_profile, except: [ :search, :change_locale ]
+      before_action :set_profile, except: [ :search ]
 
       def show
         render json: ProfileSerializer.render_success(@profile)
@@ -23,26 +23,38 @@ module Api
       end
 
       def update_avatar
-        begin
-          Rails.logger.info "Processing avatar with ImageHandlingService"
-          result = ImageHandlingService.process_images(@profile, params, compress: true)
-
-          if result[:success]
-            render json: ProfileSerializer.render_success(@profile)
-          else
-            render json: ProfileSerializer.render_error([ "Failed to update avatar" ]),
-                   status: :unprocessable_entity
-          end
-        rescue StandardError => e
-          Rails.logger.error "Avatar update error: #{e.message}"
-          render json: ProfileSerializer.render_error([ e.message ]),
-                 status: :internal_server_error
+        unless params[:avatar]
+          return render json: ProfileSerializer.render_error(["No avatar provided"]),
+                        status: :unprocessable_entity
         end
+
+        result = PreprocessAvatarService.call(params[:avatar])
+
+        if result[:success]
+          # Remove old avatars if they exist
+          @profile.avatar_medium.purge if @profile.avatar_medium.attached?
+          @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
+          
+          # Attach new variants
+          @profile.avatar_medium.attach(result[:variants][:medium])
+          @profile.avatar_thumbnail.attach(result[:variants][:thumbnail])
+          
+          render json: ProfileSerializer.render_success(@profile)
+        else
+          render json: ProfileSerializer.render_error([result[:error]]),
+                 status: :unprocessable_entity
+        end
+      rescue StandardError => e
+        Rails.logger.error "Avatar update error: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
+        render json: ProfileSerializer.render_error([ e.message ]),
+               status: :internal_server_error
       end
 
       def destroy_avatar
-        if @profile.avatar.attached?
-          @profile.avatar.purge
+        if @profile.avatar_medium.attached? || @profile.avatar_thumbnail.attached?
+          @profile.avatar_medium.purge if @profile.avatar_medium.attached?
+          @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
           render json: ProfileSerializer.render_success(@profile)
         else
           render json: ProfileSerializer.render_error([ "No avatar to delete" ]),
@@ -86,31 +98,35 @@ module Api
       end
 
       def change_locale
-        new_locale = params[:locale].to_s.strip
+        new_locale = params.require(:locale).to_s.strip
 
         if Profile::VALID_LANGUAGES.include?(new_locale)
-          current_user.profile.update!(preferred_language: new_locale)
-          render json: ProfileSerializer.render_success(current_user.profile)
+          @profile.update!(preferred_language: new_locale)
+          render json: ProfileSerializer.render_success(@profile)
         else
           render json: ProfileSerializer.render_error(
-            "Invalid locale. Valid options are: #{Profile::VALID_LANGUAGES.join(', ')}",
-            :unprocessable_entity
+            ["Invalid locale. Valid options are: #{Profile::VALID_LANGUAGES.join(', ')}"]
           ), status: :unprocessable_entity
         end
+      rescue ActionController::ParameterMissing
+        render json: ProfileSerializer.render_error(["Missing locale parameter"]),
+               status: :unprocessable_entity
       end
 
       def change_theme
-        new_theme = params[:theme].to_s.strip
+        new_theme = params.require(:theme).to_s.strip
 
         if Profile::VALID_THEMES.include?(new_theme)
-          current_user.profile.update!(preferred_theme: new_theme)
-          render json: ProfileSerializer.render_success(current_user.profile)
+          @profile.update!(preferred_theme: new_theme)
+          render json: ProfileSerializer.render_success(@profile)
         else
           render json: ProfileSerializer.render_error(
-            "Invalid theme. Please try again.",
-            :unprocessable_entity
+            ["Invalid theme. Please try again."]
           ), status: :unprocessable_entity
         end
+      rescue ActionController::ParameterMissing
+        render json: ProfileSerializer.render_error(["Missing theme parameter"]),
+               status: :unprocessable_entity
       end
 
       private

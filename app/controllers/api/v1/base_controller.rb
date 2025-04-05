@@ -2,15 +2,12 @@ module Api
   module V1
     class BaseController < ApiController
       include Pagy::Backend
+      # Devise JWT handles the authentication automatically
       before_action :authenticate_user!
       before_action :set_default_format
       rescue_from ActiveRecord::RecordNotFound, with: :not_found_response
 
       protected
-
-      def authenticate_user!
-        authenticate_jwt_user!
-      end
 
       def set_default_format
         request.format = :json unless params[:format]
@@ -30,10 +27,6 @@ module Api
           :unauthorized,
           "/data"
         ), status: :unauthorized
-      end
-
-      def current_user
-        @current_user ||= warden.authenticate(scope: :user)
       end
 
       def render_success(resource, meta: {}, **options)

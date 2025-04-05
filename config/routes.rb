@@ -76,6 +76,16 @@ Rails.application.routes.draw do
       end
 
       post "/usernames/verify", to: "usernames#verify"
+
+      # Test routes for BaseController specs
+      if Rails.env.test?
+        resources :test, only: [:index, :show] do
+          collection do
+            get :unauthorized
+            get :validation_error
+          end
+        end
+      end
     end
   end
 

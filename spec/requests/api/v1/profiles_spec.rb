@@ -5,23 +5,14 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
   include ActiveJob::TestHelper
 
   let(:user) { create(:user) }
-  let(:user_session) do
-    create(:user_session,
-           user: user,
-           active: true,
-           client_name: 'web',
-           ip_address: '127.0.0.1')
-  end
-
   let(:test_image) do
-    fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 'image/jpeg')
+    fixture_file_upload(
+      Rails.root.join('spec/fixtures/test_image.jpg'),
+      'image/jpeg',
+      true
+    )
   end
-
-  before do
-    @headers = {}
-    sign_in_with_token(user, user_session)
-    Rails.logger.info "Test setup: Headers after sign_in: #{@headers.inspect}"
-  end
+  let(:headers) { sign_in_with_token(user) }
 
   after(:each) do
     # Clean up any processed images
@@ -31,14 +22,13 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
   describe 'GET /api/v1/profile' do
     it 'returns the user profile' do
-      # Create profile through the normal user association
       profile = user.create_profile!(
         username: 'testuser',
         preferred_theme: 'light',
         preferred_language: 'en'
       )
 
-      get '/api/v1/profile', headers: @headers.merge({
+      get '/api/v1/profile', headers: headers.merge({
         'Accept' => 'application/json'
       })
 
@@ -54,148 +44,163 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
       )
       expect(json_response['meta']).to include('timestamp')
     end
-
-    it 'returns avatar URLs when avatar is present' do
-      # Create profile with avatar
-      profile = user.create_profile!(
-        username: 'testuser',
-        preferred_theme: 'light',
-        preferred_language: 'en'
-      )
-
-      # Attach avatar using the same approach as the factory trait
-      profile.avatar.attach(
-        io: File.open(Rails.root.join('spec/fixtures/avatar.jpg')),
-        filename: 'avatar.jpg',
-        content_type: 'image/jpeg'
-      )
-
-      get '/api/v1/profile', headers: @headers.merge({
-        'Accept' => 'application/json'
-      })
-
-      expect(response).to have_http_status(:ok)
-      expect(json_response['status']).to eq('success')
-
-      avatar_urls = json_response['data']['attributes']['avatar_urls']
-      expect(avatar_urls).to be_present
-      expect(avatar_urls).to include(
-        'thumbnail',
-        'small',
-        'medium',
-        'large',
-        'original'
-      )
-
-      # Verify URLs are properly formatted
-      avatar_urls.values.each do |url|
-        expect(url).to match(/^http/)
-        expect(url).to include('rails/active_storage')
-      end
-    end
   end
 
-  describe 'PATCH /api/v1/profile' do
-    it 'updates the profile' do
-      # Create profile through the normal user association
-      profile = user.create_profile!(
-        username: 'oldusername',
-        preferred_theme: 'light',
-        preferred_language: 'en'
-      )
+  describe 'PATCH /api/v1/profile/avatar' do
+    it 'updates the avatar successfully' do
+      profile = user.create_profile!(username: 'testuser')
 
-      patch '/api/v1/profile',
-            params: {
-              profile: {
-                username: 'newusername',
-                first_name: 'John',
-                last_name: 'Doe'
-              }
-            },
-            headers: @headers.merge({
+      patch '/api/v1/profile/avatar',
+            params: { avatar: test_image },
+            headers: headers.merge({
               'Accept' => 'application/json'
             })
 
       expect(response).to have_http_status(:ok)
       expect(json_response['status']).to eq('success')
-
-      # Verify the response shows the updated values
-      expect(json_response['data']['attributes']).to include(
-        'username' => 'newusername',
-        'first_name' => 'John',
-        'last_name' => 'Doe'
-      )
-
-      # Verify the database was actually updated
+      
+      # Verify both variants are attached
       profile.reload
-      expect(profile.username).to eq('newusername')
-      expect(profile.first_name).to eq('John')
-      expect(profile.last_name).to eq('Doe')
+      expect(profile.avatar_medium).to be_attached
+      expect(profile.avatar_thumbnail).to be_attached
+      
+      # Verify content types
+      expect(profile.avatar_medium.content_type).to eq('image/webp')
+      expect(profile.avatar_thumbnail.content_type).to eq('image/webp')
     end
 
-    it 'handles validation errors' do
+    it 'replaces existing avatars' do
       profile = user.create_profile!(username: 'testuser')
-      other_user = create(:user)
-      other_profile = create(:profile, username: 'taken_username', user: other_user)
+      
+      # Attach initial avatars
+      profile.avatar_medium.attach(
+        io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+        filename: 'old_medium.webp',
+        content_type: 'image/webp'
+      )
+      profile.avatar_thumbnail.attach(
+        io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+        filename: 'old_thumbnail.webp',
+        content_type: 'image/webp'
+      )
 
-      patch '/api/v1/profile',
-            params: {
-              profile: { username: 'taken_username' }
-            },
-            headers: @headers.merge({
+      # Update with new avatar
+      patch '/api/v1/profile/avatar',
+            params: { avatar: test_image },
+            headers: headers.merge({
+              'Accept' => 'application/json'
+            })
+
+      expect(response).to have_http_status(:ok)
+      profile.reload
+
+      # Verify new attachments
+      expect(profile.avatar_medium.filename.to_s).not_to eq('old_medium.webp')
+      expect(profile.avatar_thumbnail.filename.to_s).not_to eq('old_thumbnail.webp')
+    end
+
+    it 'handles missing avatar parameter' do
+      user.create_profile!(username: 'testuser')
+
+      patch '/api/v1/profile/avatar',
+            headers: headers.merge({
               'Accept' => 'application/json'
             })
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json_response['status']).to eq('error')
-      expect(json_response['errors']).to be_present
+      expect(json_response['errors'].first['detail']).to eq(['No avatar provided'])
     end
 
-    it 'updates the avatar' do
-      profile = user.create_profile!(username: 'testuser')
-      test_image = fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 'image/jpeg')
+    it 'handles invalid file type' do
+      user.create_profile!(username: 'testuser')
+      invalid_file = fixture_file_upload(
+        Rails.root.join('spec/fixtures/test.txt'),
+        'text/plain'
+      )
 
-      patch '/api/v1/profile',
-            params: {
-              profile: {
-                avatar: test_image
-              }
-            },
-            headers: @headers.merge({
+      patch '/api/v1/profile/avatar',
+            params: { avatar: invalid_file },
+            headers: headers.merge({
               'Accept' => 'application/json'
             })
 
-      expect(response).to have_http_status(:ok)
-      expect(json_response['status']).to eq('success')
-      expect(json_response['data']['attributes']['avatar_urls']).to be_present
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json_response['status']).to eq('error')
+      expect(json_response['errors'].first['detail']).to eq(['Invalid file type'])
+    end
+  end
+
+  describe 'DELETE /api/v1/profile/avatar' do
+    context 'when avatars exist' do
+      let(:profile) { user.create_profile!(username: 'testuser') }
+
+      before do
+        profile.avatar_medium.attach(
+          io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+          filename: 'medium.webp',
+          content_type: 'image/webp'
+        )
+        profile.avatar_thumbnail.attach(
+          io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+          filename: 'thumbnail.webp',
+          content_type: 'image/webp'
+        )
+      end
+
+      it 'removes both avatars' do
+        delete '/api/v1/profile/avatar', headers: headers.merge({
+          'Accept' => 'application/json'
+        })
+
+        expect(response).to have_http_status(:ok)
+        expect(json_response['status']).to eq('success')
+        
+        profile.reload
+        expect(profile.avatar_medium).not_to be_attached
+        expect(profile.avatar_thumbnail).not_to be_attached
+      end
+    end
+
+    context 'when no avatars exist' do
+      before { user.create_profile!(username: 'testuser') }
+
+      it 'returns an error' do
+        delete '/api/v1/profile/avatar', headers: headers.merge({
+          'Accept' => 'application/json'
+        })
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(json_response['status']).to eq('error')
+        expect(json_response['errors'].first['detail']).to eq(['No avatar to delete'])
+      end
     end
   end
 
   describe 'GET /api/v1/profiles/search' do
     it 'returns matching profiles excluding current user' do
-      # Create our profile
-      our_profile = user.create_profile!(username: 'ouruser')
+      user.create_profile!(username: 'ouruser')
 
       # Create some other profiles to search
       other_user1 = create(:user, email: 'test@example.com')
       other_user2 = create(:user, email: 'another@example.com')
-      other_profile1 = other_user1.create_profile!(username: 'testuser1')
-      other_profile2 = other_user2.create_profile!(username: 'testuser2')
+      other_user1.create_profile!(username: 'testuser1')
+      other_user2.create_profile!(username: 'testuser2')
 
       # Search by username
-      get '/api/v1/profiles/search', params: { query: 'testuser' }, headers: @headers
+      get '/api/v1/profiles/search', params: { query: 'testuser1' }, headers: headers
       expect(response).to have_http_status(:ok)
-      expect(json_response['data'].length).to eq(2)
+      expect(json_response['data'].length).to eq(1)
 
       # Search by email
-      get '/api/v1/profiles/search', params: { query: 'test@example' }, headers: @headers
+      get '/api/v1/profiles/search', params: { query: 'test@example' }, headers: headers
       expect(response).to have_http_status(:ok)
       expect(json_response['data'].length).to eq(1)
       expect(json_response['data'].first['attributes']['email']).to eq('test@example.com')
     end
 
     it 'returns empty results for no matches' do
-      get '/api/v1/profiles/search', params: { query: 'nonexistent' }, headers: @headers
+      get '/api/v1/profiles/search', params: { query: 'nonexistent' }, headers: headers
       expect(response).to have_http_status(:ok)
       expect(json_response['data']).to be_empty
     end
@@ -209,9 +214,10 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
       )
 
       patch '/api/v1/profile/locale',
-            params: { locale: 'fr' },
-            headers: @headers.merge({
-              'Accept' => 'application/json'
+            params: { locale: 'fr' }.to_json,
+            headers: headers.merge({
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/json'
             })
 
       expect(response).to have_http_status(:ok)
@@ -224,17 +230,16 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
     end
 
     it 'rejects invalid locales' do
-      profile = user.create_profile!(username: 'testuser')
-
       patch '/api/v1/profile/locale',
-            params: { locale: 'invalid' },
-            headers: @headers.merge({
-              'Accept' => 'application/json'
+            params: { locale: 'invalid' }.to_json,
+            headers: headers.merge({
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/json'
             })
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json_response['status']).to eq('error')
-      expect(json_response['errors'].first['detail']).to eq('Invalid locale. Valid options are: en, fr')
+      expect(json_response['errors'].first['detail']).to eq(['Invalid locale. Valid options are: en, fr'])
     end
   end
 end

@@ -4,7 +4,8 @@ class Profile < ApplicationRecord
 
   belongs_to :user
 
-  has_one_attached :avatar
+  has_one_attached :avatar_medium
+  has_one_attached :avatar_thumbnail
 
   validates :username, uniqueness: true, allow_blank: true
   validates :first_name, :last_name, length: { maximum: 50 }
@@ -12,16 +13,12 @@ class Profile < ApplicationRecord
   validates :preferred_language, inclusion: { in: VALID_LANGUAGES }, allow_nil: true
   validates :about, length: { maximum: 500 }, allow_blank: true
 
-  def avatar_url
-    return nil unless avatar.attached?
+  def avatar_medium_url
+    generate_url(avatar_medium)
+  end
 
-    Rails.application.routes.url_helpers.rails_blob_url(
-      avatar,
-      host: Rails.application.config.action_mailer.default_url_options[:host]
-    )
-  rescue StandardError => e
-    Rails.logger.error "Error generating avatar URL: #{e.message}"
-    nil
+  def avatar_thumbnail_url
+    generate_url(avatar_thumbnail)
   end
 
   def full_name
@@ -38,5 +35,19 @@ class Profile < ApplicationRecord
 
   def language
     preferred_language || VALID_LANGUAGES.first
+  end
+
+  private
+
+  def generate_url(attachment)
+    return nil unless attachment.attached?
+    
+    Rails.application.routes.url_helpers.rails_blob_url(
+      attachment,
+      host: Rails.application.config.action_mailer.default_url_options[:host]
+    )
+  rescue StandardError => e
+    Rails.logger.error "Error generating avatar URL: #{e.message}"
+    nil
   end
 end

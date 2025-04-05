@@ -34,27 +34,27 @@ class List < ApplicationRecord
   }
 
   scope :accessible_by, ->(user) {
-    where(organization: user.organizations)
-      .or(
-        joins(:shares)
-          .where(shares: { recipient: user, status: :accepted })
-      )
+    left_joins(:shares)
+      .where("lists.organization_id IN (?) OR (shares.recipient_id = ? AND shares.status = ?)",
+             user.organizations.select(:id),
+             user.id,
+             Share.statuses[:accepted])
   }
 
   def viewable_by?(user)
     return false unless user
-    organization.in?(user.organizations) || shares.accepted.exists?(recipient: user)
+    user.organizations.exists?(id: organization.id) || shares.accepted.exists?(recipient: user)
   end
 
   def editable_by?(user)
     return false unless user
     # Only organization members can edit lists
-    organization.in?(user.organizations)
+    user.organizations.exists?(id: organization.id)
   end
 
   def deletable_by?(user)
     return false unless user
     # Any organization member can delete lists
-    organization.in?(user.organizations)
+    user.organizations.exists?(id: organization.id)
   end
 end

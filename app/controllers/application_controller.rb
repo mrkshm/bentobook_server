@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
 
   def set_current_attributes
     Current.user = current_user
-    Current.organization = current_user&.organizations&.first
+    Current.organization ||= current_user&.organizations&.first
   end
 
   def configure_turbo_native_auth

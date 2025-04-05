@@ -11,7 +11,7 @@ class RestaurantQuery
 
     def call
       scoped = relation
-      scoped = scoped.joins(:google_restaurant)
+      scoped = scoped.left_joins(:google_restaurant)
       scoped = filter_by_organization(scoped)
       scoped = search(scoped)
       scoped = filter_by_tag(scoped)

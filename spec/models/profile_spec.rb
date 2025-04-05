@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe Profile, type: :model do
   describe 'associations' do
     it { should belong_to(:user) }
-    it { should have_one_attached(:avatar) }
+    it { should have_one_attached(:avatar_medium) }
+    it { should have_one_attached(:avatar_thumbnail) }
   end
 
   describe 'validations' do
@@ -80,7 +81,7 @@ RSpec.describe Profile, type: :model do
     end
   end
 
-  describe '#avatar_url' do
+  describe 'avatar URLs' do
     let(:profile) { create(:profile) }
     let(:host) { 'example.com' }
 
@@ -88,31 +89,61 @@ RSpec.describe Profile, type: :model do
       Rails.application.config.action_mailer.default_url_options = { host: host }
     end
 
-    context 'when avatar is attached' do
-      before do
-        profile.avatar.attach(
-          io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
-          filename: 'test_image.jpg',
-          content_type: 'image/jpeg'
-        )
+    describe '#avatar_medium_url' do
+      context 'when avatar_medium is attached' do
+        before do
+          profile.avatar_medium.attach(
+            io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+            filename: 'test_image.webp',
+            content_type: 'image/webp'
+          )
+        end
+
+        it 'returns the medium avatar url' do
+          expect(profile.avatar_medium_url).to include(host)
+          expect(profile.avatar_medium_url).to include('test_image.webp')
+        end
+
+        it 'returns nil when url generation fails' do
+          allow(Rails.application.routes.url_helpers).to receive(:rails_blob_url).and_raise(StandardError.new('Test error'))
+          expect(Rails.logger).to receive(:error).with(/Error generating avatar URL: Test error/)
+          expect(profile.avatar_medium_url).to be_nil
+        end
       end
 
-      it 'returns the avatar url' do
-        expect(profile.avatar_url).to include(host)
-        expect(profile.avatar_url).to include('test_image.jpg')
-      end
-
-      it 'returns nil when url generation fails' do
-        allow(Rails.application.routes.url_helpers).to receive(:rails_blob_url).and_raise(StandardError.new('Test error'))
-
-        expect(Rails.logger).to receive(:error).with(/Error generating avatar URL: Test error/)
-        expect(profile.avatar_url).to be_nil
+      context 'when avatar_medium is not attached' do
+        it 'returns nil' do
+          expect(profile.avatar_medium_url).to be_nil
+        end
       end
     end
 
-    context 'when avatar is not attached' do
-      it 'returns nil' do
-        expect(profile.avatar_url).to be_nil
+    describe '#avatar_thumbnail_url' do
+      context 'when avatar_thumbnail is attached' do
+        before do
+          profile.avatar_thumbnail.attach(
+            io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+            filename: 'test_image.webp',
+            content_type: 'image/webp'
+          )
+        end
+
+        it 'returns the thumbnail avatar url' do
+          expect(profile.avatar_thumbnail_url).to include(host)
+          expect(profile.avatar_thumbnail_url).to include('test_image.webp')
+        end
+
+        it 'returns nil when url generation fails' do
+          allow(Rails.application.routes.url_helpers).to receive(:rails_blob_url).and_raise(StandardError.new('Test error'))
+          expect(Rails.logger).to receive(:error).with(/Error generating avatar URL: Test error/)
+          expect(profile.avatar_thumbnail_url).to be_nil
+        end
+      end
+
+      context 'when avatar_thumbnail is not attached' do
+        it 'returns nil' do
+          expect(profile.avatar_thumbnail_url).to be_nil
+        end
       end
     end
   end

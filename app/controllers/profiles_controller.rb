@@ -12,22 +12,45 @@ class ProfilesController < ApplicationController
   end
 
   def update
-    result = ImageHandlingService.process_images(@profile, params, compress: true)  # Set compress: true
+    result = PreprocessAvatarService.call(params[:profile][:avatar]) if params[:profile][:avatar].present?
 
-    unless result[:success]
+    if params[:profile][:avatar].present? && !result[:success]
       flash.now[:alert] = t(".image_processing_error")
       return render :edit, status: :unprocessable_entity
     end
 
+    # Store the current preferred language before update
+    old_language = @profile.preferred_language
+
     if @profile.update(profile_params_without_avatar)
-      if locale_changed? && hotwire_native_app?
-        # Clear navigation stack and redirect to dashboard
-        render turbo_stream: turbo_stream.append("body") do
-          tag.script(%(
-            window.localStorage.clear();
-            window.Turbo.clearCache();
-            window.Turbo.visit('#{home_dashboard_path(locale: current_locale)}', { action: 'replace' });
-          )).html_safe
+      # Handle avatar update if present
+      if result&.dig(:success)
+        # Remove old avatars if they exist
+        @profile.avatar_medium.purge if @profile.avatar_medium.attached?
+        @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
+        
+        # Attach new variants
+        @profile.avatar_medium.attach(result[:variants][:medium])
+        @profile.avatar_thumbnail.attach(result[:variants][:thumbnail])
+      end
+
+      # Update session locale if preferred_language changed
+      new_language = @profile.preferred_language
+      if new_language.present? && new_language != old_language
+        session[:locale] = new_language
+        I18n.locale = new_language
+
+        if hotwire_native_app?
+          # Clear navigation stack and redirect to dashboard
+          render turbo_stream: turbo_stream.append("body") do
+            tag.script(%(
+              window.localStorage.clear();
+              window.Turbo.clearCache();
+              window.Turbo.visit('#{home_dashboard_path(locale: current_locale)}', { action: 'replace' });
+            )).html_safe
+          end
+        else
+          redirect_to profile_path(locale: current_locale), notice: t(".updated")
         end
       else
         redirect_to profile_path(locale: current_locale), notice: t(".updated")
@@ -94,7 +117,8 @@ class ProfilesController < ApplicationController
   end
 
   def delete_avatar
-    @profile.avatar.purge
+    @profile.avatar_medium.purge if @profile.avatar_medium.attached?
+    @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
     redirect_to edit_profile_path(locale: current_locale), notice: t(".avatar_removed")
   end
 
@@ -115,8 +139,5 @@ class ProfilesController < ApplicationController
 
   private
 
-  def locale_changed?
-    params[:profile][:preferred_language].present? &&
-      params[:profile][:preferred_language] != @profile.preferred_language
-  end
+  # Removed locale_changed? method
 end

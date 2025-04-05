@@ -60,9 +60,7 @@ class RestaurantsController < ApplicationController
       return
     end
 
-    list_restaurants = ListRestaurant.where(restaurant_id: @restaurant.id)
-    lists = List.where(id: list_restaurants.pluck(:list_id))
-    @lists = List.accessible_by(Current.organization).containing_restaurant(@restaurant)
+    @lists = List.accessible_by(Current.user).containing_restaurant(@restaurant)
 
     if turbo_frame_request? && params[:turbo_frame] == dom_id(@restaurant, :notes)
       render partial: "components/notes_component", locals: {
@@ -76,8 +74,7 @@ class RestaurantsController < ApplicationController
 
   def edit
     @restaurant = Current.organization.restaurants.with_google.includes(:images).find(params[:id])
-    @cuisine_types = CuisineType.all
-    Rails.logger.debug "Cuisine types: #{@cuisine_types.inspect}"
+    load_edit_dependencies
   end
 
   def new
@@ -110,7 +107,17 @@ class RestaurantsController < ApplicationController
   end
 
   def update
+    @restaurant = Current.organization.restaurants.find(params[:id])
+    load_edit_dependencies
+
+    Rails.logger.debug "\n=== Controller Debug ==="
+    Rails.logger.debug "Restaurant before update: #{@restaurant.inspect}"
+    Rails.logger.debug "Update params: #{restaurant_params.inspect}"
+    Rails.logger.debug "Request format: #{request.format}"
+    Rails.logger.debug "Request accepts: #{request.accepts.map(&:to_s).join(', ')}"
+
     if @restaurant.update(restaurant_params)
+      Rails.logger.debug "Update successful"
       respond_to do |format|
         format.turbo_stream do
           if restaurant_params.key?(:price_level)
@@ -137,11 +144,27 @@ class RestaurantsController < ApplicationController
             ]
           end
         end
-        format.html { redirect_to @restaurant }
+        format.html { redirect_to @restaurant, locale: I18n.locale }
         format.json { render json: @restaurant }
+        format.any { head :not_acceptable }
       end
     else
-      head :unprocessable_entity
+      Rails.logger.debug "Update failed"
+      Rails.logger.debug "Restaurant errors: #{@restaurant.errors.full_messages}"
+      Rails.logger.debug "Cuisine types: #{@cuisine_types.inspect}"
+      Rails.logger.debug "Flash before: #{flash.inspect}"
+      
+      flash.now[:alert] = @restaurant.errors.full_messages.join(", ")
+      
+      Rails.logger.debug "Flash after: #{flash.inspect}"
+      Rails.logger.debug "=== End Controller Debug ==="
+
+      respond_to do |format|
+        format.html { render :edit, status: :unprocessable_entity }
+        format.turbo_stream { head :unprocessable_entity }
+        format.json { render json: @restaurant.errors, status: :unprocessable_entity }
+        format.any { head :not_acceptable }
+      end
     end
   end
 
@@ -157,7 +180,7 @@ class RestaurantsController < ApplicationController
             locals: { restaurant: @restaurant }
           )
         end
-        format.html { redirect_to @restaurant }
+        format.html { redirect_to @restaurant, locale: I18n.locale }
         format.json { render json: { status: :ok, price_level: @restaurant.price_level } }
       end
     else
@@ -166,22 +189,29 @@ class RestaurantsController < ApplicationController
   end
 
   def create
-    google_restaurant = GoogleRestaurant.find(params[:restaurant][:google_restaurant_id])
-    @restaurant, status = Restaurants::StubCreatorService.create(
-      user: current_user,
-      google_restaurant: google_restaurant
-    )
+    @restaurant = Restaurant.new(restaurant_params)
+    @restaurant.organization = Current.organization
 
-    flash_type = status == :new ? :success : :info
-    notice_key = status == :new ? "restaurants.created" : "restaurants.already_exists"
-    redirect_to restaurant_path(id: @restaurant.id, locale: current_locale),
-                flash: { flash_type => t(notice_key) }
-  rescue ActiveRecord::RecordNotFound => e
-    flash[:error] = t("restaurants.errors.google_restaurant_not_found")
-    redirect_to new_restaurant_path
-  rescue StandardError => e
-    flash[:error] = e.message
-    redirect_to new_restaurant_path
+    Rails.logger.debug "\n=== Create Action Debug ==="
+    Rails.logger.debug "Restaurant params: #{restaurant_params.inspect}"
+    Rails.logger.debug "Request format: #{request.format}"
+
+    if @restaurant.save
+      Rails.logger.debug "Restaurant saved successfully"
+      respond_to do |format|
+        format.html { redirect_to restaurant_path(@restaurant, locale: I18n.locale), notice: 'Restaurant was successfully created.' }
+        format.json { render json: @restaurant, status: :created, location: restaurant_path(@restaurant, locale: I18n.locale) }
+      end
+    else
+      Rails.logger.debug "Restaurant save failed: #{@restaurant.errors.full_messages}"
+      load_edit_dependencies
+      flash.now[:alert] = @restaurant.errors.full_messages.join(", ")
+
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @restaurant.errors, status: :unprocessable_entity }
+      end
+    end
   end
 
   def destroy
@@ -237,7 +267,7 @@ class RestaurantsController < ApplicationController
       :name, :address, :notes, :cuisine_type_name, :cuisine_type_id,
       :rating, :price_level, :street_number, :street, :postal_code,
       :city, :state, :country, :phone_number, :url, :business_status,
-      :tag_list, images: [],
+      :tag_list, :google_restaurant_id, images: [],
       google_restaurant_attributes: [
         :google_place_id, :name, :address, :latitude, :longitude,
         :street_number, :street, :postal_code, :city, :state, :country,
@@ -273,7 +303,7 @@ class RestaurantsController < ApplicationController
   end
 
   def handle_failed_save
-    @cuisine_types = CuisineType.all
+    load_edit_dependencies
     flash[:alert] = if @restaurant&.errors&.any?
                       @restaurant.errors.full_messages.join(", ")
     else
@@ -283,7 +313,7 @@ class RestaurantsController < ApplicationController
   end
 
   def handle_invalid_cuisine_type
-    @cuisine_types = CuisineType.all
+    load_edit_dependencies
     flash[:alert] = "Invalid cuisine type: #{restaurant_params[:cuisine_type_name]}. Available types: #{@cuisine_types.pluck(:name).join(', ')}"
     render :new, status: :unprocessable_entity
   end
@@ -301,5 +331,9 @@ class RestaurantsController < ApplicationController
       :price_level, :business_status, :street_number, :street_name,
       :city, :state, :postal_code, :country
     )
+  end
+
+  def load_edit_dependencies
+    @cuisine_types = CuisineType.all
   end
 end

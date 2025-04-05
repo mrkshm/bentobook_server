@@ -6,10 +6,11 @@ class Organization < ApplicationRecord
   has_many :lists, dependent: :destroy
   has_many :shares, through: :lists
   has_many :contacts, dependent: :destroy
+  has_many :visits, dependent: :destroy
 
   def share_list(list, recipient, options = {})
     raise ArgumentError, "List doesn't belong to this organization" unless lists.include?(list)
-    
+
     list.shares.create!({
       recipient: recipient,
       creator: options[:creator],

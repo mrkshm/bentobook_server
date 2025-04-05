@@ -6,7 +6,7 @@ FactoryBot.define do
 
     after(:build) do |restaurant|
       # Create a new google_restaurant only if one isn't already assigned
-      restaurant.google_restaurant ||= build(:google_restaurant,
+      restaurant.google_restaurant ||= build(:google_restaurant, :with_location,
         name: restaurant.name,
         google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"
       )
@@ -19,8 +19,6 @@ FactoryBot.define do
     notes { "Some notes about the restaurant" }
     phone_number { "+1 555-#{rand(100..999)}-#{rand(1000..9999)}" }
     url { "https://example#{rand(1..100)}.com" }
-
-    association :google_restaurant, :with_location
 
     trait :with_visits do
       transient do

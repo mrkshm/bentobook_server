@@ -11,12 +11,20 @@ FactoryBot.define do
       username { nil }
     end
 
-    trait :with_avatar do
+    trait :with_avatars do
       after(:build) do |profile|
-        profile.avatar.attach(
-          io: File.open(Rails.root.join('spec/fixtures/avatar.jpg')),
-          filename: 'avatar.jpg',
-          content_type: 'image/jpeg'
+        # Medium avatar
+        profile.avatar_medium.attach(
+          io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+          filename: 'avatar_medium.webp',
+          content_type: 'image/webp'
+        )
+        
+        # Thumbnail avatar
+        profile.avatar_thumbnail.attach(
+          io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
+          filename: 'avatar_thumbnail.webp',
+          content_type: 'image/webp'
         )
       end
     end
