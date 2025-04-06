@@ -42,13 +42,20 @@ module Api
         restaurant = Current.organization.restaurants.new(restaurant_params.except(:cuisine_type_name))
         Rails.logger.debug "Restaurant tag_list after init: #{restaurant.tag_list.inspect}"
 
-        # Handle cuisine_type_name if provided
+        # First check if the restaurant is valid (name, etc.)
+        unless restaurant.valid?
+          return render_error(restaurant.errors.full_messages.join(", "), :unprocessable_entity)
+        end
+
+        # Then handle cuisine_type_name if provided
         if restaurant_params[:cuisine_type_name].present?
           valid, result = validate_cuisine_type(restaurant_params[:cuisine_type_name])
           unless valid
             return render_error(result, :unprocessable_entity)
           end
           restaurant.cuisine_type = result
+        else
+          return render_error("Cuisine type is required", :unprocessable_entity)
         end
 
         # Add location data directly to the restaurant if provided
@@ -127,6 +134,11 @@ module Api
       end
 
       def add_tag
+        unless @restaurant
+          # This is a fallback in case set_restaurant didn't properly halt the chain
+          return render_error("Restaurant not found", :not_found)
+        end
+        
         @restaurant.tag_list.add(params[:tag])
 
         if @restaurant.save
@@ -139,6 +151,11 @@ module Api
       end
 
       def remove_tag
+        unless @restaurant
+          # This is a fallback in case set_restaurant didn't properly halt the chain
+          return render_error("Restaurant not found", :not_found)
+        end
+        
         @restaurant.tag_list.remove(params[:tag])
 
         if @restaurant.save
@@ -153,9 +170,12 @@ module Api
       private
 
       def set_restaurant
+        Rails.logger.debug "=== DEBUG: set_restaurant called for #{params[:controller]}##{params[:action]} with ID: #{params[:id]} ==="
         @restaurant = Current.organization.restaurants.find(params[:id])
-      rescue ActiveRecord::RecordNotFound
-        render_error("Restaurant not found", status: :not_found)
+      rescue ActiveRecord::RecordNotFound => e
+        Rails.logger.debug "=== DEBUG: Restaurant not found: #{e.message} ==="
+        render_error("Restaurant not found", :not_found)
+        false # Return false to halt the filter chain
       end
 
       def search_params
