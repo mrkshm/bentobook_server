@@ -1913,6 +1913,7 @@ ALTER TABLE ONLY public.visit_contacts
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250405165559'),
 ('20250404133041'),
 ('20250404124930'),
 ('20250404124651'),

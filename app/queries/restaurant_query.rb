@@ -27,7 +27,7 @@ class RestaurantQuery
 
     def search(scoped)
       if params[:search].present?
-        scoped.search_by_full_text(params[:search])
+        scoped.search_by_name_and_address(params[:search], params[:organization])
       else
         scoped
       end

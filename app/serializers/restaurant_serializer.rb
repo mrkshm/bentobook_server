@@ -40,16 +40,16 @@ class RestaurantSerializer < BaseSerializer
       state: restaurant.combined_state,
       country: restaurant.combined_country,
       postal_code: restaurant.combined_postal_code,
-      latitude: restaurant.combined_latitude&.to_f,
-      longitude: restaurant.combined_longitude&.to_f
+      latitude: restaurant.latitude&.to_f,
+      longitude: restaurant.longitude&.to_f
     }
   end
 
   attribute :distance do |restaurant|
-    if user_location? && restaurant.combined_latitude && restaurant.combined_longitude
+    if user_location? && restaurant.latitude && restaurant.longitude
       Geocoder::Calculations.distance_between(
         user_location,
-        [ restaurant.combined_latitude, restaurant.combined_longitude ],
+        [ restaurant.latitude, restaurant.longitude ],
         units: :km
       ).round(1)
     end

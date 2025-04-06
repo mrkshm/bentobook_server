@@ -2,7 +2,8 @@ require 'rails_helper'
 
 RSpec.describe RestaurantSerializer do
   let(:user) { create(:user) }
-  let(:restaurant) { create(:restaurant, user: user) }
+  let(:organization) { user.organizations.first }
+  let(:restaurant) { create(:restaurant, organization: organization) }
   let(:serializer) { RestaurantSerializer.new(restaurant) }
 
   before do
@@ -45,8 +46,8 @@ RSpec.describe RestaurantSerializer do
       expect(location['state']).to eq(restaurant.combined_state)
       expect(location['country']).to eq(restaurant.combined_country)
       expect(location['postal_code']).to eq(restaurant.combined_postal_code)
-      expect(location['latitude']).to eq(restaurant.combined_latitude&.to_f)
-      expect(location['longitude']).to eq(restaurant.combined_longitude&.to_f)
+      expect(location['latitude']).to eq(restaurant.latitude&.to_f)
+      expect(location['longitude']).to eq(restaurant.longitude&.to_f)
     end
 
     it 'has the correct contact information' do
@@ -139,7 +140,7 @@ RSpec.describe RestaurantSerializer do
   end
 
   describe '.render_collection' do
-    let(:restaurants) { create_list(:restaurant, 2, user: user) }
+    let(:restaurants) { create_list(:restaurant, 2, organization: organization) }
     let(:pagy) { Pagy.new(count: 2, page: 1, items: 10) }
     let(:pagination) do
       {

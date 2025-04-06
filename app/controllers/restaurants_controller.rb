@@ -153,9 +153,9 @@ class RestaurantsController < ApplicationController
       Rails.logger.debug "Restaurant errors: #{@restaurant.errors.full_messages}"
       Rails.logger.debug "Cuisine types: #{@cuisine_types.inspect}"
       Rails.logger.debug "Flash before: #{flash.inspect}"
-      
+
       flash.now[:alert] = @restaurant.errors.full_messages.join(", ")
-      
+
       Rails.logger.debug "Flash after: #{flash.inspect}"
       Rails.logger.debug "=== End Controller Debug ==="
 
@@ -199,7 +199,7 @@ class RestaurantsController < ApplicationController
     if @restaurant.save
       Rails.logger.debug "Restaurant saved successfully"
       respond_to do |format|
-        format.html { redirect_to restaurant_path(@restaurant, locale: I18n.locale), notice: 'Restaurant was successfully created.' }
+        format.html { redirect_to restaurant_path(@restaurant, locale: I18n.locale), notice: "Restaurant was successfully created." }
         format.json { render json: @restaurant, status: :created, location: restaurant_path(@restaurant, locale: I18n.locale) }
       end
     else

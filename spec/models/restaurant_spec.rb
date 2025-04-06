@@ -178,35 +178,25 @@ RSpec.describe Restaurant, type: :model do
       let(:target_lat) { 40.7128 }
       let(:target_lon) { -74.006 }
       
-      # Create custom Google restaurants with proper location data
+      # Create restaurants with proper location data for testing
       before(:each) do
         # Delete any existing data that might interfere with our test
         Restaurant.delete_all
         GoogleRestaurant.delete_all
         
-        # Create the near restaurant
-        @gr_near = create(:google_restaurant, 
-                         name: "Near Restaurant", 
-                         latitude: target_lat + 0.001, 
-                         longitude: target_lon + 0.001)
-                         
-        # Create the far restaurant 
-        @gr_far = create(:google_restaurant, 
-                        name: "Far Restaurant", 
-                        latitude: target_lat + 0.5, 
-                        longitude: target_lon + 0.5)
-        
-        # Explicitly set location data for PostGIS
-        ActiveRecord::Base.connection.execute(
-          "UPDATE google_restaurants SET location = ST_SetSRID(ST_MakePoint(#{@gr_near.longitude}, #{@gr_near.latitude}), 4326) WHERE id = #{@gr_near.id}"
-        )
-        ActiveRecord::Base.connection.execute(
-          "UPDATE google_restaurants SET location = ST_SetSRID(ST_MakePoint(#{@gr_far.longitude}, #{@gr_far.latitude}), 4326) WHERE id = #{@gr_far.id}"
-        )
-        
-        # Create restaurants with explicit names to make debugging easier
-        @nearby_restaurant = create(:restaurant, name: "Near Restaurant", organization: organization, google_restaurant: @gr_near)
-        @far_restaurant = create(:restaurant, name: "Far Restaurant", organization: organization, google_restaurant: @gr_far)
+        # Create the near restaurant (500m away)
+        @nearby_restaurant = create(:restaurant, 
+                                  name: "Near Restaurant", 
+                                  organization: organization,
+                                  latitude: target_lat + 0.001, 
+                                  longitude: target_lon + 0.001)
+                           
+        # Create the far restaurant (50km away)
+        @far_restaurant = create(:restaurant, 
+                               name: "Far Restaurant", 
+                               organization: organization,
+                               latitude: target_lat + 0.5, 
+                               longitude: target_lon + 0.5)
       end
       
       # Define the restaurant objects for the test to use
@@ -231,35 +221,24 @@ RSpec.describe Restaurant, type: :model do
       let(:target_lat) { 40.7128 }
       let(:target_lon) { -74.006 }
       
-      # Create custom Google restaurants with proper location data for testing order
+      # Create restaurants with proper location data for testing order
       before(:each) do
         # Delete any existing data that might interfere with our test
         Restaurant.delete_all
         GoogleRestaurant.delete_all
         
-        # Create the near restaurant
-        @gr_near = create(:google_restaurant, 
-                          name: "Near Restaurant", 
-                          latitude: target_lat + 0.001, 
-                          longitude: target_lon + 0.001)
-                          
-        # Create the far restaurant 
-        @gr_far = create(:google_restaurant, 
-                         name: "Far Restaurant", 
-                         latitude: target_lat + 0.5, 
-                         longitude: target_lon + 0.5)
-        
-        # Explicitly set location data for PostGIS
-        ActiveRecord::Base.connection.execute(
-          "UPDATE google_restaurants SET location = ST_SetSRID(ST_MakePoint(#{@gr_near.longitude}, #{@gr_near.latitude}), 4326) WHERE id = #{@gr_near.id}"
-        )
-        ActiveRecord::Base.connection.execute(
-          "UPDATE google_restaurants SET location = ST_SetSRID(ST_MakePoint(#{@gr_far.longitude}, #{@gr_far.latitude}), 4326) WHERE id = #{@gr_far.id}"
-        )
-        
-        # Create restaurants with explicit names to make debugging easier
-        @near = create(:restaurant, name: "Near Restaurant", organization: organization, google_restaurant: @gr_near)
-        @far = create(:restaurant, name: "Far Restaurant", organization: organization, google_restaurant: @gr_far)
+        # Create restaurants with explicit names and locations to make debugging easier
+        @near = create(:restaurant, 
+                     name: "Near Restaurant", 
+                     organization: organization, 
+                     latitude: target_lat + 0.001, 
+                     longitude: target_lon + 0.001)
+                     
+        @far = create(:restaurant, 
+                    name: "Far Restaurant", 
+                    organization: organization, 
+                    latitude: target_lat + 0.5, 
+                    longitude: target_lon + 0.5)
       end
       
       # Define the restaurant objects for the test to use
@@ -346,7 +325,7 @@ RSpec.describe Restaurant, type: :model do
     end
 
     describe '#distance_to' do
-      let(:restaurant) { create(:restaurant, :with_manual_location) }
+      let(:restaurant) { create(:restaurant, latitude: 40.7128, longitude: -74.0060) }
       let(:lat) { 40.7128 }
       let(:lon) { -74.0060 }
 
@@ -356,7 +335,7 @@ RSpec.describe Restaurant, type: :model do
       end
 
       it 'returns nil if restaurant has no location' do
-        restaurant.google_restaurant.update!(location: nil)
+        restaurant.update!(latitude: nil, longitude: nil)
         expect(restaurant.distance_to(lat, lon)).to be_nil
       end
     end

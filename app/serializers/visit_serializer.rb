@@ -10,8 +10,8 @@ class VisitSerializer < BaseSerializer
 
   attribute :restaurant do |visit|
     begin
-      lat = visit.restaurant.combined_latitude
-      lon = visit.restaurant.combined_longitude
+      lat = visit.restaurant.latitude
+      lon = visit.restaurant.longitude
 
       {
         id: visit.restaurant.id,
@@ -23,7 +23,7 @@ class VisitSerializer < BaseSerializer
           longitude: lon.present? ? lon.to_f : nil
         }
       }
-    rescue StandardError => e
+    rescue StandardError => _e
       # Return minimal restaurant data on error
       {
         id: visit.restaurant.id,
@@ -42,7 +42,7 @@ class VisitSerializer < BaseSerializer
             format: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:format],
             saver: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:saver]
           ))
-        rescue StandardError => e
+        rescue StandardError => _e
           nil
         end
       end
@@ -66,7 +66,7 @@ class VisitSerializer < BaseSerializer
           amount: sprintf("%.2f", amount),
           currency: visit.price_paid_currency.to_s
         }
-      rescue StandardError => e
+      rescue StandardError => _e
         nil
       end
     end
@@ -104,7 +104,7 @@ class VisitSerializer < BaseSerializer
           id: image.id,
           urls: urls
         }
-      rescue StandardError => e
+      rescue StandardError => _e
         {
           id: image.id,
           urls: {}

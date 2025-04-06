@@ -7,9 +7,6 @@ module Api
       before_action :set_restaurant, only: [ :show, :update, :destroy, :add_tag, :remove_tag ]
 
       def index
-        puts "DEBUG: Current user: #{current_user.inspect}"
-        puts "DEBUG: Current organization: #{Current.organization.inspect}"
-        puts "DEBUG: Headers: #{request.headers.to_h.select { |k,v| k.start_with?('HTTP_') }}"
         restaurants_scope = Current.organization.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
         order_params = parse_order_params
         return if performed?
@@ -38,43 +35,64 @@ module Api
       end
 
       def create
-        restaurant = nil
+        # Log the tag_list parameter for debugging
+        Rails.logger.debug "Tag list param: #{params.dig(:restaurant, :tag_list).inspect}"
+        Rails.logger.debug "Restaurant params: #{restaurant_params.inspect}"
+        
+        restaurant = Current.organization.restaurants.new(restaurant_params.except(:cuisine_type_name))
+        Rails.logger.debug "Restaurant tag_list after init: #{restaurant.tag_list.inspect}"
 
-        ActiveRecord::Base.transaction do
-          restaurant = Current.organization.restaurants.new(restaurant_params)
-          
-          # Handle location data
-          if params[:google_restaurant_id].present?
-            # Use existing Google restaurant
-            restaurant.google_restaurant = GoogleRestaurant.find(params[:google_restaurant_id])
-          elsif location_params.present?
-            # Create a new google_restaurant record for non-Google location
-            restaurant.google_restaurant = GoogleRestaurant.new(
-              name: restaurant.name,
-              address: location_params[:address],
-              city: location_params[:city],
-              street: location_params[:street],
-              postal_code: location_params[:postal_code],
-              country: location_params[:country],
-              latitude: location_params[:latitude],
-              longitude: location_params[:longitude]
-            )
+        # Handle cuisine_type_name if provided
+        if restaurant_params[:cuisine_type_name].present?
+          valid, result = validate_cuisine_type(restaurant_params[:cuisine_type_name])
+          unless valid
+            return render_error(result, :unprocessable_entity)
           end
+          restaurant.cuisine_type = result
+        end
 
-          if restaurant.save
-            if restaurant_params[:images].present?
-              result = ImageProcessorService.new(restaurant, restaurant_params[:images]).process
-              unless result.success?
-                raise StandardError, result.error
-              end
-            end
-            render json: RestaurantSerializer.render_success(restaurant), status: :created
-          else
-            render_error(restaurant.errors.full_messages.join(", "), :unprocessable_entity)
+        # Add location data directly to the restaurant if provided
+        if location_params.present?
+          restaurant.assign_attributes(
+            address: location_params[:address],
+            city: location_params[:city],
+            street: location_params[:street],
+            street_number: location_params[:street_number],
+            postal_code: location_params[:postal_code],
+            country: location_params[:country],
+            latitude: location_params[:latitude],
+            longitude: location_params[:longitude]
+          )
+        end
+
+        # Optionally associate with Google restaurant if place ID is provided
+        if params[:google_place_id].present?
+          google_restaurant = GoogleRestaurant.find_by(google_place_id: params[:google_place_id])
+          restaurant.google_restaurant = google_restaurant if google_restaurant
+          
+          # If we have a Google restaurant but no location data in the restaurant itself,
+          # copy the location data from the Google restaurant
+          if google_restaurant && (!restaurant.latitude || !restaurant.longitude)
+            restaurant.latitude = google_restaurant.latitude
+            restaurant.longitude = google_restaurant.longitude
           end
         end
+
+        if restaurant.save
+          if restaurant_params[:images].present?
+            result = ImageProcessorService.new(restaurant, restaurant_params[:images]).process
+            unless result.success?
+              restaurant.destroy
+              return render_error(result.error)
+            end
+          end
+          render json: RestaurantSerializer.render_success(restaurant), status: :created
+        else
+          render_error(restaurant.errors.full_messages.join(", "), :unprocessable_entity)
+        end
+      rescue ActionController::ParameterMissing => e
+        render_error(e.message, :unprocessable_entity)
       rescue StandardError => e
-        restaurant&.destroy if restaurant&.persisted?
         render_error(e.message)
       end
 
@@ -140,55 +158,6 @@ module Api
         render_error("Restaurant not found", status: :not_found)
       end
 
-      def build_restaurant
-        # Create restaurant with basic attributes only
-        restaurant = Current.organization.restaurants.new(
-          name: restaurant_params[:name],
-          notes: restaurant_params[:notes],
-          rating: restaurant_params[:rating].present? ? restaurant_params[:rating].to_i : nil,
-          price_level: restaurant_params[:price_level]
-        )
-
-        # Validate and set cuisine type
-        valid, result = validate_cuisine_type(restaurant_params[:cuisine_type_name])
-        unless valid
-          raise StandardError, result
-        end
-        restaurant.cuisine_type = result
-
-        # Handle tags if present
-        if restaurant_params[:tag_list].present?
-          restaurant.tag_list = restaurant_params[:tag_list]
-        end
-
-        # Create or find google restaurant
-        if restaurant_params[:google_place_id].present?
-          google_restaurant = GoogleRestaurant.find_or_initialize_by_place_id(
-            google_place_id: restaurant_params[:google_place_id],
-            name: restaurant_params[:name],
-            address: restaurant_params[:address],
-            city: restaurant_params[:city],
-            latitude: restaurant_params[:latitude]&.to_d,
-            longitude: restaurant_params[:longitude]&.to_d,
-            google_rating: restaurant_params[:rating],
-            google_updated_at: Time.current
-          )
-          restaurant.google_restaurant = google_restaurant
-        else
-          restaurant.build_google_restaurant(
-            name: restaurant_params[:name],
-            address: restaurant_params[:address],
-            city: restaurant_params[:city],
-            latitude: restaurant_params[:latitude]&.to_d,
-            longitude: restaurant_params[:longitude]&.to_d,
-            google_rating: restaurant_params[:rating],
-            google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"  # Generate a unique ID when not provided
-          )
-        end
-
-        restaurant
-      end
-
       def search_params
         params.permit(
           :search, :tag, :latitude, :longitude, :per_page
@@ -199,6 +168,8 @@ module Api
         params.require(:restaurant).permit(
           :name, :notes, :rating, :price_level,
           :cuisine_type_name, :favorite,
+          :address, :city, :street, :street_number,
+          :postal_code, :country, :phone_number, :url,
           tag_list: [],
           images: []
         )
@@ -206,7 +177,7 @@ module Api
 
       def location_params
         return nil unless params[:location].present?
-        
+
         params.require(:location).permit(
           :address,
           :city,

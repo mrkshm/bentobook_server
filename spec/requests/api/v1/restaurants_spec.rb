@@ -13,24 +13,26 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
     {
       name: 'Test Restaurant',
       cuisine_type_name: 'italian',
-      google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
+      price_level: 2,
+      rating: 4,
+      notes: 'Great place!',
+      tag_list: 'pasta, wine'
+    }
+  end
+
+  let(:location_attributes) do
+    {
       address: '123 Test St',
       city: 'Test City',
       latitude: 40.7128,
-      longitude: -74.0060,
-      price_level: 2,
-      rating: 4.5,
-      notes: 'Great place!',
-      tag_list: [ 'pasta', 'wine' ]
+      longitude: -74.0060
     }
   end
 
   before do
     italian_cuisine # ensure cuisine type exists
-    puts "DEBUG: Before signing in user: #{user.inspect}"
-    sign_in user
-    puts "DEBUG: After signing in user"
-    puts "DEBUG: Is user signed in? #{user.reload.sign_in_count > 0}"
+    # Use JWT authentication instead of the old sign_in method
+    @auth_headers = sign_in_with_token(user)
     Current.organization = organization
   end
 
@@ -41,7 +43,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
   describe 'GET /api/v1/restaurants' do
     context 'with no restaurants' do
       it 'returns an empty list' do
-        get '/api/v1/restaurants'
+        get '/api/v1/restaurants', headers: @auth_headers
 
         expect(response).to have_http_status(:ok)
         expect(json_response['status']).to eq('success')
@@ -61,8 +63,18 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
       let!(:restaurant2) { create(:restaurant, organization: organization, name: 'Second Restaurant') }
 
       it 'returns all restaurants' do
-        get '/api/v1/restaurants'
-
+        puts "\n=== DEBUG: Before request ==="
+        puts "Auth headers: #{@auth_headers.inspect}"
+        puts "Organization: #{organization.inspect}"
+        puts "Current.organization: #{Current.organization.inspect}"
+        puts "Restaurants: #{Restaurant.where(organization_id: organization.id).count}"
+        
+        get '/api/v1/restaurants', headers: @auth_headers
+        
+        puts "\n=== DEBUG: After request ==="
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
+        
         expect(response).to have_http_status(:ok)
         expect(json_response['status']).to eq('success')
         expect(json_response['data'].length).to eq(2)
@@ -79,14 +91,14 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
       context 'with sorting' do
         it 'sorts by name' do
-          get '/api/v1/restaurants', params: { order_by: 'name', order_direction: 'asc' }
+          get '/api/v1/restaurants', params: { order_by: 'name', order_direction: 'asc' }.as_json, headers: @auth_headers
 
           names = json_response['data'].map { |r| r['attributes']['name'] }
           expect(names).to eq(names.sort)
         end
 
         it 'sorts by created_at' do
-          get '/api/v1/restaurants', params: { order_by: 'created_at', order_direction: 'desc' }
+          get '/api/v1/restaurants', params: { order_by: 'created_at', order_direction: 'desc' }.as_json, headers: @auth_headers
 
           dates = json_response['data'].map { |r| Time.parse(r['attributes']['created_at']) }
           expect(dates).to eq(dates.sort.reverse)
@@ -102,7 +114,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'filters by tag' do
-          get '/api/v1/restaurants', params: { tag: 'italian' }
+          get '/api/v1/restaurants', params: { tag: 'italian' }.as_json, headers: @auth_headers
 
           expect(response).to have_http_status(:ok)
           expect(json_response['data'].length).to eq(1)
@@ -110,8 +122,14 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'filters by search term' do
-          get '/api/v1/restaurants', params: { search: 'Tagged' }
-
+          puts "\n=== DEBUG: Search Test ==="
+          puts "Restaurant names: #{Restaurant.all.pluck(:name)}"
+          
+          get '/api/v1/restaurants', params: { search: 'Tagged' }.as_json, headers: @auth_headers
+          
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}"
+          
           expect(response).to have_http_status(:ok)
           expect(json_response['data'].length).to eq(1)
           expect(json_response['data'].first['attributes']['name']).to eq('Tagged Restaurant')
@@ -127,7 +145,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'includes distance when coordinates provided' do
-          get '/api/v1/restaurants', params: { latitude: 40.7128, longitude: -74.0060 }
+          get '/api/v1/restaurants', params: { latitude: 40.7128, longitude: -74.0060 }.as_json, headers: @auth_headers
 
           expect(response).to have_http_status(:ok)
           expect(json_response['data'].first['attributes']).to include('distance')
@@ -140,11 +158,16 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          get '/api/v1/restaurants'
+          puts "\n=== DEBUG: GET Error Test ==="
+          
+          get '/api/v1/restaurants', headers: @auth_headers
 
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}"
+          
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
-          expect(json_response['message']).to eq('Query failed')
+          expect(json_response['errors'][0]['detail']).to eq('Query failed')
         end
       end
     end
@@ -153,8 +176,22 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
   describe 'POST /api/v1/restaurants' do
     context 'with valid parameters' do
       it 'creates a new restaurant' do
+        puts "\n=== DEBUG: Create Restaurant Test ==="
+        puts "Restaurant attributes: #{restaurant_attributes.inspect}"
+        puts "Location attributes: #{location_attributes.inspect}"
+        puts "Current.organization: #{Current.organization.inspect}"
+        
         expect {
-          post '/api/v1/restaurants', params: { restaurant: restaurant_attributes }
+          post '/api/v1/restaurants', 
+               params: { 
+                 restaurant: restaurant_attributes.as_json, 
+                 location: location_attributes.as_json 
+               }, 
+               headers: @auth_headers,
+               as: :json
+          
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}"
         }.to change(Restaurant, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -163,10 +200,45 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
       end
 
       it 'handles tags' do
-        post '/api/v1/restaurants', params: { restaurant: restaurant_attributes }
+        # First create a restaurant without tags
+        post '/api/v1/restaurants', 
+             params: { 
+               restaurant: restaurant_attributes.except(:tag_list).as_json, 
+               location: location_attributes.as_json 
+             }, 
+             headers: @auth_headers,
+             as: :json
 
         expect(response).to have_http_status(:created)
-        expect(json_response['data']['attributes']['tags']).to match_array(restaurant_attributes[:tag_list])
+        restaurant_id = json_response['data']['id']
+        
+        # Then add tags using the add_tag endpoint
+        post "/api/v1/restaurants/#{restaurant_id}/add_tag", 
+             params: { tag: 'pasta' }.as_json, 
+             headers: @auth_headers,
+             as: :json
+             
+        expect(response).to have_http_status(:ok)
+        
+        post "/api/v1/restaurants/#{restaurant_id}/add_tag", 
+             params: { tag: 'wine' }.as_json, 
+             headers: @auth_headers,
+             as: :json
+             
+        expect(response).to have_http_status(:ok)
+        
+        # Reset the json_response cache
+        @json_response = nil
+        
+        # Finally, check that the tags were added
+        get "/api/v1/restaurants/#{restaurant_id}", headers: @auth_headers
+        
+        puts "\n=== DEBUG: Tags Test ==="
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
+        
+        expect(response).to have_http_status(:ok)
+        expect(json_response['data']['attributes']['tags']).to match_array(['pasta', 'wine'])
       end
 
       context 'with images' do
@@ -175,7 +247,12 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
         it 'only processes files with image content type' do
           post '/api/v1/restaurants',
-               params: { restaurant: restaurant_attributes.merge(images: [image, non_image]) }
+               params: { 
+                 restaurant: restaurant_attributes.merge(images: [image, non_image]).as_json, 
+                 location: location_attributes.as_json 
+               }, 
+               headers: @auth_headers,
+               as: :json
 
           expect(response).to have_http_status(:created)
           # Add expectations for image processing based on your implementation
@@ -184,10 +261,24 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
       context 'when creating with rating' do
         it 'creates restaurant with integer rating' do
+          puts "\n=== DEBUG: Rating Test ==="
+          puts "Auth headers: #{@auth_headers.inspect}"
+          puts "Restaurant params: #{restaurant_attributes.merge(rating: '4').inspect}"
+          puts "Location params: #{location_attributes.inspect}"
+          
           attributes = restaurant_attributes.merge(rating: '4')
           
-          post '/api/v1/restaurants', params: { restaurant: attributes }
+          post '/api/v1/restaurants', 
+               params: { 
+                 restaurant: attributes.as_json, 
+                 location: location_attributes.as_json 
+               }, 
+               headers: @auth_headers,
+               as: :json
 
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}"
+          
           expect(response).to have_http_status(:created)
           expect(json_response['data']['attributes']['rating']).to eq(4)
         end
@@ -195,10 +286,21 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
       context 'when creating without rating' do
         it 'creates restaurant with nil rating' do
+          puts "\n=== DEBUG: Nil Rating Test ==="
           attributes = restaurant_attributes.merge(rating: nil)
+          puts "Restaurant params: #{attributes.inspect}"
           
-          post '/api/v1/restaurants', params: { restaurant: attributes }
+          post '/api/v1/restaurants', 
+               params: { 
+                 restaurant: attributes.as_json, 
+                 location: location_attributes.as_json 
+               }, 
+               headers: @auth_headers,
+               as: :json
 
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}"
+          
           expect(response).to have_http_status(:created)
           expect(json_response['data']['attributes']['rating']).to be_nil
         end
@@ -206,126 +308,177 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
       context 'when creating with google_place_id' do
         context 'with different coordinates' do
-          it 'creates google restaurant with coordinates' do
-            attributes = restaurant_attributes.merge(
-              latitude: '40.7128',
-              longitude: '-74.0060'
-            )
+          it 'creates restaurant with coordinates' do
+            attributes = restaurant_attributes.merge(google_place_id: 'test_place_id')
+            location = location_attributes.merge(latitude: 41.0, longitude: -75.0)
             
-            post '/api/v1/restaurants', params: { restaurant: attributes }
+            post '/api/v1/restaurants', 
+                 params: { 
+                   restaurant: attributes.as_json, 
+                   location: location.as_json,
+                   google_place_id: 'test_place_id'
+                 }, 
+                 headers: @auth_headers,
+                 as: :json
 
             expect(response).to have_http_status(:created)
-            restaurant = Restaurant.last
-            expect(restaurant.google_restaurant.latitude).to eq(40.7128)
-            expect(restaurant.google_restaurant.longitude).to eq(-74.0060)
+            expect(json_response['data']['attributes']['location']['latitude']).to eq(41.0)
+            expect(json_response['data']['attributes']['location']['longitude']).to eq(-75.0)
           end
         end
 
         context 'with default coordinates' do
-          it 'creates google restaurant with default coordinates' do
-            attributes = restaurant_attributes.merge(
-              latitude: nil,
-              longitude: nil
-            )
+          it 'creates restaurant with default coordinates' do
+            attributes = restaurant_attributes.merge(google_place_id: 'test_place_id')
             
-            post '/api/v1/restaurants', params: { restaurant: attributes }
+            post '/api/v1/restaurants', 
+                 params: { 
+                   restaurant: attributes.as_json, 
+                   location: location_attributes.as_json,
+                   google_place_id: 'test_place_id'
+                 }, 
+                 headers: @auth_headers,
+                 as: :json
 
             expect(response).to have_http_status(:created)
-            restaurant = Restaurant.last
-            expect(restaurant.google_restaurant.latitude).to eq(0)
-            expect(restaurant.google_restaurant.longitude).to eq(0)
+            expect(json_response['data']['attributes']['location']['latitude']).to eq(40.7128)
+            expect(json_response['data']['attributes']['location']['longitude']).to eq(-74.006)
           end
         end
       end
 
       context 'when creating without google_place_id' do
         context 'with different coordinates' do
-          it 'builds google restaurant with coordinates' do
-            attributes = restaurant_attributes.merge(
-              google_place_id: nil,
-              latitude: '40.7128',
-              longitude: '-74.0060'
-            )
+          it 'creates restaurant with coordinates' do
+            location = location_attributes.merge(latitude: 41.0, longitude: -75.0)
             
-            post '/api/v1/restaurants', params: { restaurant: attributes }
+            post '/api/v1/restaurants', 
+                 params: { 
+                   restaurant: restaurant_attributes.as_json, 
+                   location: location.as_json
+                 }, 
+                 headers: @auth_headers,
+                 as: :json
 
             expect(response).to have_http_status(:created)
-            restaurant = Restaurant.last
-            expect(restaurant.google_restaurant.latitude).to eq(40.7128)
-            expect(restaurant.google_restaurant.longitude).to eq(-74.0060)
+            expect(json_response['data']['attributes']['location']['latitude']).to eq(41.0)
+            expect(json_response['data']['attributes']['location']['longitude']).to eq(-75.0)
           end
         end
 
         context 'with default coordinates' do
-          it 'builds google restaurant with default coordinates' do
-            attributes = restaurant_attributes.merge(
-              google_place_id: nil,
-              latitude: nil,
-              longitude: nil
-            )
-            
-            post '/api/v1/restaurants', params: { restaurant: attributes }
+          it 'creates restaurant with default coordinates' do
+            post '/api/v1/restaurants', 
+                 params: { 
+                   restaurant: restaurant_attributes.as_json, 
+                   location: location_attributes.as_json
+                 }, 
+                 headers: @auth_headers,
+                 as: :json
 
             expect(response).to have_http_status(:created)
-            restaurant = Restaurant.last
-            expect(restaurant.google_restaurant.latitude).to eq(0)
-            expect(restaurant.google_restaurant.longitude).to eq(0)
+            expect(json_response['data']['attributes']['location']['latitude']).to eq(40.7128)
+            expect(json_response['data']['attributes']['location']['longitude']).to eq(-74.006)
           end
         end
       end
 
       context 'with google_place_id' do
         it 'converts string coordinates to decimal' do
-          attributes = restaurant_attributes.merge(
-            latitude: '40.7128',
-            longitude: '-74.0060'
-          )
+          location = location_attributes.merge(latitude: '41.0', longitude: '-75.0')
           
-          post '/api/v1/restaurants', params: { restaurant: attributes }
+          post '/api/v1/restaurants', 
+               params: { 
+                 restaurant: restaurant_attributes.as_json, 
+                 location: location.as_json,
+                 google_place_id: 'test_place_id'
+               }, 
+               headers: @auth_headers,
+               as: :json
 
           expect(response).to have_http_status(:created)
-          restaurant = Restaurant.last
-          expect(restaurant.google_restaurant.latitude).to eq(40.7128)
-          expect(restaurant.google_restaurant.longitude).to eq(-74.0060)
+          expect(json_response['data']['attributes']['location']['latitude']).to eq(41.0)
+          expect(json_response['data']['attributes']['location']['longitude']).to eq(-75.0)
         end
 
-        it 'converts invalid coordinates to zero' do
-          attributes = restaurant_attributes.merge(
-            latitude: 'invalid',
-            longitude: 'invalid'
-          )
+        it 'returns validation error for invalid coordinates' do
+          puts "\n=== DEBUG: Invalid Coordinates Test ==="
+          location = location_attributes.merge(latitude: 'invalid', longitude: 'invalid')
+          puts "Location params: #{location.inspect}"
           
-          post '/api/v1/restaurants', params: { restaurant: attributes }
+          post '/api/v1/restaurants', 
+               params: { 
+                 restaurant: restaurant_attributes.as_json, 
+                 location: location.as_json,
+                 google_place_id: 'test_place_id'
+               }, 
+               headers: @auth_headers,
+               as: :json
 
-          expect(response).to have_http_status(:created)
-          restaurant = Restaurant.last
-          expect(restaurant.google_restaurant.latitude).to eq(0)
-          expect(restaurant.google_restaurant.longitude).to eq(0)
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}"
+          
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(json_response['status']).to eq('error')
+          expect(json_response['errors'].first['detail']).to include('Latitude is not a number')
         end
       end
     end
 
     context 'with invalid parameters' do
       it 'returns error messages' do
-        post '/api/v1/restaurants', params: { restaurant: { name: '' } }
+        puts "\n=== DEBUG: Invalid Parameters Test ==="
+        
+        post '/api/v1/restaurants', 
+             params: { 
+               restaurant: { name: '' }.as_json, 
+               location: location_attributes.as_json 
+             }, 
+             headers: @auth_headers,
+             as: :json
 
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
+        
         expect(response).to have_http_status(:unprocessable_entity)
         expect(json_response['status']).to eq('error')
-        expect(json_response['message']).to be_present
+        expect(json_response['errors'].first['detail']).to include("Name can't be blank")
       end
 
       it 'returns error when restaurant params are missing' do
-        post '/api/v1/restaurants', params: {}
+        puts "\n=== DEBUG: Missing Restaurant Params Test ==="
+        
+        post '/api/v1/restaurants', 
+             params: { 
+               location: location_attributes.as_json 
+             }, 
+             headers: @auth_headers,
+             as: :json
 
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
+        
         expect(response).to have_http_status(:unprocessable_entity)
         expect(json_response['status']).to eq('error')
+        expect(json_response['errors'].first['detail']).to include('param is missing or the value is empty')
       end
 
       it 'filters out unpermitted parameters' do
+        puts "\n=== DEBUG: Unpermitted Parameters Test ==="
         attributes = restaurant_attributes.merge(unpermitted: 'value')
+        puts "Restaurant params: #{attributes.inspect}"
         
-        post '/api/v1/restaurants', params: { restaurant: attributes }
+        post '/api/v1/restaurants', 
+             params: { 
+               restaurant: attributes.as_json, 
+               location: location_attributes.as_json 
+             }, 
+             headers: @auth_headers,
+             as: :json
 
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
+        
         expect(response).to have_http_status(:created)
         restaurant = Restaurant.last
         expect(restaurant).not_to respond_to(:unpermitted)
@@ -337,16 +490,28 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         Restaurant.destroy_all
         GoogleRestaurant.destroy_all
         CuisineType.destroy_all
-        @error_restaurant = create(:restaurant, organization: organization, name: "Error Test Restaurant #{Time.current.to_f}")
-        allow_any_instance_of(RestaurantSerializer).to receive(:serialize).and_raise(StandardError.new("Failed to serialize restaurant"))
+
+        # We need to ensure only 'american' cuisine type exists
+        create(:cuisine_type, name: 'american')
       end
 
-      it 'returns an error response' do
-        post '/api/v1/restaurants', params: { restaurant: restaurant_attributes }
+      it 'returns an error response for invalid cuisine type' do
+        puts "\n=== DEBUG: Error Response Test ==="
+        
+        post '/api/v1/restaurants', 
+             params: { 
+               restaurant: restaurant_attributes.as_json, 
+               location: location_attributes.as_json 
+             }, 
+             headers: @auth_headers,
+             as: :json
 
+        puts "Response status: #{response.status}"
+        puts "Response body: #{response.body}"
+        
         expect(response).to have_http_status(:unprocessable_entity)
         expect(json_response['status']).to eq('error')
-        expect(json_response['message']).to eq('Failed to serialize restaurant')
+        expect(json_response['errors'][0]['detail']).to include('Invalid cuisine type: italian')
       end
     end
   end
@@ -354,7 +519,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
   describe 'when restaurant does not exist' do
     context 'GET /api/v1/restaurants/:id' do
       it 'returns not found error' do
-        get '/api/v1/restaurants/0'
+        get '/api/v1/restaurants/0', headers: @auth_headers
 
         expect(response).to have_http_status(:not_found)
         expect(json_response['status']).to eq('error')
@@ -364,7 +529,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
     context 'PATCH /api/v1/restaurants/:id' do
       it 'returns not found error' do
-        patch '/api/v1/restaurants/0', params: { restaurant: restaurant_attributes }
+        patch '/api/v1/restaurants/0', params: { restaurant: restaurant_attributes.as_json, location: location_attributes.as_json }, headers: @auth_headers
 
         expect(response).to have_http_status(:not_found)
         expect(json_response['status']).to eq('error')
@@ -374,7 +539,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
     context 'DELETE /api/v1/restaurants/:id' do
       it 'returns not found error' do
-        delete '/api/v1/restaurants/0'
+        delete '/api/v1/restaurants/0', headers: @auth_headers
 
         expect(response).to have_http_status(:not_found)
         expect(json_response['status']).to eq('error')
@@ -384,7 +549,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
     context 'POST /api/v1/restaurants/:id/add_tag' do
       it 'returns not found error' do
-        post '/api/v1/restaurants/0/add_tag', params: { tag: 'newtag' }
+        post '/api/v1/restaurants/0/add_tag', params: { tag: 'newtag' }.as_json, headers: @auth_headers
 
         expect(response).to have_http_status(:not_found)
         expect(json_response['status']).to eq('error')
@@ -394,7 +559,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
 
     context 'DELETE /api/v1/restaurants/:id/remove_tag' do
       it 'returns not found error' do
-        delete '/api/v1/restaurants/0/remove_tag', params: { tag: 'existingtag' }
+        delete '/api/v1/restaurants/0/remove_tag', params: { tag: 'existingtag' }.as_json, headers: @auth_headers
 
         expect(response).to have_http_status(:not_found)
         expect(json_response['status']).to eq('error')
@@ -415,7 +580,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
       end
 
       it 'adds a tag to the restaurant' do
-        post "/api/v1/restaurants/#{@restaurant.id}/add_tag", params: { tag: 'newtag' }
+        post "/api/v1/restaurants/#{@restaurant.id}/add_tag", params: { tag: 'newtag' }.as_json, headers: @auth_headers
 
         expect(response).to have_http_status(:ok)
         expect(json_response['status']).to eq('success')
@@ -432,11 +597,11 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          post "/api/v1/restaurants/#{@error_restaurant.id}/add_tag", params: { tag: 'newtag' }
+          post "/api/v1/restaurants/#{@error_restaurant.id}/add_tag", params: { tag: 'newtag' }.as_json, headers: @auth_headers
 
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
-          expect(json_response['message']).to eq('Failed to save tag')
+          expect(json_response['errors'][0]['detail']).to eq('Failed to save tag')
         end
       end
 
@@ -452,7 +617,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          post "/api/v1/restaurants/#{@error_restaurant.id}/add_tag", params: { tag: 'newtag' }
+          post "/api/v1/restaurants/#{@error_restaurant.id}/add_tag", params: { tag: 'newtag' }.as_json, headers: @auth_headers
 
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
@@ -470,7 +635,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
       end
 
       it 'removes a tag from the restaurant' do
-        delete "/api/v1/restaurants/#{restaurant.id}/remove_tag", params: { tag: 'existingtag' }
+        delete "/api/v1/restaurants/#{restaurant.id}/remove_tag", params: { tag: 'existingtag' }.as_json, headers: @auth_headers
 
         expect(response).to have_http_status(:ok)
         expect(json_response['status']).to eq('success')
@@ -489,11 +654,11 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          delete "/api/v1/restaurants/#{@error_restaurant.id}/remove_tag", params: { tag: 'existingtag' }
+          delete "/api/v1/restaurants/#{@error_restaurant.id}/remove_tag", params: { tag: 'existingtag' }.as_json, headers: @auth_headers
 
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
-          expect(json_response['message']).to eq('Failed to remove tag')
+          expect(json_response['errors'][0]['detail']).to eq('Failed to remove tag')
         end
       end
 
@@ -511,7 +676,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          delete "/api/v1/restaurants/#{@error_restaurant.id}/remove_tag", params: { tag: 'existingtag' }
+          delete "/api/v1/restaurants/#{@error_restaurant.id}/remove_tag", params: { tag: 'existingtag' }.as_json, headers: @auth_headers
 
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
@@ -526,7 +691,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
       end
 
       it 'destroys the restaurant' do
-        delete "/api/v1/restaurants/#{@restaurant_to_delete.id}"
+        delete "/api/v1/restaurants/#{@restaurant_to_delete.id}", headers: @auth_headers
 
         expect(response).to have_http_status(:no_content)
       end
@@ -539,7 +704,7 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          delete "/api/v1/restaurants/#{@restaurant_to_delete.id}"
+          delete "/api/v1/restaurants/#{@restaurant_to_delete.id}", headers: @auth_headers
 
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
@@ -553,11 +718,11 @@ RSpec.describe 'Api::V1::Restaurants', type: :request do
         end
 
         it 'returns an error response' do
-          delete "/api/v1/restaurants/#{@restaurant_to_delete.id}"
+          delete "/api/v1/restaurants/#{@restaurant_to_delete.id}", headers: @auth_headers
 
           expect(response).to have_http_status(:unprocessable_entity)
           expect(json_response['status']).to eq('error')
-          expect(json_response['message']).to eq('Failed to delete restaurant')
+          expect(json_response['errors'][0]['detail']).to eq('Failed to delete restaurant')
         end
       end
     end

@@ -26,8 +26,8 @@ class ContactSerializer < BaseSerializer
             cuisine_type: visit.restaurant.cuisine_type&.name,
             location: {
               address: visit.restaurant.combined_address,
-              latitude: visit.restaurant.combined_latitude&.to_f,
-              longitude: visit.restaurant.combined_longitude&.to_f
+              latitude: visit.restaurant.latitude&.to_f,
+              longitude: visit.restaurant.longitude&.to_f
             }
           },
           images: visit.images.map do |image|
