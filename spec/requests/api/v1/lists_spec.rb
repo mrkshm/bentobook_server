@@ -2,28 +2,41 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Lists', type: :request do
   let(:user) { create(:user) }
-  let(:user_session) do
-    create(:user_session,
-           user: user,
-           active: true,
-           client_name: 'web',
-           ip_address: '127.0.0.1')
-  end
+  let(:organization) { create(:organization) }
+  let(:membership) { create(:membership, user: user, organization: organization) }
+  let(:headers) { sign_in_with_token(user) }
+  let(:other_user) { create(:user) }
+  let(:other_organization) { create(:organization) }
+  let(:other_membership) { create(:membership, user: other_user, organization: other_organization) }
 
   before do
-    @headers = {}
-    sign_in_with_token(user, user_session)
+    membership # ensure membership is created
+    other_membership # ensure other membership is created
+    @headers = headers
+    allow(Current).to receive(:organization).and_return(organization)
+    allow(Current).to receive(:user).and_return(user)
     Rails.logger.info "Test setup: Headers after sign_in: #{@headers.inspect}"
   end
 
+  after do
+    # Reset Current.organization to avoid affecting other tests
+    allow(Current).to receive(:organization).and_call_original
+    allow(Current).to receive(:user).and_call_original
+  end
+
+  # Helper to reset json_response between requests
+  def reset_json_response
+    @json_response = nil
+  end
+
   describe 'GET /api/v1/lists' do
-    context 'when user has lists' do
+    context 'when organization has lists' do
       before do
-        create_list(:list, 2, owner: user)
-        create(:list, owner: create(:user)) # another user's list
+        create_list(:list, 2, organization: organization, creator: user)
+        create(:list, organization: other_organization, creator: other_user) # another organization's list
       end
 
-      it 'returns only user owned lists by default' do
+      it 'returns only organization owned lists by default' do
         Rails.logger.info "Making request with headers: #{@headers.inspect}"
         get '/api/v1/lists', headers: @headers
         Rails.logger.info "Response status: #{response.status}"
@@ -64,7 +77,7 @@ RSpec.describe 'Api::V1::Lists', type: :request do
           # Clear existing lists
           List.destroy_all
           # Create 7 lists to test pagination
-          create_list(:list, 7, owner: user)
+          create_list(:list, 7, organization: organization, creator: user)
         end
 
         it 'respects per_page parameter' do
@@ -126,9 +139,9 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when include=shared' do
-      let(:other_user) { create(:user) }
-      let!(:owned_list) { create(:list, owner: user) }
-      let!(:shared_list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:owned_list) { create(:list, organization: organization, creator: user) }
+      let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
         create(:share, shareable: shared_list, recipient: user, status: :accepted)
@@ -151,6 +164,10 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
     context 'when not authenticated' do
       it 'returns unauthorized' do
+        # Clear Current.user and Current.organization for this test
+        allow(Current).to receive(:user).and_return(nil)
+        allow(Current).to receive(:organization).and_return(nil)
+        
         get '/api/v1/lists'
 
         data = JSON.parse(response.body)
@@ -165,7 +182,7 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
   describe 'GET /api/v1/lists/:id' do
     context 'when viewing owned list' do
-      let!(:list) { create(:list, owner: user) }
+      let!(:list) { create(:list, organization: organization, creator: user) }
 
       it 'returns the list' do
         get "/api/v1/lists/#{list.id}", headers: @headers
@@ -189,8 +206,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when viewing shared list' do
-      let(:other_user) { create(:user) }
-      let!(:list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
         create(:share, shareable: list, recipient: user, status: :accepted)
@@ -208,8 +225,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when viewing someone else\'s list' do
-      let(:other_user) { create(:user) }
-      let!(:list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:list) { create(:list, organization: other_organization, creator: other_user) }
 
       it 'returns not found' do
         get "/api/v1/lists/#{list.id}", headers: @headers
@@ -233,9 +250,13 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when not authenticated' do
-      let!(:list) { create(:list, owner: user) }
+      let!(:list) { create(:list, organization: organization, creator: user) }
 
       it 'returns unauthorized' do
+        # Clear Current.user and Current.organization for this test
+        allow(Current).to receive(:user).and_return(nil)
+        allow(Current).to receive(:organization).and_return(nil)
+        
         get "/api/v1/lists/#{list.id}"
 
         expect(response).to have_http_status(:unauthorized)
@@ -261,8 +282,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
       it 'creates a new list' do
         expect {
           post '/api/v1/lists',
-               params: { list: list_attributes },
-               headers: @headers
+               params: { list: list_attributes }.to_json,
+               headers: @headers.merge('Content-Type' => 'application/json')
 
           expect(response).to have_http_status(:created)
           data = JSON.parse(response.body)
@@ -282,8 +303,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     context 'with invalid parameters' do
       it 'returns validation errors for missing required fields' do
         post '/api/v1/lists',
-             params: { list: { description: 'Invalid list without name' } },
-             headers: @headers
+             params: { list: { description: 'Invalid list without name' } }.to_json,
+             headers: @headers.merge('Content-Type' => 'application/json')
 
         expect(response).to have_http_status(:unprocessable_entity)
         data = JSON.parse(response.body)
@@ -299,7 +320,11 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
     context 'when not authenticated' do
       it 'returns unauthorized' do
-        post '/api/v1/lists', params: { list: list_attributes }
+        # Clear Current.user and Current.organization for this test
+        allow(Current).to receive(:user).and_return(nil)
+        allow(Current).to receive(:organization).and_return(nil)
+        
+        post '/api/v1/lists', params: { list: list_attributes }.to_json, headers: { 'Content-Type' => 'application/json' }
 
         expect(response).to have_http_status(:unauthorized)
         data = JSON.parse(response.body)
@@ -310,14 +335,14 @@ RSpec.describe 'Api::V1::Lists', type: :request do
   end
 
   describe 'PATCH /api/v1/lists/:id' do
-    let!(:list) { create(:list, owner: user, name: 'Original Name') }
+    let!(:list) { create(:list, organization: organization, creator: user, name: 'Original Name') }
     let(:list_attributes) { { name: 'Updated Name' } }
 
     context 'with valid parameters' do
       it 'updates the list' do
         patch "/api/v1/lists/#{list.id}",
-              params: { list: list_attributes },
-              headers: @headers
+              params: { list: list_attributes }.to_json,
+              headers: @headers.merge('Content-Type' => 'application/json')
 
         expect(response).to have_http_status(:ok)
         data = JSON.parse(response.body)
@@ -331,8 +356,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     context 'with invalid parameters' do
       it 'returns validation errors' do
         patch "/api/v1/lists/#{list.id}",
-              params: { list: { name: '' } },
-              headers: @headers
+              params: { list: { name: '' } }.to_json,
+              headers: @headers.merge('Content-Type' => 'application/json')
 
         expect(response).to have_http_status(:unprocessable_entity)
         data = JSON.parse(response.body)
@@ -347,13 +372,13 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when updating someone else\'s list' do
-      let(:other_user) { create(:user) }
-      let!(:other_list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:other_list) { create(:list, organization: other_organization, creator: other_user) }
 
       it 'returns not found' do
         patch "/api/v1/lists/#{other_list.id}",
-              params: { list: list_attributes },
-              headers: @headers
+              params: { list: list_attributes }.to_json,
+              headers: @headers.merge('Content-Type' => 'application/json')
 
         expect(response).to have_http_status(:not_found)
         data = JSON.parse(response.body)
@@ -365,8 +390,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     context 'when list does not exist' do
       it 'returns not found' do
         patch '/api/v1/lists/0',
-              params: { list: list_attributes },
-              headers: @headers
+              params: { list: list_attributes }.to_json,
+              headers: @headers.merge('Content-Type' => 'application/json')
 
         expect(response).to have_http_status(:not_found)
         data = JSON.parse(response.body)
@@ -377,8 +402,11 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
     context 'when not authenticated' do
       it 'returns unauthorized' do
-        patch "/api/v1/lists/#{list.id}",
-              params: { list: list_attributes }
+        # Clear Current.user and Current.organization for this test
+        allow(Current).to receive(:user).and_return(nil)
+        allow(Current).to receive(:organization).and_return(nil)
+        
+        patch "/api/v1/lists/#{list.id}", params: { list: list_attributes }.to_json, headers: { 'Content-Type' => 'application/json' }
 
         expect(response).to have_http_status(:unauthorized)
         data = JSON.parse(response.body)
@@ -388,8 +416,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when updating a shared list' do
-      let(:other_user) { create(:user) }
-      let!(:shared_list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
         create(:share, shareable: shared_list, recipient: user, status: :accepted)
@@ -397,8 +425,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
       it 'returns not found' do
         patch "/api/v1/lists/#{shared_list.id}",
-              params: { list: list_attributes },
-              headers: @headers
+              params: { list: list_attributes }.to_json,
+              headers: @headers.merge('Content-Type' => 'application/json')
 
         expect(response).to have_http_status(:not_found)
         data = JSON.parse(response.body)
@@ -409,7 +437,7 @@ RSpec.describe 'Api::V1::Lists', type: :request do
   end
 
   describe 'DELETE /api/v1/lists/:id' do
-    let!(:list) { create(:list, owner: user) }
+    let!(:list) { create(:list, organization: organization, creator: user) }
 
     context 'when deleting owned list' do
       it 'deletes the list' do
@@ -422,8 +450,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when deleting someone else\'s list' do
-      let(:other_user) { create(:user) }
-      let!(:other_list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:other_list) { create(:list, organization: other_organization, creator: other_user) }
 
       it 'returns not found' do
         expect {
@@ -438,8 +466,8 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when deleting a shared list' do
-      let(:other_user) { create(:user) }
-      let!(:shared_list) { create(:list, owner: other_user) }
+      let(:other_organization) { create(:organization) }
+      let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
         create(:share, shareable: shared_list, recipient: user, status: :accepted)
@@ -470,6 +498,10 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
     context 'when not authenticated' do
       it 'returns unauthorized' do
+        # Clear Current.user and Current.organization for this test
+        allow(Current).to receive(:user).and_return(nil)
+        allow(Current).to receive(:organization).and_return(nil)
+        
         delete "/api/v1/lists/#{list.id}"
 
         expect(response).to have_http_status(:unauthorized)

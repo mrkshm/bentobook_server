@@ -3,10 +3,10 @@
 require 'rails_helper'
 require 'jwt'
 
-def generate_jwt_token(user, session)
+def generate_jwt_token_for(user)
   payload = {
     sub: user.id,
-    jti: session.jti,
+    jti: SecureRandom.uuid,
     exp: 24.hours.from_now.to_i,
     iat: Time.current.to_i
   }
@@ -57,7 +57,7 @@ RSpec.configure do |config|
   # Conditional Setup for Authenticated Requests
   config.before(:each, type: :request) do
     @user = create(:user)
-    @user_session = create(:user_session, user: @user)
-    @token = generate_jwt_token(@user, @user_session)
+    # Create a JWT token directly without relying on user_session
+    @token = generate_jwt_token_for(@user)
   end
 end

@@ -8,21 +8,21 @@ class Rack::Attack
   unless Rails.env.test?
     # Throttle refresh token attempts
     throttle("refresh_token/ip", limit: 10, period: 5.minutes) do |req|
-      if req.path == "/api/v1/refresh_token" && req.post?
+      if req.path == "/api/v1/auth/token/refresh" && req.post?
         req.ip
       end
     end
 
     # Throttle sign in attempts
-    throttle("sign_in/ip", limit: 5, period: 20.seconds) do |req|
-      if req.path == "/api/v1/users/sign_in" && req.post?
+    throttle("logins/ip", limit: 5, period: 20.seconds) do |req|
+      if req.path == "/api/v1/auth/login" && req.post?
         req.ip
       end
     end
 
     # Exponential backoff for repeated failed auth attempts
     throttle("login/ip/fail2ban", limit: 1, period: 1.second) do |req|
-      if req.path == "/api/v1/users/sign_in" && req.post? && req.env["rack.attack.matched"]
+      if req.path == "/api/v1/auth/login" && req.post? && req.env["rack.attack.matched"]
         key = "fail2ban:#{req.ip}"
         count = Rails.cache.increment(key, 1, expires_in: 1.hour).to_i
 
@@ -40,22 +40,22 @@ class Rack::Attack
   ### Test environment specific throttling ###
   if Rails.env.test?
     # Basic sign in throttling - 5 requests per 20 seconds
-    throttle("test/sign_in/basic", limit: 5, period: 20.seconds) do |req|
-      if req.path == "/api/v1/users/sign_in" && req.post?
+    throttle("logins/ip", limit: 5, period: 20.seconds) do |req|
+      if req.path == "/api/v1/auth/login" && req.post?
         "test:signin:basic:#{req.ip}"
       end
     end
 
     # Refresh token throttling - 10 requests per 5 minutes
-    throttle("test/refresh_token/basic", limit: 10, period: 5.minutes) do |req|
-      if req.path == "/api/v1/refresh_token" && req.post?
+    throttle("refresh_token/ip", limit: 10, period: 5.minutes) do |req|
+      if req.path == "/api/v1/auth/token/refresh" && req.post?
         "test:refresh:basic:#{req.ip}"
       end
     end
 
     # Exponential backoff for failed attempts
     throttle("test/login/fail2ban", limit: 0, period: 1.second) do |req|
-      if req.path == "/api/v1/users/sign_in" && req.post?
+      if req.path == "/api/v1/auth/login" && req.post?
         if req.params.dig("user", "password") == "wrong_password"
           key = "test:fail2ban:count:#{req.ip}"
           count = Rack::Attack.cache.count(key, 1.hour)
@@ -79,7 +79,6 @@ class Rack::Attack
   ### Custom error response ###
   Rack::Attack.throttled_responder = ->(request) {
     match_data = request.env["rack.attack.match_data"] || {}
-    now = match_data[:epoch_time] || Time.now.to_i
     if request.env["rack.attack.is_fail2ban"]
       period = request.env["rack.attack.period"]
       level = request.env["rack.attack.current_level"]
@@ -105,4 +104,11 @@ class Rack::Attack
     }
     [ 429, headers, [ body.to_json ] ]
   }
+  
+  # Allow rack-attack to be skipped for tests
+  self.enabled = true
+  
+  Rack::Attack.safelist('skip throttle') do |req|
+    req.env['rack.attack.skip_throttle']
+  end
 end

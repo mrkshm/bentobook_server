@@ -2,13 +2,21 @@ module Api
   module V1
     class RegistrationsController < BaseController
       skip_before_action :authenticate_user!, only: [:create]
+      skip_before_action :set_current_organization, only: [:create]
 
       def create
+        # Debug params
+        Rails.logger.debug "Registration params: #{params.inspect}"
+        
         user = User.new(user_params)
+        Rails.logger.debug "User valid? #{user.valid?}"
+        Rails.logger.debug "User errors: #{user.errors.full_messages}" if user.invalid?
 
         if user.save
+          Rails.logger.debug "User saved successfully: #{user.id}"
           handle_successful_registration(user)
         else
+          Rails.logger.debug "User save failed: #{user.errors.full_messages}"
           handle_failed_registration(user)
         end
       end
@@ -20,10 +28,10 @@ module Api
           # Sign in the user which will trigger JWT generation via devise-jwt
           sign_in(user)
           
-          # Get the latest token
-          token = user.allowlisted_jwts.order(created_at: :desc).first
+          # Set the JWT token in the response header
+          response.headers['Authorization'] = "Bearer #{request.env['warden-jwt_auth.token']}"
 
-          render json: RegistrationSerializer.render_success(user, token), status: :ok
+          render json: RegistrationSerializer.render_success(user), status: :ok
         else
           render json: RegistrationSerializer.render_inactive_error, status: :unauthorized
         end

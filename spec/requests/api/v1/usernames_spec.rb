@@ -1,19 +1,9 @@
 require 'swagger_helper'
 
 RSpec.describe 'Api::V1::Usernames', type: :request do
-  let(:user) { create(:user) }
-  let(:user_session) do
-    create(:user_session,
-           user: user,
-           active: true,
-           client_name: 'web',
-           ip_address: '127.0.0.1')
-  end
-  let(:Authorization) { "Bearer #{user_session.token}" }
-
-  before do
-    @headers = {}
-    sign_in_with_token(user, user_session)
+  # Define Authorization as a helper method to satisfy rswag even though this endpoint doesn't need authentication
+  def Authorization
+    nil
   end
 
   path '/api/v1/usernames/verify' do
@@ -21,7 +11,8 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
       tags 'Usernames'
       consumes 'application/json'
       produces 'application/json'
-      security [bearer_auth: []]
+      # Remove security requirement since this endpoint doesn't require authentication
+      # security [bearer_auth: []]
       parameter name: :params, in: :body, schema: {
         type: :object,
         properties: {

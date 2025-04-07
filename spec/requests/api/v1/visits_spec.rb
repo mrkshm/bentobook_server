@@ -6,23 +6,30 @@ RSpec.describe 'Api::V1::Visits', type: :request do
   end
 
   let(:user) { create(:user) }
-  let(:restaurant) { create(:restaurant, user: user) }
-  let(:user_session) do
-    create(:user_session,
-           user: user,
-           active: true,
-           client_name: 'web',
-           ip_address: '127.0.0.1')
-  end
+  let(:organization) { create(:organization) }
+  let(:membership) { create(:membership, user: user, organization: organization) }
+  let(:restaurant) { create(:restaurant, organization: organization) }
+  let(:headers) { sign_in_with_token(user) }
 
   before do
-    @headers = {}
-    sign_in_with_token(user, user_session)
+    membership # ensure membership is created
+    @headers = headers
+    allow(Current).to receive(:organization).and_return(organization)
     Rails.application.routes.default_url_options[:host] = 'example.com'
+  end
+
+  after do
+    # Reset Current.organization to avoid affecting other tests
+    allow(Current).to receive(:organization).and_call_original
   end
 
   def json_response
     @json_response ||= JSON.parse(response.body, symbolize_names: true)
+  end
+
+  # Helper method to reset json_response between requests
+  def reset_json_response
+    @json_response = nil
   end
 
   describe 'GET /api/v1/visits' do
@@ -42,7 +49,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'with a visit' do
-      let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
+      let!(:visit) { create(:visit, organization: organization, restaurant: restaurant) }
 
       it 'returns the visit' do
         get '/api/v1/visits', headers: @headers
@@ -61,7 +68,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'with a visit that has an image' do
-      let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
+      let!(:visit) { create(:visit, organization: organization, restaurant: restaurant) }
       let(:image_file) { fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg') }
 
       before do
@@ -75,17 +82,17 @@ RSpec.describe 'Api::V1::Visits', type: :request do
         visit_data = json_response[:data].first
         expect(visit_data[:attributes][:images]).to be_an(Array)
         expect(visit_data[:attributes][:images].first[:urls]).to include(
-          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/\d{14}_test_image\.jpg$})
+          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/test_image-.+\.jpg$})
         )
       end
     end
 
     context 'with a visit that has multiple images' do
-      let!(:visit) { create(:visit, user: user, restaurant: restaurant) }
+      let!(:visit) { create(:visit, organization: organization, restaurant: restaurant) }
       let(:image_file1) { fixture_file_upload('spec/fixtures/files/test_image.jpg', 'image/jpeg') }
       let(:image_file2) { fixture_file_upload('spec/fixtures/files/test_image2.jpg', 'image/jpeg') }
 
@@ -105,21 +112,21 @@ RSpec.describe 'Api::V1::Visits', type: :request do
         # Check first image
         image1_data = visit_data[:attributes][:images][0]
         expect(image1_data[:urls]).to include(
-          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image\.jpg$}),
-          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/\d{14}_test_image\.jpg$})
+          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image-.+\.jpg$}),
+          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/test_image-.+\.jpg$})
         )
 
         # Check second image
         image2_data = visit_data[:attributes][:images][1]
         expect(image2_data[:urls]).to include(
-          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
-          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
-          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
-          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/\d{14}_test_image2\.jpg$}),
-          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/\d{14}_test_image2\.jpg$})
+          thumbnail: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image2-.+\.jpg$}),
+          small: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image2-.+\.jpg$}),
+          medium: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image2-.+\.jpg$}),
+          large: a_string_matching(%r{^http://example\.com/rails/active_storage/representations/redirect/.+/test_image2-.+\.jpg$}),
+          original: a_string_matching(%r{^http://example\.com/rails/active_storage/blobs/redirect/.+/test_image2-.+\.jpg$})
         )
       end
     end
@@ -132,7 +139,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
         Image.skip_callback(:create, :after, :set_filename)
 
         15.times do |i|
-          visit = create(:visit, user: user)
+          visit = create(:visit, organization: organization)
           image = visit.images.new
           image.file.attach(
             io: image_file.open,
@@ -172,8 +179,8 @@ RSpec.describe 'Api::V1::Visits', type: :request do
 
     context 'GET /api/v1/visits with error' do
       it 'logs the error and returns an internal server error' do
-        allow_any_instance_of(Api::V1::VisitsController).to receive(:current_user).and_return(user)
-        allow(user.visits).to receive(:includes).with(:restaurant, :contacts, :images).and_raise(StandardError.new("Test error"))
+        # Mock the VisitQuery to raise an error
+        allow_any_instance_of(VisitQuery).to receive(:call).and_raise(StandardError.new("Test error"))
 
         get '/api/v1/visits', headers: @headers
 
@@ -185,7 +192,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'when the visit exists' do
-      let(:visit) { create(:visit, user: user) }
+      let(:visit) { create(:visit, organization: organization) }
 
       it 'returns the visit' do
         get "/api/v1/visits/#{visit.id}", headers: @headers
@@ -214,7 +221,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'when an unexpected error occurs' do
-      let(:visit) { create(:visit, user: user) }
+      let(:visit) { create(:visit, organization: organization) }
 
       it 'logs the error and returns an internal server error' do
         allow_any_instance_of(Visit).to receive(:contacts).and_raise(StandardError.new("Test error"))
@@ -230,7 +237,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
 
   describe 'DELETE /api/v1/visits/:id' do
     context 'when the visit exists' do
-      let!(:visit) { create(:visit, user: user) }
+      let!(:visit) { create(:visit, organization: organization) }
 
       it 'deletes the visit' do
         expect {
@@ -254,7 +261,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'when there is an error deleting the visit' do
-      let!(:visit) { create(:visit, user: user) }
+      let!(:visit) { create(:visit, organization: organization) }
 
       it 'returns an internal server error' do
         allow_any_instance_of(Visit).to receive(:destroy).and_raise(StandardError.new("Test error"))
@@ -271,7 +278,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
 
   describe 'GET /api/v1/visits/:id' do
     context 'when the visit exists' do
-      let(:visit) { create(:visit, user: user) }
+      let(:visit) { create(:visit, organization: organization) }
 
       it 'returns the visit' do
         get "/api/v1/visits/#{visit.id}", headers: @headers
@@ -301,7 +308,7 @@ RSpec.describe 'Api::V1::Visits', type: :request do
     end
 
     context 'when there is an error retrieving the visit' do
-      let(:visit) { create(:visit, user: user) }
+      let(:visit) { create(:visit, organization: organization) }
 
       it 'returns an internal server error' do
         allow_any_instance_of(Visit).to receive(:contacts).and_raise(StandardError.new("Test error"))
