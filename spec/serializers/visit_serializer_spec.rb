@@ -2,10 +2,11 @@ require 'rails_helper'
 
 RSpec.describe VisitSerializer do
   let(:user) { create(:user) }
-  let(:restaurant) { create(:restaurant, user: user) }
+  let(:organization) { create(:organization) }
+  let(:restaurant) { create(:restaurant, organization: organization) }
   let(:visit) do
     create(:visit,
-      user: user,
+      organization: organization,
       restaurant: restaurant,
       price_paid_cents: 1000,
       price_paid_currency: 'USD'
@@ -13,6 +14,8 @@ RSpec.describe VisitSerializer do
   end
 
   before do
+    # Create membership to associate user with organization
+    create(:membership, user: user, organization: organization)
     Rails.application.routes.default_url_options[:host] = 'example.com'
   end
 
@@ -40,13 +43,13 @@ RSpec.describe VisitSerializer do
       restaurant_data = rendered_json[:data][:attributes]['restaurant']
       expect(restaurant_data).to include(
         'id' => restaurant.id,
-        'name' => restaurant.combined_name,
+        'name' => restaurant.name,
         'cuisine_type' => restaurant.cuisine_type&.name
       )
       expect(restaurant_data['location']).to include(
-        'address' => restaurant.combined_address,
-        'latitude' => restaurant.combined_latitude&.to_f,
-        'longitude' => restaurant.combined_longitude&.to_f
+        'address' => restaurant.address,
+        'latitude' => restaurant.latitude&.to_f,
+        'longitude' => restaurant.longitude&.to_f
       )
     end
 
@@ -89,10 +92,18 @@ RSpec.describe VisitSerializer do
     end
 
     context 'with associated contacts' do
-      let(:contact) { create(:contact, user: user, name: 'John Doe') }
+      let(:contact) { create(:contact, organization: organization, name: 'John Doe') }
 
       before do
         visit.contacts << contact
+        
+        # Add avatar variants
+        file_path = Rails.root.join('spec', 'fixtures', 'test_image.jpg')
+        result = PreprocessAvatarService.call(
+          fixture_file_upload(file_path, 'image/jpeg')
+        )
+        contact.avatar_medium.attach(result[:variants][:medium])
+        contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
       end
 
       it 'includes contacts in the response' do
@@ -106,6 +117,14 @@ RSpec.describe VisitSerializer do
           'notes' => contact.notes
         )
       end
+      
+      it 'includes avatar urls for contacts' do
+        contacts = rendered_json[:data][:attributes]['contacts']
+        expect(contacts.first['avatar_urls']).to include(
+          'medium',
+          'thumbnail'
+        )
+      end
     end
 
     context 'without contacts' do
@@ -115,7 +134,7 @@ RSpec.describe VisitSerializer do
     end
 
     context 'without price' do
-      let(:visit) { create(:visit, user: user, restaurant: restaurant, price_paid_cents: nil, price_paid_currency: nil) }
+      let(:visit) { create(:visit, organization: organization, restaurant: restaurant, price_paid_cents: nil, price_paid_currency: nil) }
 
       it 'returns nil for price_paid' do
         expect(rendered_json[:data][:attributes]["price_paid"]).to be_nil
@@ -123,7 +142,7 @@ RSpec.describe VisitSerializer do
     end
 
     context 'without rating' do
-      let(:visit) { create(:visit, user: user, restaurant: restaurant, rating: nil) }
+      let(:visit) { create(:visit, organization: organization, restaurant: restaurant, rating: nil) }
 
       it 'allows nil rating' do
         expect(rendered_json[:data][:attributes]["rating"]).to be_nil

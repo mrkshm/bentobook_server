@@ -155,9 +155,9 @@ RSpec.describe ContactSerializer do
           'cuisine_type' => restaurant.cuisine_type&.name
         )
         expect(visit_restaurant['location']).to include(
-          'address' => restaurant.combined_address,
-          'latitude' => restaurant.combined_latitude&.to_f,
-          'longitude' => restaurant.combined_longitude&.to_f
+          'address' => restaurant.address,
+          'latitude' => restaurant.latitude&.to_f,
+          'longitude' => restaurant.longitude&.to_f
         )
       end
 

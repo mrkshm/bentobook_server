@@ -15,10 +15,10 @@ class VisitSerializer < BaseSerializer
 
       {
         id: visit.restaurant.id,
-        name: visit.restaurant.combined_name,
+        name: visit.restaurant.name,
         cuisine_type: visit.restaurant.cuisine_type&.name,
         location: {
-          address: visit.restaurant.combined_address,
+          address: visit.restaurant.address,
           latitude: lat.present? ? lat.to_f : nil,
           longitude: lon.present? ? lon.to_f : nil
         }
@@ -27,7 +27,7 @@ class VisitSerializer < BaseSerializer
       # Return minimal restaurant data on error
       {
         id: visit.restaurant.id,
-        name: visit.restaurant.combined_name,
+        name: visit.restaurant.name,
         location: { address: nil, latitude: nil, longitude: nil }
       }
     end
@@ -35,15 +35,21 @@ class VisitSerializer < BaseSerializer
 
   attribute :contacts do |visit|
     visit.contacts.map do |contact|
-      avatar_url = if contact.avatar.attached?
+      avatar_urls = {}
+
+      if contact.avatar_thumbnail.attached?
         begin
-          rails_blob_url(contact.avatar.variant(
-            resize_to_fill: [ 100, 100 ],
-            format: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:format],
-            saver: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:saver]
-          ))
+          avatar_urls[:thumbnail] = rails_blob_url(contact.avatar_thumbnail)
         rescue StandardError => _e
-          nil
+          # Ignore errors with avatar URLs
+        end
+      end
+
+      if contact.avatar_medium.attached?
+        begin
+          avatar_urls[:medium] = rails_blob_url(contact.avatar_medium)
+        rescue StandardError => _e
+          # Ignore errors with avatar URLs
         end
       end
 
@@ -53,7 +59,7 @@ class VisitSerializer < BaseSerializer
         email: contact.email,
         phone: contact.phone,
         notes: contact.notes,
-        avatar_url: avatar_url
+        avatar_urls: avatar_urls.present? ? avatar_urls : nil
       }
     end
   end

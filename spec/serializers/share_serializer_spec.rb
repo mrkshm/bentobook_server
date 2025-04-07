@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe ShareSerializer do
   let(:creator) { create(:user, :with_profile) }
   let(:recipient) { create(:user, :with_profile) }
-  let(:list) { create(:list, owner: creator) }
+  let(:organization) { create(:organization) }
+  let(:list) { create(:list, organization: organization, creator: creator) }
   let(:share) do
     create(:share,
       creator: creator,
@@ -13,6 +14,11 @@ RSpec.describe ShareSerializer do
       status: :pending,
       reshareable: true
     )
+  end
+
+  before do
+    # Create membership to associate creator with organization
+    create(:membership, user: creator, organization: organization)
   end
 
   describe '.render_success' do
@@ -74,8 +80,17 @@ RSpec.describe ShareSerializer do
   end
 
   describe '.render_collection' do
-    let!(:other_share) { create(:share, creator: creator, recipient: recipient, shareable: create(:list, owner: creator)) }
+    let(:other_organization) { create(:organization) }
+    let!(:other_share) do 
+      other_list = create(:list, organization: other_organization, creator: creator)
+      create(:share, creator: creator, recipient: recipient, shareable: other_list)
+    end
     let(:shares) { [ share, other_share ] }
+
+    before do
+      # Create membership for creator in other organization
+      create(:membership, user: creator, organization: other_organization)
+    end
 
     subject(:rendered_json) { ShareSerializer.render_collection(shares) }
 

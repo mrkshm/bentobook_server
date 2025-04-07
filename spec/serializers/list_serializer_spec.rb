@@ -2,8 +2,14 @@ require 'rails_helper'
 
 RSpec.describe ListSerializer do
   let(:user) { create(:user) }
-  let(:list) { create(:list, :with_restaurants, owner: user) }
+  let(:organization) { create(:organization) }
+  let(:list) { create(:list, :with_restaurants, organization: organization, creator: user) }
   let(:share) { create(:share, :accepted, shareable: list) }
+
+  before do
+    # Create membership to associate user with organization
+    create(:membership, user: user, organization: organization)
+  end
 
   describe '.render_success' do
     subject(:rendered_json) { described_class.render_success(list, include_restaurants: include_restaurants) }
@@ -87,7 +93,7 @@ RSpec.describe ListSerializer do
   end
 
   describe '.render_collection' do
-    let(:lists) { create_list(:list, 3, owner: user) }
+    let(:lists) { create_list(:list, 3, organization: organization, creator: user) }
     let(:pagy) { Pagy.new(count: 3, page: 1, items: 10) }
     let(:pagination) do
       {
