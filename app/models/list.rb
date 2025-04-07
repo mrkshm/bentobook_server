@@ -53,28 +53,61 @@ class List < ApplicationRecord
       .distinct
   }
 
-  def viewable_by?(user)
-    return false unless user
+  # Check if a list is viewable by a user or organization
+  # If passed a user, checks if the user belongs to the list's organization or any organization the list is shared with
+  # If passed an organization, checks if the organization owns the list or the list is shared with it
+  def viewable_by?(entity)
+    return false unless entity
     
-    # User can view if they belong to the list's organization
-    return true if user.organizations.exists?(id: organization.id)
-    
-    # User can view if the list is shared with any of their organizations
-    user_org_ids = user.organizations.pluck(:id)
-    shares.accepted.where(target_organization_id: user_org_ids).exists?
+    if entity.is_a?(User)
+      # User can view if they belong to the list's organization
+      return true if entity.organizations.exists?(id: organization.id)
+      
+      # User can view if the list is shared with any of their organizations
+      user_org_ids = entity.organizations.pluck(:id)
+      shares.accepted.where(target_organization_id: user_org_ids).exists?
+    elsif entity.is_a?(Organization)
+      # Organization can view if it owns the list
+      return true if entity.id == organization.id
+      
+      # Organization can view if the list is shared with it
+      shares.accepted.where(target_organization_id: entity.id).exists?
+    else
+      false
+    end
   end
 
-  def editable_by?(user)
-    return false unless user
+  # Check if a list is editable by a user or organization
+  # If passed a user, checks if the user belongs to the list's organization
+  # If passed an organization, checks if the organization owns the list
+  def editable_by?(entity)
+    return false unless entity
     
-    # Only members of the list's organization can edit it
-    user.organizations.exists?(id: organization.id)
+    if entity.is_a?(User)
+      # Only members of the list's organization can edit it
+      entity.organizations.exists?(id: organization.id)
+    elsif entity.is_a?(Organization)
+      # Only the owning organization can edit it
+      entity.id == organization.id
+    else
+      false
+    end
   end
 
-  def deletable_by?(user)
-    return false unless user
+  # Check if a list is deletable by a user or organization
+  # If passed a user, checks if the user belongs to the list's organization
+  # If passed an organization, checks if the organization owns the list
+  def deletable_by?(entity)
+    return false unless entity
     
-    # Only members of the list's organization can delete it
-    user.organizations.exists?(id: organization.id)
+    if entity.is_a?(User)
+      # Only members of the list's organization can delete it
+      entity.organizations.exists?(id: organization.id)
+    elsif entity.is_a?(Organization)
+      # Only the owning organization can delete it
+      entity.id == organization.id
+    else
+      false
+    end
   end
 end

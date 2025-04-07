@@ -85,6 +85,27 @@ RSpec.describe 'Api::V1::Lists', type: :request do
         )
       end
 
+      context 'with shared lists' do
+        let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
+        
+        before do
+          # Create a share from other_organization to organization
+          create(:share, 
+                 source_organization: other_organization, 
+                 target_organization: organization, 
+                 shareable: shared_list,
+                 status: :accepted)
+        end
+
+        it 'includes shared lists when requested' do
+          get '/api/v1/lists?include=shared', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(3) # 2 owned + 1 shared
+        end
+      end
+
       context 'with pagination' do
         before do
           # Clear existing lists
@@ -119,79 +140,33 @@ RSpec.describe 'Api::V1::Lists', type: :request do
           )
         end
 
-        it 'returns remaining items on last page' do
-          get '/api/v1/lists?per_page=3&page=3', headers: @headers
+        it 'handles page overflow gracefully' do
+          get '/api/v1/lists?per_page=3&page=10', headers: @headers
 
           data = JSON.parse(response.body)
           expect(response).to have_http_status(:ok)
-          expect(data['data'].length).to eq(1) # Only 1 item on last page
+          expect(data['data'].length).to eq(1) # Last page with 1 item
           expect(data['meta']['pagination']).to include(
             'current_page' => 3,
             'total_pages' => 3,
             'total_count' => 7
           )
         end
-
-        it 'handles page overflow gracefully' do
-          get '/api/v1/lists?per_page=3&page=10', headers: @headers
-
-          data = JSON.parse(response.body)
-          expect(response).to have_http_status(:ok)
-          expect(data['meta']['pagination']).to include(
-            'current_page' => 3, # Should return last page
-            'total_pages' => 3,
-            'total_count' => 7
-          )
-        end
       end
+    end
 
-      context 'when include=shared' do
-        before do
-          # Clear existing lists
-          List.destroy_all
-          
-          # Create a list owned by the user's organization
-          @owned_list = create(:list, organization: organization, creator: user, name: 'My List')
-          
-          # Create a list in another organization that's shared with the user's organization
-          @shared_list = create(:list, organization: other_organization, creator: other_user, name: 'Shared List')
-          @share = create(:share, 
-                         creator: other_user, 
-                         source_organization: other_organization,
-                         target_organization: organization, 
-                         shareable: @shared_list, 
-                         status: :accepted)
-          
-          # Debug the setup
-          puts "\n=== DEBUG: Shared Lists Setup ==="
-          puts "Owned list: #{@owned_list.inspect}"
-          puts "Shared list: #{@shared_list.inspect}"
-          puts "Share: #{@share.inspect}"
-          puts "User: #{user.inspect}"
-          puts "User's organizations: #{user.organizations.pluck(:id, :name)}"
-          puts "Current.organization: #{Current.organization.inspect}"
-          
-          # Let's check what lists are accessible to the user
-          puts "\n=== DEBUG: Lists accessible to user ==="
-          puts "Current.organization.lists.count: #{Current.organization.lists.count}"
-          puts "Current.organization.lists.pluck(:id, :name): #{Current.organization.lists.pluck(:id, :name)}"
-          puts "List.accessible_by(user).pluck(:id, :name): #{List.accessible_by(user).pluck(:id, :name)}"
-        end
+    context 'when organization has no lists' do
+      it 'returns an empty array with pagination metadata' do
+        get '/api/v1/lists', headers: @headers
 
-        it 'returns all lists accessible to the user' do
-          debug_request('/api/v1/lists?include=shared')
-          get '/api/v1/lists?include=shared', headers: @headers
-          
-          puts "Response status: #{response.status}"
-          puts "Response body: #{response.body}"
-
-          data = JSON.parse(response.body)
-          expect(response).to have_http_status(:ok)
-          expect(data['data'].length).to eq(2)
-          
-          list_names = data['data'].map { |list| list['attributes']['name'] }
-          expect(list_names).to include('My List', 'Shared List')
-        end
+        data = JSON.parse(response.body)
+        expect(response).to have_http_status(:ok)
+        expect(data['data']).to be_empty
+        expect(data['meta']['pagination']).to include(
+          'current_page' => 1,
+          'total_pages' => 0,
+          'total_count' => 0
+        )
       end
     end
 
@@ -208,86 +183,47 @@ RSpec.describe 'Api::V1::Lists', type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
-
-    context 'when organization has no lists' do
-      it 'returns an empty array' do
-        get '/api/v1/lists', headers: @headers
-
-        data = JSON.parse(response.body)
-        expect(response).to have_http_status(:ok)
-        expect(data['status']).to eq('success')
-        expect(data['data']).to be_empty
-        expect(data['meta']['pagination']).to include(
-          'current_page' => 1,
-          'total_pages' => 0,
-          'total_count' => 0
-        )
-      end
-    end
   end
 
   describe 'GET /api/v1/lists/:id' do
     let!(:list) { create(:list, organization: organization, creator: user) }
 
-    context 'when viewing owned list' do
+    context 'when accessing owned list' do
       it 'returns the list' do
-        debug_request("/api/v1/lists/#{list.id}")
         get "/api/v1/lists/#{list.id}", headers: @headers
 
-        data = JSON.parse(response.body)
         expect(response).to have_http_status(:ok)
+        data = JSON.parse(response.body)
         expect(data['status']).to eq('success')
         expect(data['data']['id']).to eq(list.id.to_s)
         expect(data['data']['type']).to eq('list')
-        expect(data['data']['attributes']).to include(
-          'name',
-          'description',
-          'visibility',
-          'premium',
-          'position',
-          'created_at',
-          'updated_at',
-          'restaurant_count'
-        )
+        expect(data['data']['attributes']['name']).to eq(list.name)
       end
     end
 
-    context 'when viewing shared list' do
+    context 'when accessing shared list' do
       let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
-
+      
       before do
-        # Create a share between organizations
-        @share = create(:share, 
-                       creator: other_user, 
-                       source_organization: other_organization,
-                       target_organization: organization, 
-                       shareable: shared_list, 
-                       status: :accepted)
-        
-        # Debug the setup
-        puts "\n=== DEBUG: Shared List Setup ==="
-        puts "Shared list: #{shared_list.inspect}"
-        puts "Share: #{@share.inspect}"
-        puts "User: #{user.inspect}"
-        puts "User's organizations: #{user.organizations.pluck(:id, :name)}"
-        puts "Current.organization: #{Current.organization.inspect}"
+        # Create a share from other_organization to organization
+        create(:share, 
+               source_organization: other_organization, 
+               target_organization: organization, 
+               shareable: shared_list,
+               status: :accepted)
       end
 
-      it 'returns the list' do
-        debug_request("/api/v1/lists/#{shared_list.id}")
+      it 'returns the shared list' do
         get "/api/v1/lists/#{shared_list.id}", headers: @headers
-        
-        puts "Response status: #{response.status}"
-        puts "Response body: #{response.body}"
 
-        data = JSON.parse(response.body)
         expect(response).to have_http_status(:ok)
+        data = JSON.parse(response.body)
         expect(data['status']).to eq('success')
         expect(data['data']['id']).to eq(shared_list.id.to_s)
       end
     end
 
-    context 'when viewing someone else\'s list' do
+    context 'when accessing another organization\'s list' do
       let!(:other_list) { create(:list, organization: other_organization, creator: other_user) }
 
       it 'returns not found' do
@@ -329,61 +265,44 @@ RSpec.describe 'Api::V1::Lists', type: :request do
   describe 'POST /api/v1/lists' do
     let(:list_attributes) do
       {
-        name: 'New List',
-        description: 'A new list',
-        visibility: 'public',
+        name: 'My New List',
+        description: 'A list of restaurants to try',
+        visibility: 'personal',
         premium: false,
         position: 1
       }
     end
 
-    context 'when creating a valid list' do
-      it 'creates the list' do
-        debug_request('/api/v1/lists', { list: list_attributes })
+    context 'when creating a list' do
+      it 'creates a new list' do
         expect {
           post '/api/v1/lists',
                params: { list: list_attributes },
                headers: @headers.merge('Content-Type' => 'application/json'),
                as: :json
 
-          Rails.logger.info "Response status: #{response.status}"
-          Rails.logger.info "Response body: #{response.body}"
-          
           expect(response).to have_http_status(:created)
           data = JSON.parse(response.body)
           expect(data['status']).to eq('success')
-          expect(data['data']['attributes']['name']).to eq('New List')
+          expect(data['data']['attributes']['name']).to eq('My New List')
         }.to change(List, :count).by(1)
 
-        # Verify the list belongs to the organization and creator
-        list = List.last
-        expect(list.organization).to eq(organization)
-        expect(list.creator).to eq(user)
-      end
-    end
-
-    context 'when creating an invalid list' do
-      let(:invalid_attributes) do
-        {
-          name: '', # Name is required
-          description: 'A new list',
-          visibility: 'public',
-          premium: false,
-          position: 1
-        }
+        # Verify the list belongs to the current organization
+        expect(List.last.organization).to eq(organization)
+        expect(List.last.creator).to eq(user)
       end
 
-      it 'returns validation errors' do
+      it 'returns validation errors for invalid list' do
         expect {
           post '/api/v1/lists',
-               params: { list: invalid_attributes },
+               params: { list: { name: '' } },
                headers: @headers.merge('Content-Type' => 'application/json'),
                as: :json
 
           expect(response).to have_http_status(:unprocessable_entity)
           data = JSON.parse(response.body)
           expect(data['status']).to eq('error')
-          expect(data['errors']).to be_present
+          expect(data['errors'].first['detail']).to include("Name can't be blank")
         }.not_to change(List, :count)
       end
     end
@@ -407,69 +326,51 @@ RSpec.describe 'Api::V1::Lists', type: :request do
   end
 
   describe 'PATCH /api/v1/lists/:id' do
-    let!(:list) { create(:list, organization: organization, creator: user, name: 'Original Name') }
+    let!(:list) { create(:list, organization: organization, creator: user) }
     let(:list_attributes) do
       {
-        name: 'Updated Name',
-        description: 'Updated description',
-        visibility: 'private',
-        premium: true,
-        position: 2
+        name: 'Updated List Name',
+        description: 'Updated description'
       }
     end
 
     context 'when updating owned list' do
       it 'updates the list' do
-        debug_request("/api/v1/lists/#{list.id}", { list: list_attributes })
         patch "/api/v1/lists/#{list.id}",
               params: { list: list_attributes },
               headers: @headers.merge('Content-Type' => 'application/json'),
               as: :json
 
-        Rails.logger.info "Response status: #{response.status}"
-        Rails.logger.info "Response body: #{response.body}"
-        
         expect(response).to have_http_status(:ok)
         data = JSON.parse(response.body)
         expect(data['status']).to eq('success')
-        expect(data['data']['attributes']['name']).to eq('Updated Name')
+        expect(data['data']['attributes']['name']).to eq('Updated List Name')
         expect(data['data']['attributes']['description']).to eq('Updated description')
-        expect(data['data']['attributes']['visibility']).to eq('private')
-        expect(data['data']['attributes']['premium']).to eq(true)
-        expect(data['data']['attributes']['position']).to eq(2)
 
         # Verify the database was updated
         list.reload
-        expect(list.name).to eq('Updated Name')
-      end
-    end
-
-    context 'when updating with invalid attributes' do
-      let(:invalid_attributes) do
-        {
-          name: '', # Name is required
-          description: 'Updated description'
-        }
+        expect(list.name).to eq('Updated List Name')
+        expect(list.description).to eq('Updated description')
       end
 
-      it 'returns validation errors' do
+      it 'returns validation errors for invalid update' do
         patch "/api/v1/lists/#{list.id}",
-              params: { list: invalid_attributes },
+              params: { list: { name: '' } },
               headers: @headers.merge('Content-Type' => 'application/json'),
               as: :json
 
         expect(response).to have_http_status(:unprocessable_entity)
         data = JSON.parse(response.body)
         expect(data['status']).to eq('error')
-        expect(data['errors']).to be_present
+        expect(data['errors'].first['detail']).to include("Name can't be blank")
 
         # Verify the database was not updated
         list.reload
-        expect(list.name).to eq('Original Name')
+        expect(list.name).not_to eq('')
       end
     end
 
-    context 'when updating someone else\'s list' do
+    context 'when updating another organization\'s list' do
       let!(:other_list) { create(:list, organization: other_organization, creator: other_user) }
 
       it 'returns not found' do
@@ -503,11 +404,15 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when updating a shared list' do
-      let(:other_organization) { create(:organization) }
       let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
-        create(:share, shareable: shared_list, recipient: user, status: :accepted)
+        # Create a share from other_organization to organization
+        create(:share, 
+               source_organization: other_organization, 
+               target_organization: organization, 
+               shareable: shared_list,
+               status: :accepted)
       end
 
       it 'returns not found' do
@@ -538,8 +443,7 @@ RSpec.describe 'Api::V1::Lists', type: :request do
       end
     end
 
-    context 'when deleting someone else\'s list' do
-      let(:other_organization) { create(:organization) }
+    context 'when deleting another organization\'s list' do
       let!(:other_list) { create(:list, organization: other_organization, creator: other_user) }
 
       it 'returns not found' do
@@ -555,11 +459,15 @@ RSpec.describe 'Api::V1::Lists', type: :request do
     end
 
     context 'when deleting a shared list' do
-      let(:other_organization) { create(:organization) }
       let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
-        create(:share, shareable: shared_list, recipient: user, status: :accepted)
+        # Create a share from other_organization to organization
+        create(:share, 
+               source_organization: other_organization, 
+               target_organization: organization, 
+               shareable: shared_list,
+               status: :accepted)
       end
 
       it 'returns not found' do

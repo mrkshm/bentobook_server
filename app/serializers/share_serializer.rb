@@ -1,52 +1,40 @@
 class ShareSerializer < BaseSerializer
   attributes :status, :permission, :reshareable, :created_at, :updated_at
 
-  attribute :creator do
+  attribute :creator do |share|
     {
-      id: object.creator_id,
-      email: object.creator.email,
-      name: object.creator.profile.display_name
+      id: share.creator_id,
+      email: share.creator.email,
+      name: share.creator.profile.display_name
     }
   end
 
-  attribute :source_organization do
+  attribute :source_organization do |share|
     {
-      id: object.source_organization_id,
-      name: object.source_organization.name
+      id: share.source_organization_id
     }
   end
 
-  attribute :target_organization do
+  attribute :target_organization do |share|
     {
-      id: object.target_organization_id,
-      name: object.target_organization.name
+      id: share.target_organization_id
     }
   end
 
-  # Keep the recipient attribute for backward compatibility
-  # This will be removed in a future version
-  attribute :recipient, if: -> { object.respond_to?(:recipient_id) && object.recipient_id.present? } do
-    {
-      id: object.recipient_id,
-      email: object.recipient&.email,
-      name: object.recipient&.profile&.display_name
-    }
-  end
-
-  attribute :shareable do
-    case object.shareable_type
+  attribute :shareable do |share|
+    case share.shareable_type
     when "List"
       {
-        id: object.shareable_id,
-        type: object.shareable_type,
-        name: object.shareable.name,
-        description: object.shareable.description,
-        restaurant_count: object.shareable.restaurants.count
+        id: share.shareable_id,
+        type: share.shareable_type,
+        name: share.shareable.name,
+        description: share.shareable.description,
+        restaurant_count: share.shareable.restaurants.count
       }
     else
       {
-        id: object.shareable_id,
-        type: object.shareable_type
+        id: share.shareable_id,
+        type: share.shareable_type
       }
     end
   end
