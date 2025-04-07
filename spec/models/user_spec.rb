@@ -9,7 +9,7 @@ RSpec.describe User, type: :model do
     it { should have_many(:organizations).through(:memberships) }
     it { should have_one(:profile).dependent(:destroy) }
     it { should have_many(:created_lists).class_name('List').with_foreign_key(:creator_id) }
-    it { should have_many(:shares).with_foreign_key(:recipient_id) }
+    it { should have_many(:created_shares).class_name('Share').with_foreign_key(:creator_id) }
   end
 
   describe 'validations' do

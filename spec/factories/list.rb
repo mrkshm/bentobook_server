@@ -19,6 +19,24 @@ FactoryBot.define do
       end
     end
 
+    trait :with_shares do
+      transient do
+        shares_count { 2 }
+      end
+
+      after(:create) do |list, evaluator|
+        # Create shares with other organizations
+        evaluator.shares_count.times do
+          target_org = create(:organization)
+          create(:share, 
+                 source_organization: list.organization, 
+                 target_organization: target_org, 
+                 shareable: list, 
+                 creator: list.creator)
+        end
+      end
+    end
+
     trait :discoverable do
       visibility { :discoverable }
     end

@@ -659,14 +659,15 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.shares (
     id bigint NOT NULL,
     creator_id bigint NOT NULL,
-    recipient_id bigint NOT NULL,
     shareable_type character varying NOT NULL,
     shareable_id bigint NOT NULL,
     permission integer DEFAULT 0,
     status integer DEFAULT 0,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    reshareable boolean DEFAULT true NOT NULL
+    reshareable boolean DEFAULT true NOT NULL,
+    source_organization_id bigint NOT NULL,
+    target_organization_id bigint NOT NULL
 );
 
 
@@ -1509,10 +1510,10 @@ CREATE INDEX index_shares_on_creator_id ON public.shares USING btree (creator_id
 
 
 --
--- Name: index_shares_on_recipient_id; Type: INDEX; Schema: public; Owner: -
+-- Name: index_shares_on_organizations_and_shareable; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_shares_on_recipient_id ON public.shares USING btree (recipient_id);
+CREATE INDEX index_shares_on_organizations_and_shareable ON public.shares USING btree (source_organization_id, target_organization_id, shareable_type, shareable_id);
 
 
 --
@@ -1523,10 +1524,17 @@ CREATE INDEX index_shares_on_shareable ON public.shares USING btree (shareable_t
 
 
 --
--- Name: index_shares_uniqueness; Type: INDEX; Schema: public; Owner: -
+-- Name: index_shares_on_source_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_shares_uniqueness ON public.shares USING btree (creator_id, recipient_id, shareable_type, shareable_id);
+CREATE INDEX index_shares_on_source_organization_id ON public.shares USING btree (source_organization_id);
+
+
+--
+-- Name: index_shares_on_target_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_shares_on_target_organization_id ON public.shares USING btree (target_organization_id);
 
 
 --
@@ -1731,6 +1739,14 @@ ALTER TABLE ONLY public.restaurant_copies
 
 
 --
+-- Name: shares fk_rails_434dff91a6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT fk_rails_434dff91a6 FOREIGN KEY (source_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: shares fk_rails_5d388a8a85; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1843,14 +1859,6 @@ ALTER TABLE ONLY public.restaurants
 
 
 --
--- Name: shares fk_rails_c36b56cf51; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.shares
-    ADD CONSTRAINT fk_rails_c36b56cf51 FOREIGN KEY (recipient_id) REFERENCES public.users(id);
-
-
---
 -- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1907,12 +1915,21 @@ ALTER TABLE ONLY public.visit_contacts
 
 
 --
+-- Name: shares fk_rails_f921f753a8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT fk_rails_f921f753a8 FOREIGN KEY (target_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250407143100'),
 ('20250405165559'),
 ('20250404133041'),
 ('20250404124930'),

@@ -10,11 +10,12 @@ class User < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :organizations, through: :memberships
   has_one :profile, dependent: :destroy
-  
-  # Lists the user created
+
+  # Lists the user created (across all organizations)
   has_many :created_lists, class_name: "List", foreign_key: :creator_id
-  # Lists shared with the user
-  has_many :shares, foreign_key: :recipient_id
+  
+  # Shares the user created (across all organizations)
+  has_many :created_shares, class_name: "Share", foreign_key: :creator_id
 
   after_create :ensure_profile
   after_create :create_organization

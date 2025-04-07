@@ -1,8 +1,9 @@
-<h1><%= t('.greeting', recipient: @recipient.profile.display_name) %></h1>
+<h1><%= t('.greeting', organization: @target_organization.name) %></h1>
 
 <p>
   <%= t('.body', 
         creator: @creator.profile.display_name,
+        source_organization: @source_organization.name,
         list: @shareable.name,
         permission: t(".permissions.#{@share.permission}")) %>
 </p>
