@@ -21,14 +21,19 @@ module Lists
       end
     end
 
+    # Check if current user is a member of the list's organization
+    def current_user_in_org?
+      current_user.organizations.exists?(id: organization.id)
+    end
+
     def owner_avatar
       return unless is_shared
 
-      # Use organization details instead of organization users
+      # Use organization name as text for avatar
       render(AvatarComponent.new(
-        image: organization.logo,
         text: organization.name,
         size: :md,
+        placeholder_type: :initials
       ))
     end
 
