@@ -7,19 +7,20 @@ module Restaurants
       @restaurant = restaurant
       @current_user = current_user
       @list = list
+      @organization = list.organization
       @already_imported = RestaurantCopy.exists?(
-        user: current_user,
+        organization_id: @organization.id,
         restaurant: restaurant
       )
     end
 
     private
 
-    attr_reader :restaurant, :current_user, :list, :already_imported
+    attr_reader :restaurant, :current_user, :list, :already_imported, :organization
 
     def copied_restaurant
       @copied_restaurant ||= RestaurantCopy.find_by(
-        user: current_user,
+        organization_id: organization.id,
         restaurant: restaurant
       )&.copied_restaurant
     end
@@ -34,7 +35,7 @@ module Restaurants
     end
 
     def visit_count
-      restaurant.visits.where(user: current_user).count
+      restaurant.visits.where(organization_id: organization.id).count
     end
   end
 end

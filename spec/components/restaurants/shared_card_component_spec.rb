@@ -2,11 +2,12 @@ require "rails_helper"
 
 RSpec.describe Restaurants::SharedCardComponent, type: :component do
   let(:user) { create(:user) }
-  let(:owner) { create(:user) }
-  let(:list) { create(:list, owner: owner) }
+  let(:organization) { create(:organization) }
+  let(:list) { create(:list, organization: organization) }
   let(:restaurant) { create(:restaurant) }
 
   before do
+    # No need to associate the user with an organization since we're using list.organization
     list.restaurants << restaurant
   end
 
@@ -25,9 +26,12 @@ RSpec.describe Restaurants::SharedCardComponent, type: :component do
       expect(page).to have_content(restaurant.cuisine_type.name) if restaurant.cuisine_type
     end
 
-    it "shows visit count for current user only" do
-      create(:visit, restaurant: restaurant, user: user)
-      create(:visit, restaurant: restaurant) # other user's visit
+    it "shows visit count for current user's organization only" do
+      # Create visit with organization
+      create(:visit, restaurant: restaurant, organization_id: organization.id)
+      # Create another visit for a different organization
+      other_org = create(:organization)
+      create(:visit, restaurant: restaurant, organization_id: other_org.id)
 
       render_component
       expect(page).to have_css(".badge", text: "1")
@@ -44,7 +48,8 @@ RSpec.describe Restaurants::SharedCardComponent, type: :component do
 
   context "when restaurant is already imported" do
     before do
-      create(:restaurant_copy, user: user, restaurant: restaurant)
+      # Create restaurant copy with organization
+      create(:restaurant_copy, organization_id: organization.id, restaurant: restaurant)
     end
 
     it "shows already imported indicator" do

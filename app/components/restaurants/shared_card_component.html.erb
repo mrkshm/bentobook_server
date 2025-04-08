@@ -71,7 +71,7 @@
 <% end %>
 
 <% if already_imported %>
-  <%= link_to restaurant_path(id: copied_restaurant.id), class: "block hover:shadow-2xl transition-shadow duration-200" do %>
+  <%= link_to restaurant_path(id: copied_restaurant.id, locale: nil), class: "block hover:shadow-2xl transition-shadow duration-200" do %>
     <%= content %>
   <% end %>
 <% else %>
