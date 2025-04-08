@@ -101,17 +101,19 @@ class ListRestaurantsController < ApplicationController
   private
 
   def set_list
-    @list = List.left_joins(:shares)
-      .where(
-        "lists.owner_id = :user_id OR (shares.recipient_id = :user_id AND shares.status = :status)",
-        user_id: current_user.id,
-        status: Share.statuses[:accepted]
-      )
-      .find(params[:list_id])
+    # Find list that is either owned by or shared with the current organization
+    @list = List.find(params[:list_id])
+    
+    # Check if the list is viewable by the current organization
+    unless @list.viewable_by?(Current.organization)
+      raise ActiveRecord::RecordNotFound
+    end
+  rescue ActiveRecord::RecordNotFound
+    render file: 'public/404.html', status: :not_found, layout: false
   end
 
   def ensure_editable
-    unless @list.editable_by?(current_user)
+    unless @list.editable_by?(Current.organization)
       redirect_to list_path(id: @list.id), alert: t(".not_authorized")
     end
   end

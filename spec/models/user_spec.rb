@@ -8,8 +8,8 @@ RSpec.describe User, type: :model do
     it { should have_many(:memberships).dependent(:destroy) }
     it { should have_many(:organizations).through(:memberships) }
     it { should have_one(:profile).dependent(:destroy) }
-    it { should have_many(:created_lists).class_name('List').with_foreign_key(:creator_id) }
-    it { should have_many(:created_shares).class_name('Share').with_foreign_key(:creator_id) }
+    # Removed cross-organization associations
+    # These are now accessed through organizations
   end
 
   describe 'validations' do
@@ -101,14 +101,24 @@ RSpec.describe User, type: :model do
 
   describe 'development convenience methods' do
     describe '#confirmation_required?' do
-      it 'returns true in production' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
-        expect(subject.confirmation_required?).to be true
+      context 'in production' do
+        before do
+          allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+        end
+
+        it 'returns true' do
+          expect(subject.confirmation_required?).to be true
+        end
       end
 
-      it 'returns false in development' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
-        expect(subject.confirmation_required?).to be false
+      context 'in non-production' do
+        before do
+          allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        end
+
+        it 'returns false' do
+          expect(subject.confirmation_required?).to be false
+        end
       end
     end
 

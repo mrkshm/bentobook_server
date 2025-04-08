@@ -37,7 +37,9 @@ FactoryBot.define do
       end
     end
 
-    trait :with_created_shares do
+    # Renamed from with_created_shares to with_organization_shares to better reflect
+    # that we're creating shares from the user's organization to another organization
+    trait :with_organization_shares do
       after(:create) do |user|
         # User's organization is the source
         source_org = user.organizations.first

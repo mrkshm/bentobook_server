@@ -11,11 +11,9 @@ class User < ApplicationRecord
   has_many :organizations, through: :memberships
   has_one :profile, dependent: :destroy
 
-  # Lists the user created (across all organizations)
-  has_many :created_lists, class_name: "List", foreign_key: :creator_id
-  
-  # Shares the user created (across all organizations)
-  has_many :created_shares, class_name: "Share", foreign_key: :creator_id
+  # Access lists and shares through the current organization:
+  # Current.organization.lists
+  # Current.organization.outgoing_shares
 
   after_create :ensure_profile
   after_create :create_organization

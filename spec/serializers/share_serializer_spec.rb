@@ -2,13 +2,15 @@ require 'rails_helper'
 
 RSpec.describe ShareSerializer do
   let(:creator) { create(:user, :with_profile) }
-  let(:recipient) { create(:user, :with_profile) }
-  let(:organization) { create(:organization) }
-  let(:list) { create(:list, organization: organization, creator: creator) }
+  let(:source_organization) { creator.organizations.first }
+  let(:target_organization) { create(:organization) }
+  let(:target_user) { create(:user, :with_profile) }
+  let(:list) { create(:list, organization: source_organization, creator: creator) }
   let(:share) do
     create(:share,
       creator: creator,
-      recipient: recipient,
+      source_organization: source_organization,
+      target_organization: target_organization,
       shareable: list,
       permission: :view,
       status: :pending,
@@ -17,8 +19,8 @@ RSpec.describe ShareSerializer do
   end
 
   before do
-    # Create membership to associate creator with organization
-    create(:membership, user: creator, organization: organization)
+    # Create membership to associate target user with target organization
+    create(:membership, user: target_user, organization: target_organization)
   end
 
   describe '.render_success' do
@@ -37,7 +39,8 @@ RSpec.describe ShareSerializer do
         'created_at',
         'updated_at',
         'creator',
-        'recipient',
+        'source_organization',
+        'target_organization',
         'shareable'
       )
     end
@@ -51,12 +54,17 @@ RSpec.describe ShareSerializer do
       )
     end
 
-    it 'includes correct recipient information' do
-      recipient_data = rendered_json[:data][:attributes]['recipient']
-      expect(recipient_data).to include(
-        'id' => recipient.id,
-        'name' => recipient.profile.display_name,
-        'email' => recipient.email
+    it 'includes correct source organization information' do
+      source_org_data = rendered_json[:data][:attributes]['source_organization']
+      expect(source_org_data).to include(
+        'id' => source_organization.id
+      )
+    end
+
+    it 'includes correct target organization information' do
+      target_org_data = rendered_json[:data][:attributes]['target_organization']
+      expect(target_org_data).to include(
+        'id' => target_organization.id
       )
     end
 
@@ -80,17 +88,23 @@ RSpec.describe ShareSerializer do
   end
 
   describe '.render_collection' do
-    let(:other_organization) { create(:organization) }
+    let(:other_source_organization) { create(:organization) }
+    let(:other_target_organization) { create(:organization) }
     let!(:other_share) do 
-      other_list = create(:list, organization: other_organization, creator: creator)
-      create(:share, creator: creator, recipient: recipient, shareable: other_list)
+      # Create memberships for creator in the other source organization
+      create(:membership, user: creator, organization: other_source_organization)
+      
+      # Create a list in the other source organization
+      other_list = create(:list, organization: other_source_organization, creator: creator)
+      
+      # Share with the other target organization
+      create(:share, 
+             creator: creator, 
+             source_organization: other_source_organization, 
+             target_organization: other_target_organization, 
+             shareable: other_list)
     end
     let(:shares) { [ share, other_share ] }
-
-    before do
-      # Create membership for creator in other organization
-      create(:membership, user: creator, organization: other_organization)
-    end
 
     subject(:rendered_json) { ShareSerializer.render_collection(shares) }
 
@@ -109,7 +123,8 @@ RSpec.describe ShareSerializer do
           'created_at',
           'updated_at',
           'creator',
-          'recipient',
+          'source_organization',
+          'target_organization',
           'shareable'
         )
       end

@@ -2,13 +2,23 @@ require 'rails_helper'
 
 RSpec.describe ListSerializer do
   let(:user) { create(:user) }
-  let(:organization) { create(:organization) }
-  let(:list) { create(:list, :with_restaurants, organization: organization, creator: user) }
-  let(:share) { create(:share, :accepted, shareable: list) }
+  let(:source_organization) { user.organizations.first }
+  let(:target_organization) { create(:organization) }
+  let(:target_user) { create(:user) }
+  let(:list) { create(:list, :with_restaurants, organization: source_organization, creator: user) }
+  let(:share) do 
+    create(:share, 
+      :accepted, 
+      creator: user,
+      source_organization: source_organization,
+      target_organization: target_organization,
+      shareable: list
+    )
+  end
 
   before do
-    # Create membership to associate user with organization
-    create(:membership, user: user, organization: organization)
+    # Create membership to associate target user with target organization
+    create(:membership, user: target_user, organization: target_organization)
   end
 
   describe '.render_success' do
@@ -86,14 +96,14 @@ RSpec.describe ListSerializer do
       shared_with = rendered_json[:data][:attributes]['shared_with']
       expect(shared_with).to be_an(Array)
       expect(shared_with.first).to include(
-        'user_id' => share.recipient_id,
+        'organization_id' => target_organization.id,
         'permission' => share.permission
       )
     end
   end
 
   describe '.render_collection' do
-    let(:lists) { create_list(:list, 3, organization: organization, creator: user) }
+    let(:lists) { create_list(:list, 3, organization: source_organization, creator: user) }
     let(:pagy) { Pagy.new(count: 3, page: 1, items: 10) }
     let(:pagination) do
       {

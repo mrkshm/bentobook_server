@@ -2,7 +2,8 @@ require 'rails_helper'
 
 RSpec.describe ListRestaurantsController, type: :request do
   let(:user) { create(:user) }
-  let(:list) { create(:list, owner: user) }
+  let(:organization) { user.organizations.first }
+  let(:list) { create(:list, organization: organization, creator: user) }
   let(:restaurant) { create(:restaurant) }
   
   describe 'authentication' do
@@ -14,7 +15,17 @@ RSpec.describe ListRestaurantsController, type: :request do
   end
   
   context 'when authenticated' do
-    before { sign_in user }
+    before do 
+      sign_in user 
+      # Set Current.organization for the test
+      Current.organization = organization
+      allow(Current).to receive(:organization).and_return(organization)
+    end
+    
+    after do
+      # Reset Current.organization to avoid affecting other tests
+      allow(Current).to receive(:organization).and_call_original
+    end
     
     describe 'GET #index' do
       it 'returns successful response' do
@@ -122,9 +133,10 @@ RSpec.describe ListRestaurantsController, type: :request do
       end
     end
     
-    context 'with another user\'s list' do
+    context 'with another organization\'s list' do
       let(:other_user) { create(:user) }
-      let(:other_list) { create(:list, owner: other_user) }
+      let(:other_organization) { other_user.organizations.first }
+      let(:other_list) { create(:list, organization: other_organization, creator: other_user) }
       
       it 'returns 404 for index' do
         get list_list_restaurants_path(list_id: other_list.id)
@@ -145,19 +157,20 @@ RSpec.describe ListRestaurantsController, type: :request do
     
     context 'with shared list' do
       let(:other_user) { create(:user) }
-      let(:other_list) { create(:list, owner: other_user) }
+      let(:other_organization) { other_user.organizations.first }
+      let(:other_list) { create(:list, organization: other_organization, creator: other_user) }
       
       before do
         create(:share, 
-          creator: other_user, 
-          recipient: user, 
+          source_organization: other_organization,
+          target_organization: organization,
           shareable: other_list, 
           permission: :edit,
           status: :accepted
         )
       end
       
-      it 'allows adding restaurants when user has edit permission' do
+      it 'allows adding restaurants when organization has edit permission' do
         expect {
           post list_list_restaurants_path(list_id: other_list.id), 
                params: { restaurant_id: restaurant.id }
@@ -167,7 +180,7 @@ RSpec.describe ListRestaurantsController, type: :request do
         expect(flash[:notice]).to be_present
       end
       
-      it 'allows removing restaurants when user has edit permission' do
+      it 'allows removing restaurants when organization has edit permission' do
         list_restaurant = create(:list_restaurant, list: other_list, restaurant: restaurant)
         
         expect {
@@ -181,13 +194,14 @@ RSpec.describe ListRestaurantsController, type: :request do
     
     context 'with shared list and view-only permission' do
       let(:other_user) { create(:user) }
-      let(:other_list) { create(:list, owner: other_user) }
+      let(:other_organization) { other_user.organizations.first }
+      let(:other_list) { create(:list, organization: other_organization, creator: other_user) }
       let!(:list_restaurant) { create(:list_restaurant, list: other_list, restaurant: restaurant) }
       
       before do
         create(:share, 
-          creator: other_user, 
-          recipient: user, 
+          source_organization: other_organization,
+          target_organization: organization,
           shareable: other_list, 
           permission: :view,
           status: :accepted
