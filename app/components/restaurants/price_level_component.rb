@@ -1,15 +1,14 @@
+# frozen_string_literal: true
+
 module Restaurants
-  class PriceLevelComponent < ViewComponent::Base
-    include ActionView::RecordIdentifier
-
-    attr_reader :restaurant
-
-    def initialize(restaurant:)
+  class PriceLevelComponent < ApplicationComponent
+    def initialize(restaurant:, readonly: false)
       @restaurant = restaurant
+      @readonly = readonly
     end
 
-    def frame_id
-      dom_id(restaurant, :price_level)
-    end
+    private
+
+    attr_reader :restaurant, :readonly
   end
 end

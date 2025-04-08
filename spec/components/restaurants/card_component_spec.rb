@@ -18,7 +18,15 @@ RSpec.describe Restaurants::CardComponent, type: :component do
       phone_number: '555-1234',
       url: 'https://pizzapalace.com',
       tags: [ tag1, tag2 ],
-      visit_count: 3
+      visit_count: 3,
+      # Add these missing methods that are called by the component
+      price_level: 2,
+      combined_street_number: '123',
+      combined_street: 'Main St',
+      combined_postal_code: '12345',
+      combined_city: 'New York',
+      combined_state: 'NY',
+      combined_country: 'USA'
     )
   end
 
@@ -26,6 +34,14 @@ RSpec.describe Restaurants::CardComponent, type: :component do
 
   before do
     allow_any_instance_of(Restaurants::CardComponent).to receive(:restaurant_path).and_return('/restaurants/1')
+    # Only mock the t helper for other calls, not for cuisine type
+    allow_any_instance_of(Restaurants::CardComponent).to receive(:t).with(anything) do |_, arg|
+      if arg.to_s.start_with?('cuisine_types.')
+        arg.to_s
+      else
+        "Translated Text"
+      end
+    end
   end
 
   it 'renders the restaurant name' do
@@ -87,7 +103,15 @@ RSpec.describe Restaurants::CardComponent, type: :component do
         phone_number: nil,
         url: nil,
         tags: [],
-        visit_count: 0
+        visit_count: 0,
+        # Add these missing methods
+        price_level: 1,
+        combined_street_number: '456',
+        combined_street: 'Oak Ave',
+        combined_postal_code: nil,
+        combined_city: 'Chicago',
+        combined_state: nil,
+        combined_country: 'USA'
       )
     end
 
@@ -110,12 +134,12 @@ RSpec.describe Restaurants::CardComponent, type: :component do
     context 'when some address fields are missing' do
       let(:restaurant) do
         double('Restaurant',
-          street_number: '789',
-          street: 'Elm St',
-          postal_code: nil,
-          city: 'Los Angeles',
-          state: nil,
-          country: 'USA',
+          combined_street_number: '789',
+          combined_street: 'Elm St',
+          combined_postal_code: nil,
+          combined_city: 'Los Angeles',
+          combined_state: nil,
+          combined_country: 'USA',
           visit_count: 0
         )
       end
