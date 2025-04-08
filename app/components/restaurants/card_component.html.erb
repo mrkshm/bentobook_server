@@ -27,13 +27,10 @@
         </div>
 
         <div class="mt-2">
-          <%= render(RatingsComponent.new(
-                rating: restaurant.rating,
-                readonly: true,
-                size: :sm,
-                dom_id: dom_id(restaurant, :rating),
-                restaurant: restaurant
-              )) %>
+          <%= render(Restaurants::RatingComponent.new(
+            restaurant: restaurant,
+            readonly: true
+          )) %>
         </div>
 
         <% if restaurant.tags.any? %>

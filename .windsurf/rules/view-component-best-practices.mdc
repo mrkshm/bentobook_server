@@ -1,0 +1,85 @@
+---
+description: Best Practices for ViewComponent Implementation
+globs: app/components/**/*.rb, app/components/**/*.html.erb
+---
+
+# ViewComponent Best Practices
+
+Guidelines for implementing ViewComponents in Rails applications to avoid common pitfalls.
+
+<rule>
+name: view_component_implementation
+description: Ensures ViewComponents follow best practices for implementation and testing
+filters:
+  # Match component Ruby files
+  - type: file_extension
+    pattern: "\.rb$"
+  # Match component template files
+  - type: file_extension
+    pattern: "\.html\.erb$"
+  # Match files in the components directory
+  - type: path
+    pattern: "app/components/.*"
+
+actions:
+  - type: suggest
+    conditions:
+      - pattern: "def call.*?end"
+        message: "Be careful with implementing a 'call' method in a ViewComponent that also has an HTML template. This can cause conflicts as both will try to render content."
+
+  - type: suggest
+    conditions:
+      - pattern: "render \"[^/]+/[^/]+\""
+        message: "When rendering partials in ViewComponents, ensure the partial exists in the correct location. ViewComponent partials should be in the same directory as the component."
+
+  - type: suggest
+    conditions:
+      - pattern: "present\?|blank\?"
+        message: "When checking for presence in ViewComponents, consider using explicit nil and empty string checks (e.g., 'value && !value.empty?') instead of 'present?' to avoid issues with test doubles."
+
+  - type: suggest
+    conditions:
+      - pattern: "allow\(.*\)\.to receive\(:present\?"
+        message: "Avoid mocking 'present?' on test doubles. Instead, use helper methods in your component that check for nil and empty strings explicitly, and mock those helper methods in tests."
+
+examples:
+  - input: |
+      # Bad: Component with both call method and template
+      class MyComponent < ViewComponent::Base
+        def call
+          content_tag :div do
+            "Hello World"
+          end
+        end
+      end
+      # app/components/my_component.html.erb also exists
+    output: "Choose either a call method OR a template file, not both"
+
+  - input: |
+      # Bad: Using present? in component
+      <% if item.present? %>
+        <%= item.name %>
+      <% end %>
+    output: "Use explicit nil and empty checks instead of present?"
+
+  - input: |
+      # Good: Using explicit checks
+      def has_item?
+        item && !item.empty?
+      end
+      
+      # In template
+      <% if has_item? %>
+        <%= item.name %>
+      <% end %>
+    output: "Good practice using explicit checks"
+
+  - input: |
+      # Good: Testing helper methods
+      allow_any_instance_of(MyComponent).to receive(:has_item?).and_return(true)
+    output: "Good practice mocking helper methods instead of present?"
+
+metadata:
+  priority: medium
+  version: 1.0
+</rule>

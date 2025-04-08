@@ -53,9 +53,9 @@
       <% @restaurants.each do |restaurant| %>
         <div class="w-full">
           <% if @list.owner == current_user %>
-            <%= render(RestaurantCardComponent.new(restaurant: restaurant)) %>
+            <%= render(Restaurants::CardComponent.new(restaurant: restaurant)) %>
           <% else %>
-            <%= render(SharedRestaurantCardComponent.new(
+            <%= render(Restaurants::SharedCardComponent.new(
               restaurant: restaurant,
               current_user: current_user,
               list: @list

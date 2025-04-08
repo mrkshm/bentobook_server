@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe RestaurantCardComponent, type: :component do
+RSpec.describe Restaurants::CardComponent, type: :component do
   let(:cuisine_type) { double('CuisineType', name: 'Italian') }
   let(:tag1) { double('Tag', name: 'Pizza') }
   let(:tag2) { double('Tag', name: 'Family-friendly') }
@@ -17,7 +17,7 @@ RSpec.describe RestaurantCardComponent, type: :component do
       country: 'USA',
       phone_number: '555-1234',
       url: 'https://pizzapalace.com',
-      tags: [tag1, tag2],
+      tags: [ tag1, tag2 ],
       visit_count: 3
     )
   end
@@ -25,7 +25,7 @@ RSpec.describe RestaurantCardComponent, type: :component do
   subject(:component) { described_class.new(restaurant: restaurant) }
 
   before do
-    allow_any_instance_of(RestaurantCardComponent).to receive(:restaurant_path).and_return('/restaurants/1')
+    allow_any_instance_of(Restaurants::CardComponent).to receive(:restaurant_path).and_return('/restaurants/1')
   end
 
   it 'renders the restaurant name' do

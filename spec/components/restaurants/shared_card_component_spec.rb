@@ -1,11 +1,11 @@
 require "rails_helper"
 
-RSpec.describe SharedRestaurantCardComponent, type: :component do
+RSpec.describe Restaurants::SharedCardComponent, type: :component do
   let(:user) { create(:user) }
   let(:owner) { create(:user) }
   let(:list) { create(:list, owner: owner) }
   let(:restaurant) { create(:restaurant) }
-  
+
   before do
     list.restaurants << restaurant
   end
@@ -66,4 +66,4 @@ RSpec.describe SharedRestaurantCardComponent, type: :component do
       expect(page).to have_content("italian")
     end
   end
-end 
+end

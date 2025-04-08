@@ -38,7 +38,7 @@
       <%# Visit cards with Turbo Frame %>
       <%= turbo_frame_tag "visits-list", class: "grid grid-cols-1 md:grid-cols-2 gap-4 items-start" do %>
         <% @visits.each do |visit| %>
-          <%= render(VisitCardComponent.new(visit: visit)) %>
+          <%= render(Visits::CardComponent.new(visit: visit)) %>
         <% end %>
       <% end %>
 
