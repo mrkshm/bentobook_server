@@ -9,7 +9,7 @@
     </div>
   </div>
 <% else %>
-  <%= turbo_frame_tag frame_id do %>
+  <%= helpers.turbo_frame_tag frame_id do %>
     <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: current_locale),
           class: "block group",
           data: { 

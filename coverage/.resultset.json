@@ -234,7 +234,7 @@
         ],
         "branches": {}
       },
-      "/Users/mrks/Code/bentobook/bentobook_server/app/components/restaurants/rating_component.rb": {
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/restaurants/price_level_component.rb": {
         "lines": [
           null,
           null,
@@ -243,16 +243,18 @@
           1,
           null,
           1,
-          3,
-          3,
+          4,
+          4,
+          null,
+          null,
+          1,
+          2,
           null,
           null,
           1,
           0,
           null,
-          null,
-          1,
-          3,
+          0,
           null,
           null,
           1,
@@ -454,6 +456,185 @@
           "[:if, 15, 130, 8, 130, 63]": {
             "[:then, 16, 130, 8, 130, 46]": 0,
             "[:else, 17, 130, 8, 130, 63]": 0
+          }
+        }
+      },
+      "/Users/mrks/Code/bentobook/bentobook_server/app/controllers/application_controller.rb": {
+        "lines": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          0,
+          0,
+          null,
+          0,
+          null,
+          null,
+          null,
+          1,
+          0,
+          null,
+          null,
+          0,
+          null,
+          null,
+          0,
+          0,
+          null,
+          null,
+          0,
+          0,
+          null,
+          null,
+          0,
+          0,
+          null,
+          0,
+          null,
+          null,
+          null,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          0,
+          null,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          null,
+          null,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          null,
+          null,
+          1,
+          null,
+          0,
+          null,
+          null,
+          null
+        ],
+        "branches": {
+          "[:\"&.\", 0, 17, 29, 17, 56]": {
+            "[:then, 1, 17, 29, 17, 56]": 0,
+            "[:else, 2, 17, 29, 17, 56]": 0
+          },
+          "[:\"&.\", 3, 17, 29, 17, 63]": {
+            "[:then, 4, 17, 29, 17, 63]": 0,
+            "[:else, 5, 17, 29, 17, 63]": 0
+          },
+          "[:if, 6, 21, 4, 23, 7]": {
+            "[:then, 7, 22, 6, 22, 31]": 0,
+            "[:else, 8, 21, 4, 23, 7]": 0
+          },
+          "[:\"&.\", 9, 27, 4, 27, 48]": {
+            "[:then, 10, 27, 4, 27, 48]": 0,
+            "[:else, 11, 27, 4, 27, 48]": 0
+          },
+          "[:if, 12, 31, 18, 37, 7]": {
+            "[:then, 13, 32, 6, 32, 21]": 0,
+            "[:else, 14, 33, 4, 37, 7]": 0
+          },
+          "[:\"&.\", 15, 33, 29, 33, 69]": {
+            "[:then, 16, 33, 29, 33, 69]": 0,
+            "[:else, 17, 33, 29, 33, 69]": 0
+          },
+          "[:if, 18, 33, 4, 37, 7]": {
+            "[:then, 19, 34, 6, 34, 45]": 0,
+            "[:else, 20, 36, 6, 36, 25]": 0
+          },
+          "[:if, 21, 41, 4, 41, 46]": {
+            "[:then, 22, 41, 4, 41, 10]": 0,
+            "[:else, 23, 41, 4, 41, 46]": 0
+          },
+          "[:if, 24, 44, 17, 44, 60]": {
+            "[:then, 25, 44, 51, 44, 54]": 0,
+            "[:else, 26, 44, 57, 44, 60]": 0
+          },
+          "[:if, 27, 47, 4, 48, 55]": {
+            "[:then, 28, 47, 4, 47, 10]": 0,
+            "[:else, 29, 47, 4, 48, 55]": 0
+          },
+          "[:if, 30, 52, 4, 52, 45]": {
+            "[:then, 31, 52, 4, 52, 22]": 0,
+            "[:else, 32, 52, 4, 52, 45]": 0
+          },
+          "[:if, 33, 55, 15, 59, 7]": {
+            "[:then, 34, 56, 6, 56, 36]": 0,
+            "[:else, 35, 58, 6, 58, 75]": 0
+          },
+          "[:if, 36, 58, 6, 58, 75]": {
+            "[:then, 37, 58, 40, 58, 52]": 0,
+            "[:else, 38, 58, 55, 58, 75]": 0
+          },
+          "[:if, 39, 62, 4, 62, 53]": {
+            "[:then, 40, 62, 4, 62, 25]": 0,
+            "[:else, 41, 62, 4, 62, 53]": 0
+          },
+          "[:if, 42, 66, 4, 70, 7]": {
+            "[:then, 43, 67, 6, 67, 25]": 0,
+            "[:else, 44, 69, 6, 69, 22]": 0
+          },
+          "[:if, 45, 74, 4, 74, 51]": {
+            "[:then, 46, 74, 4, 74, 13]": 0,
+            "[:else, 47, 74, 4, 74, 51]": 0
+          },
+          "[:\"&.\", 48, 79, 59, 79, 113]": {
+            "[:then, 49, 79, 59, 79, 113]": 0,
+            "[:else, 50, 79, 59, 79, 113]": 0
+          },
+          "[:\"&.\", 51, 79, 59, 79, 120]": {
+            "[:then, 52, 79, 59, 79, 120]": 0,
+            "[:else, 53, 79, 59, 79, 120]": 0
+          },
+          "[:if, 54, 80, 4, 80, 84]": {
+            "[:then, 55, 80, 65, 80, 78]": 0,
+            "[:else, 56, 80, 81, 80, 84]": 0
           }
         }
       },
@@ -1111,13 +1292,23 @@
         ],
         "branches": {}
       },
-      "/Users/mrks/Code/bentobook/bentobook_server/app/components/restaurants/price_level_component.rb": {
+      "/Users/mrks/Code/bentobook/bentobook_server/app/components/restaurants/rating_component.rb": {
         "lines": [
           null,
           null,
           0,
           0,
           0,
+          null,
+          0,
+          0,
+          0,
+          0,
+          null,
+          0,
+          0,
+          0,
+          null,
           0,
           0,
           0,
@@ -4246,108 +4437,6 @@
           0,
           0,
           0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "branches": {}
-      },
-      "/Users/mrks/Code/bentobook/bentobook_server/app/controllers/application_controller.rb": {
-        "lines": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          null,
-          0,
-          null,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          null,
-          null,
-          0,
-          null,
-          null,
-          0,
-          0,
-          null,
-          null,
-          0,
-          0,
-          null,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          null,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          null,
-          0,
-          null,
           0,
           0,
           0,
@@ -9009,6 +9098,6 @@
         "branches": {}
       }
     },
-    "timestamp": 1744112683
+    "timestamp": 1744113676
   }
 }
