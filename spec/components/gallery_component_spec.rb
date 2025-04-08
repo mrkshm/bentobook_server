@@ -52,7 +52,7 @@ RSpec.describe GalleryComponent, type: :component do
     end
   end
 
-  let(:images) { [mock_image] }
+  let(:images) { [ mock_image ] }
 
   before do
     # Mock url_for helper
@@ -81,9 +81,9 @@ RSpec.describe GalleryComponent, type: :component do
 
   it "renders a single image in a grid" do
     render_inline(GalleryComponent.new(images: images))
-    
+
     expect(page).to have_css("div.grid")
-    expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 1)
+    expect(page).to have_css("img[src='http://test.host/rails/active_storage/blobs/redirect/variant_123/test_variant.jpg']", count: 1)
   end
 
   it "handles empty images array" do
@@ -97,41 +97,33 @@ RSpec.describe GalleryComponent, type: :component do
     expect(page).to have_css(".lg\\:grid-cols-4")
   end
 
-  describe "modal integration" do
+  describe "lightbox integration" do
     before do
       render_inline(GalleryComponent.new(images: images))
     end
 
-    it "includes clickable images with modal trigger" do
-      expect(page).to have_css("img[data-action='click->gallery#openModal']")
-      expect(page).to have_css("img[data-gallery-index-param='0']")
+    it "includes clickable images with lightbox trigger" do
+      expect(page).to have_css("a[data-lightbox-target='trigger']")
     end
 
-    it "renders modal component for each image" do
-      expect(page).to have_css("[data-controller='modal']")
-      expect(page).to have_css("#gallery-modal-0")
+    it "sets up the lightbox controller" do
+      expect(page).to have_css("[data-controller='lightbox']")
     end
 
-    it "applies correct classes to images" do
-      expect(page).to have_css(".aspect-w-3.aspect-h-2")
-      expect(page).to have_css("img.cursor-pointer")
-      expect(page).to have_css("img.hover\\:shadow-md")
+    it "applies correct classes to image container" do
+      expect(page).to have_css("a.block.aspect-\\[4\\/3\\].relative.group")
+      expect(page).to have_css("img.object-cover.rounded-lg")
     end
   end
 
   describe "with multiple images" do
-    let(:images) { [mock_image, mock_image, mock_image] }
+    let(:images) { [ mock_image, mock_image, mock_image ] }
 
-    it "renders multiple images with corresponding modals" do
+    it "renders multiple images with lightbox triggers" do
       render_inline(GalleryComponent.new(images: images))
-      
-      expect(page).to have_css("img.cursor-pointer[src='https://example.com/test.jpg']", count: 3)
-      expect(page).to have_css("[data-controller='modal']", count: 3)
-      
-      3.times do |i|
-        expect(page).to have_css("#gallery-modal-#{i}")
-        expect(page).to have_css("img[data-gallery-index-param='#{i}']")
-      end
+
+      expect(page).to have_css("img[src='http://test.host/rails/active_storage/blobs/redirect/variant_123/test_variant.jpg']", count: 3)
+      expect(page).to have_css("a[data-lightbox-target='trigger']", count: 3)
     end
   end
 end

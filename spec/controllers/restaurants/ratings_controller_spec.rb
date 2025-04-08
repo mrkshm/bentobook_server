@@ -12,7 +12,7 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
     sign_in user
     # Set Current.organization for the test
     Current.organization = organization
-    
+
     puts "\n=== Test Setup ==="
     puts "Organization ID: #{organization.id}"
     puts "User ID: #{user.id}"
@@ -142,6 +142,11 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
         end
 
         context 'with valid params' do
+          before do
+            # Mock the component rendering to prevent template errors in controller tests
+            allow_any_instance_of(Restaurants::RatingComponent).to receive(:render_in).and_return("Mocked component")
+          end
+
           it 'updates the rating' do
             patch :update, params: { restaurant_id: restaurant.id }.merge(valid_params)
             debug_request

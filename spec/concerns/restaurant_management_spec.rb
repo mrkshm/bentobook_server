@@ -4,11 +4,10 @@ RSpec.describe RestaurantManagement do
   let(:test_class) do
     Class.new do
       include RestaurantManagement
-      attr_accessor :params, :current_user, :request
+      attr_accessor :params, :request
 
-      def initialize(params, current_user, request)
+      def initialize(params, request)
         @params = params
-        @current_user = current_user
         @request = request
         @restaurant_params = params[:restaurant]
       end
@@ -16,7 +15,7 @@ RSpec.describe RestaurantManagement do
       def render(*args); end
       def flash; {}; end
       def redirect_to(*args); end
-      def restaurants_path; '/restaurants'; end
+      def restaurants_path(locale: nil); '/restaurants'; end
 
       # Make private methods public for testing
       public :set_restaurant, :build_restaurant, :compare_and_save_restaurant,
@@ -25,13 +24,22 @@ RSpec.describe RestaurantManagement do
     end
   end
 
-  let(:user) { create_list(:user, 1).first }
+  # Create the organization and user separately
+  let(:organization) { create(:organization) }
+  let(:user) { create(:user) }
   let(:request) { double('request', format: double('format')) }
-  let(:instance) { test_class.new(params, user, request) }
+  let(:params) { ActionController::Parameters.new }
+  let(:instance) { test_class.new(params, request) }
+
+  before do
+    # Set up Current.organization instead of trying to associate directly
+    allow(Current).to receive(:organization).and_return(organization)
+    allow(Current).to receive(:user).and_return(user)
+  end
 
   describe "#restaurant_params" do
-    it "permits the correct parameters" do
-      params = ActionController::Parameters.new(
+    let(:params) do
+      ActionController::Parameters.new(
         restaurant: {
           name: "Test Restaurant",
           address: "123 Test St",
@@ -44,17 +52,19 @@ RSpec.describe RestaurantManagement do
           longitude: -74.0060
         }
       )
-      
-      instance = test_class.new(params, user, request)
+    end
+
+    it "permits the correct parameters" do
+      instance = test_class.new(params, request)
       permitted_params = instance.restaurant_params
-      
+
       expect(permitted_params).to include(:name, :address, :cuisine_type, :rating, :price_level, :google_place_id, :city, :latitude, :longitude)
     end
   end
 
   describe "#restaurant_update_params" do
-    it "permits the correct parameters" do
-      params = ActionController::Parameters.new(
+    let(:params) do
+      ActionController::Parameters.new(
         restaurant: {
           name: "Updated Restaurant",
           address: "456 Update St",
@@ -65,22 +75,30 @@ RSpec.describe RestaurantManagement do
           images: []
         }
       )
-      
-      instance = test_class.new(params, user, request)
+    end
+
+    it "permits the correct parameters" do
+      instance = test_class.new(params, request)
       permitted_params = instance.restaurant_update_params
-      
+
       expect(permitted_params).to include(:name, :address, :cuisine_type_name, :rating, :price_level, :tag_list)
       expect(permitted_params[:images]).to eq([])
     end
   end
 
   describe '#set_restaurant' do
-    let(:restaurant) { create(:restaurant, user: user) }
-    let(:params) { ActionController::Parameters.new(id: restaurant.id) }
+    let(:restaurant) { create(:restaurant, organization: organization) }
+    let(:params) { ActionController::Parameters.new(id: restaurant.id.to_s) }  # Convert to string to match behavior
+    let(:instance) { test_class.new(params, request) }
 
-    it 'sets the restaurant for the current user' do
-      allow(user.restaurants).to receive(:with_google).and_return(user.restaurants)
+    it 'sets the restaurant for the current organization' do
+      # Create restaurant scope mock
+      restaurant_scope = double('restaurant_scope')
+      allow(organization.restaurants).to receive(:with_google).and_return(restaurant_scope)
+      allow(restaurant_scope).to receive(:find).with(restaurant.id.to_s).and_return(restaurant)
+
       expect(instance.set_restaurant).to eq(restaurant)
+      expect(instance.instance_variable_get(:@restaurant)).to eq(restaurant)
     end
 
     context 'when restaurant is not found' do
@@ -115,18 +133,24 @@ RSpec.describe RestaurantManagement do
         }
       )
     end
+    let(:instance) { test_class.new(params, request) }
 
     it 'builds a new restaurant without images' do
+      # Create a new restaurant associated with the organization
+      new_restaurant = build(:restaurant, organization: organization)
+      allow(organization.restaurants).to receive(:new).and_return(new_restaurant)
+
       restaurant = instance.build_restaurant
       expect(restaurant).to be_a(Restaurant)
+      expect(restaurant.organization).to eq(organization)
       expect(restaurant.images).to be_empty
     end
 
     context 'with images' do
       let(:image) { fixture_file_upload(Rails.root.join('spec', 'fixtures', 'test_image.jpg'), 'image/jpeg') }
-      
+
       before do
-        params[:restaurant][:images] = [image]
+        params[:restaurant][:images] = [ image ]
       end
 
       it 'builds a new restaurant with images' do
@@ -141,7 +165,9 @@ RSpec.describe RestaurantManagement do
   end
 
   describe '#compare_and_save_restaurant' do
-    let(:restaurant) { create(:restaurant, user: user) }
+    # Find or create cuisine type instead of forcing id: 2
+    let(:cuisine_type) { create(:cuisine_type) }
+    let(:restaurant) { create(:restaurant, organization: organization) }
     let(:google_restaurant) { create(:google_restaurant, name: 'Google Name', address: 'Google Address') }
     let(:params) do
       ActionController::Parameters.new(
@@ -151,13 +177,15 @@ RSpec.describe RestaurantManagement do
           rating: 4,
           price_level: 3,
           notes: 'Updated Notes',
-          cuisine_type_id: 2
+          cuisine_type_id: cuisine_type.id
         }
       )
     end
-    
+    let(:instance) { test_class.new(params, request) }
+
     before do
       restaurant.google_restaurant = google_restaurant
+      # Set @restaurant instance variable properly
       instance.instance_variable_set(:@restaurant, restaurant)
       allow(instance).to receive(:restaurant_params).and_return(params[:restaurant])
     end
@@ -170,12 +198,14 @@ RSpec.describe RestaurantManagement do
       expect(restaurant.rating).to eq(4)
       expect(restaurant.price_level).to eq(3)
       expect(restaurant.notes).to eq('Updated Notes')
-      expect(restaurant.cuisine_type_id).to eq(2)
+      expect(restaurant.cuisine_type_id).to eq(cuisine_type.id)
     end
 
     it 'uses Google values when user values are not present' do
-      params[:restaurant].delete(:name)
-      params[:restaurant].delete(:address)
+      # Remove name and address from params
+      modified_params = params[:restaurant].except(:name, :address)
+      allow(instance).to receive(:restaurant_params).and_return(modified_params)
+
       instance.compare_and_save_restaurant
 
       expect(restaurant.name).to eq('Google Name')
@@ -212,10 +242,10 @@ RSpec.describe RestaurantManagement do
           }
         }
       )
-      
-      instance = test_class.new(params, user, request)
+
+      instance = test_class.new(params, request)
       permitted_params = instance.google_restaurant_params
-      
+
       expect(permitted_params).to include(
         :id, :google_place_id, :name, :address, :city, :state, :country,
         :latitude, :longitude, :street_number, :street, :postal_code,
@@ -242,10 +272,10 @@ RSpec.describe RestaurantManagement do
           images: []
         }
       )
-      
-      instance = test_class.new(params, user, request)
+
+      instance = test_class.new(params, request)
       permitted_params = instance.restaurant_save_params
-      
+
       expect(permitted_params).to include(:name, :address, :notes, :cuisine_type_id, :rating, :price_level)
       expect(permitted_params[:google_restaurant_attributes]).to include(:id, :google_place_id, :name)
       expect(permitted_params[:images]).to eq([])
@@ -273,7 +303,7 @@ RSpec.describe RestaurantManagement do
     context 'when google_place_id exists' do
       it 'finds the existing GoogleRestaurant' do
         existing_restaurant = create(:google_restaurant, google_place_id: 'abc123', name: 'Existing Name')
-        
+
         expect(Rails.logger).to receive(:info).with(/GoogleRestaurant after find_or_create_by:/)
 
         result = instance.find_or_create_google_restaurant
@@ -342,12 +372,12 @@ RSpec.describe RestaurantManagement do
 
     context 'when GoogleRestaurant is invalid' do
       let(:invalid_google_restaurant) { GoogleRestaurant.new }
-      
+
       before do
         allow(GoogleRestaurant).to receive(:find_or_create_by).and_return(invalid_google_restaurant)
         allow(invalid_google_restaurant).to receive(:valid?).and_return(false)
         allow(invalid_google_restaurant).to receive(:errors).and_return(
-          double(full_messages: ['Error message'])
+          double(full_messages: [ 'Error message' ])
         )
       end
 
