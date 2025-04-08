@@ -1,10 +1,10 @@
 require "rails_helper"
 
-RSpec.describe SharedListsComponent, type: :component do
+RSpec.describe Lists::SharedComponent, type: :component do
   let(:user) { create(:user) }
   let(:creator) { create(:user) }
   let(:list) { create(:list, owner: creator) }
-  
+
   # Set up the component controller with Devise test helpers
   before(:each) do
     @controller = ApplicationController.new

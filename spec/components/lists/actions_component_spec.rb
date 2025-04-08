@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe ListActionsComponent, type: :component do
+RSpec.describe Lists::ActionsComponent, type: :component do
   let(:owner) { create(:user) }
   let(:list) { create(:list, owner: owner) }
 
@@ -19,7 +19,7 @@ RSpec.describe ListActionsComponent, type: :component do
 
   context "when user has view permission" do
     let(:viewer) { create(:user) }
-    
+
     before do
       create(:share, creator: owner, recipient: viewer, shareable: list, permission: :view, status: :accepted)
       render_inline(described_class.new(list: list, current_user: viewer))
@@ -35,7 +35,7 @@ RSpec.describe ListActionsComponent, type: :component do
 
   context "when user has edit permission" do
     let(:editor) { create(:user) }
-    
+
     before do
       create(:share, creator: owner, recipient: editor, shareable: list, permission: :edit, status: :accepted)
       render_inline(described_class.new(list: list, current_user: editor))

@@ -22,10 +22,10 @@ RSpec.describe Visits::CardComponent, type: :component do
     allow_any_instance_of(Visits::CardComponent).to receive(:visit_path).and_return("/visits/1")
     allow_any_instance_of(Visits::CardComponent).to receive(:current_locale).and_return("en")
 
-    # Create a proper mock for RatingsComponent
-    ratings_component = double("RatingsComponent")
-    allow(ratings_component).to receive(:render_in).and_return("★★★★")
-    allow(RatingsComponent).to receive(:new).and_return(ratings_component)
+    # Create a proper mock for RatingComponent (not RatingsComponent)
+    rating_component = double("RatingComponent")
+    allow(rating_component).to receive(:render_in).and_return("★★★★")
+    allow(Visits::RatingComponent).to receive(:new).and_return(rating_component)
   end
 
   context "with basic rendering" do
@@ -125,6 +125,7 @@ RSpec.describe Visits::CardComponent, type: :component do
     end
 
     before do
+      puts "DEBUG: Setting up contacts section"
       # Set up the helper method
       allow_any_instance_of(Visits::CardComponent).to receive(:has_contacts?).and_return(true)
 
@@ -132,6 +133,7 @@ RSpec.describe Visits::CardComponent, type: :component do
 
       # Mock Contact objects with complete respond_to? handling
       [ contact1, contact2 ].each do |contact|
+        puts "DEBUG: Setting up mock for #{contact.name}"
         allow(contact).to receive(:is_a?).with(anything).and_return(false)
         allow(contact).to receive(:is_a?).with(Contact).and_return(true)
         allow(contact).to receive(:is_a?).with(User).and_return(false)
@@ -147,6 +149,7 @@ RSpec.describe Visits::CardComponent, type: :component do
       end
 
       # Mock AvatarComponent
+      puts "DEBUG: Setting up AvatarComponent mock"
       avatar_component = double("AvatarComponent")
       allow(avatar_component).to receive(:render_in).and_return("<div class='avatar-mock'></div>".html_safe)
       allow(AvatarComponent).to receive(:new).and_return(avatar_component)

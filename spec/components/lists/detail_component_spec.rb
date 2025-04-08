@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe ListComponent, type: :component do
+RSpec.describe Lists::DetailComponent, type: :component do
   include ActionView::Helpers::UrlHelper
   include Rails.application.routes.url_helpers
 
@@ -13,7 +13,7 @@ RSpec.describe ListComponent, type: :component do
 
   let(:user) { create(:user) }
   let(:list) { create(:list, owner: user) }
-  
+
   it "renders a list card" do
     render_inline(described_class.new(list: list, current_user: user))
     expect(page).to have_selector(".card")
@@ -36,9 +36,9 @@ RSpec.describe ListComponent, type: :component do
   context "with shared list" do
     let(:other_user) { create(:user) }
     let(:shared_list) { create(:list, owner: other_user) }
-    
+
     before do
-      create(:share, creator: other_user, recipient: user, 
+      create(:share, creator: other_user, recipient: user,
              shareable: shared_list, permission: :view, status: :accepted)
     end
 

@@ -2,6 +2,8 @@
 
 module Visits
   class CardComponent < ApplicationComponent
+    include HeroiconHelper
+
     def initialize(visit:, link_to_show: true)
       @visit = visit
       @link_to_show = link_to_show

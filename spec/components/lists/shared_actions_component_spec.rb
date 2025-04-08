@@ -1,13 +1,13 @@
 require "rails_helper"
 
-RSpec.describe SharedListActionsComponent, type: :component do
+RSpec.describe Lists::SharedActionsComponent, type: :component do
   include ActionView::Helpers::UrlHelper
   include Rails.application.routes.url_helpers
 
   let(:owner) { create(:user) }
   let(:current_user) { create(:user) }
   let(:list) { create(:list, owner: owner) }
-  
+
   before do
     # Add translations
     I18n.backend.store_translations(:en, {

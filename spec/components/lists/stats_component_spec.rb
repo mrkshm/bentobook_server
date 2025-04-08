@@ -1,10 +1,10 @@
 require "rails_helper"
 
-RSpec.describe ListStatsComponent, type: :component do
+RSpec.describe Lists::StatsComponent, type: :component do
   let(:user) { create(:user) }
   let(:list) { create(:list, owner: user) }
   let(:statistics) { ListStatistics.new(list: list, user: user) }
-  
+
   before do
     render_inline(described_class.new(statistics: statistics, list: list))
   end
@@ -26,7 +26,7 @@ RSpec.describe ListStatsComponent, type: :component do
 
   context "with restaurants and visits" do
     let!(:restaurant) { create(:restaurant) }
-    
+
     before do
       list.restaurants << restaurant
       create(:visit, user: user, restaurant: restaurant)
