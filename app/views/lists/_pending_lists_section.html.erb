@@ -1,27 +1,48 @@
 <div id="pending-lists-section">
   <% if pending_lists.any? %>
     <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-4"><%= t('.heading') %></h2>
+      
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <% pending_lists.each do |list| %>
-          <div class="relative group" id="<%= dom_id(list.shares.find_by(recipient: current_user)) %>">
-            <%= render(ListCardComponent.new(list: list, current_user: current_user)) %>
-            <div class="absolute top-2 right-2 flex gap-2 z-30">
-              <div class="tooltip" data-tip="<%= t('shared_lists_component.accept') %>">
-                <%= button_to accept_share_list_path(id: list.id),
-                    method: :post,
-                    class: "btn btn-success btn-sm btn-circle text-white",
-                    data: { turbo: true } do %>
-                  ✓
-                <% end %>
+          <div class="card bg-surface-50 shadow-sm">
+            <div class="card-body">
+              <h3 class="card-title"><%= list.name %></h3>
+              
+              <div class="flex items-center mb-2">
+                <%= render(AvatarComponent.new(organization: list.source_organization, size: :xs)) %>
+                <span class="ml-2 text-sm text-surface-600">
+                  <%= list.source_organization.name %>
+                </span>
               </div>
               
-              <div class="tooltip" data-tip="<%= t('shared_lists_component.decline') %>">
-                <%= button_to decline_share_list_path(id: list.id),
-                    method: :delete,
-                    class: "btn btn-error btn-sm btn-circle text-white",
-                    data: { turbo: true } do %>
-                  ｘ
-                <% end %>
+              <div class="flex justify-between mt-4">
+                <div>
+                  <span class="badge badge-sm <%= list.visibility == 'personal' ? 'badge-primary' : 'badge-secondary' %>">
+                    <%= t("lists.visibility.#{list.visibility}") %>
+                  </span>
+                </div>
+                
+                <div class="flex gap-2">
+                  <%= form_with url: share_path(list.shares.find_by(target_organization: organization), locale: nil),
+                                method: :patch,
+                                data: {
+                                  controller: "submit-form",
+                                  submit_form_confirm_value: t('.accept_confirmation')
+                                } do |f| %>
+                    <%= f.hidden_field :status, value: "accepted" %>
+                    <%= f.submit t('.accept'), class: "btn btn-sm btn-primary" %>
+                  <% end %>
+                  
+                  <%= form_with url: share_path(list.shares.find_by(target_organization: organization), locale: nil), 
+                                method: :delete,
+                                data: {
+                                  controller: "submit-form",
+                                  submit_form_confirm_value: t('.reject_confirmation')
+                                } do |f| %>
+                    <%= f.submit t('.reject'), class: "btn btn-sm btn-ghost" %>
+                  <% end %>
+                </div>
               </div>
             </div>
           </div>

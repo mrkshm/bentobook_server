@@ -6,18 +6,16 @@ module Lists
     def initialize(organization:, current_user:)
       @organization = organization
       @current_user = current_user
+
+      # Update to use source_organization instead of owner
+      # The organization now receives shares from source_organizations
       @pending_lists = organization.shared_lists
                           .pending
-                          .includes(
-                            :owner,
-                            owner: { profile: { avatar_attachment: :blob } }
-                          )
+                          .includes(:source_organization)
+
       @accepted_lists = organization.shared_lists
                            .accepted
-                           .includes(
-                             :owner,
-                             owner: { profile: { avatar_attachment: :blob } }
-                           )
+                           .includes(:source_organization)
     end
 
     private
