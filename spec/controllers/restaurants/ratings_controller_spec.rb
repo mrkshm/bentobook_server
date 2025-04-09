@@ -185,6 +185,8 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
 
     context 'when not authenticated' do
       before do
+        # Reset the rating to ensure clean state
+        restaurant.update!(rating: 2)
         sign_out user
         patch :update, params: { restaurant_id: restaurant.id }.merge(valid_params)
         debug_request
@@ -195,7 +197,7 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
       end
 
       it 'does not update the rating' do
-        expect(restaurant.reload.rating).not_to eq(4)
+        expect(restaurant.reload.rating).to eq(2)
       end
     end
 

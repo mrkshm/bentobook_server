@@ -9,6 +9,9 @@ class Organization < ApplicationRecord
   has_one_attached :avatar_medium
   has_one_attached :avatar_thumbnail
 
+  # Virtual attribute for avatar upload
+  attr_accessor :avatar
+
   # Validations
   validates :username, uniqueness: true, allow_blank: true
   validates :about, length: { maximum: 500 }, allow_blank: true

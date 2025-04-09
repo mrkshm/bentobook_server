@@ -11,12 +11,12 @@ class PreprocessAvatarService
 
   VARIANTS = {
     thumbnail: {
-      size: [100, 100],
+      size: [ 100, 100 ],
       quality: 80,
       suffix: :thumb
     }.freeze,
     medium: {
-      size: [400, 400],
+      size: [ 400, 400 ],
       quality: 90,
       suffix: :md
     }.freeze

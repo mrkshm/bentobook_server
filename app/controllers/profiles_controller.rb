@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_profile, only: [:show, :edit, :update, :change_locale, :delete_avatar]
+  before_action :set_user_and_organization, only: [ :show, :edit, :update, :change_locale, :delete_avatar ]
 
   def show
     Rails.logger.debug "User language: #{@user.language.inspect}"
@@ -11,9 +11,9 @@ class ProfilesController < ApplicationController
   end
 
   def update
-    result = PreprocessAvatarService.call(params[:profile][:avatar]) if params[:profile][:avatar].present?
+    result = PreprocessAvatarService.call(params.dig(:organization, :avatar)) if params.dig(:organization, :avatar).present?
 
-    if params[:profile][:avatar].present? && !result[:success]
+    if params.dig(:organization, :avatar).present? && !result[:success]
       flash.now[:alert] = t(".image_processing_error")
       return render :edit, status: :unprocessable_entity
     end
@@ -22,9 +22,18 @@ class ProfilesController < ApplicationController
     old_language = @user.language
 
     # Update user attributes
-    user_updated = @user.update(user_params)
+    user_updated = if params[:user].present?
+      @user.update(user_params)
+    else
+      true
+    end
+
     # Update organization attributes
-    org_updated = @organization.update(organization_params)
+    org_updated = if params[:organization].present?
+      @organization.update(organization_params)
+    else
+      true
+    end
 
     if user_updated && org_updated
       # Handle avatar update if present
@@ -34,8 +43,16 @@ class ProfilesController < ApplicationController
         @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
 
         # Attach new variants
-        @organization.avatar_medium.attach(result[:variants][:medium])
-        @organization.avatar_thumbnail.attach(result[:variants][:thumbnail])
+        @organization.avatar_medium.attach(
+          io: result[:variants][:medium][:io],
+          filename: result[:variants][:medium][:filename],
+          content_type: result[:variants][:medium][:content_type]
+        )
+        @organization.avatar_thumbnail.attach(
+          io: result[:variants][:thumbnail][:io],
+          filename: result[:variants][:thumbnail][:filename],
+          content_type: result[:variants][:thumbnail][:content_type]
+        )
       end
 
       # Update session locale if language changed
@@ -94,7 +111,7 @@ class ProfilesController < ApplicationController
     Rails.logger.info "Found #{@organizations.count} matching organizations"
 
     render partial: "profiles/search_results",
-           formats: [:html],
+           formats: [ :html ],
            layout: false,
            status: :ok
   end
@@ -121,20 +138,23 @@ class ProfilesController < ApplicationController
   end
 
   def delete_avatar
-    @organization.avatar_medium.purge if @organization.avatar_medium.attached?
-    @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
+    if @organization.avatar_medium.attached? || @organization.avatar_thumbnail.attached?
+      @organization.avatar_medium.purge if @organization.avatar_medium.attached?
+      @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
+      @organization.save!
+    end
     redirect_to edit_profile_path(locale: current_locale), notice: t(".avatar_removed")
   end
 
   private
 
-  def set_profile
+  def set_user_and_organization
     @user = current_user
     @organization = current_user.organizations.first
   end
 
   def user_params
-    params.require(:profile).permit(
+    params.require(:user).permit(
       :first_name,
       :last_name,
       :language,
@@ -143,10 +163,11 @@ class ProfilesController < ApplicationController
   end
 
   def organization_params
-    params.require(:profile).permit(
+    params.require(:organization).permit(
       :username,
       :name,
-      :about
+      :about,
+      :avatar
     )
   end
 end

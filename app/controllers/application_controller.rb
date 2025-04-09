@@ -30,8 +30,8 @@ class ApplicationController < ActionController::Base
   def set_locale
     I18n.locale = if params[:locale].present? && I18n.available_locales.include?(params[:locale].to_sym)
       params[:locale]
-    elsif user_signed_in? && current_user.profile&.preferred_language.present?
-      current_user.profile.preferred_language
+    elsif user_signed_in? && current_user.language.present?
+      current_user.language
     else
       I18n.default_locale
     end
@@ -91,7 +91,7 @@ class ApplicationController < ActionController::Base
 
   def skip_locale_check?
     # Skip locale check for locale changing actions and API routes
-    controller_name == "profiles" && action_name == "change_locale" ||
+    action_name == "change_locale" ||
     request.path.start_with?("/api")
   end
 end
