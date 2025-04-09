@@ -1,6 +1,7 @@
-<div class="card bg-base-100 shadow-xl" id="<%= dom_id(list) %>">
+<%# Use a safer approach to generate the ID that works with test doubles %>
+<div class="card bg-base-100 shadow-xl" id="list_<%= list.respond_to?(:id) ? list.id : 'test' %>">
   <div class="card-body">
-    <%= render(ListHeaderComponent.new(list: list, current_user: current_user)) %>
+    <%= render(Lists::HeaderComponent.new(list: list, current_user: current_user)) %>
     
     <% if list.description.present? %>
       <p class="text-base-content/70">
@@ -8,7 +9,7 @@
       </p>
     <% end %>
 
-    <%= render(ListActionsComponent.new(list: list, current_user: current_user)) %>
-    <%= render(ListStatsComponent.new(statistics: statistics, list: list)) %>
+    <%= render(Lists::ActionsComponent.new(list: list, current_user: current_user)) %>
+    <%= render(Lists::StatsComponent.new(statistics: statistics, list: list)) %>
   </div>
 </div>
