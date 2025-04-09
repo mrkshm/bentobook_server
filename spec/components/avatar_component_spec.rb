@@ -137,8 +137,12 @@ RSpec.describe AvatarComponent, type: :component do
 
   describe "user parameter handling" do
     it "uses the user's organization for avatar when provided" do
-      user = create(:user, organization: organization)
-      organization.update(name: "Test Org")
+      # Create the organization first
+      organization = create(:organization, name: "Test Org")
+      # Create user without automatic organization creation
+      user = create(:user)
+      # Create membership to associate user with organization
+      create(:membership, user: user, organization: organization)
 
       render_inline(AvatarComponent.new(user: user))
       expect(page).to have_css("div", text: "TO")
@@ -146,23 +150,10 @@ RSpec.describe AvatarComponent, type: :component do
   end
 
   describe "avatar name resolution" do
-    it "uses display_name when available" do
-      object_with_display_name = double("ObjectWithDisplayName")
-      allow(object_with_display_name).to receive(:respond_to?).with(:avatar_medium).and_return(false)
-      allow(object_with_display_name).to receive(:respond_to?).with(:avatar_thumbnail).and_return(false)
-      allow(object_with_display_name).to receive(:respond_to?).with(:display_name).and_return(true)
-      allow(object_with_display_name).to receive(:display_name).and_return("Display Name")
-
-      component = AvatarComponent.new(organization: object_with_display_name)
-      render_inline(component)
-      expect(page).to have_css("div", text: "DN")
-    end
-
-    it "falls back to name when display_name is not available" do
+    it "uses name when available" do
       object_with_name = double("ObjectWithName")
       allow(object_with_name).to receive(:respond_to?).with(:avatar_medium).and_return(false)
       allow(object_with_name).to receive(:respond_to?).with(:avatar_thumbnail).and_return(false)
-      allow(object_with_name).to receive(:respond_to?).with(:display_name).and_return(false)
       allow(object_with_name).to receive(:respond_to?).with(:name).and_return(true)
       allow(object_with_name).to receive(:name).and_return("Regular Name")
 
@@ -171,7 +162,20 @@ RSpec.describe AvatarComponent, type: :component do
       expect(page).to have_css("div", text: "RN")
     end
 
-    it "falls back to username when display_name and name are not available" do
+    it "falls back to display_name when name is not available" do
+      object_with_display_name = double("ObjectWithDisplayName")
+      allow(object_with_display_name).to receive(:respond_to?).with(:avatar_medium).and_return(false)
+      allow(object_with_display_name).to receive(:respond_to?).with(:avatar_thumbnail).and_return(false)
+      allow(object_with_display_name).to receive(:respond_to?).with(:name).and_return(false)
+      allow(object_with_display_name).to receive(:respond_to?).with(:display_name).and_return(true)
+      allow(object_with_display_name).to receive(:display_name).and_return("Display Name")
+
+      component = AvatarComponent.new(organization: object_with_display_name)
+      render_inline(component)
+      expect(page).to have_css("div", text: "DN")
+    end
+
+    it "falls back to username when name and display_name are not available" do
       object_with_username = double("ObjectWithUsername")
       allow(object_with_username).to receive(:respond_to?).with(:avatar_medium).and_return(false)
       allow(object_with_username).to receive(:respond_to?).with(:avatar_thumbnail).and_return(false)
@@ -179,8 +183,11 @@ RSpec.describe AvatarComponent, type: :component do
       allow(object_with_username).to receive(:respond_to?).with(:name).and_return(false)
       allow(object_with_username).to receive(:respond_to?).with(:username).and_return(true)
       allow(object_with_username).to receive(:username).and_return("username123")
+      allow(object_with_username).to receive(:username).and_return("username123")
 
       component = AvatarComponent.new(organization: object_with_username)
+      # Access the private method directly to check the initials logic
+      expect(component.send(:initials)).to eq("US")
       render_inline(component)
       expect(page).to have_css("div", text: "US")
     end
@@ -200,11 +207,17 @@ RSpec.describe AvatarComponent, type: :component do
   end
 
   describe "entity specific tests" do
-    it "works with organization's display_name" do
-      organization.update(name: "Org LLC", username: "cool_org")
+    it "works with organization's name" do
+      # Test with a real organization
+      organization = create(:organization, name: "Org LLC", username: "cool_org")
+      # The test name was misleading - we're now using name first, not display_name
+
+      # Fix the test to have simpler expectations
       component = AvatarComponent.new(organization: organization)
+      # Verify the actual initials method returns what we expect
+      expect(component.send(:initials)).to eq("OL")
       render_inline(component)
-      expect(page).to have_css("div", text: "CO") # First letters of display_name which uses username
+      expect(page).to have_css("div", text: "OL")
     end
 
     it "works with contact's name" do

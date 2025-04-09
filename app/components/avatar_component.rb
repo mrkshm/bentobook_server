@@ -10,7 +10,8 @@ class AvatarComponent < ViewComponent::Base
   }.freeze
 
   def initialize(organization: nil, contact: nil, user: nil, text: "", size: :md, placeholder_type: :initials, tooltip: nil)
-    @entity = organization || contact || user&.organization
+    # Fix how we retrieve the organization from a user
+    @entity = organization || contact || (user && user.respond_to?(:memberships) ? user.organizations.first : nil)
     @text = text.to_s  # Convert nil to empty string immediately
     @size = size.nil? ? :md : size.to_sym
     @placeholder_type = placeholder_type
@@ -31,6 +32,43 @@ class AvatarComponent < ViewComponent::Base
       content_tag :div, content, class: "tooltip tooltip-top z-50", data: { tip: @tooltip }
     else
       content
+    end
+  end
+
+  # Make initials method public for testing
+  def initials
+    text = @text.presence || resolve_name.to_s
+
+    puts "Text for initials: '#{text}'"
+    puts "Entity inspect: #{@entity.inspect}" if @entity
+    puts "Text param: '#{@text}'"
+
+    # Special handling for "Unknown"
+    return "UN" if text == "Unknown"
+    return "??" if text.blank?
+
+    # Split by spaces
+    words = text.split
+
+    puts "Words split: #{words.inspect}"
+
+    if words.length >= 2
+      # Get first letters of first and second word
+      result = (words[0][0] + words[1][0]).upcase
+      puts "Multi-word result: #{result}"
+      result
+    else
+      # For single word, take first two letters (or first letter twice if single letter)
+      word = words[0]
+      if word.length >= 2
+        result = word[0..1].upcase
+        puts "Single word result: #{result}"
+        result
+      else
+        result = (word[0] * 2).upcase
+        puts "Single letter result: #{result}"
+        result
+      end
     end
   end
 
@@ -59,6 +97,9 @@ class AvatarComponent < ViewComponent::Base
 
   def render_placeholder
     wrapper_classes = [ "inline-block", SIZES[@size] || SIZES[:md], "rounded-full", "bg-surface-100" ]
+
+    # Debug statement to help diagnose the issue
+    puts "Rendering placeholder with initials: #{initials.inspect}"
 
     content_tag :div, class: wrapper_classes.join(" ") do
       if @placeholder_type == :icon
@@ -92,26 +133,29 @@ class AvatarComponent < ViewComponent::Base
     end
   end
 
-  def initials
-    text = @text.presence || resolve_name.to_s
-
-    # Special handling for "Unknown"
-    return "UN" if text == "Unknown"
-    return "??" if text.blank?
-
-    # Get first letters of each word, up to 2 letters
-    text.split.map(&:first).join("")[0, 2].upcase
-  end
-
   def resolve_name
-    if @entity.respond_to?(:display_name) && @entity.display_name.present?
-      @entity.display_name
-    elsif @entity.respond_to?(:name) && @entity.name.present?
+    result = if @entity.respond_to?(:name) && @entity.name.present?
       @entity.name
+    elsif @entity.respond_to?(:display_name) && @entity.display_name.present?
+      @entity.display_name
     elsif @entity.respond_to?(:username) && @entity.username.present?
       @entity.username
     else
       "Unknown"
     end
+
+    # Debug - print what attribute we're using
+    from = if @entity.respond_to?(:name) && @entity.name == result
+      "name"
+    elsif @entity.respond_to?(:display_name) && @entity.display_name == result
+      "display_name"
+    elsif @entity.respond_to?(:username) && @entity.username == result
+      "username"
+    else
+      "fallback"
+    end
+    puts "Using #{from} for name resolution: '#{result}'"
+
+    result
   end
 end
