@@ -9,8 +9,8 @@ class AvatarComponent < ViewComponent::Base
     xl: "size-14"    # 56px
   }.freeze
 
-  def initialize(profile: nil, user: nil, text: "", size: :md, placeholder_type: :initials, tooltip: nil)
-    @profile = profile || (user.respond_to?(:profile) ? user.profile : user)
+  def initialize(organization: nil, contact: nil, user: nil, text: "", size: :md, placeholder_type: :initials, tooltip: nil)
+    @entity = organization || contact || user&.organization
     @text = text.to_s  # Convert nil to empty string immediately
     @size = size.nil? ? :md : size.to_sym
     @placeholder_type = placeholder_type
@@ -37,10 +37,10 @@ class AvatarComponent < ViewComponent::Base
   private
 
   def has_avatar?
-    @profile&.respond_to?(:avatar_medium) &&
-    @profile&.respond_to?(:avatar_thumbnail) &&
-    @profile&.avatar_medium&.attached? &&
-    @profile&.avatar_thumbnail&.attached?
+    @entity&.respond_to?(:avatar_medium) &&
+    @entity&.respond_to?(:avatar_thumbnail) &&
+    @entity&.avatar_medium&.attached? &&
+    @entity&.avatar_thumbnail&.attached?
   end
 
   def render_avatar
@@ -48,7 +48,7 @@ class AvatarComponent < ViewComponent::Base
 
     content_tag :div, class: wrapper_classes.join(" ") do
       # Use thumbnail for small sizes, medium for larger ones
-      avatar = %i[xs sm].include?(@size) ? @profile.avatar_thumbnail : @profile.avatar_medium
+      avatar = %i[xs sm].include?(@size) ? @entity.avatar_thumbnail : @entity.avatar_medium
       # Add HTML comment with image size info before the image tag
       comment = "<!-- Avatar: #{avatar.blob.filename} (#{ActiveSupport::NumberHelper.number_to_human_size(avatar.blob.byte_size)}) -->"
       (comment + image_tag(avatar,
@@ -104,12 +104,12 @@ class AvatarComponent < ViewComponent::Base
   end
 
   def resolve_name
-    if @profile.respond_to?(:display_name) && @profile.display_name.present?
-      @profile.display_name
-    elsif @profile.respond_to?(:name) && @profile.name.present?
-      @profile.name
-    elsif @profile.respond_to?(:full_name) && @profile.full_name.present?
-      @profile.full_name
+    if @entity.respond_to?(:display_name) && @entity.display_name.present?
+      @entity.display_name
+    elsif @entity.respond_to?(:name) && @entity.name.present?
+      @entity.name
+    elsif @entity.respond_to?(:username) && @entity.username.present?
+      @entity.username
     else
       "Unknown"
     end

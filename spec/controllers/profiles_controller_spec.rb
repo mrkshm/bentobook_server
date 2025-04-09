@@ -57,8 +57,8 @@ RSpec.describe ProfilesController, type: :controller do
       end
 
       describe "avatar handling" do
-        let(:test_variants) do
-          # Create StringIO objects with actual image content
+        before do
+          # Create test content for avatar variants
           medium_file = fixture_file_upload('test_image.jpg', 'image/jpeg')
           medium_content = medium_file.read
           medium_file.rewind
@@ -66,27 +66,25 @@ RSpec.describe ProfilesController, type: :controller do
           thumbnail_file = fixture_file_upload('test_image.jpg', 'image/jpeg')
           thumbnail_content = thumbnail_file.read
           thumbnail_file.rewind
-
-          {
-            success: true,
-            variants: {
-              medium: {
-                io: StringIO.new(medium_content),
-                filename: "avatar_medium.jpg",
-                content_type: "image/jpeg"
-              },
-              thumbnail: {
-                io: StringIO.new(thumbnail_content),
-                filename: "avatar_thumbnail.jpg",
-                content_type: "image/jpeg"
+          
+          # Mock PreprocessAvatarService to return fresh StringIO objects each time
+          allow(PreprocessAvatarService).to receive(:call) do
+            {
+              success: true,
+              variants: {
+                medium: {
+                  io: StringIO.new(medium_content),
+                  filename: "avatar_medium.jpg",
+                  content_type: "image/jpeg"
+                },
+                thumbnail: {
+                  io: StringIO.new(thumbnail_content),
+                  filename: "avatar_thumbnail.jpg",
+                  content_type: "image/jpeg"
+                }
               }
             }
-          }
-        end
-
-        before do
-          # Mock PreprocessAvatarService for avatar tests
-          allow(PreprocessAvatarService).to receive(:call).and_return(test_variants)
+          end
         end
 
         it "handles avatar upload and creates both sizes" do
