@@ -4,12 +4,10 @@ FactoryBot.define do
     password { "password123" }
     password_confirmation { "password123" }
     confirmed_at { Time.current }
-
-    trait :with_profile do
-      after(:create) do |user|
-        create(:profile, user: user)
-      end
-    end
+    first_name { "John" }
+    last_name { "Doe" }
+    theme { "light" }
+    language { "en" }
 
     trait :with_lists do
       after(:create) do |user|
@@ -57,7 +55,5 @@ FactoryBot.define do
     trait :unconfirmed do
       confirmed_at { nil }
     end
-
-    after(:create) { |user| user.send(:ensure_profile) }
   end
 end

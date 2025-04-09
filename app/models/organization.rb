@@ -5,6 +5,14 @@ class Organization < ApplicationRecord
   has_many :images, as: :imageable, dependent: :destroy
   has_many :lists, dependent: :destroy
 
+  # Avatar attachments
+  has_one_attached :avatar_medium
+  has_one_attached :avatar_thumbnail
+
+  # Validations
+  validates :username, uniqueness: true, allow_blank: true
+  validates :about, length: { maximum: 500 }, allow_blank: true
+
   # Shares where this organization is the source (owner sharing with others)
   has_many :outgoing_shares, class_name: "Share", foreign_key: "source_organization_id", dependent: :destroy
 
@@ -16,6 +24,20 @@ class Organization < ApplicationRecord
 
   has_many :contacts, dependent: :destroy
   has_many :visits, dependent: :destroy
+
+  # Display methods
+  def display_name
+    username.presence || name.presence || "Organization #{id}"
+  end
+
+  # Avatar URL helpers
+  def avatar_medium_url
+    generate_url(avatar_medium)
+  end
+
+  def avatar_thumbnail_url
+    generate_url(avatar_thumbnail)
+  end
 
   def share_list(list, target_organization, options = {})
     raise ArgumentError, "List doesn't belong to this organization" unless lists.include?(list)
@@ -56,5 +78,19 @@ class Organization < ApplicationRecord
   def reject_share(share)
     raise ArgumentError, "Share doesn't belong to this organization" unless share.target_organization_id == self.id
     share.update!(status: :rejected)
+  end
+
+  private
+
+  def generate_url(attachment)
+    return nil unless attachment.attached?
+
+    Rails.application.routes.url_helpers.rails_blob_url(
+      attachment,
+      host: Rails.application.config.action_mailer.default_url_options[:host]
+    )
+  rescue StandardError => e
+    Rails.logger.error "Error generating avatar URL: #{e.message}"
+    nil
   end
 end

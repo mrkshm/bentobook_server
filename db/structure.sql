@@ -464,7 +464,10 @@ ALTER SEQUENCE public.memberships_id_seq OWNED BY public.memberships.id;
 CREATE TABLE public.organizations (
     id bigint NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    username character varying,
+    name character varying,
+    about text
 );
 
 
@@ -518,43 +521,6 @@ CREATE SEQUENCE public.pg_search_documents_id_seq
 --
 
 ALTER SEQUENCE public.pg_search_documents_id_seq OWNED BY public.pg_search_documents.id;
-
-
---
--- Name: profiles; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.profiles (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    username character varying,
-    first_name character varying,
-    last_name character varying,
-    about text,
-    created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL,
-    preferred_language character varying DEFAULT 'en'::character varying,
-    preferred_theme character varying DEFAULT 'light'::character varying
-);
-
-
---
--- Name: profiles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.profiles_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: profiles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.profiles_id_seq OWNED BY public.profiles.id;
 
 
 --
@@ -782,7 +748,11 @@ CREATE TABLE public.users (
     unlock_token character varying,
     locked_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    language character varying DEFAULT 'en'::character varying,
+    theme character varying DEFAULT 'light'::character varying,
+    first_name character varying,
+    last_name character varying
 );
 
 
@@ -968,13 +938,6 @@ ALTER TABLE ONLY public.pg_search_documents ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- Name: profiles id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles ALTER COLUMN id SET DEFAULT nextval('public.profiles_id_seq'::regclass);
-
-
---
 -- Name: restaurant_copies id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1140,14 +1103,6 @@ ALTER TABLE ONLY public.organizations
 
 ALTER TABLE ONLY public.pg_search_documents
     ADD CONSTRAINT pg_search_documents_pkey PRIMARY KEY (id);
-
-
---
--- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
 
 
 --
@@ -1402,13 +1357,6 @@ CREATE INDEX index_memberships_on_user_id ON public.memberships USING btree (use
 --
 
 CREATE INDEX index_pg_search_documents_on_searchable ON public.pg_search_documents USING btree (searchable_type, searchable_id);
-
-
---
--- Name: index_profiles_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_profiles_on_user_id ON public.profiles USING btree (user_id);
 
 
 --
@@ -1891,14 +1839,6 @@ ALTER TABLE ONLY public.lists
 
 
 --
--- Name: profiles fk_rails_e424190865; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT fk_rails_e424190865 FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- Name: list_restaurants fk_rails_e68366fbf6; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1929,6 +1869,9 @@ ALTER TABLE ONLY public.shares
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250409092831'),
+('20250409092723'),
+('20250409091829'),
 ('20250407143100'),
 ('20250405165559'),
 ('20250404133041'),

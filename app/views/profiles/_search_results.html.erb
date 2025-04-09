@@ -2,31 +2,31 @@
   <!-- Debug info -->
   <div class="text-xs text-gray-500 mb-2">
     Query: <%= params[:query] %>
-    Found: <%= @profiles.count %> results
+    Found: <%= @organizations.count %> results
   </div>
 
-  <% if @profiles.any? %>
-    <% @profiles.each do |profile| %>
+  <% if @organizations.any? %>
+    <% @organizations.each do |organization| %>
       <button type="button"
               class="w-full text-left px-4 py-2 hover:bg-base-200 rounded-lg"
               data-action="click->profile-search#select"
-              data-profile-id="<%= profile.user_id %>"
-              data-profile-name="<%= profile.display_name %>"
-              data-profile-avatar-url="<%= profile.avatar.attached? ? url_for(profile.avatar) : asset_path('default_avatar.png') %>">
+              data-organization-id="<%= organization.id %>"
+              data-organization-name="<%= organization.display_name %>"
+              data-organization-avatar-url="<%= organization.avatar_medium.attached? ? url_for(organization.avatar_medium) : asset_path('default_avatar.png') %>">
         <div class="flex items-center gap-3">
           <div class="avatar">
             <div class="w-8 h-8 rounded-full">
-              <% if profile.avatar.attached? %>
-                <%= image_tag profile.avatar %>
+              <% if organization.avatar_medium.attached? %>
+                <%= image_tag organization.avatar_medium %>
               <% else %>
                 <%= image_tag 'default_avatar.png' %>
               <% end %>
             </div>
           </div>
           <div>
-            <div class="font-medium"><%= profile.display_name %></div>
-            <% if profile.username.present? %>
-              <div class="text-sm text-base-content/70">@<%= profile.username %></div>
+            <div class="font-medium"><%= organization.display_name %></div>
+            <% if organization.username.present? %>
+              <div class="text-sm text-base-content/70">@<%= organization.username %></div>
             <% end %>
           </div>
         </div>
