@@ -27,6 +27,7 @@ RSpec.describe S3ImageComponent, type: :component do
       allow(image).to receive(:filename).and_return("test.jpg")
       allow(image).to receive(:content_type).and_return("image/jpeg")
       allow(image).to receive(:model_name).and_return(model_name)
+      allow(image).to receive(:variant).and_return(mock_variant)
     end
   end
 
@@ -39,6 +40,7 @@ RSpec.describe S3ImageComponent, type: :component do
       allow(variant).to receive(:model_name).and_return(model_name)
       allow(variant).to receive(:signed_id).and_return("variant_123")
       allow(variant).to receive(:blob).and_return(mock_blob)
+      allow(variant).to receive(:processed).and_return(variant)
     end
   end
 
@@ -46,6 +48,11 @@ RSpec.describe S3ImageComponent, type: :component do
     double("ActiveStorage::VariantRecord").tap do |record|
       allow(record).to receive(:image).and_return(mock_variant)
     end
+  end
+
+  before do
+    allow(Rails.application.routes.url_helpers).to receive(:rails_blob_url)
+      .and_return("https://example.com/image.jpg")
   end
 
   it "renders nothing when image is not attached" do
@@ -67,85 +74,95 @@ RSpec.describe S3ImageComponent, type: :component do
   end
 
   it "renders thumbnail variant with correct options" do
-    # Mock the VariantRecord.find_by to return nil (no existing variant)
     allow(ActiveStorage::VariantRecord).to receive(:find_by).and_return(nil)
-    
-    # Allow variant creation with specific options
+
     expected_options = {
-      resize_to_fill: [100, 100],
+      resize_to_fill: [ 100, 100 ],
       format: :webp,
       saver: { quality: 80 }
     }
-    
-    # Use with_any_args or with(hash_including(expected_options))
+
     expect(mock_image).to receive(:variant).with(hash_including(expected_options)).and_return(mock_variant)
 
     component = described_class.new(image: mock_image, size: :thumbnail)
     render_inline(component)
-    
+
     expect(page).to have_css("img[loading='lazy']")
   end
 
   it "renders small variant with correct options" do
     allow(ActiveStorage::VariantRecord).to receive(:find_by).and_return(nil)
-    
+
     expected_options = {
-      resize_to_limit: [300, 200],
+      resize_to_limit: [ 300, 200 ],
       format: :webp,
       saver: { quality: 80 }
     }
-    
+
     expect(mock_image).to receive(:variant).with(hash_including(expected_options)).and_return(mock_variant)
 
     component = described_class.new(image: mock_image, size: :small)
     render_inline(component)
-    
+
     expect(page).to have_css("img[loading='lazy']")
   end
 
   it "renders medium variant with correct options" do
     allow(ActiveStorage::VariantRecord).to receive(:find_by).and_return(nil)
-    
+
     expected_options = {
-      resize_to_limit: [600, 400],
+      resize_to_limit: [ 600, 400 ],
       format: :webp,
       saver: { quality: 80 }
     }
-    
+
     expect(mock_image).to receive(:variant).with(hash_including(expected_options)).and_return(mock_variant)
 
     component = described_class.new(image: mock_image, size: :medium)
     render_inline(component)
-    
+
     expect(page).to have_css("img[loading='lazy']")
   end
 
   it "renders large variant with correct options" do
     allow(ActiveStorage::VariantRecord).to receive(:find_by).and_return(nil)
-    
+
     expected_options = {
-      resize_to_limit: [1200, 800],
+      resize_to_limit: [ 1200, 800 ],
       format: :webp,
       saver: { quality: 80 }
     }
-    
+
     expect(mock_image).to receive(:variant).with(hash_including(expected_options)).and_return(mock_variant)
 
     component = described_class.new(image: mock_image, size: :large)
     render_inline(component)
-    
+
     expect(page).to have_css("img[loading='lazy']")
   end
 
   it "returns empty variant options for invalid size" do
     allow(ActiveStorage::VariantRecord).to receive(:find_by).and_return(nil)
-    
-    # Expect variant to be called with an empty hash for invalid size
+
     expect(mock_image).to receive(:variant).with(hash_including({})).and_return(mock_variant)
 
     component = described_class.new(image: mock_image, size: :invalid_size)
     render_inline(component)
-    
+
     expect(page).to have_css("img[loading='lazy']")
+  end
+
+  describe "#url_for_image" do
+    it "generates correct URL for original size" do
+      component = described_class.new(image: mock_image, size: :original)
+      expect(Rails.application.routes.url_helpers).to receive(:rails_blob_url).with(mock_image)
+      component.url_for_image
+    end
+
+    it "generates correct URL for variant" do
+      component = described_class.new(image: mock_image, size: :medium)
+      expect(Rails.application.routes.url_helpers).to receive(:rails_blob_url).with(mock_variant)
+      component.url_for_image
+    end
   end
 end

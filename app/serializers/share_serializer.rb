@@ -5,7 +5,7 @@ class ShareSerializer < BaseSerializer
     {
       id: share.creator_id,
       email: share.creator.email,
-      name: share.creator.profile.display_name
+      name: share.creator.display_name
     }
   end
 

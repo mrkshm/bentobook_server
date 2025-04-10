@@ -467,7 +467,8 @@ CREATE TABLE public.organizations (
     updated_at timestamp(6) without time zone NOT NULL,
     username character varying,
     name character varying,
-    about text
+    about text,
+    email character varying
 );
 
 
@@ -1869,6 +1870,7 @@ ALTER TABLE ONLY public.shares
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250410085443'),
 ('20250409092831'),
 ('20250409092723'),
 ('20250409091829'),

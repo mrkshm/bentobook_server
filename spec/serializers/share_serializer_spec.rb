@@ -1,10 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe ShareSerializer do
-  let(:creator) { create(:user, :with_profile) }
+  let(:creator) { create(:user) }
   let(:source_organization) { creator.organizations.first }
   let(:target_organization) { create(:organization) }
-  let(:target_user) { create(:user, :with_profile) }
+  let(:target_user) { create(:user) }
   let(:list) { create(:list, organization: source_organization, creator: creator) }
   let(:share) do
     create(:share,
@@ -49,7 +49,7 @@ RSpec.describe ShareSerializer do
       creator_data = rendered_json[:data][:attributes]['creator']
       expect(creator_data).to include(
         'id' => creator.id,
-        'name' => creator.profile.display_name,
+        'name' => creator.display_name,
         'email' => creator.email
       )
     end
@@ -90,18 +90,18 @@ RSpec.describe ShareSerializer do
   describe '.render_collection' do
     let(:other_source_organization) { create(:organization) }
     let(:other_target_organization) { create(:organization) }
-    let!(:other_share) do 
+    let!(:other_share) do
       # Create memberships for creator in the other source organization
       create(:membership, user: creator, organization: other_source_organization)
-      
+
       # Create a list in the other source organization
       other_list = create(:list, organization: other_source_organization, creator: creator)
-      
+
       # Share with the other target organization
-      create(:share, 
-             creator: creator, 
-             source_organization: other_source_organization, 
-             target_organization: other_target_organization, 
+      create(:share,
+             creator: creator,
+             source_organization: other_source_organization,
+             target_organization: other_target_organization,
              shareable: other_list)
     end
     let(:shares) { [ share, other_share ] }

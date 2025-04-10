@@ -3,14 +3,22 @@ require 'rails_helper'
 RSpec.describe ApplicationHelper, type: :helper do
   describe '#notification_dot' do
     let(:user) { create(:user) }
-    
+    let(:organization) { create(:organization) }
+
     before do
-      allow(helper).to receive(:current_user).and_return(user)
+      # Create a controller instance and add it to the view context
+      controller = ApplicationController.new
+      # Set the current_organization method on the controller instance
+      def helper.current_organization
+        @current_organization
+      end
+      # Set the instance variable directly on the helper
+      helper.instance_variable_set(:@current_organization, organization)
     end
 
-    context 'when user has pending shares' do
+    context 'when organization has pending incoming shares' do
       before do
-        create(:share, recipient: user, status: :pending)
+        create(:share, target_organization: organization, status: :pending)
       end
 
       it 'returns a notification dot' do
@@ -18,15 +26,15 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
     end
 
-    context 'when user has no pending shares' do
+    context 'when organization has no pending shares' do
       it 'returns nil' do
         expect(helper.notification_dot).to be_nil
       end
     end
 
-    context 'when user has only accepted shares' do
+    context 'when organization has only accepted shares' do
       before do
-        create(:share, recipient: user, status: :accepted)
+        create(:share, target_organization: organization, status: :accepted)
       end
 
       it 'returns nil' do
@@ -34,9 +42,9 @@ RSpec.describe ApplicationHelper, type: :helper do
       end
     end
 
-    context 'when user is not signed in' do
+    context 'when current_organization is nil' do
       before do
-        allow(helper).to receive(:current_user).and_return(nil)
+        helper.instance_variable_set(:@current_organization, nil)
       end
 
       it 'returns nil' do

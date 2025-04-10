@@ -22,7 +22,7 @@ class User < ApplicationRecord
   # Name methods
   def full_name
     return nil if first_name.blank? && last_name.blank?
-    [first_name, last_name].compact.join(" ")
+    [ first_name, last_name ].compact.join(" ")
   end
 
   def display_name
@@ -33,7 +33,7 @@ class User < ApplicationRecord
     return if organizations.exists?
 
     # Create a new organization for the user
-    organization = Organization.create!
+    organization = Organization.create!(email: email)
     memberships.create!(organization: organization)
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error "Failed to create organization for user #{id}: #{e.message}"

@@ -5,19 +5,19 @@ class ShareMailer < ApplicationMailer
     @source_organization = share.source_organization
     @target_organization = share.target_organization
     @shareable = share.shareable
-    
+
     # Find admin users of the target organization to notify
     admin_emails = User.joins(:memberships)
                        .where(memberships: { organization: @target_organization, role: :admin })
                        .pluck(:email)
-    
-    # Fallback to organization's admin_email if no admin users found
-    admin_emails = [@target_organization.admin_email] if admin_emails.empty?
-    
+
+    # Fallback to organization's email if no admin users found
+    admin_emails = [ @target_organization.email ] if admin_emails.empty?
+
     mail(
       to: admin_emails,
-      subject: t('.subject', 
-                creator: @creator.profile.display_name,
+      subject: t(".subject",
+                creator: @creator.display_name,
                 organization: @source_organization.name)
     )
   end
