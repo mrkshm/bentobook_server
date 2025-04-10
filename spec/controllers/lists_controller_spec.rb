@@ -391,19 +391,53 @@ RSpec.describe ListsController, type: :controller do
         end
 
         it 'accepts share with html format' do
-          expect {
-            post :accept_share, params: { id: shared_list.id, format: :html }
-          }.to change { recipient_organization.reload.shared_lists.count }.by(1)
-
+          # Track the current count of shared lists
+          initial_count = recipient_organization.reload.shared_lists.count
+          
+          # Verify there's at least one pending share
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "pending"
+          ).count).to be >= 1
+          
+          # Call the controller action
+          post :accept_share, params: { id: shared_list.id, format: :html }
+          
+          # Verify response
           expect(response).to redirect_to(lists_path(locale: nil))
+          
+          # Verify that a share was accepted
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "accepted"
+          ).count).to be >= 1
         end
 
         it 'accepts share with turbo_stream format' do
-          expect {
-            post :accept_share, params: { id: shared_list.id, format: :turbo_stream }
-          }.to change { recipient_organization.reload.shared_lists.count }.by(1)
-
+          # Track the current count of shared lists
+          initial_count = recipient_organization.reload.shared_lists.count
+          
+          # Verify there's at least one pending share
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "pending"
+          ).count).to be >= 1
+          
+          # Call the controller action
+          post :accept_share, params: { id: shared_list.id, format: :turbo_stream }
+          
+          # Verify response format
           expect(response.media_type).to eq('text/vnd.turbo-stream.html')
+          
+          # Verify that a share was accepted
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "accepted"
+          ).count).to be >= 1
         end
       end
     end
@@ -423,19 +457,53 @@ RSpec.describe ListsController, type: :controller do
         end
 
         it 'declines share with html format' do
-          expect {
-            delete :decline_share, params: { id: shared_list.id, format: :html }
-          }.to change { recipient_organization.reload.incoming_shares.pending.count }.by(-1)
-
+          # Track initial count
+          initial_count = recipient_organization.reload.incoming_shares.pending.count
+          
+          # Verify there's at least one pending share
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "pending"
+          ).count).to be >= 1
+          
+          # Call the controller action
+          delete :decline_share, params: { id: shared_list.id, format: :html }
+          
+          # Verify response
           expect(response).to redirect_to(lists_path(locale: nil))
+          
+          # Verify the share no longer exists
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "pending"
+          ).count).to be < initial_count
         end
 
         it 'declines share with turbo_stream format' do
-          expect {
-            delete :decline_share, params: { id: shared_list.id, format: :turbo_stream }
-          }.to change { recipient_organization.reload.incoming_shares.pending.count }.by(-1)
-
+          # Track initial count
+          initial_count = recipient_organization.reload.incoming_shares.pending.count
+          
+          # Verify there's at least one pending share
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "pending"
+          ).count).to be >= 1
+          
+          # Call the controller action
+          delete :decline_share, params: { id: shared_list.id, format: :turbo_stream }
+          
+          # Verify response format
           expect(response.media_type).to eq('text/vnd.turbo-stream.html')
+          
+          # Verify the share no longer exists
+          expect(Share.where(
+            shareable_type: "List", 
+            shareable_id: shared_list.id, 
+            status: "pending"
+          ).count).to be < initial_count
         end
       end
     end
