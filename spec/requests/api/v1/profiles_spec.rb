@@ -4,7 +4,8 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
   include ActionDispatch::TestProcess::FixtureFile
   include ActiveJob::TestHelper
 
-  let(:user) { create(:user) }
+  let(:user) { create(:user, first_name: 'Test', last_name: 'User', language: 'en', theme: 'light') }
+  let(:organization) { user.organizations.first }
   let(:test_image) do
     fixture_file_upload(
       Rails.root.join('spec/fixtures/test_image.jpg'),
@@ -14,6 +15,11 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
   end
   let(:headers) { sign_in_with_token(user) }
 
+  before do
+    # Ensure organization exists and has proper data
+    organization.update(username: 'testuser', name: 'Test Organization', about: 'About text')
+  end
+
   after(:each) do
     # Clean up any processed images
     ActiveStorage::Blob.unattached.find_each(&:purge)
@@ -22,25 +28,21 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
   describe 'GET /api/v1/profile' do
     it 'returns the user profile' do
-      profile = user.create_profile!(
-        username: 'testuser',
-        preferred_theme: 'light',
-        preferred_language: 'en'
-      )
-
       get '/api/v1/profile', headers: headers.merge({
         'Accept' => 'application/json'
       })
 
       expect(response).to have_http_status(:ok)
       expect(json_response['status']).to eq('success')
-      expect(json_response['data']['id']).to eq(profile.id.to_s)
       expect(json_response['data']['type']).to eq('profile')
       expect(json_response['data']['attributes']).to include(
         'email' => user.email,
         'username' => 'testuser',
-        'preferred_theme' => 'light',
-        'preferred_language' => 'en'
+        'name' => 'Test Organization',
+        'first_name' => 'Test',
+        'last_name' => 'User',
+        'theme' => 'light',
+        'language' => 'en'
       )
       expect(json_response['meta']).to include('timestamp')
     end
@@ -48,8 +50,6 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
   describe 'PATCH /api/v1/profile/avatar' do
     it 'updates the avatar successfully' do
-      profile = user.create_profile!(username: 'testuser')
-
       patch '/api/v1/profile/avatar',
             params: { avatar: test_image },
             headers: headers.merge({
@@ -58,27 +58,25 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(json_response['status']).to eq('success')
-      
+
       # Verify both variants are attached
-      profile.reload
-      expect(profile.avatar_medium).to be_attached
-      expect(profile.avatar_thumbnail).to be_attached
-      
+      organization.reload
+      expect(organization.avatar_medium).to be_attached
+      expect(organization.avatar_thumbnail).to be_attached
+
       # Verify content types
-      expect(profile.avatar_medium.content_type).to eq('image/webp')
-      expect(profile.avatar_thumbnail.content_type).to eq('image/webp')
+      expect(organization.avatar_medium.content_type).to eq('image/webp')
+      expect(organization.avatar_thumbnail.content_type).to eq('image/webp')
     end
 
     it 'replaces existing avatars' do
-      profile = user.create_profile!(username: 'testuser')
-      
       # Attach initial avatars
-      profile.avatar_medium.attach(
+      organization.avatar_medium.attach(
         io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
         filename: 'old_medium.webp',
         content_type: 'image/webp'
       )
-      profile.avatar_thumbnail.attach(
+      organization.avatar_thumbnail.attach(
         io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
         filename: 'old_thumbnail.webp',
         content_type: 'image/webp'
@@ -92,16 +90,14 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
             })
 
       expect(response).to have_http_status(:ok)
-      profile.reload
+      organization.reload
 
       # Verify new attachments
-      expect(profile.avatar_medium.filename.to_s).not_to eq('old_medium.webp')
-      expect(profile.avatar_thumbnail.filename.to_s).not_to eq('old_thumbnail.webp')
+      expect(organization.avatar_medium.filename.to_s).not_to eq('old_medium.webp')
+      expect(organization.avatar_thumbnail.filename.to_s).not_to eq('old_thumbnail.webp')
     end
 
     it 'handles missing avatar parameter' do
-      user.create_profile!(username: 'testuser')
-
       patch '/api/v1/profile/avatar',
             headers: headers.merge({
               'Accept' => 'application/json'
@@ -109,11 +105,10 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json_response['status']).to eq('error')
-      expect(json_response['errors'].first['detail']).to eq(['No avatar provided'])
+      expect(json_response['errors'].first['detail']).to eq([ 'No avatar provided' ])
     end
 
     it 'handles invalid file type' do
-      user.create_profile!(username: 'testuser')
       invalid_file = fixture_file_upload(
         Rails.root.join('spec/fixtures/test.txt'),
         'text/plain'
@@ -127,21 +122,19 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json_response['status']).to eq('error')
-      expect(json_response['errors'].first['detail']).to eq(['Invalid file type'])
+      expect(json_response['errors'].first['detail']).to eq([ 'Invalid file type' ])
     end
   end
 
   describe 'DELETE /api/v1/profile/avatar' do
     context 'when avatars exist' do
-      let(:profile) { user.create_profile!(username: 'testuser') }
-
       before do
-        profile.avatar_medium.attach(
+        organization.avatar_medium.attach(
           io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
           filename: 'medium.webp',
           content_type: 'image/webp'
         )
-        profile.avatar_thumbnail.attach(
+        organization.avatar_thumbnail.attach(
           io: File.open(Rails.root.join('spec/fixtures/test_image.jpg')),
           filename: 'thumbnail.webp',
           content_type: 'image/webp'
@@ -155,16 +148,14 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(json_response['status']).to eq('success')
-        
-        profile.reload
-        expect(profile.avatar_medium).not_to be_attached
-        expect(profile.avatar_thumbnail).not_to be_attached
+
+        organization.reload
+        expect(organization.avatar_medium).not_to be_attached
+        expect(organization.avatar_thumbnail).not_to be_attached
       end
     end
 
     context 'when no avatars exist' do
-      before { user.create_profile!(username: 'testuser') }
-
       it 'returns an error' do
         delete '/api/v1/profile/avatar', headers: headers.merge({
           'Accept' => 'application/json'
@@ -172,23 +163,23 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
         expect(response).to have_http_status(:unprocessable_entity)
         expect(json_response['status']).to eq('error')
-        expect(json_response['errors'].first['detail']).to eq(['No avatar to delete'])
+        expect(json_response['errors'].first['detail']).to eq([ 'No avatar to delete' ])
       end
     end
   end
 
   describe 'GET /api/v1/profiles/search' do
-    it 'returns matching profiles excluding current user' do
-      user.create_profile!(username: 'ouruser')
-
-      # Create some other profiles to search
-      other_user1 = create(:user, email: 'test@example.com')
-      other_user2 = create(:user, email: 'another@example.com')
-      other_user1.create_profile!(username: 'testuser1')
-      other_user2.create_profile!(username: 'testuser2')
+    it 'returns matching organizations excluding current user' do
+      # Create some other organizations to search
+      other_user1 = create(:user, email: 'test@example.com', first_name: 'Test', last_name: 'Example')
+      other_user2 = create(:user, email: 'another@example.com', first_name: 'Another', last_name: 'User')
+      other_org1 = other_user1.organizations.first
+      other_org2 = other_user2.organizations.first
+      other_org1.update!(username: 'testorg1')
+      other_org2.update!(username: 'testorg2')
 
       # Search by username
-      get '/api/v1/profiles/search', params: { query: 'testuser1' }, headers: headers
+      get '/api/v1/profiles/search', params: { query: 'testorg1' }, headers: headers
       expect(response).to have_http_status(:ok)
       expect(json_response['data'].length).to eq(1)
 
@@ -207,12 +198,7 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
   end
 
   describe 'PATCH /api/v1/profile/locale' do
-    it 'updates the preferred language' do
-      profile = user.create_profile!(
-        username: 'testuser',
-        preferred_language: 'en'
-      )
-
+    it 'updates the language' do
       patch '/api/v1/profile/locale',
             params: { locale: 'fr' }.to_json,
             headers: headers.merge({
@@ -222,11 +208,11 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(json_response['status']).to eq('success')
-      expect(json_response['data']['attributes']['preferred_language']).to eq('fr')
+      expect(json_response['data']['attributes']['language']).to eq('fr')
 
       # Verify the database was updated
-      profile.reload
-      expect(profile.preferred_language).to eq('fr')
+      user.reload
+      expect(user.language).to eq('fr')
     end
 
     it 'rejects invalid locales' do
@@ -239,7 +225,39 @@ RSpec.describe 'Api::V1::Profiles', type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(json_response['status']).to eq('error')
-      expect(json_response['errors'].first['detail']).to eq(['Invalid locale. Valid options are: en, fr'])
+      expect(json_response['errors'].first['detail']).to eq(["Invalid locale. Valid options are: #{I18n.available_locales.join(', ')}"])
+    end
+  end
+
+  describe 'PATCH /api/v1/profile/theme' do
+    it 'updates the theme' do
+      patch '/api/v1/profile/theme',
+            params: { theme: 'dark' }.to_json,
+            headers: headers.merge({
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/json'
+            })
+
+      expect(response).to have_http_status(:ok)
+      expect(json_response['status']).to eq('success')
+      expect(json_response['data']['attributes']['theme']).to eq('dark')
+
+      # Verify the database was updated
+      user.reload
+      expect(user.theme).to eq('dark')
+    end
+
+    it 'rejects invalid themes' do
+      patch '/api/v1/profile/theme',
+            params: { theme: 'invalid' }.to_json,
+            headers: headers.merge({
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/json'
+            })
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json_response['status']).to eq('error')
+      expect(json_response['errors'].first['detail']).to eq(["Invalid theme. Please try again."])
     end
   end
 end

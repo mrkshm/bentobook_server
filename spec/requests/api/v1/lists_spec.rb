@@ -36,10 +36,10 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
   # Helper to add debug output
   def debug_request(path, params = nil)
-    Rails.logger.info "\n=== DEBUG: Request to #{path} ===" 
-    Rails.logger.info "Headers: #{@headers.inspect}"
-    Rails.logger.info "Current.organization: #{Current.organization.inspect}"
-    Rails.logger.info "Params: #{params.inspect}" if params
+    puts "\n=== DEBUG: Request to #{path} ==="
+    puts "Headers: #{@headers.inspect}"
+    puts "Current.organization: #{Current.organization.inspect}"
+    puts "Params: #{params.inspect}" if params
   end
 
   describe 'GET /api/v1/lists' do
@@ -67,8 +67,6 @@ RSpec.describe 'Api::V1::Lists', type: :request do
           'name',
           'description',
           'visibility',
-          'premium',
-          'position',
           'created_at',
           'updated_at',
           'restaurant_count'
@@ -85,24 +83,146 @@ RSpec.describe 'Api::V1::Lists', type: :request do
         )
       end
 
-      context 'with shared lists' do
+      context 'with different list types' do
         let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
-        
+
         before do
-          # Create a share from other_organization to organization
-          create(:share, 
-                 source_organization: other_organization, 
-                 target_organization: organization, 
-                 shareable: shared_list,
-                 status: :accepted)
+          # Create a share between organizations
+          share = create(:share,
+                         source_organization: other_organization,
+                         target_organization: organization,
+                         creator: other_user, # Add creator for the share
+                         shareable: shared_list,
+                         status: :accepted)
+
+          # Add debugging to help diagnose the issue
+          puts "Created a share: #{share.inspect}"
+          puts "Connected to shareable: #{share.shareable.inspect}"
+          puts "Target organization: #{share.target_organization.inspect}"
+
+          # Verify the share exists in database
+          shares = Share.where(target_organization: organization, status: :accepted)
+          puts "Found #{shares.count} shares for target_organization before test"
         end
 
         it 'includes shared lists when requested' do
           get '/api/v1/lists?include=shared', headers: @headers
 
+          puts "Response status: #{response.status}"
+          puts "Response body: #{response.body}" if response.status != 200
+
+          data = JSON.parse(response.body) rescue nil
+          puts "Parsed data: #{data ? 'YES' : 'NO'}"
+
+          expect(response).to have_http_status(:ok)
+          data = JSON.parse(response.body)
+          expect(data['data'].length).to eq(3) # 2 owned + 1 shared
+        end
+
+        it 'includes only accepted shared lists when requested' do
+          # Create another shared list with pending status
+          pending_list = create(:list, organization: other_organization, creator: other_user)
+          create(:share,
+                 source_organization: other_organization,
+                 target_organization: organization,
+                 shareable: pending_list,
+                 status: :pending)
+
+          get '/api/v1/lists?include=accepted', headers: @headers
+
           data = JSON.parse(response.body)
           expect(response).to have_http_status(:ok)
-          expect(data['data'].length).to eq(3) # 2 owned + 1 shared
+          expect(data['data'].length).to eq(1) # Only the accepted shared list
+        end
+
+        it 'includes only pending shared lists when requested' do
+          # Create another shared list with pending status
+          pending_list = create(:list, organization: other_organization, creator: other_user)
+          create(:share,
+                 source_organization: other_organization,
+                 target_organization: organization,
+                 shareable: pending_list,
+                 status: :pending)
+
+          get '/api/v1/lists?include=pending', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(1) # Only the pending shared list
+        end
+      end
+
+      context 'with search' do
+        before do
+          List.destroy_all # Clear existing lists
+          create(:list, name: "Coffee Shops", description: "Great places for coffee", organization: organization, creator: user)
+          create(:list, name: "Italian Restaurants", description: "Best pasta in town", organization: organization, creator: user)
+          create(:list, name: "Sushi Bars", description: "Fresh fish and rolls", organization: organization, creator: user)
+        end
+
+        it 'filters lists by search query in name' do
+          get '/api/v1/lists?search=coffee', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(1)
+          expect(data['data'].first['attributes']['name']).to eq('Coffee Shops')
+        end
+
+        it 'filters lists by search query in description' do
+          get '/api/v1/lists?search=pasta', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(1)
+          expect(data['data'].first['attributes']['name']).to eq('Italian Restaurants')
+        end
+
+        it 'returns empty array when no matches found' do
+          get '/api/v1/lists?search=burger', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(0)
+        end
+      end
+
+      context 'with sorting' do
+        before do
+          List.destroy_all # Clear existing lists
+          create(:list, name: "Z List", created_at: 3.days.ago, updated_at: 3.days.ago, organization: organization, creator: user)
+          create(:list, name: "A List", created_at: 1.day.ago, updated_at: 1.day.ago, organization: organization, creator: user)
+          create(:list, name: "M List", created_at: 2.days.ago, updated_at: 2.hours.ago, organization: organization, creator: user)
+        end
+
+        it 'sorts lists by name' do
+          get '/api/v1/lists?order_by=name&order_direction=asc', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(3)
+          expect(data['data'].first['attributes']['name']).to eq('A List')
+          expect(data['data'].last['attributes']['name']).to eq('Z List')
+        end
+
+        it 'sorts lists by created_at' do
+          get '/api/v1/lists?order_by=created_at&order_direction=desc', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(3)
+          expect(data['data'].first['attributes']['name']).to eq('A List') # Most recently created
+          expect(data['data'].last['attributes']['name']).to eq('Z List')  # Oldest
+        end
+
+        it 'sorts lists by updated_at' do
+          get '/api/v1/lists?order_by=updated_at&order_direction=desc', headers: @headers
+
+          data = JSON.parse(response.body)
+          expect(response).to have_http_status(:ok)
+          expect(data['data'].length).to eq(3)
+          expect(data['data'].first['attributes']['name']).to eq('M List') # Most recently updated
+          expect(data['data'].last['attributes']['name']).to eq('Z List')  # Least recently updated
         end
       end
 
@@ -203,12 +323,12 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
     context 'when accessing shared list' do
       let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
-      
+
       before do
-        # Create a share from other_organization to organization
-        create(:share, 
-               source_organization: other_organization, 
-               target_organization: organization, 
+        # Create a share between organizations
+        create(:share,
+               source_organization: other_organization,
+               target_organization: organization,
                shareable: shared_list,
                status: :accepted)
       end
@@ -220,6 +340,28 @@ RSpec.describe 'Api::V1::Lists', type: :request do
         data = JSON.parse(response.body)
         expect(data['status']).to eq('success')
         expect(data['data']['id']).to eq(shared_list.id.to_s)
+      end
+    end
+
+    context 'when accessing pending shared list' do
+      let!(:pending_list) { create(:list, organization: other_organization, creator: other_user) }
+
+      before do
+        # Create a pending share between organizations
+        create(:share,
+               source_organization: other_organization,
+               target_organization: organization,
+               shareable: pending_list,
+               status: :pending)
+      end
+
+      it 'returns not found' do
+        get "/api/v1/lists/#{pending_list.id}", headers: @headers
+
+        expect(response).to have_http_status(:not_found)
+        data = JSON.parse(response.body)
+        expect(data['status']).to eq('error')
+        expect(data['errors'].first['code']).to eq('not_found')
       end
     end
 
@@ -267,9 +409,7 @@ RSpec.describe 'Api::V1::Lists', type: :request do
       {
         name: 'My New List',
         description: 'A list of restaurants to try',
-        visibility: 'personal',
-        premium: false,
-        position: 1
+        visibility: 'personal'
       }
     end
 
@@ -386,6 +526,31 @@ RSpec.describe 'Api::V1::Lists', type: :request do
       end
     end
 
+    context 'when updating a shared list' do
+      let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
+
+      before do
+        # Create a share between organizations
+        create(:share,
+               source_organization: other_organization,
+               target_organization: organization,
+               shareable: shared_list,
+               status: :accepted)
+      end
+
+      it 'returns forbidden' do
+        patch "/api/v1/lists/#{shared_list.id}",
+              params: { list: list_attributes },
+              headers: @headers.merge('Content-Type' => 'application/json'),
+              as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        data = JSON.parse(response.body)
+        expect(data['status']).to eq('error')
+        expect(data['errors'].first['code']).to eq('forbidden')
+      end
+    end
+
     context 'when not authenticated' do
       before do
         # Reset Current.organization and Current.user for this test
@@ -400,31 +565,6 @@ RSpec.describe 'Api::V1::Lists', type: :request do
               as: :json
 
         expect(response).to have_http_status(:unauthorized)
-      end
-    end
-
-    context 'when updating a shared list' do
-      let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
-
-      before do
-        # Create a share from other_organization to organization
-        create(:share, 
-               source_organization: other_organization, 
-               target_organization: organization, 
-               shareable: shared_list,
-               status: :accepted)
-      end
-
-      it 'returns not found' do
-        patch "/api/v1/lists/#{shared_list.id}",
-              params: { list: list_attributes },
-              headers: @headers.merge('Content-Type' => 'application/json'),
-              as: :json
-
-        expect(response).to have_http_status(:not_found)
-        data = JSON.parse(response.body)
-        expect(data['status']).to eq('error')
-        expect(data['errors'].first['code']).to eq('not_found')
       end
     end
   end
@@ -462,22 +602,22 @@ RSpec.describe 'Api::V1::Lists', type: :request do
       let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
 
       before do
-        # Create a share from other_organization to organization
-        create(:share, 
-               source_organization: other_organization, 
-               target_organization: organization, 
+        # Create a share between organizations
+        create(:share,
+               source_organization: other_organization,
+               target_organization: organization,
                shareable: shared_list,
                status: :accepted)
       end
 
-      it 'returns not found' do
+      it 'returns forbidden' do
         expect {
           delete "/api/v1/lists/#{shared_list.id}", headers: @headers
 
-          expect(response).to have_http_status(:not_found)
+          expect(response).to have_http_status(:forbidden)
           data = JSON.parse(response.body)
           expect(data['status']).to eq('error')
-          expect(data['errors'].first['code']).to eq('not_found')
+          expect(data['errors'].first['code']).to eq('forbidden')
         }.not_to change(List, :count)
       end
     end
@@ -505,6 +645,94 @@ RSpec.describe 'Api::V1::Lists', type: :request do
 
         expect(response).to have_http_status(:unauthorized)
       end
+    end
+  end
+
+  describe 'POST /api/v1/lists/:id/accept_share' do
+    let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
+    let!(:share) { create(:share,
+                          source_organization: other_organization,
+                          target_organization: organization,
+                          shareable: shared_list,
+                          status: :pending) }
+
+    it 'accepts a pending share invitation' do
+      post "/api/v1/lists/#{shared_list.id}/accept_share", headers: @headers
+
+      expect(response).to have_http_status(:ok)
+      data = JSON.parse(response.body)
+      expect(data['status']).to eq('success')
+
+      # Verify the share status was updated
+      expect(share.reload.status).to eq('accepted')
+    end
+
+    it 'returns not found for non-existent share' do
+      another_list = create(:list, organization: other_organization, creator: other_user)
+
+      post "/api/v1/lists/#{another_list.id}/accept_share", headers: @headers
+
+      expect(response).to have_http_status(:not_found)
+      data = JSON.parse(response.body)
+      expect(data['status']).to eq('error')
+      expect(data['errors'].first['code']).to eq('not_found')
+    end
+  end
+
+  describe 'POST /api/v1/lists/:id/decline_share' do
+    let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
+    let!(:share) { create(:share,
+                          source_organization: other_organization,
+                          target_organization: organization,
+                          shareable: shared_list,
+                          status: :pending) }
+
+    it 'declines and removes a pending share invitation' do
+      expect {
+        post "/api/v1/lists/#{shared_list.id}/decline_share", headers: @headers
+
+        expect(response).to have_http_status(:no_content)
+      }.to change(Share, :count).by(-1)
+    end
+
+    it 'returns not found for non-existent share' do
+      another_list = create(:list, organization: other_organization, creator: other_user)
+
+      post "/api/v1/lists/#{another_list.id}/decline_share", headers: @headers
+
+      expect(response).to have_http_status(:not_found)
+      data = JSON.parse(response.body)
+      expect(data['status']).to eq('error')
+      expect(data['errors'].first['code']).to eq('not_found')
+    end
+  end
+
+  describe 'DELETE /api/v1/lists/:id/remove_share' do
+    let!(:shared_list) { create(:list, organization: other_organization, creator: other_user) }
+    let!(:share) { create(:share,
+                          source_organization: other_organization,
+                          target_organization: organization,
+                          shareable: shared_list,
+                          status: :accepted) }
+
+    it 'removes an accepted share' do
+      expect {
+        delete "/api/v1/lists/#{shared_list.id}/remove_share", headers: @headers
+
+        expect(response).to have_http_status(:no_content)
+      }.to change(Share, :count).by(-1)
+    end
+
+    it 'returns not found for non-existent share' do
+      # Create a list without a share
+      another_list = create(:list, organization: other_organization, creator: other_user)
+
+      delete "/api/v1/lists/#{another_list.id}/remove_share", headers: @headers
+
+      expect(response).to have_http_status(:not_found)
+      data = JSON.parse(response.body)
+      expect(data['status']).to eq('error')
+      expect(data['errors'].first['code']).to eq('not_found')
     end
   end
 end

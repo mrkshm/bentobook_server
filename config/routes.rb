@@ -70,6 +70,9 @@ Rails.application.routes.draw do
       resources :lists do
         member do
           get :export
+          post :accept_share
+          post :decline_share
+          delete :remove_share
         end
         resources :restaurants, only: [ :create, :destroy ], controller: "list_restaurants"
         resources :shares, only: [ :index, :create ]
@@ -79,7 +82,7 @@ Rails.application.routes.draw do
 
       # Test routes for BaseController specs
       if Rails.env.test?
-        resources :test, only: [:index, :show] do
+        resources :test, only: [ :index, :show ] do
           collection do
             get :unauthorized
             get :validation_error

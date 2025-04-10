@@ -3,17 +3,46 @@ module Api
     class ProfilesController < Api::V1::BaseController
       include Pagy::Backend
 
-      before_action :set_profile, except: [ :search ]
+      before_action :set_user_and_organization, except: [ :search ]
 
       def show
-        render json: ProfileSerializer.render_success(@profile)
+        render json: ProfileSerializer.render_success({
+          user: @user,
+          organization: @organization
+        })
       end
 
       def update
-        if @profile.update(profile_params)
-          render json: ProfileSerializer.render_success(@profile)
+        user_updated = if profile_params[:first_name].present? || profile_params[:last_name].present? || 
+                         profile_params[:language].present? || profile_params[:theme].present?
+          @user.update(
+            first_name: profile_params[:first_name],
+            last_name: profile_params[:last_name],
+            language: profile_params[:language],
+            theme: profile_params[:theme]
+          )
         else
-          render json: ProfileSerializer.render_error(@profile.errors),
+          true
+        end
+
+        org_updated = if profile_params[:username].present? || profile_params[:name].present? || profile_params[:about].present?
+          @organization.update(
+            username: profile_params[:username],
+            name: profile_params[:name],
+            about: profile_params[:about]
+          )
+        else
+          true
+        end
+
+        if user_updated && org_updated
+          render json: ProfileSerializer.render_success({
+            user: @user,
+            organization: @organization
+          })
+        else
+          errors = @user.errors.full_messages + @organization.errors.full_messages
+          render json: ProfileSerializer.render_error(errors),
                  status: :unprocessable_entity
         end
       rescue StandardError => e
@@ -32,14 +61,17 @@ module Api
 
         if result[:success]
           # Remove old avatars if they exist
-          @profile.avatar_medium.purge if @profile.avatar_medium.attached?
-          @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
+          @organization.avatar_medium.purge if @organization.avatar_medium.attached?
+          @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
           
           # Attach new variants
-          @profile.avatar_medium.attach(result[:variants][:medium])
-          @profile.avatar_thumbnail.attach(result[:variants][:thumbnail])
+          @organization.avatar_medium.attach(result[:variants][:medium])
+          @organization.avatar_thumbnail.attach(result[:variants][:thumbnail])
           
-          render json: ProfileSerializer.render_success(@profile)
+          render json: ProfileSerializer.render_success({
+            user: @user,
+            organization: @organization
+          })
         else
           render json: ProfileSerializer.render_error([result[:error]]),
                  status: :unprocessable_entity
@@ -52,10 +84,13 @@ module Api
       end
 
       def destroy_avatar
-        if @profile.avatar_medium.attached? || @profile.avatar_thumbnail.attached?
-          @profile.avatar_medium.purge if @profile.avatar_medium.attached?
-          @profile.avatar_thumbnail.purge if @profile.avatar_thumbnail.attached?
-          render json: ProfileSerializer.render_success(@profile)
+        if @organization.avatar_medium.attached? || @organization.avatar_thumbnail.attached?
+          @organization.avatar_medium.purge if @organization.avatar_medium.attached?
+          @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
+          render json: ProfileSerializer.render_success({
+            user: @user,
+            organization: @organization
+          })
         else
           render json: ProfileSerializer.render_error([ "No avatar to delete" ]),
                  status: :unprocessable_entity
@@ -68,27 +103,36 @@ module Api
 
       def search
         query = params[:query].to_s.strip
-        profiles = Profile.joins(:user)
-                        .where.not(users: { id: current_user.id })
+        organizations = Organization.joins(memberships: :user)
+                          .where.not(users: { id: current_user.id })
 
         if query.present?
-          profiles = profiles.where(
-            "username ILIKE :query OR first_name ILIKE :query OR last_name ILIKE :query OR users.email ILIKE :query",
+          organizations = organizations.where(
+            "organizations.username ILIKE :query OR 
+             organizations.name ILIKE :query OR 
+             users.first_name ILIKE :query OR 
+             users.last_name ILIKE :query OR 
+             users.email ILIKE :query",
             query: "%#{query}%"
           )
         end
 
-        profiles = profiles.order(:username)
-        pagy, records = pagy(profiles, items: 20)
+        organizations = organizations.order(:username)
+        pagy, records = pagy(organizations, items: 20)
 
         Rails.logger.info "Search query: #{query.inspect}"
-        Rails.logger.info "Profiles found: #{records.inspect}"
+        Rails.logger.info "Organizations found: #{records.count}"
         Rails.logger.info "Pagy: #{pagy.inspect}"
 
         render json: {
           status: "success",
-          data: records.map { |profile|
-            ProfileSerializer.render_success(profile)[:data]
+          data: records.map { |organization|
+            # Find a representative user for this organization
+            user = organization.users.first
+            ProfileSerializer.render_success({
+              user: user,
+              organization: organization
+            })[:data]
           }
         }
       rescue StandardError => e
@@ -100,12 +144,15 @@ module Api
       def change_locale
         new_locale = params.require(:locale).to_s.strip
 
-        if Profile::VALID_LANGUAGES.include?(new_locale)
-          @profile.update!(preferred_language: new_locale)
-          render json: ProfileSerializer.render_success(@profile)
+        if I18n.available_locales.map(&:to_s).include?(new_locale)
+          @user.update!(language: new_locale)
+          render json: ProfileSerializer.render_success({
+            user: @user,
+            organization: @organization
+          })
         else
           render json: ProfileSerializer.render_error(
-            ["Invalid locale. Valid options are: #{Profile::VALID_LANGUAGES.join(', ')}"]
+            ["Invalid locale. Valid options are: #{I18n.available_locales.join(', ')}"]
           ), status: :unprocessable_entity
         end
       rescue ActionController::ParameterMissing
@@ -116,9 +163,12 @@ module Api
       def change_theme
         new_theme = params.require(:theme).to_s.strip
 
-        if Profile::VALID_THEMES.include?(new_theme)
-          @profile.update!(preferred_theme: new_theme)
-          render json: ProfileSerializer.render_success(@profile)
+        if %w[light dark].include?(new_theme)
+          @user.update!(theme: new_theme)
+          render json: ProfileSerializer.render_success({
+            user: @user,
+            organization: @organization
+          })
         else
           render json: ProfileSerializer.render_error(
             ["Invalid theme. Please try again."]
@@ -133,13 +183,14 @@ module Api
 
       def profile_params
         params.require(:profile).permit(
-          :username, :first_name, :last_name, :about,
-          :preferred_theme, :preferred_language
+          :username, :name, :first_name, :last_name, :about,
+          :theme, :language
         )
       end
 
-      def set_profile
-        @profile = current_user&.profile || current_user&.create_profile!
+      def set_user_and_organization
+        @user = current_user
+        @organization = current_user.organizations.first
       end
     end
   end

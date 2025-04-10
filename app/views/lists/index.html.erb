@@ -70,7 +70,7 @@
     <div class="collapse-content">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <% @lists.each do |list| %>
-          <%= render(ListCardComponent.new(list: list, current_user: current_user)) %>
+          <%= render(Lists::CardComponent.new(list: list, current_user: current_user)) %>
         <% end %>
       </div>
     </div>

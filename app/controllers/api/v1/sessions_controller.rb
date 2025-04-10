@@ -35,7 +35,7 @@ module Api
             { algorithm: "HS256" }
           ).first
 
-          # Set organization context
+          # Set organization context - Make sure we don't try to access profile
           organization = user.organizations.first
 
           render json: UserSerializer.render_success(user, meta: {
