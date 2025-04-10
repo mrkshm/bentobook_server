@@ -33,20 +33,20 @@ RSpec.describe SortFormComponent, type: :component do
 
   it "renders the sort form with correct attributes" do
     render_inline(component)
-    
+
     expect(page).to have_css("form#sort-form[action='/items'][method='get']")
     expect(page).to have_css("form.w-full.md\\:w-auto")
   end
 
   it "renders the hidden search field" do
     render_inline(component)
-    
+
     expect(page).to have_field(type: "hidden", name: "search", with: "test")
   end
 
   it "renders the label with translated text" do
     render_inline(component)
-    
+
     expect(page).to have_css("label[for='sort-select']")
     expect(page).to have_css("span.label-text", text: "Sort by")
   end
@@ -54,15 +54,15 @@ RSpec.describe SortFormComponent, type: :component do
   describe "sort select" do
     it "renders select with correct attributes" do
       render_inline(component)
-      
+
       expect(page).to have_css("select#sort-select[name='order_by']")
-      expect(page).to have_css("select.select.select-bordered.w-full.md\\:w-64")
-      expect(page).to have_css("select[onchange='this.form.submit()']")
+      expect(page).to have_css("select.w-full.appearance-none.rounded-md")
+      expect(page).to have_css("select[data-action='change->sort-form#sortChanged']")
     end
 
     it "renders all field options" do
       render_inline(component)
-      
+
       fields.each do |value, label|
         expect(page).to have_css("option[value='#{value}']", text: label)
       end
@@ -70,7 +70,7 @@ RSpec.describe SortFormComponent, type: :component do
 
     it "marks the current order as selected" do
       render_inline(component)
-      
+
       expect(page).to have_css("option[value='name'][selected]")
     end
   end
@@ -78,7 +78,7 @@ RSpec.describe SortFormComponent, type: :component do
   describe "direction buttons" do
     it "renders ascending button" do
       render_inline(component)
-      
+
       expect(page).to have_css(
         "button[type='submit'][name='order_direction'][value='asc']"
       )
@@ -86,7 +86,7 @@ RSpec.describe SortFormComponent, type: :component do
 
     it "renders descending button" do
       render_inline(component)
-      
+
       expect(page).to have_css(
         "button[type='submit'][name='order_direction'][value='desc']"
       )
@@ -97,7 +97,7 @@ RSpec.describe SortFormComponent, type: :component do
 
       it "marks ascending button as active" do
         render_inline(component)
-        
+
         expect(page).to have_css("button[value='asc'].btn-active")
         expect(page).not_to have_css("button[value='desc'].btn-active")
       end
@@ -108,7 +108,7 @@ RSpec.describe SortFormComponent, type: :component do
 
       it "marks descending button as active" do
         render_inline(component)
-        
+
         expect(page).to have_css("button[value='desc'].btn-active")
         expect(page).not_to have_css("button[value='asc'].btn-active")
       end
@@ -118,7 +118,7 @@ RSpec.describe SortFormComponent, type: :component do
   describe "responsive layout" do
     it "has correct responsive classes" do
       render_inline(component)
-      
+
       expect(page).to have_css("form.w-full.md\\:w-auto")
       expect(page).to have_css("select.w-full.md\\:w-64")
     end
@@ -129,7 +129,7 @@ RSpec.describe SortFormComponent, type: :component do
 
     it "renders hidden fields for additional parameters" do
       render_inline(component)
-      
+
       additional_fields.each do |name, value|
         expect(page).to have_field(name, type: "hidden", with: value)
       end

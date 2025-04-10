@@ -7,12 +7,12 @@ module Lists
       @organization = organization
       @current_user = current_user
 
-      # Update to use source_organization instead of owner
-      # The organization now receives shares from source_organizations
+      # Get pending shared lists
       @pending_lists = organization.shared_lists
                           .pending
                           .includes(:source_organization)
 
+      # Get accepted shared lists
       @accepted_lists = organization.shared_lists
                            .accepted
                            .includes(:source_organization)
