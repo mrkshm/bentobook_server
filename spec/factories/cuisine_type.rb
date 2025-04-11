@@ -3,6 +3,8 @@ FactoryBot.define do
     sequence(:name) do |n|
       CUISINE_TYPES[n % CUISINE_TYPES.length]
     end
+    association :category
+    sequence(:display_order)
   end
 
   # Define the list of valid cuisine types from seeds
