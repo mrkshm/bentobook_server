@@ -9,13 +9,13 @@ module Api
         # Get shares where the user's organizations are the target
         Rails.logger.debug "=== DEBUG: SharesController#index ==="
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         shares = Share.where(target_organization: Current.organization)
                       .includes(:creator, :source_organization, :target_organization, :shareable)
-        
+
         Rails.logger.debug "Found shares: #{shares.count}"
         Rails.logger.debug "Shares: #{shares.inspect}"
-        
+
         begin
           json = ShareSerializer.render_collection(shares)
           Rails.logger.debug "JSON: #{json.inspect}"
@@ -35,7 +35,7 @@ module Api
         Rails.logger.debug "=== DEBUG: SharesController#create ==="
         Rails.logger.debug "Params: #{params.inspect}"
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         # Extract target organization IDs from params
         target_organization_ids = params[:target_organization_ids] || []
         Rails.logger.debug "Target organization IDs: #{target_organization_ids.inspect}"
@@ -90,7 +90,7 @@ module Api
         Rails.logger.debug "=== DEBUG: SharesController#accept ==="
         Rails.logger.debug "Share: #{@share.inspect}"
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         if @share.target_organization == Current.organization
           @share.accepted!
           render json: ShareSerializer.render_success(@share)
@@ -107,7 +107,7 @@ module Api
         Rails.logger.debug "=== DEBUG: SharesController#decline ==="
         Rails.logger.debug "Share: #{@share.inspect}"
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         if @share.target_organization == Current.organization
           @share.rejected!
           render json: ShareSerializer.render_success(@share)
@@ -123,7 +123,7 @@ module Api
       def accept_all
         Rails.logger.debug "=== DEBUG: SharesController#accept_all ==="
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         shares = Share.where(target_organization: Current.organization, status: :pending)
         Rails.logger.debug "Found shares: #{shares.count}"
 
@@ -144,7 +144,7 @@ module Api
       def decline_all
         Rails.logger.debug "=== DEBUG: SharesController#decline_all ==="
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         shares = Share.where(target_organization: Current.organization, status: :pending)
         Rails.logger.debug "Found shares: #{shares.count}"
 
@@ -166,9 +166,9 @@ module Api
         Rails.logger.debug "=== DEBUG: SharesController#destroy ==="
         Rails.logger.debug "Share: #{@share.inspect}"
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
-        if @share.creator == current_user || 
-           @share.source_organization == Current.organization || 
+
+        if @share.creator == current_user ||
+           @share.source_organization == Current.organization ||
            @share.target_organization == Current.organization
           @share.destroy
           head :no_content
@@ -196,26 +196,26 @@ module Api
       rescue ActionController::ParameterMissing => e
         Rails.logger.error "Error in SharesController#share_params: #{e.message}"
         # Default values if share params are missing
-        { permission: 'view', reshareable: false }
+        { permission: "view", reshareable: false }
       end
 
       def authorize_list_sharing!
         Rails.logger.debug "=== DEBUG: SharesController#authorize_list_sharing! ==="
         Rails.logger.debug "Params: #{params.inspect}"
         Rails.logger.debug "Current.organization: #{Current.organization.inspect}"
-        
+
         begin
           @shareable = List.find(params[:list_id])
           Rails.logger.debug "Shareable: #{@shareable.inspect}"
           Rails.logger.debug "Shareable organization: #{@shareable.organization.inspect}"
-          
+
           authorized = @shareable.organization == Current.organization ||
                       (@shareable.shares.accepted.exists?(
-                        target_organization: Current.organization, 
-                        permission: :edit, 
+                        target_organization: Current.organization,
+                        permission: :edit,
                         reshareable: true
                       ))
-          
+
           Rails.logger.debug "Authorized: #{authorized}"
 
           unless authorized
@@ -223,18 +223,18 @@ module Api
                    status: :unauthorized
             return false
           end
-          
-          return true
+
+          true
         rescue ActiveRecord::RecordNotFound => e
           Rails.logger.error "Error in SharesController#authorize_list_sharing!: #{e.message}"
           Rails.logger.error e.backtrace.join("\n")
           render json: { error: "List not found" }, status: :not_found
-          return false
+          false
         rescue => e
           Rails.logger.error "Error in SharesController#authorize_list_sharing!: #{e.message}"
           Rails.logger.error e.backtrace.join("\n")
           render json: { error: e.message }, status: :internal_server_error
-          return false
+          false
         end
       end
     end

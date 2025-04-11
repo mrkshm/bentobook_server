@@ -183,6 +183,7 @@ Rails.application.routes.draw do
       end
     end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
+    get "/organizations/search", to: "organizations#search", as: :search_organizations, format: :html
 
     # Static pages
     get "/pages/terms", to: "pages#terms", as: :terms

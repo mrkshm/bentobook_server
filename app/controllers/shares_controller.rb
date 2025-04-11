@@ -4,13 +4,14 @@ class SharesController < ApplicationController
   before_action :set_share, only: [ :accept, :decline ]
 
   def create
-    recipient_ids = params[:recipient_ids] || []
+    target_organization_ids = params[:target_organization_ids] || []
     @shareable = List.find(params[:shareable_id])
 
-    shares = recipient_ids.map do |recipient_id|
+    shares = target_organization_ids.map do |target_organization_id|
       Share.new(
         creator: current_user,
-        recipient_id: recipient_id,
+        source_organization: Current.organization,
+        target_organization_id: target_organization_id,
         shareable: @shareable,
         permission: params[:share][:permission],
         reshareable: params[:share][:reshareable]
@@ -32,7 +33,7 @@ class SharesController < ApplicationController
   end
 
   def accept
-    if @share.recipient == current_user
+    if @share.target_organization_id == Current.organization.id
       @share.accepted!
       redirect_to lists_path, notice: t(".success")
     else
@@ -41,7 +42,7 @@ class SharesController < ApplicationController
   end
 
   def decline
-    if @share.recipient == current_user
+    if @share.target_organization_id == Current.organization.id
       @share.rejected!
       redirect_to lists_path, notice: t(".declined")
     else
@@ -65,6 +66,6 @@ class SharesController < ApplicationController
   end
 
   def share_params
-    params.require(:share).permit(:recipient_id, :permission, :reshareable)
+    params.require(:share).permit(:permission, :reshareable)
   end
 end

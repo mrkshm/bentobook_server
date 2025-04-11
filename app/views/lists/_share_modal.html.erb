@@ -10,30 +10,30 @@
         <%= hidden_field_tag :shareable_id, @list.id %>
 
         <div class="form-control" 
-             data-controller="profile-search" 
-             data-profile-search-url-value="<%= search_profiles_path %>">
-          <%= f.label :recipient_id, t('.recipient'), class: "label" %>
+             data-controller="organization-search" 
+             data-organization-search-url-value="<%= search_organizations_path %>">
+          <%= f.label :target_organization_id, t('.target_organization'), class: "label" %>
           
           <div class="relative flex-1">
-            <%= text_field_tag :recipient_query, nil,
+            <%= text_field_tag :organization_query, nil,
                 data: {
-                  profile_search_target: "input",
-                  action: "input->profile-search#search"
+                  organization_search_target: "input",
+                  action: "input->organization-search#search"
                 },
                 class: "input input-bordered w-full",
-                placeholder: t('.search_placeholder') %>
+                placeholder: t('.search_organizations_placeholder') %>
             
             <div class="absolute z-10 w-full bg-base-100 rounded-box shadow-lg mt-1 hidden"
-                 data-profile-search-target="results">
+                 data-organization-search-target="results">
             </div>
           </div>
 
           <div class="mt-4 space-y-2"
-               data-profile-search-target="selectedRecipients">
+               data-organization-search-target="selectedOrganizations">
           </div>
           
-          <div class="hidden" data-profile-search-target="recipientIds">
-            <%# Hidden fields for recipient IDs will be inserted here %>
+          <div class="hidden" data-organization-search-target="organizationIds">
+            <%# Hidden fields for target organization IDs will be inserted here %>
           </div>
         </div>
 
