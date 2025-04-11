@@ -1,8 +1,10 @@
 class RegistrationSerializer < BaseSerializer
   attributes :email
 
-  def self.render_success(user, token)
-    super(user, meta: { token: token })
+  def self.render_success(user, token = nil)
+    # With Devise JWT, we don't need to include the token in the response body
+    # as it's already in the Authorization header
+    super(user)
   end
 
   def self.render_error(errors)

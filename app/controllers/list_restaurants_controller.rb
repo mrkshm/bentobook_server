@@ -43,14 +43,14 @@ class ListRestaurantsController < ApplicationController
 
   def import_all
     restaurants_to_import = @list.restaurants.where.not(
-      id: RestaurantCopy.where(user: current_user).select(:restaurant_id)
+      id: RestaurantCopy.where(organization: Current.organization).select(:restaurant_id)
     )
 
     imported_count = 0
 
     ActiveRecord::Base.transaction do
       restaurants_to_import.each do |restaurant|
-        copied_restaurant = restaurant.copy_for_user(current_user)
+        copied_restaurant = restaurant.copy_for_organization(Current.organization)
         imported_count += 1 if copied_restaurant.persisted?
       end
     end
@@ -69,7 +69,7 @@ class ListRestaurantsController < ApplicationController
 
   def import
     restaurant = @list.restaurants.find(params[:id])
-    copied_restaurant = restaurant.copy_for_user(current_user)
+    copied_restaurant = restaurant.copy_for_organization(Current.organization)
 
     respond_to do |format|
       format.html do
@@ -101,17 +101,19 @@ class ListRestaurantsController < ApplicationController
   private
 
   def set_list
-    @list = List.left_joins(:shares)
-      .where(
-        "lists.owner_id = :user_id OR (shares.recipient_id = :user_id AND shares.status = :status)",
-        user_id: current_user.id,
-        status: Share.statuses[:accepted]
-      )
-      .find(params[:list_id])
+    # Find list that is either owned by or shared with the current organization
+    @list = List.find(params[:list_id])
+
+    # Check if the list is viewable by the current organization
+    unless @list.viewable_by?(Current.organization)
+      raise ActiveRecord::RecordNotFound
+    end
+  rescue ActiveRecord::RecordNotFound
+    render file: Rails.root.join("public", "404.html").to_s, status: :not_found, layout: false
   end
 
   def ensure_editable
-    unless @list.editable_by?(current_user)
+    unless @list.editable_by?(Current.organization)
       redirect_to list_path(id: @list.id), alert: t(".not_authorized")
     end
   end

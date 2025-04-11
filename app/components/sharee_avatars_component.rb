@@ -1,7 +1,11 @@
 class ShareeAvatarsComponent < ViewComponent::Base
+  include HeroiconHelper
+
   def initialize(list:)
     @list = list
-    @shares = list.shares.includes(recipient: { profile: { avatar_attachment: :blob } })
+    # Update to use the correct associations for avatar loading
+    # Organizations have avatar_medium and avatar_thumbnail, not avatar_attachment
+    @shares = list.shares.includes(:target_organization)
   end
 
   private
@@ -13,12 +17,14 @@ class ShareeAvatarsComponent < ViewComponent::Base
   end
 
   def tooltip_for(share)
-    user_name = share.recipient.profile.display_name
+    # Get name from target organization
+    org_name = share.target_organization&.name.presence || "Unknown Organization"
+
     case share.status
     when "pending"
-      t(".pending_tooltip", user: user_name)
+      t(".pending_tooltip", user: org_name)
     when "accepted"
-      t(".accepted_tooltip", user: user_name)
+      t(".accepted_tooltip", user: org_name)
     end
   end
 end

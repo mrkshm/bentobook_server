@@ -1,5 +1,9 @@
 <%= turbo_stream.append "restaurants-list" do %>
-  <%= render partial: "restaurant_card", collection: @restaurants, as: :restaurant %>
+  <% @restaurants.each do |restaurant| %>
+    <div class="grid gap-6">
+      <%= render(Restaurants::CardComponent.new(restaurant: restaurant)) %>
+    </div>
+  <% end %>
 <% end %>
 
 <% if @pagy.next %>

@@ -1,10 +1,9 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_profile, only: [ :show, :edit, :update, :change_locale, :delete_avatar ]  # Added delete_avatar
+  before_action :set_user_and_organization, only: [ :show, :edit, :update, :change_locale, :delete_avatar ]
 
   def show
-    Rails.logger.debug "Profile preferred_language: #{@profile.preferred_language.inspect}, class: #{@profile.preferred_language.class}"
-    Rails.logger.debug "Before render - Profile preferred_language: #{@profile.preferred_language.inspect}"
+    Rails.logger.debug "User language: #{@user.language.inspect}"
     Rails.logger.debug "Before render - I18n.locale: #{I18n.locale.inspect}"
   end
 
@@ -12,22 +11,67 @@ class ProfilesController < ApplicationController
   end
 
   def update
-    result = ImageHandlingService.process_images(@profile, params, compress: true)  # Set compress: true
+    result = PreprocessAvatarService.call(params.dig(:organization, :avatar)) if params.dig(:organization, :avatar).present?
 
-    unless result[:success]
+    if params.dig(:organization, :avatar).present? && !result[:success]
       flash.now[:alert] = t(".image_processing_error")
       return render :edit, status: :unprocessable_entity
     end
 
-    if @profile.update(profile_params_without_avatar)
-      if locale_changed? && hotwire_native_app?
-        # Clear navigation stack and redirect to dashboard
-        render turbo_stream: turbo_stream.append("body") do
-          tag.script(%(
-            window.localStorage.clear();
-            window.Turbo.clearCache();
-            window.Turbo.visit('#{home_dashboard_path(locale: current_locale)}', { action: 'replace' });
-          )).html_safe
+    # Store the current language before update
+    old_language = @user.language
+
+    # Update user attributes
+    user_updated = if params[:user].present?
+      @user.update(user_params)
+    else
+      true
+    end
+
+    # Update organization attributes
+    org_updated = if params[:organization].present?
+      @organization.update(organization_params)
+    else
+      true
+    end
+
+    if user_updated && org_updated
+      # Handle avatar update if present
+      if result&.dig(:success)
+        # Remove old avatars if they exist
+        @organization.avatar_medium.purge if @organization.avatar_medium.attached?
+        @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
+
+        # Attach new variants
+        @organization.avatar_medium.attach(
+          io: result[:variants][:medium][:io],
+          filename: result[:variants][:medium][:filename],
+          content_type: result[:variants][:medium][:content_type]
+        )
+        @organization.avatar_thumbnail.attach(
+          io: result[:variants][:thumbnail][:io],
+          filename: result[:variants][:thumbnail][:filename],
+          content_type: result[:variants][:thumbnail][:content_type]
+        )
+      end
+
+      # Update session locale if language changed
+      new_language = @user.language
+      if new_language.present? && new_language != old_language
+        session[:locale] = new_language
+        I18n.locale = new_language
+
+        if hotwire_native_app?
+          # Clear navigation stack and redirect to dashboard
+          render turbo_stream: turbo_stream.append("body") do
+            tag.script(%(
+              window.localStorage.clear();
+              window.Turbo.clearCache();
+              window.Turbo.visit('#{home_dashboard_path(locale: current_locale)}', { action: 'replace' });
+            )).html_safe
+          end
+        else
+          redirect_to profile_path(locale: current_locale), notice: t(".updated")
         end
       else
         redirect_to profile_path(locale: current_locale), notice: t(".updated")
@@ -42,7 +86,7 @@ class ProfilesController < ApplicationController
 
     if I18n.available_locales.map(&:to_s).include?(locale)
       session[:locale] = locale
-      @profile&.update(preferred_language: locale)
+      @user.update(language: locale)
 
       # Simple redirect based on platform
       redirect_to(hotwire_native_app? ? home_dashboard_path(locale: locale) : profile_path(locale: locale))
@@ -54,17 +98,17 @@ class ProfilesController < ApplicationController
   def search
     return head(:bad_request) unless request.xhr?
 
-    # First get the user's contacts that have profiles
-    @profiles = Profile.joins(:user)
-                      .where.not(users: { id: current_user.id })
-                      .where("profiles.username ILIKE :query OR
-                             profiles.first_name ILIKE :query OR
-                             profiles.last_name ILIKE :query OR
-                             users.email ILIKE :query",
-                             query: "%#{params[:query]}%")
-                      .limit(5)
+    @organizations = Organization.joins(memberships: :user)
+                               .where.not(users: { id: current_user.id })
+                               .where("organizations.username ILIKE :query OR
+                                     organizations.name ILIKE :query OR
+                                     users.first_name ILIKE :query OR
+                                     users.last_name ILIKE :query OR
+                                     users.email ILIKE :query",
+                                     query: "%#{params[:query]}%")
+                               .limit(5)
 
-    Rails.logger.info "Found #{@profiles.count} matching contacts with profiles"
+    Rails.logger.info "Found #{@organizations.count} matching organizations"
 
     render partial: "profiles/search_results",
            formats: [ :html ],
@@ -75,8 +119,8 @@ class ProfilesController < ApplicationController
   def update_theme
     new_theme = params[:theme].to_s.strip
 
-    if Profile::VALID_THEMES.include?(new_theme)
-      if @profile.update(preferred_theme: new_theme)
+    if %w[light dark].include?(new_theme)
+      if @user.update(theme: new_theme)
         render json: { status: "success", theme: new_theme }
       else
         render json: { status: "error" }, status: :unprocessable_entity
@@ -90,33 +134,40 @@ class ProfilesController < ApplicationController
     @available_locales = I18n.available_locales.map do |locale|
       { code: locale.to_s, name: I18n.t("locales.#{locale}") }
     end
-    @current_locale = (current_user&.profile&.preferred_language || I18n.locale).to_s
+    @current_locale = (@user.language || I18n.locale).to_s
   end
 
   def delete_avatar
-    @profile.avatar.purge
+    if @organization.avatar_medium.attached? || @organization.avatar_thumbnail.attached?
+      @organization.avatar_medium.purge if @organization.avatar_medium.attached?
+      @organization.avatar_thumbnail.purge if @organization.avatar_thumbnail.attached?
+      @organization.save!
+    end
     redirect_to edit_profile_path(locale: current_locale), notice: t(".avatar_removed")
-  end
-
-  def set_profile
-    @profile = current_user.profile
-  end
-
-  def profile_params_without_avatar
-    params.require(:profile).permit(
-      :username,
-      :first_name,
-      :last_name,
-      :about,
-      :preferred_language,
-      :preferred_theme
-    )
   end
 
   private
 
-  def locale_changed?
-    params[:profile][:preferred_language].present? &&
-      params[:profile][:preferred_language] != @profile.preferred_language
+  def set_user_and_organization
+    @user = current_user
+    @organization = current_user.organizations.first
+  end
+
+  def user_params
+    params.require(:user).permit(
+      :first_name,
+      :last_name,
+      :language,
+      :theme
+    )
+  end
+
+  def organization_params
+    params.require(:organization).permit(
+      :username,
+      :name,
+      :about,
+      :avatar
+    )
   end
 end

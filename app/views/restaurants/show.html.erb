@@ -32,10 +32,14 @@
         <div class="mt-8 grid grid-cols-1 gap-8">
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
             <div class="flex gap-8 hotwire-native:justify-between">
-              <%= render partial: "restaurants/price_levels/price_level", 
-                        locals: { restaurant: @restaurant } %>
-              <%= render partial: "restaurants/ratings/rating", 
-                        locals: { restaurant: @restaurant } %>
+              <%= render(Restaurants::PriceLevelComponent.new(
+                restaurant: @restaurant,
+                readonly:true
+              )) %>
+              <%= render(Restaurants::RatingComponent.new(
+                restaurant: @restaurant,
+                readonly: true
+              )) %>
             </div>
           </div>
           <!-- Address Section -->
@@ -144,7 +148,7 @@
             <h2 class="text-xl font-semibold text-surface-900 mb-4">Visits</h2>
             <div class="space-y-4">
               <% @visits.each do |visit| %>
-                <%= render(VisitCardComponent.new(visit: visit)) %>
+                <%= render(Visits::CardComponent.new(visit: visit)) %>
               <% end %>
             </div>
           </div>

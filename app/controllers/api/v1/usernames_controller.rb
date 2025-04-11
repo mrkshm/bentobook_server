@@ -11,7 +11,7 @@ module Api
             return
           end
 
-          exists = Profile.exists?(username: username)
+          exists = Organization.exists?(username: username)
 
           verification = OpenStruct.new(
             id: 0,

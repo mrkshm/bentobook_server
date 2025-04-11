@@ -46,26 +46,33 @@ class S3ImageComponent < ViewComponent::Base
 
   # URL generation is only safe during rendering
   def url_for_image
-    # For original size, bypass variant processing completely
-    if @size == :original
-      if @image.respond_to?(:file) && @image.file.attached?
-        return Rails.application.routes.url_helpers.rails_blob_url(@image.file)
-      elsif @image.respond_to?(:attached?) && @image.attached?
-        return Rails.application.routes.url_helpers.rails_blob_url(@image)
-      elsif @image.is_a?(ActiveStorage::VariantWithRecord) || @image.is_a?(ActiveStorage::Variant)
-        return Rails.application.routes.url_helpers.rails_blob_url(@image.blob)
-      end
+    url = if @size == :original
+      generate_original_url
+    else
+      generate_variant_url
     end
 
-    # For other sizes, use variant processing
+    url || raise(ArgumentError, "Unable to generate URL for image")
+  end
+
+  private
+
+  def generate_original_url
     if @image.respond_to?(:file) && @image.file.attached?
-      # For polymorphic Image model
+      Rails.application.routes.url_helpers.rails_blob_url(@image.file)
+    elsif @image.respond_to?(:attached?) && @image.attached?
+      Rails.application.routes.url_helpers.rails_blob_url(@image)
+    elsif @image.is_a?(ActiveStorage::VariantWithRecord) || @image.is_a?(ActiveStorage::Variant)
+      Rails.application.routes.url_helpers.rails_blob_url(@image.blob)
+    end
+  end
+
+  def generate_variant_url
+    if @image.respond_to?(:file) && @image.file.attached?
       Rails.application.routes.url_helpers.rails_blob_url(@image.file.variant(variant_options))
     elsif @image.respond_to?(:attached?) && @image.attached?
-      # For direct ActiveStorage attachments
       Rails.application.routes.url_helpers.rails_blob_url(@image.variant(variant_options))
     elsif @image.is_a?(ActiveStorage::VariantWithRecord) || @image.is_a?(ActiveStorage::Variant)
-      # For variants that are already processed
       Rails.application.routes.url_helpers.rails_blob_url(@image)
     end
   end

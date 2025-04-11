@@ -1,0 +1,77 @@
+<%= link_to restaurant_path(id: restaurant.id, locale: nil), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200", data: { turbo_frame: "_top" } do %>
+  <div class="p-6">
+    <%# Header with name and visits %>
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900"><%= restaurant.name %></h3>
+      <% if visit_count.positive? %>
+        <span class="badge inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+          <%= visit_count %>
+        </span>
+      <% end %>
+    </div>
+
+    <%# Main content container with left and right sides %>
+    <div class="flex">
+      <%# Left side: cuisine, price, rating, tags %>
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+          <% if restaurant.cuisine_type %>
+            <span><%= restaurant.cuisine_type.name %></span>
+            <span class="mx-2">·</span>
+          <% end %>
+          <%= render(Restaurants::PriceLevelComponent.new(
+            restaurant: restaurant,
+            readonly: true
+          )) %>
+        </div>
+
+        <div class="mt-2">
+          <%= render(Restaurants::RatingComponent.new(
+            restaurant: restaurant,
+            readonly: true
+          )) %>
+        </div>
+
+        <% if restaurant.tags.any? %>
+          <div class="mt-4 flex flex-wrap gap-1">
+            <% restaurant.tags.each do |tag| %>
+              <span class="inline-flex items-center rounded-full bg-surface-100 px-2 py-0.5 text-xs font-medium text-surface-700 ring-1 ring-surface-600/20 ring-inset">
+                <%= tag.name %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+        
+        <%# Contact information %>
+        <div class="mt-4 text-sm text-surface-600">
+          <% if restaurant.phone_number.present? %>
+            <div class="mt-1">
+              <span><%= restaurant.phone_number %></span>
+            </div>
+          <% end %>
+          
+          <% if restaurant.url.present? %>
+            <div class="mt-1">
+              <%= link_to restaurant.url, restaurant.url, class: "text-primary-500 hover:text-primary-700", target: "_blank" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Right side: address %>
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span><%= "#{restaurant.combined_street_number} #{restaurant.combined_street}" %></span>
+        </div>
+        <div class="">
+          <span><%= [restaurant.combined_postal_code, restaurant.combined_city].compact.join(' ') %></span>
+        </div>
+        <% if restaurant.combined_state.present? || restaurant.combined_country.present? %>
+          <div class="">
+            <span><%= [restaurant.combined_state, restaurant.combined_country].compact.reject(&:empty?).join(', ') %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

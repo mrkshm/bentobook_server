@@ -1,0 +1,99 @@
+# Organization-Based Sharing Rule
+
+This rule enforces the organization-based sharing architecture in the BentoBook application.
+
+<rule>
+name: organization_based_sharing
+description: Enforces organization-based sharing patterns instead of user-based sharing
+filters:
+  # Match Ruby files
+  - type: file_extension
+    pattern: "\.rb$"
+  # Match files that might deal with sharing
+  - type: content
+    pattern: "(share|list|organization|user)"
+
+actions:
+  - type: reject
+    conditions:
+      # Reject direct user-to-user sharing
+      - pattern: "has_many :shares, (class_name: \"Share\", )?foreign_key: :recipient_id"
+        message: "User model should not have direct shares association. Use organization-based sharing instead."
+      # Reject direct user-to-list sharing
+      - pattern: "has_many :shared_users"
+        message: "Lists should be shared with organizations, not directly with users."
+      # Reject direct user-to-user sharing in controllers
+      - pattern: "current_user\.shares"
+        message: "Access shares through Current.organization.incoming_shares instead of current_user.shares"
+      # Reject direct user-created lists across organizations
+      - pattern: "has_many :created_lists"
+        message: "User model should not have cross-organization created_lists association. Access lists through Current.organization.lists instead."
+      # Reject direct user-created shares across organizations
+      - pattern: "has_many :created_shares"
+        message: "User model should not have cross-organization created_shares association. Access shares through Current.organization.outgoing_shares instead."
+
+  - type: suggest
+    message: |
+      When implementing sharing functionality:
+
+      1. Always use organization-based sharing instead of user-based sharing:
+         - Share between organizations, not between users
+         - Lists belong to organizations, not directly to users
+         - Users can only access lists through their organization memberships
+
+      2. Controller patterns:
+         - Use `Current.organization` instead of `current_user` for share operations
+         - Check if `Current.organization` is present before performing actions
+         - Use `Current.organization.lists` and `Current.organization.shared_lists` to access lists
+
+      3. Model associations:
+         - Organization has `outgoing_shares` and `incoming_shares`
+         - Organization has `shared_lists` through `incoming_shares`
+         - List belongs to an organization
+         - Share connects `source_organization` and `target_organization`
+
+      4. Permissions:
+         - Check if a list is `viewable_by?` or `editable_by?` an organization
+         - Lists are viewable by their owner organization and organizations they are shared with
+         - Lists are editable by their owner organization and organizations they are shared with (if permission allows)
+
+examples:
+  - input: |
+      # Bad: User has direct shares association
+      class User < ApplicationRecord
+        has_many :shares, foreign_key: :recipient_id
+      end
+
+      # Good: Organization has shares associations
+      class Organization < ApplicationRecord
+        has_many :outgoing_shares, class_name: "Share", foreign_key: :source_organization_id
+        has_many :incoming_shares, class_name: "Share", foreign_key: :target_organization_id
+      end
+    output: "Organization-based sharing pattern correctly implemented"
+
+  - input: |
+      # Bad: Controller uses current_user for shares
+      def index
+        @shares = current_user.shares
+      end
+
+      # Good: Controller uses Current.organization for shares
+      def index
+        @shares = Current.organization.incoming_shares
+      end
+    output: "Organization-based sharing pattern correctly implemented in controller"
+
+  - input: |
+      # Bad: User has cross-organization created_lists
+      class User < ApplicationRecord
+        has_many :created_lists, class_name: "List", foreign_key: :creator_id
+      end
+
+      # Good: Access lists through organization
+      # Current.organization.lists
+    output: "Correctly avoiding cross-organization associations"
+
+metadata:
+  priority: high
+  version: 1.0
+</rule>

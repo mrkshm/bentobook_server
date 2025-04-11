@@ -16,12 +16,12 @@ module Restaurants
         else
           render turbo_stream: turbo_stream.replace(
             dom_id(@restaurant, :rating),
-            partial: "restaurants/ratings/rating",
-            locals: { restaurant: @restaurant }
+            Restaurants::RatingComponent.new(restaurant: @restaurant).render_in(view_context)
           )
         end
       else
-        render template: "restaurants/ratings/edit"
+        render template: "restaurants/ratings/edit",
+               status: :unprocessable_entity
       end
     end
 
@@ -29,6 +29,9 @@ module Restaurants
 
     def set_restaurant
       @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Restaurant not found" }, status: :not_found
+      false # Return false to halt the filter chain
     end
 
     def rating_params

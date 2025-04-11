@@ -1,7 +1,7 @@
 class ListMarkdownExporter
   def initialize(list)
     @list = list
-    @statistics = ListStatistics.new(list: list, user: list.owner)
+    @statistics = ListStatistics.new(list: list, user: list.creator)
   end
 
   def generate

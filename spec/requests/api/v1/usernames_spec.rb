@@ -1,19 +1,9 @@
 require 'swagger_helper'
 
 RSpec.describe 'Api::V1::Usernames', type: :request do
-  let(:user) { create(:user) }
-  let(:user_session) do
-    create(:user_session,
-           user: user,
-           active: true,
-           client_name: 'web',
-           ip_address: '127.0.0.1')
-  end
-  let(:Authorization) { "Bearer #{user_session.token}" }
-
-  before do
-    @headers = {}
-    sign_in_with_token(user, user_session)
+  # Define Authorization as a helper method to satisfy rswag even though this endpoint doesn't need authentication
+  def Authorization
+    nil
   end
 
   path '/api/v1/usernames/verify' do
@@ -21,21 +11,22 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
       tags 'Usernames'
       consumes 'application/json'
       produces 'application/json'
-      security [bearer_auth: []]
+      # Remove security requirement since this endpoint doesn't require authentication
+      # security [bearer_auth: []]
       parameter name: :params, in: :body, schema: {
         type: :object,
         properties: {
           username: { type: :string }
         },
-        required: ['username']
+        required: [ 'username' ]
       }
-      
+
       response '200', 'username availability checked' do
         let(:params) { { username: 'testuser' } }
-        
+
         schema type: :object,
           properties: {
-            status: { type: :string, enum: ['success'] },
+            status: { type: :string, enum: [ 'success' ] },
             data: {
               type: :object,
               properties: {
@@ -47,10 +38,10 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
                     available: { type: :boolean },
                     username: { type: :string }
                   },
-                  required: ['available', 'username']
+                  required: [ 'available', 'username' ]
                 }
               },
-              required: ['id', 'type', 'attributes']
+              required: [ 'id', 'type', 'attributes' ]
             },
             meta: {
               type: :object,
@@ -58,7 +49,7 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
                 timestamp: { type: :string, format: 'date-time' },
                 message: { type: :string }
               },
-              required: ['timestamp', 'message']
+              required: [ 'timestamp', 'message' ]
             }
           }
 
@@ -72,7 +63,7 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
 
         context 'when username exists' do
           before do
-            create(:profile, username: 'testuser')
+            create(:organization, username: 'testuser')
           end
 
           run_test! do |response|
@@ -85,10 +76,10 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
 
       response '400', 'invalid request' do
         let(:params) { { username: '' } }
-        
+
         schema type: :object,
           properties: {
-            status: { type: :string, enum: ['error'] },
+            status: { type: :string, enum: [ 'error' ] },
             errors: {
               type: :array,
               items: {
@@ -97,7 +88,7 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
                   code: { type: :string },
                   detail: { type: :string }
                 },
-                required: ['code', 'detail']
+                required: [ 'code', 'detail' ]
               }
             },
             meta: {
@@ -105,7 +96,7 @@ RSpec.describe 'Api::V1::Usernames', type: :request do
               properties: {
                 timestamp: { type: :string, format: 'date-time' }
               },
-              required: ['timestamp']
+              required: [ 'timestamp' ]
             }
           }
 

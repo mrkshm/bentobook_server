@@ -1,0 +1,98 @@
+<% content_tag_for_options = { class: "p-6 space-y-4" } %>
+<div class="w-full">
+<% if link_to_show %>
+  <%= link_to visit_path(id: visit.id, locale: current_locale),
+    data: {turbo_frame: "_top"}, 
+    class: "block rounded-lg bg-surface-50" do %>
+    <div class="p-6 space-y-4">
+      <%# Header with restaurant name and date %>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-medium text-surface-900">
+          <%= visit.restaurant.name %>
+        </h3>
+        <span class="text-xs text-surface-700">
+          <%= formatted_date %>
+        </span>
+      </div>
+      
+      <% if has_title? || has_notes? %>
+        <div>
+          <% if has_title? %>
+            <div class="text-md font-medium text-surface-600">
+              <%= visit.title %>
+            </div>
+          <% end %>
+          <% if has_notes? %>
+            <p class="text-sm"><%= visit.notes %></p>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <div class="flex justify-between">
+        <div class="mt-2">
+          <%= render(Visits::RatingComponent.new(
+                visit: visit
+              )) %>
+        </div>
+        <% if has_contacts? %>
+          <div class="flex -space-x-2 overflow-hidden">
+            <% visit.contacts.each do |contact| %>
+              <%= render(AvatarComponent.new(
+                user: contact,
+                size: :sm,
+                tooltip: contact.name
+              )) %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="card">
+    <div class="p-6 space-y-4">
+      <%# Header with restaurant name and date %>
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-medium text-surface-900">
+          <%= visit.restaurant.name %>
+        </h3>
+        <span class="text-xs text-surface-700">
+          <%= formatted_date %>
+        </span>
+      </div>
+      
+      <% if has_title? || has_notes? %>
+        <div>
+          <% if has_title? %>
+            <div class="text-md font-medium text-surface-600">
+              <%= visit.title %>
+            </div>
+          <% end %>
+          <% if has_notes? %>
+            <p class="text-sm"><%= visit.notes %></p>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <div class="flex justify-between">
+        <div class="mt-2">
+          <%= render(Visits::RatingComponent.new(
+            visit: visit
+              )) %>
+        </div>
+        <% if has_contacts? %>
+          <div class="flex -space-x-2 overflow-hidden">
+            <% visit.contacts.each do |contact| %>
+              <%= render(AvatarComponent.new(
+                user: contact,
+                size: :sm,
+                tooltip: contact.name
+              )) %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+</div>

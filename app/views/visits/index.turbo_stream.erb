@@ -1,6 +1,6 @@
 <%= turbo_stream.append "visits-list" do %>
   <% @visits.each do |visit| %>
-    <%= render(VisitCardComponent.new(visit: visit)) %>
+    <%= render(Visits::CardComponent.new(visit: visit)) %>
   <% end %>
 <% end %>
 

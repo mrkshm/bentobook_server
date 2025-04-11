@@ -75,7 +75,11 @@
     <% else %>
       <%# Restaurant list container %>
       <%= turbo_frame_tag "restaurants-list", class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" do %>
-        <%= render partial: "restaurant_card", collection: @restaurants, as: :restaurant %>
+        <% @restaurants.each do |restaurant| %>
+          <div class="grid gap-6">
+            <%= render(Restaurants::CardComponent.new(restaurant: restaurant)) %>
+          </div>
+        <% end %>
       <% end %>
 
       <%# Infinite scroll trigger %>

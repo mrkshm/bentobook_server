@@ -155,9 +155,11 @@ class ImagesController < ApplicationController
   end
 
   def current_user_can_delete_image?
+    return false unless @imageable && Current.organization
+    
     case @imageable
     when Restaurant, Visit
-      @imageable.organization == Current.organization
+      @imageable.organization_id == Current.organization.id
     else
       false
     end

@@ -70,12 +70,25 @@ Rails.application.routes.draw do
       resources :lists do
         member do
           get :export
+          post :accept_share
+          post :decline_share
+          delete :remove_share
         end
         resources :restaurants, only: [ :create, :destroy ], controller: "list_restaurants"
         resources :shares, only: [ :index, :create ]
       end
 
       post "/usernames/verify", to: "usernames#verify"
+
+      # Test routes for BaseController specs
+      if Rails.env.test?
+        resources :test, only: [ :index, :show ] do
+          collection do
+            get :unauthorized
+            get :validation_error
+          end
+        end
+      end
     end
   end
 
@@ -170,6 +183,7 @@ Rails.application.routes.draw do
       end
     end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
+    get "/organizations/search", to: "organizations#search", as: :search_organizations, format: :html
 
     # Static pages
     get "/pages/terms", to: "pages#terms", as: :terms

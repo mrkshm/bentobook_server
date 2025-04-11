@@ -1,0 +1,25 @@
+<div class="flex justify-between items-center">
+  <div class="flex items-center gap-4">
+    <div>
+      <h1 class="card-title text-2xl">
+        <%= list.name %>
+        <div class="badge <%= visibility_badge_class %> badge-lg">
+          <%= t("lists.visibility.#{list.visibility}") %>
+        </div>
+      </h1>
+      
+      <% if current_user_in_org? %>
+        <div class="mt-2">
+          <%= render(ShareeAvatarsComponent.new(list: list)) %>
+        </div>
+      <% end %>
+    </div>
+    <%= owner_avatar if is_shared %>
+  </div>
+
+  <% if can_edit? %>
+    <%= link_to edit_list_path(id: list.id, locale: nil), class: "btn btn-ghost btn-sm" do %>
+      <%= heroicon "pencil-square", options: { class: "h-5 w-5" } %>
+    <% end %>
+  <% end %>
+</div>

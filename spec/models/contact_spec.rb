@@ -5,7 +5,9 @@ RSpec.describe Contact, type: :model do
     it { should belong_to(:organization) }
     it { should have_many(:visit_contacts) }
     it { should have_many(:visits).through(:visit_contacts) }
-    it { should have_one_attached(:avatar) }
+    it { should have_one_attached(:avatar) }  # Temporary for migration
+    it { should have_one_attached(:avatar_medium) }
+    it { should have_one_attached(:avatar_thumbnail) }
   end
 
   describe 'validations' do
@@ -156,20 +158,66 @@ RSpec.describe Contact, type: :model do
   describe '#avatar_changed?' do
     let(:contact) { create(:contact) }
 
-    it 'returns true when avatar_attachment_id changed' do
-      allow(contact).to receive(:saved_changes).and_return({'avatar_attachment_id' => [nil, 1]})
+    it 'returns true when avatar_medium_attachment_id changed' do
+      allow(contact).to receive(:saved_changes).and_return({'avatar_medium_attachment_id' => [nil, 1]})
       expect(contact.send(:avatar_changed?)).to be true
     end
 
-    it 'returns true when avatar attachment changed' do
-      allow(contact).to receive(:attachment_changes).and_return({'avatar' => true})
+    it 'returns true when avatar_thumbnail_attachment_id changed' do
+      allow(contact).to receive(:saved_changes).and_return({'avatar_thumbnail_attachment_id' => [nil, 1]})
       expect(contact.send(:avatar_changed?)).to be true
     end
 
-    it 'returns false when avatar has not changed' do
+    it 'returns true when avatar_medium attachment changed' do
+      allow(contact).to receive(:attachment_changes).and_return({'avatar_medium' => true})
+      expect(contact.send(:avatar_changed?)).to be true
+    end
+
+    it 'returns true when avatar_thumbnail attachment changed' do
+      allow(contact).to receive(:attachment_changes).and_return({'avatar_thumbnail' => true})
+      expect(contact.send(:avatar_changed?)).to be true
+    end
+
+    it 'returns false when avatars have not changed' do
       allow(contact).to receive(:saved_changes).and_return({})
       allow(contact).to receive(:attachment_changes).and_return({})
       expect(contact.send(:avatar_changed?)).to be false
+    end
+  end
+
+  describe '#avatar_medium_url' do
+    let(:contact) { create(:contact) }
+    let(:host) { 'http://example.com' }
+
+    before do
+      allow(Rails.application.config.action_mailer).to receive(:default_url_options).and_return({ host: host })
+    end
+
+    it 'returns nil when no avatar_medium is attached' do
+      expect(contact.avatar_medium_url).to be_nil
+    end
+
+    it 'returns the url when avatar_medium is attached' do
+      contact.avatar_medium.attach(io: File.open(Rails.root.join('spec/fixtures/avatar.jpg')), filename: 'avatar.jpg')
+      expect(contact.avatar_medium_url).to start_with(host)
+    end
+  end
+
+  describe '#avatar_thumbnail_url' do
+    let(:contact) { create(:contact) }
+    let(:host) { 'http://example.com' }
+
+    before do
+      allow(Rails.application.config.action_mailer).to receive(:default_url_options).and_return({ host: host })
+    end
+
+    it 'returns nil when no avatar_thumbnail is attached' do
+      expect(contact.avatar_thumbnail_url).to be_nil
+    end
+
+    it 'returns the url when avatar_thumbnail is attached' do
+      contact.avatar_thumbnail.attach(io: File.open(Rails.root.join('spec/fixtures/avatar.jpg')), filename: 'avatar.jpg')
+      expect(contact.avatar_thumbnail_url).to start_with(host)
     end
   end
 end

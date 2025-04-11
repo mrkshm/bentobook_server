@@ -25,9 +25,9 @@ class ContactSerializer < BaseSerializer
             name: visit.restaurant.combined_name,
             cuisine_type: visit.restaurant.cuisine_type&.name,
             location: {
-              address: visit.restaurant.combined_address,
-              latitude: visit.restaurant.combined_latitude&.to_f,
-              longitude: visit.restaurant.combined_longitude&.to_f
+              address: visit.restaurant.address,
+              latitude: visit.restaurant.latitude&.to_f,
+              longitude: visit.restaurant.longitude&.to_f
             }
           },
           images: visit.images.map do |image|
@@ -59,14 +59,23 @@ class ContactSerializer < BaseSerializer
   end
 
   attribute :avatar_urls do |contact|
-    if contact.avatar.attached?
-      {
-        original: Rails.application.routes.url_helpers.rails_blob_url(
-          contact.avatar,
-          host: Rails.application.config.action_mailer.default_url_options[:host]
-        )
-      }
+    urls = {}
+
+    if contact.avatar_thumbnail.attached?
+      urls[:thumbnail] = Rails.application.routes.url_helpers.rails_blob_url(
+        contact.avatar_thumbnail,
+        host: Rails.application.config.action_mailer.default_url_options[:host]
+      )
     end
+
+    if contact.avatar_medium.attached?
+      urls[:medium] = Rails.application.routes.url_helpers.rails_blob_url(
+        contact.avatar_medium,
+        host: Rails.application.config.action_mailer.default_url_options[:host]
+      )
+    end
+
+    urls.present? ? urls : nil
   end
 
   def self.render_collection(resources, meta: {}, pagy: nil)

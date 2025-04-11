@@ -1,6 +1,8 @@
 class Contact < ApplicationRecord
   belongs_to :organization
-  has_one_attached :avatar
+  has_one_attached :avatar  # Temporary for migration
+  has_one_attached :avatar_medium
+  has_one_attached :avatar_thumbnail
   has_many :visit_contacts
   has_many :visits, through: :visit_contacts
 
@@ -38,10 +40,29 @@ class Contact < ApplicationRecord
     visits.count
   end
 
+  def avatar_medium_url
+    generate_url(avatar_medium)
+  end
+
+  def avatar_thumbnail_url
+    generate_url(avatar_thumbnail)
+  end
+
   private
 
   def avatar_changed?
-    saved_changes.key?("avatar_attachment_id") ||
-      attachment_changes["avatar"].present?
+    saved_changes.key?("avatar_medium_attachment_id") ||
+      saved_changes.key?("avatar_thumbnail_attachment_id") ||
+      attachment_changes["avatar_medium"].present? ||
+      attachment_changes["avatar_thumbnail"].present?
+  end
+
+  def generate_url(attachment)
+    return nil unless attachment.attached?
+
+    Rails.application.routes.url_helpers.rails_blob_url(
+      attachment,
+      host: Rails.application.config.action_mailer.default_url_options[:host]
+    )
   end
 end

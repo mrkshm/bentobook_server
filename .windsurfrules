@@ -1,0 +1,3 @@
+This Rails project is built with Vite, so JS controllers live in frontend/controllers.
+
+We have a color system in frontend/stylesheets/application.css. You can reference colors in Tailwind like this: `text-surface-900`

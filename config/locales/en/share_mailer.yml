@@ -1,7 +1,11 @@
 en:
   share_mailer:
     share_notification:
-      subject: "%{creator} shared a list with you"
-      greeting: "Hello %{recipient}!"
-      body: "%{creator} has shared their list '%{list}' with you with %{permission} permission."
+      subject: "%{creator} from %{organization} shared a list with your organization"
+      greeting: "Hello %{organization} team!"
+      body: "%{creator} from %{source_organization} has shared their list '%{list}' with your organization with %{permission} permission."
+      action: "Click the button below to view the list:"
       view_list: "View List"
+      permissions:
+        view: "view-only"
+        edit: "edit"

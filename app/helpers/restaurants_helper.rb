@@ -1,9 +1,9 @@
 module RestaurantsHelper
     def sort_direction(field)
-      if params[:order_by] == field && params[:order_direction] == 'asc'
-        'desc'
+      if params[:order_by] == field && params[:order_direction] == "asc"
+        "desc"
       else
-        'asc'
+        "asc"
       end
     end
 
@@ -19,10 +19,10 @@ module RestaurantsHelper
     end
     def price_level_options
       [
-        ["$", 1],
-        ["$$", 2],
-        ["$$$", 3],
-        ["$$$$", 4]
+        [ "$", 1 ],
+        [ "$$", 2 ],
+        [ "$$$", 3 ],
+        [ "$$$$", 4 ]
       ]
     end
 end

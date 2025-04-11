@@ -28,7 +28,7 @@ module Shell
 
     def current_user_theme
       return nil unless user_signed_in?
-      current_user.profile&.preferred_theme || "light"
+      current_user.theme || "light"
     end
   end
 end

@@ -2,35 +2,38 @@
   <div class="space-y-6">
     <h2 class="text-2xl font-semibold mb-6"><%= t('profiles.edit.title') %></h2>
 
+    <% if @organization.avatar_medium.attached? %>
+      <div class="bg-red-400 absolute ml-28 mt-2">
+        <%= button_to avatar_profile_path(locale: I18n.locale),
+            method: :delete,
+            form: { 
+              data: { 
+                turbo_method: :delete,
+                turbo_confirm: t("profiles.edit.confirm_avatar_delete")
+              }
+            } do %>
+          <%= render Shared::ButtonComponent.new(variant: :danger, type: :submit) do %>
+            <%= t("profiles.edit.remove_photo") %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
 
-              <% if @profile.avatar.attached? %>
-                <div class="bg-red-400 absolute ml-28 mt-2">
-                <%= button_to avatar_profile_path(locale: I18n.locale),
-                method: :delete,
-                    form: { 
-                      data: { 
-                        turbo_method: :delete,
-                        turbo_confirm: t("profiles.edit.confirm_avatar_delete")
-                      }
-                    } do %>
-                  <%= render Shared::ButtonComponent.new(variant: :danger, type: :submit) do %>
-                    <%= t("profiles.edit.remove_photo") %>
-                  <% end %>
-                <% end %>
-                </div>
-              <% end %>
-    <%= form_with(model: @profile, url: profile_path, local: true, class: "space-y-6") do |form| %>
-      <% if @profile.errors.any? %>
+    <%= form_with(model: @organization, url: profile_path, local: true, class: "space-y-6") do |form| %>
+      <% if @organization.errors.any? || @user.errors.any? %>
         <div class="rounded-md bg-error-50 p-4">
           <div class="flex">
             <%= heroicon "exclamation-circle", class: "h-5 w-5 text-error-400" %>
             <div class="ml-3">
               <h3 class="text-sm font-medium text-error-800">
-                <%= pluralize(@profile.errors.count, "error") %> prohibited this profile from being saved:
+                <%= pluralize(@organization.errors.count + @user.errors.count, "error") %> prohibited this profile from being saved:
               </h3>
               <div class="mt-2 text-sm text-error-700">
                 <ul class="list-disc space-y-1 pl-5">
-                  <% @profile.errors.full_messages.each do |message| %>
+                  <% @organization.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                  <% @user.errors.full_messages.each do |message| %>
                     <li><%= message %></li>
                   <% end %>
                 </ul>
@@ -44,8 +47,8 @@
         <%= form.label :avatar, class: "block text-sm font-medium text-surface-900" %>
         <div id="avatar-container" class="mt-2 flex items-center gap-x-3">
           <div class="w-24 h-24">
-            <% if @profile.avatar.attached? %>
-              <%= image_tag @profile.avatar, class: "w-full h-full object-cover rounded-full", id: "current-avatar" %>
+            <% if @organization.avatar_medium.attached? %>
+              <%= image_tag @organization.avatar_medium, class: "w-full h-full object-cover rounded-full", id: "current-avatar" %>
             <% else %>
               <%= heroicon "user-circle", options: { class: "w-full h-full text-surface-300" } %>
             <% end %>
@@ -64,25 +67,47 @@
         </div>
       </div>
 
+      <!-- Organization Fields -->
       <div class="form-control">
         <%= form.label :username, class: "block text-sm font-medium text-surface-900" %>
         <%= form.text_field :username, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
       </div>
 
       <div class="form-control">
-        <%= form.label :first_name, class: "block text-sm font-medium text-surface-900" %>
-        <%= form.text_field :first_name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
-      </div>
-
-      <div class="form-control">
-        <%= form.label :last_name, class: "block text-sm font-medium text-surface-900" %>
-        <%= form.text_field :last_name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+        <%= form.label :name, class: "block text-sm font-medium text-surface-900" %>
+        <%= form.text_field :name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
       </div>
 
       <div class="form-control">
         <%= form.label :about, class: "block text-sm font-medium text-surface-900" %>
         <%= form.text_area :about, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm h-24" %>
       </div>
+
+      <!-- User Fields -->
+      <%= fields_for @user do |user_form| %>
+        <div class="form-control">
+          <%= user_form.label :first_name, class: "block text-sm font-medium text-surface-900" %>
+          <%= user_form.text_field :first_name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+        </div>
+
+        <div class="form-control">
+          <%= user_form.label :last_name, class: "block text-sm font-medium text-surface-900" %>
+          <%= user_form.text_field :last_name, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+        </div>
+
+        <div class="form-control">
+          <%= user_form.label :theme, class: "block text-sm font-medium text-surface-900" %>
+          <%= user_form.select :theme, [['Light', 'light'], ['Dark', 'dark']], {}, class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+        </div>
+
+        <div class="form-control">
+          <%= user_form.label :language, class: "block text-sm font-medium text-surface-900" %>
+          <%= user_form.select :language, 
+              I18n.available_locales.map { |l| [t("locales.#{l}"), l] },
+              {},
+              class: "block w-full rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+        </div>
+      <% end %>
 
       <div class="form-control mt-6">
         <%= form.submit t('profiles.edit.update_button'), class: "rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600" %>

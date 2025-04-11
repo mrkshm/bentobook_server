@@ -25,14 +25,14 @@ RSpec.describe SearchFormComponent, type: :component do
 
   it "renders the search form with correct attributes" do
     render_inline(component)
-    
+
     expect(page).to have_css("form#search-form[action='/search'][method='get']")
     expect(page).to have_css("form.w-full.md\\:w-1\\/2")
   end
 
   it "renders the search input with correct attributes" do
     render_inline(component)
-    
+
     expect(page).to have_css("input#search-input[type='text'][name='search']")
     expect(page).to have_css("input.input.input-bordered.w-full")
     expect(page).to have_field("search-input", placeholder: "Search items...")
@@ -40,14 +40,14 @@ RSpec.describe SearchFormComponent, type: :component do
 
   it "renders the label with translated text" do
     render_inline(component)
-    
+
     expect(page).to have_css("label[for='search-input']")
     expect(page).to have_css("span.label-text", text: "Search:")
   end
 
   it "renders submit and reset buttons" do
     render_inline(component)
-    
+
     expect(page).to have_button("Search", type: "submit", class: "btn btn-primary")
     expect(page).to have_button("Reset", type: "button", class: "btn btn-ghost")
   end
@@ -66,7 +66,7 @@ RSpec.describe SearchFormComponent, type: :component do
 
     it "renders hidden fields for additional parameters" do
       render_inline(component)
-      
+
       expect(page).to have_field("category", type: "hidden", with: "books")
       expect(page).to have_field("sort", type: "hidden", with: "title")
     end
@@ -77,7 +77,7 @@ RSpec.describe SearchFormComponent, type: :component do
 
     it "renders reset button with correct onclick handler" do
       render_inline(component)
-      
+
       expect(page).to have_css(
         "button[onclick=\"window.location='/custom/search'\"]",
         text: "Reset"
@@ -88,7 +88,7 @@ RSpec.describe SearchFormComponent, type: :component do
   describe "responsive layout" do
     it "has correct responsive classes" do
       render_inline(component)
-      
+
       expect(page).to have_css("div.flex.flex-col.md\\:flex-row")
       expect(page).to have_css("form.w-full.md\\:w-1\\/2")
     end

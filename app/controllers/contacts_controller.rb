@@ -37,13 +37,20 @@ class ContactsController < ApplicationController
 
   def create
     @contact = Current.organization.contacts.build(contact_params_without_avatar)
-    @contact.user = current_user  # Track who created the contact
+
     if @contact.save
       if params[:contact][:avatar].present?
-        ImageHandlingService.process_images(@contact, params, compress: true)
+        result = PreprocessAvatarService.call(@contact)
+        if result[:success]
+          @contact.avatar_medium.attach(result[:variants][:medium])
+          @contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
+        else
+          Rails.logger.error "Failed to process avatar: #{result[:error]}"
+        end
       end
-      redirect_to contact_path(id: @contact.id, locale: I18n.locale),
-                  notice: "Contact was successfully created."
+      Rails.logger.debug "Contact saved: #{@contact.inspect}"
+      Rails.logger.debug "Generated path: #{contact_path(@contact.id, locale: I18n.locale)}"
+      redirect_to contact_path(@contact.id, locale: I18n.locale), notice: "Contact was successfully created."
     else
       Rails.logger.error "Failed to create contact: #{@contact.errors.full_messages}"
       render :new, status: :unprocessable_entity
@@ -63,7 +70,18 @@ class ContactsController < ApplicationController
   def update
     if @contact.update(contact_params_without_avatar)
       if params[:contact][:avatar].present?
-        ImageHandlingService.process_images(@contact, params, compress: true)
+        # Remove old avatars if they exist
+        @contact.avatar_medium.purge if @contact.avatar_medium.attached?
+        @contact.avatar_thumbnail.purge if @contact.avatar_thumbnail.attached?
+
+        # Process and attach new variants
+        result = PreprocessAvatarService.call(@contact)
+        if result[:success]
+          @contact.avatar_medium.attach(result[:variants][:medium])
+          @contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
+        else
+          Rails.logger.error "Failed to process avatar: #{result[:error]}"
+        end
       end
       redirect_to contacts_path, notice: "Contact was successfully updated."
     else
@@ -74,10 +92,12 @@ class ContactsController < ApplicationController
 
   def destroy
     if @contact.destroy
-      redirect_to contacts_path, notice: "Contact was successfully deleted."
+      flash[:notice] = "Contact was successfully deleted."
+      redirect_to contacts_path
     else
-      Rails.logger.error "Failed to delete contact: #{@contact.errors.full_messages}"
-      redirect_to contacts_path, alert: "Failed to delete contact."
+      Rails.logger.error "Failed to delete contact #{@contact.id} for organization #{Current.organization.id}"
+      flash[:alert] = "Failed to delete contact."
+      redirect_to contacts_path
     end
   end
 

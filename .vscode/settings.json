@@ -7,5 +7,6 @@
   "git.autofetch": false,
   "github.gitAuthentication": false,
   "editor.defaultFormatter": "rubocop.vscode-rubocop",
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "chat.agent.enabled": true
 }

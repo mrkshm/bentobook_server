@@ -1,4 +1,6 @@
 class SortFormComponent < ApplicationComponent
+  include HeroiconHelper
+
   def initialize(url:, fields:, current_order:, current_direction:, additional_fields: {})
     @url = url
     @fields = fields

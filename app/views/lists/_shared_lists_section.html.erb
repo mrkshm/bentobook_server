@@ -1,9 +1,30 @@
 <div id="shared-lists-section">
   <% if accepted_lists.any? %>
-    <div class="mb-8">
-      <div id="shared-lists-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>
+      <h2 class="text-xl font-semibold mb-4"><%= t('.heading') %></h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <% accepted_lists.each do |list| %>
-          <%= render partial: 'lists/shared_list', locals: { list: list } %>
+          <div class="card bg-surface-50 shadow-sm hover:shadow">
+            <%= link_to list_path(id: list.id, locale: nil), class: "card-body" do %>
+              <h3 class="card-title text-lg mb-2"><%= list.name %></h3>
+              
+              <div class="flex items-center mb-2">
+                <%= render(AvatarComponent.new(organization: list.source_organization, size: :xs)) %>
+                <span class="ml-2 text-sm text-surface-600">
+                  <%= list.source_organization.name %>
+                </span>
+              </div>
+              
+              <div class="flex justify-between mt-4">
+                <div>
+                  <span class="badge badge-sm <%= list.visibility == 'personal' ? 'badge-primary' : 'badge-secondary' %>">
+                    <%= t("lists.visibility.#{list.visibility}") %>
+                  </span>
+                </div>
+              </div>
+            <% end %>
+          </div>
         <% end %>
       </div>
     </div>

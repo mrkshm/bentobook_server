@@ -464,7 +464,11 @@ ALTER SEQUENCE public.memberships_id_seq OWNED BY public.memberships.id;
 CREATE TABLE public.organizations (
     id bigint NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    username character varying,
+    name character varying,
+    about text,
+    email character varying
 );
 
 
@@ -518,43 +522,6 @@ CREATE SEQUENCE public.pg_search_documents_id_seq
 --
 
 ALTER SEQUENCE public.pg_search_documents_id_seq OWNED BY public.pg_search_documents.id;
-
-
---
--- Name: profiles; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.profiles (
-    id bigint NOT NULL,
-    user_id bigint NOT NULL,
-    username character varying,
-    first_name character varying,
-    last_name character varying,
-    about text,
-    created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL,
-    preferred_language character varying DEFAULT 'en'::character varying,
-    preferred_theme character varying DEFAULT 'light'::character varying
-);
-
-
---
--- Name: profiles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.profiles_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: profiles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.profiles_id_seq OWNED BY public.profiles.id;
 
 
 --
@@ -659,14 +626,15 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.shares (
     id bigint NOT NULL,
     creator_id bigint NOT NULL,
-    recipient_id bigint NOT NULL,
     shareable_type character varying NOT NULL,
     shareable_id bigint NOT NULL,
     permission integer DEFAULT 0,
     status integer DEFAULT 0,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    reshareable boolean DEFAULT true NOT NULL
+    reshareable boolean DEFAULT true NOT NULL,
+    source_organization_id bigint NOT NULL,
+    target_organization_id bigint NOT NULL
 );
 
 
@@ -781,7 +749,11 @@ CREATE TABLE public.users (
     unlock_token character varying,
     locked_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    language character varying DEFAULT 'en'::character varying,
+    theme character varying DEFAULT 'light'::character varying,
+    first_name character varying,
+    last_name character varying
 );
 
 
@@ -967,13 +939,6 @@ ALTER TABLE ONLY public.pg_search_documents ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- Name: profiles id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles ALTER COLUMN id SET DEFAULT nextval('public.profiles_id_seq'::regclass);
-
-
---
 -- Name: restaurant_copies id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1139,14 +1104,6 @@ ALTER TABLE ONLY public.organizations
 
 ALTER TABLE ONLY public.pg_search_documents
     ADD CONSTRAINT pg_search_documents_pkey PRIMARY KEY (id);
-
-
---
--- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
 
 
 --
@@ -1404,13 +1361,6 @@ CREATE INDEX index_pg_search_documents_on_searchable ON public.pg_search_documen
 
 
 --
--- Name: index_profiles_on_user_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_profiles_on_user_id ON public.profiles USING btree (user_id);
-
-
---
 -- Name: index_restaurant_copies_on_copied_restaurant_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1509,10 +1459,10 @@ CREATE INDEX index_shares_on_creator_id ON public.shares USING btree (creator_id
 
 
 --
--- Name: index_shares_on_recipient_id; Type: INDEX; Schema: public; Owner: -
+-- Name: index_shares_on_organizations_and_shareable; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_shares_on_recipient_id ON public.shares USING btree (recipient_id);
+CREATE INDEX index_shares_on_organizations_and_shareable ON public.shares USING btree (source_organization_id, target_organization_id, shareable_type, shareable_id);
 
 
 --
@@ -1523,10 +1473,17 @@ CREATE INDEX index_shares_on_shareable ON public.shares USING btree (shareable_t
 
 
 --
--- Name: index_shares_uniqueness; Type: INDEX; Schema: public; Owner: -
+-- Name: index_shares_on_source_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_shares_uniqueness ON public.shares USING btree (creator_id, recipient_id, shareable_type, shareable_id);
+CREATE INDEX index_shares_on_source_organization_id ON public.shares USING btree (source_organization_id);
+
+
+--
+-- Name: index_shares_on_target_organization_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_shares_on_target_organization_id ON public.shares USING btree (target_organization_id);
 
 
 --
@@ -1731,6 +1688,14 @@ ALTER TABLE ONLY public.restaurant_copies
 
 
 --
+-- Name: shares fk_rails_434dff91a6; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT fk_rails_434dff91a6 FOREIGN KEY (source_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- Name: shares fk_rails_5d388a8a85; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1843,14 +1808,6 @@ ALTER TABLE ONLY public.restaurants
 
 
 --
--- Name: shares fk_rails_c36b56cf51; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.shares
-    ADD CONSTRAINT fk_rails_c36b56cf51 FOREIGN KEY (recipient_id) REFERENCES public.users(id);
-
-
---
 -- Name: active_storage_attachments fk_rails_c3b3935057; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1883,14 +1840,6 @@ ALTER TABLE ONLY public.lists
 
 
 --
--- Name: profiles fk_rails_e424190865; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT fk_rails_e424190865 FOREIGN KEY (user_id) REFERENCES public.users(id);
-
-
---
 -- Name: list_restaurants fk_rails_e68366fbf6; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1907,12 +1856,26 @@ ALTER TABLE ONLY public.visit_contacts
 
 
 --
+-- Name: shares fk_rails_f921f753a8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shares
+    ADD CONSTRAINT fk_rails_f921f753a8 FOREIGN KEY (target_organization_id) REFERENCES public.organizations(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250410085443'),
+('20250409092831'),
+('20250409092723'),
+('20250409091829'),
+('20250407143100'),
+('20250405165559'),
 ('20250404133041'),
 ('20250404124930'),
 ('20250404124651'),

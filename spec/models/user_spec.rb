@@ -7,9 +7,6 @@ RSpec.describe User, type: :model do
     it { should have_many(:allowlisted_jwts).dependent(:destroy) }
     it { should have_many(:memberships).dependent(:destroy) }
     it { should have_many(:organizations).through(:memberships) }
-    it { should have_one(:profile).dependent(:destroy) }
-    it { should have_many(:created_lists).class_name('List').with_foreign_key(:creator_id) }
-    it { should have_many(:shares).with_foreign_key(:recipient_id) }
   end
 
   describe 'validations' do
@@ -29,14 +26,9 @@ RSpec.describe User, type: :model do
         expect(user.memberships.count).to eq(1)
       end
 
-      it 'creates a profile for the user' do
-        user = create(:user)
-        expect(user.profile).to be_present
-      end
-
       context 'when organization creation fails' do
         let(:logger) { instance_double(ActiveSupport::Logger) }
-        
+
         before do
           allow(Rails).to receive(:logger).and_return(logger)
           allow(logger).to receive(:error)
@@ -62,7 +54,7 @@ RSpec.describe User, type: :model do
 
       context 'when membership creation fails' do
         let(:logger) { instance_double(ActiveSupport::Logger) }
-        
+
         before do
           allow(Rails).to receive(:logger).and_return(logger)
           allow(logger).to receive(:error)
@@ -82,7 +74,7 @@ RSpec.describe User, type: :model do
             rescue ActiveRecord::RecordInvalid
               nil
             end
-          }.not_to change { [User.count, Organization.count] }
+          }.not_to change { [ User.count, Organization.count ] }
         end
       end
     end
@@ -101,14 +93,24 @@ RSpec.describe User, type: :model do
 
   describe 'development convenience methods' do
     describe '#confirmation_required?' do
-      it 'returns true in production' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
-        expect(subject.confirmation_required?).to be true
+      context 'in production' do
+        before do
+          allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+        end
+
+        it 'returns true' do
+          expect(subject.confirmation_required?).to be true
+        end
       end
 
-      it 'returns false in development' do
-        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
-        expect(subject.confirmation_required?).to be false
+      context 'in non-production' do
+        before do
+          allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        end
+
+        it 'returns false' do
+          expect(subject.confirmation_required?).to be false
+        end
       end
     end
 
@@ -122,6 +124,59 @@ RSpec.describe User, type: :model do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
         expect_any_instance_of(Devise::Models::Lockable).to receive(:lock_access!)
         subject.lock_access!
+      end
+    end
+  end
+
+  describe 'attributes' do
+    it 'has default values for theme' do
+      user = User.new
+      expect(user.theme).to eq('light')
+    end
+
+    it 'has default values for language' do
+      user = User.new
+      expect(user.language).to eq('en')
+    end
+  end
+
+  describe 'validations for preferences' do
+    it { should validate_length_of(:first_name).is_at_most(50).allow_blank }
+    it { should validate_length_of(:last_name).is_at_most(50).allow_blank }
+  end
+
+  describe 'name methods' do
+    describe '#full_name' do
+      it 'returns first and last name combined' do
+        user = build(:user, first_name: 'Jane', last_name: 'Smith')
+        expect(user.full_name).to eq('Jane Smith')
+      end
+
+      it 'returns just first name if last name is blank' do
+        user = build(:user, first_name: 'Jane', last_name: nil)
+        expect(user.full_name).to eq('Jane')
+      end
+
+      it 'returns just last name if first name is blank' do
+        user = build(:user, first_name: nil, last_name: 'Smith')
+        expect(user.full_name).to eq('Smith')
+      end
+
+      it 'returns nil if both names are blank' do
+        user = build(:user, first_name: nil, last_name: nil)
+        expect(user.full_name).to be_nil
+      end
+    end
+
+    describe '#display_name' do
+      it 'returns full name when available' do
+        user = build(:user, first_name: 'Jane', last_name: 'Smith')
+        expect(user.display_name).to eq('Jane Smith')
+      end
+
+      it 'returns email when full name is not available' do
+        user = build(:user, first_name: nil, last_name: nil, email: 'jane@example.com')
+        expect(user.display_name).to eq('jane@example.com')
       end
     end
   end

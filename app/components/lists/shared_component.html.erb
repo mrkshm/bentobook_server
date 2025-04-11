@@ -1,0 +1,15 @@
+<div id="pending-lists-section">
+  <%= render partial: 'lists/pending_lists_section', locals: { 
+    pending_lists: pending_lists,
+    current_user: current_user,
+    organization: organization
+  } %>
+</div>
+
+<div id="shared-lists-section">
+  <%= render partial: 'lists/shared_lists_section', locals: { 
+    accepted_lists: accepted_lists,
+    current_user: current_user,
+    organization: organization
+  } %>
+</div>

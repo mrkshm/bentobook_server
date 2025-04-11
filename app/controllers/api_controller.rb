@@ -1,5 +1,7 @@
 class ApiController < ActionController::API
   include ActionController::MimeResponds
+  # DeviseTokenAuth has been replaced with devise-jwt
+  # No need to include any special token handling here since Devise JWT does it automatically
 
   before_action :set_default_format
   rescue_from StandardError, with: :handle_error

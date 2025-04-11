@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :visit do
-    association :organization
+    organization
     restaurant
     date { Date.today }
     time_of_day { Time.current }
@@ -9,6 +9,18 @@ FactoryBot.define do
     rating { rand(1..5) }
     price_paid_cents { rand(1000..10000) }
     price_paid_currency { 'USD' }
+
+    transient do
+      contacts { [] }
+    end
+
+    after(:create) do |visit, evaluator|
+      if evaluator.contacts.any?
+        evaluator.contacts.each do |contact|
+          create(:visit_contact, visit: visit, contact: contact)
+        end
+      end
+    end
 
     trait :with_image do
       after(:create) do |visit|
@@ -40,7 +52,7 @@ FactoryBot.define do
     trait :with_full_associations do
       after(:create) do |visit|
         create(:image, imageable: visit)
-        create(:contact)
+        create(:contact, organization: visit.organization)
         visit.contacts << Contact.last
       end
     end

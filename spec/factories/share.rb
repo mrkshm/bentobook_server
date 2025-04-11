@@ -1,7 +1,8 @@
 FactoryBot.define do
   factory :share do
     association :creator, factory: :user
-    association :recipient, factory: :user
+    association :source_organization, factory: :organization
+    association :target_organization, factory: :organization
     association :shareable, factory: :list
     status { :accepted }
     permission { :view }

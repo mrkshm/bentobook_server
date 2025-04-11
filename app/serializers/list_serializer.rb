@@ -24,7 +24,7 @@ class ListSerializer < BaseSerializer
   attribute :shared_with do
     object.shares.accepted.map do |share|
       {
-        user_id: share.recipient_id,
+        organization_id: share.target_organization_id,
         permission: share.permission
       }
     end

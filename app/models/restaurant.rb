@@ -14,13 +14,14 @@ class Restaurant < ApplicationRecord
     has_many :restaurant_copies_as_copy, class_name: "RestaurantCopy", foreign_key: :copied_restaurant_id, dependent: :destroy
 
     acts_as_taggable_on :tags
-    delegate :latitude, :longitude, :location, to: :google_restaurant, allow_nil: true
 
     validates :name, presence: true, unless: -> { google_restaurant.present? }
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
     validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
     validates :business_status, inclusion: { in: [ "OPERATIONAL", "CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY" ] }, allow_nil: true
     validates :organization, presence: true
+    validates :latitude, numericality: true, allow_nil: true
+    validates :longitude, numericality: true, allow_nil: true
 
     scope :favorites, -> { where(favorite: true) }
 
@@ -50,27 +51,27 @@ class Restaurant < ApplicationRecord
       search_by_all_fields(query).where(organization_id: organization.id)
     end
 
+    # Update scope to use restaurant's own location data
     scope :near, ->(lat, lon, distance_in_meters = 50000) {
-      joins(:google_restaurant)
-        .where(
-          "ST_DWithin(google_restaurants.location::geography, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography, :distance)",
-          lat: lat.to_f,
-          lon: lon.to_f,
-          distance: distance_in_meters.to_f
-        )
+      where(
+        "ST_DWithin(ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography, :distance)",
+        lat: lat.to_f,
+        lon: lon.to_f,
+        distance: distance_in_meters.to_f
+      )
     }
 
+    # Update scope to order by distance using restaurant's own location data
     scope :order_by_distance_from, ->(lat, lon) {
       lon_val = lon.to_f
       lat_val = lat.to_f
-      joins(:google_restaurant)
-        .select("restaurants.*, ST_Distance(google_restaurants.location::geography, ST_SetSRID(ST_MakePoint(#{lon_val}, #{lat_val}), 4326)::geography) as distance")
-        .order('distance')
+      select("restaurants.*, ST_Distance(ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)::geography, ST_SetSRID(ST_MakePoint(#{lon_val}, #{lat_val}), 4326)::geography) as distance")
+        .order("distance")
     }
 
     GOOGLE_FALLBACK_ATTRIBUTES = [
       :name, :address, :street, :street_number, :city, :state, :country,
-      :postal_code, :phone_number, :url, :business_status, :latitude, :longitude
+      :postal_code, :phone_number, :url, :business_status
     ]
 
     GOOGLE_FALLBACK_ATTRIBUTES.each do |attr|
@@ -99,12 +100,14 @@ class Restaurant < ApplicationRecord
     end
 
     def distance_to(lat, lon)
-      return nil unless google_restaurant&.location
+      return nil unless latitude && longitude
 
-      GoogleRestaurant
-        .select("ST_Distance(location, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)::geography) as distance")
-        .find(google_restaurant_id)
-        .distance
+      # Use the Restaurant class to query the distance
+      result = Restaurant.connection.execute(
+        "SELECT ST_Distance(ST_SetSRID(ST_MakePoint(#{longitude}, #{latitude}), 4326)::geography, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}), 4326)::geography) as distance"
+      ).first
+
+      result["distance"].to_f
     end
 
     def price_level_display
@@ -138,9 +141,9 @@ class Restaurant < ApplicationRecord
         )
 
         copy
+      rescue ActiveRecord::RecordNotUnique
+        # If we hit a race condition, try to find the existing copy
+        RestaurantCopy.find_by!(organization_id: target_organization.id, restaurant_id: self.id).copied_restaurant
       end
-    rescue ActiveRecord::RecordNotUnique
-      # If we hit a race condition, try to find the existing copy
-      RestaurantCopy.find_by!(organization_id: target_organization.id, restaurant_id: self.id).copied_restaurant
     end
 end

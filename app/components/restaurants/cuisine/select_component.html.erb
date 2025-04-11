@@ -1,0 +1,41 @@
+<% if form %>
+  <div data-controller="cuisine-type-select" data-cuisine-type-select-cuisine-types-value="<%= cuisine_types_json %>" class="form-control">
+    <%= form.label :cuisine_type_id, t("labels.cuisine_type"), class: "label" %>
+    <div class="dropdown w-full">
+      <%= form.text_field :cuisine_type_name, 
+                         value: form.object.cuisine_type&.translated_name,
+                         class: "input input-bordered w-full",
+                         placeholder: t("placeholders.select_cuisine_type"),
+                         data: { 
+                           cuisine_type_select_target: "input",
+                           action: "input->cuisine-type-select#search focus->cuisine-type-select#showResults blur->cuisine-type-select#hideResultsDelayed"
+                         } %>
+      <%= form.hidden_field :cuisine_type_name, 
+                           value: form.object.cuisine_type&.name,
+                           data: { cuisine_type_select_target: "hiddenInput" } %>
+      <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-full mt-1 hidden max-h-60 overflow-auto"
+          data-cuisine-type-select-target="results">
+        <!-- Results will be inserted here by JavaScript -->
+      </ul>
+    </div>
+  </div>
+<% elsif defined?(restaurant) && restaurant %>
+  <div class="relative">
+    <%= turbo_frame_tag dom_id(restaurant, :cuisine_type) do %>
+      <% if readonly? %>
+        <span class="text-lg text-surface-600">
+          <%= t(restaurant.cuisine_type&.name) %>
+        </span>
+      <% else %>
+        <%= link_to restaurant_path(id: restaurant.id, locale: current_locale, modal: :cuisine_type),
+              class: "text-lg text-surface-600 transition-colors focus:outline-none cursor-pointer",
+              data: { 
+                turbo: true,
+                turbo_stream: true
+              } do %>
+          <%= t(restaurant.cuisine_type&.name) %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

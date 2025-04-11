@@ -1,0 +1,79 @@
+<% content = capture do %>
+  <div class="card bg-base-100 shadow-xl" id="<%= dom_id(restaurant) %>">
+    <div class="card-body">
+      <div class="flex justify-between items-start">
+        <div class="flex-grow">
+          <h2 class="card-title flex items-center justify-between">
+            <div class="flex items-center">
+              <%= restaurant.name %>
+              <% if restaurant.cuisine_type %>
+                <span class="ml-2 text-sm font-normal text-gray-500"><%= restaurant.cuisine_type.name %></span>
+              <% end %>
+            </div>
+            <% if visit_count.positive? %>
+              <div class="badge badge-secondary"><%= visit_count %></div>
+            <% end %>
+          </h2>
+        </div>
+
+        <div id="<%= dom_id(restaurant, :import) %>" class="ml-4">
+          <% if already_imported %>
+            <div class="tooltip" data-tip="<%= t('components.shared_restaurant_card_component.already_in_your_restaurants') %>">
+              <%= heroicon "check-circle", options: { class: "w-6 h-6 text-gray-600" } %>
+            </div>
+          <% else %>
+            <%= button_to import_list_list_restaurant_path(list_id: list.id, id: restaurant.id),
+                class: "btn btn-primary h-auto py-2",
+                method: :post,
+                data: { turbo: true } do %>
+              <%= heroicon "plus", options: { class: "w-4 h-4 mr-2" } %>
+              <%= t('components.shared_restaurant_card_component.add_to_my_restaurants') %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <h3 class="font-semibold mb-1">Address</h3>
+        <p><%= "#{restaurant.street_number} #{restaurant.street}" %></p>
+        <p><%= "#{restaurant.postal_code} #{restaurant.city}" %></p>
+        <% if restaurant.state.present? %>
+          <p><%= restaurant.state %></p>
+        <% end %>
+        <p><%= restaurant.country %></p>
+      </div>
+
+      <div class="mt-4">
+        <h3 class="font-semibold mb-1">Contact</h3>
+        <% if restaurant.phone_number.present? %>
+          <div class="flex items-center mb-2">
+            <%= heroicon "phone", options: { class: "w-5 h-5 mr-2 text-gray-600" } %>
+            <span><%= restaurant.phone_number %></span>
+          </div>
+        <% end %>
+        <% if restaurant.url.present? %>
+          <div class="flex items-center relative z-20">
+            <%= heroicon "globe-alt", options: { class: "w-5 h-5 mr-2 text-gray-600" } %>
+            <%= link_to restaurant.url, restaurant.url, target: "_blank", class: "link link-primary", data: { turbo: false } %>
+          </div>
+        <% end %>
+      </div>
+
+      <% if restaurant.tags.any? %>
+        <div class="mt-4">
+          <% restaurant.tags.each do |tag| %>
+            <span class="badge badge-outline mr-1 mb-1"><%= tag.name %></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<% if already_imported %>
+  <%= link_to restaurant_path(id: copied_restaurant.id, locale: nil), class: "block hover:shadow-2xl transition-shadow duration-200" do %>
+    <%= content %>
+  <% end %>
+<% else %>
+  <%= content %>
+<% end %>

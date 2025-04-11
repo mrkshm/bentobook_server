@@ -13,7 +13,7 @@ module RestaurantManagement
         render json: { error: "Restaurant not found or you don't have permission to view it" }, status: :not_found
       else
         flash[:error] = "Restaurant not found or you don't have permission to view it"
-        redirect_to restaurants_path
+        redirect_to restaurants_path(locale: nil)
       end
     end
 

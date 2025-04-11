@@ -3,12 +3,18 @@ FactoryBot.define do
     organization
     sequence(:name) { |n| "Custom Restaurant #{n}" }
     association :cuisine_type
+    
+    # Add latitude and longitude directly to the restaurant
+    latitude { rand(30.0..45.0).round(6) }
+    longitude { rand(-120.0..-70.0).round(6) }
 
     after(:build) do |restaurant|
       # Create a new google_restaurant only if one isn't already assigned
-      restaurant.google_restaurant ||= build(:google_restaurant,
+      restaurant.google_restaurant ||= build(:google_restaurant, :with_location,
         name: restaurant.name,
-        google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}"
+        google_place_id: "PLACE_ID_#{SecureRandom.hex(8)}",
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude
       )
     end
 
@@ -19,8 +25,6 @@ FactoryBot.define do
     notes { "Some notes about the restaurant" }
     phone_number { "+1 555-#{rand(100..999)}-#{rand(1000..9999)}" }
     url { "https://example#{rand(1..100)}.com" }
-
-    association :google_restaurant, :with_location
 
     trait :with_visits do
       transient do

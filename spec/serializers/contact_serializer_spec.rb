@@ -2,15 +2,16 @@ require 'rails_helper'
 
 RSpec.describe ContactSerializer do
   let(:user) { create(:user) }
-  let(:contact) { create(:contact, user: user) }
-  let(:restaurant) { create(:restaurant, user: user) }
+  let(:organization) { user.organizations.first }
+  let(:contact) { create(:contact, organization: organization) }
+  let(:restaurant) { create(:restaurant, organization: organization) }
 
   before do
     Rails.application.routes.default_url_options[:host] = 'example.com'
   end
 
   describe '.render_collection' do
-    let(:contacts) { create_list(:contact, 3, user: user) }
+    let(:contacts) { create_list(:contact, 3, organization: organization) }
 
     context 'without pagination' do
       subject(:rendered_json) { ContactSerializer.render_collection(contacts) }
@@ -100,18 +101,26 @@ RSpec.describe ContactSerializer do
     context 'with avatar' do
       before do
         file_path = Rails.root.join('spec', 'fixtures', 'test_image.jpg')
-        contact.avatar.attach(io: File.open(file_path), filename: 'avatar.jpg', content_type: 'image/jpeg')
+        # Use the new avatar handling with medium and thumbnail variants
+        result = PreprocessAvatarService.call(
+          fixture_file_upload(file_path, 'image/jpeg')
+        )
+        contact.avatar_medium.attach(result[:variants][:medium])
+        contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
       end
 
-      it 'includes avatar url' do
-        expect(rendered_json[:data][:attributes]['avatar_urls']).to include('original')
+      it 'includes avatar urls' do
+        expect(rendered_json[:data][:attributes]['avatar_urls']).to include(
+          'medium',
+          'thumbnail'
+        )
       end
     end
 
     context 'with visits' do
       let!(:visit) do
         create(:visit,
-          user: user,
+          organization: organization,
           restaurant: restaurant,
           contacts: [ contact ],
           date: Date.current,
@@ -146,9 +155,9 @@ RSpec.describe ContactSerializer do
           'cuisine_type' => restaurant.cuisine_type&.name
         )
         expect(visit_restaurant['location']).to include(
-          'address' => restaurant.combined_address,
-          'latitude' => restaurant.combined_latitude&.to_f,
-          'longitude' => restaurant.combined_longitude&.to_f
+          'address' => restaurant.address,
+          'latitude' => restaurant.latitude&.to_f,
+          'longitude' => restaurant.longitude&.to_f
         )
       end
 

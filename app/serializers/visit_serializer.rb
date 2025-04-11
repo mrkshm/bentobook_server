@@ -10,24 +10,24 @@ class VisitSerializer < BaseSerializer
 
   attribute :restaurant do |visit|
     begin
-      lat = visit.restaurant.combined_latitude
-      lon = visit.restaurant.combined_longitude
+      lat = visit.restaurant.latitude
+      lon = visit.restaurant.longitude
 
       {
         id: visit.restaurant.id,
-        name: visit.restaurant.combined_name,
+        name: visit.restaurant.name,
         cuisine_type: visit.restaurant.cuisine_type&.name,
         location: {
-          address: visit.restaurant.combined_address,
+          address: visit.restaurant.address,
           latitude: lat.present? ? lat.to_f : nil,
           longitude: lon.present? ? lon.to_f : nil
         }
       }
-    rescue StandardError => e
+    rescue StandardError => _e
       # Return minimal restaurant data on error
       {
         id: visit.restaurant.id,
-        name: visit.restaurant.combined_name,
+        name: visit.restaurant.name,
         location: { address: nil, latitude: nil, longitude: nil }
       }
     end
@@ -35,15 +35,21 @@ class VisitSerializer < BaseSerializer
 
   attribute :contacts do |visit|
     visit.contacts.map do |contact|
-      avatar_url = if contact.avatar.attached?
+      avatar_urls = {}
+
+      if contact.avatar_thumbnail.attached?
         begin
-          rails_blob_url(contact.avatar.variant(
-            resize_to_fill: [ 100, 100 ],
-            format: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:format],
-            saver: ImageHandlingService::DEFAULT_COMPRESSION_OPTIONS[:saver]
-          ))
-        rescue StandardError => e
-          nil
+          avatar_urls[:thumbnail] = rails_blob_url(contact.avatar_thumbnail)
+        rescue StandardError => _e
+          # Ignore errors with avatar URLs
+        end
+      end
+
+      if contact.avatar_medium.attached?
+        begin
+          avatar_urls[:medium] = rails_blob_url(contact.avatar_medium)
+        rescue StandardError => _e
+          # Ignore errors with avatar URLs
         end
       end
 
@@ -53,7 +59,7 @@ class VisitSerializer < BaseSerializer
         email: contact.email,
         phone: contact.phone,
         notes: contact.notes,
-        avatar_url: avatar_url
+        avatar_urls: avatar_urls.present? ? avatar_urls : nil
       }
     end
   end
@@ -66,7 +72,7 @@ class VisitSerializer < BaseSerializer
           amount: sprintf("%.2f", amount),
           currency: visit.price_paid_currency.to_s
         }
-      rescue StandardError => e
+      rescue StandardError => _e
         nil
       end
     end
@@ -104,7 +110,7 @@ class VisitSerializer < BaseSerializer
           id: image.id,
           urls: urls
         }
-      rescue StandardError => e
+      rescue StandardError => _e
         {
           id: image.id,
           urls: {}

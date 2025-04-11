@@ -16,8 +16,7 @@ module Restaurants
         else
           render turbo_stream: turbo_stream.replace(
             dom_id(@restaurant, :price_level),
-            partial: "restaurants/price_levels/price_level",
-            locals: { restaurant: @restaurant }
+            Restaurants::PriceLevelComponent.new(restaurant: @restaurant).render_in(view_context)
           )
         end
       else
@@ -30,6 +29,9 @@ module Restaurants
 
     def set_restaurant
       @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Restaurant not found" }, status: :not_found
+      false # Return false to halt the filter chain
     end
 
     def price_level_params
