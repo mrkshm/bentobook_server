@@ -43,14 +43,14 @@ class ListRestaurantsController < ApplicationController
 
   def import_all
     restaurants_to_import = @list.restaurants.where.not(
-      id: RestaurantCopy.where(user: current_user).select(:restaurant_id)
+      id: RestaurantCopy.where(organization: Current.organization).select(:restaurant_id)
     )
 
     imported_count = 0
 
     ActiveRecord::Base.transaction do
       restaurants_to_import.each do |restaurant|
-        copied_restaurant = restaurant.copy_for_user(current_user)
+        copied_restaurant = restaurant.copy_for_organization(Current.organization)
         imported_count += 1 if copied_restaurant.persisted?
       end
     end
@@ -69,7 +69,7 @@ class ListRestaurantsController < ApplicationController
 
   def import
     restaurant = @list.restaurants.find(params[:id])
-    copied_restaurant = restaurant.copy_for_user(current_user)
+    copied_restaurant = restaurant.copy_for_organization(Current.organization)
 
     respond_to do |format|
       format.html do
