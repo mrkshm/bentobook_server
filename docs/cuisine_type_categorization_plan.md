@@ -20,6 +20,7 @@ The new system will organize cuisine types into categories as follows:
     {
       "name": "African",
       "cuisine_types": [
+        "African",
         "Ethiopian",
         "Eritrean",
         "Senegalese",
@@ -31,18 +32,21 @@ The new system will organize cuisine types into categories as follows:
     {
       "name": "Asian",
       "cuisine_types": [
+        "Asian",
         "Chinese",
         "Japanese",
         "Korean",
         "Thai",
         "Vietnamese",
         "Indian",
+        "Taiwanese",
         "Asian Fusion"
       ]
     },
     {
       "name": "European",
       "cuisine_types": [
+        "European",
         "French",
         "Italian",
         "Spanish",
@@ -54,6 +58,8 @@ The new system will organize cuisine types into categories as follows:
         "Austrian",
         "Swiss",
         "British",
+        "Portuguese",
+        "Mediterranean",
         "Scandinavian",
         "European Fusion"
       ]
@@ -61,19 +67,34 @@ The new system will organize cuisine types into categories as follows:
     {
       "name": "American",
       "cuisine_types": [
+        "American",
         "US",
         "Southern",
         "BBQ",
         "Soul Food",
         "Mexican",
         "Brazilian",
+        "Peruvian",
         "Cajun",
         "American Fusion"
       ]
     },
     {
+      "name": "Middle Eastern",
+      "cuisine_types": [
+        "Middle Eastern",
+        "Lebanese",
+        "Turkish",
+        "Israeli",
+        "Persian",
+        "Arabic",
+        "Middle Eastern Fusion"
+      ]
+    },
+    {
       "name": "Special",
       "cuisine_types": [
+        "Special",
         "Vegetarian",
         "Vegan",
         "Keto",
@@ -85,6 +106,7 @@ The new system will organize cuisine types into categories as follows:
     {
       "name": "Dining Type",
       "cuisine_types": [
+        "Dining Type",
         "Cafe",
         "Wine Bar",
         "Pub",
@@ -101,7 +123,6 @@ The new system will organize cuisine types into categories as follows:
     }
   ]
 }
-```
 
 ## Phase 1: Database Changes
 
@@ -160,73 +181,135 @@ rails generate migration PopulateCategoriesAndAssignCuisineTypes
 # In the migration file
 class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
   def up
-    # First, remove cuisine types that are no longer needed
-    obsolete_cuisine_types = [
-      'african', 'asian', 'asian_fusion', 'bakery', 'bar', 'brunch', 'burger',
-      'caribbean', 'dim_sum', 'fusion', 'mediterranean', 'middle_eastern',
-      'noodles', 'peruvian', 'portuguese', 'ramen', 'seafood', 'steakhouse',
-      'taiwanese', 'turkish'
-      # Add any other cuisine types that should be removed
+    # First, clear out all existing cuisine types that aren't associated with restaurants
+    CuisineType.includes(:restaurants).where(restaurants: { id: nil }).destroy_all
+    puts "Removed unused cuisine types"
+    
+    categories = [
+      { name: "African", display_order: 1 },
+      { name: "Asian", display_order: 2 },
+      { name: "European", display_order: 3 },
+      { name: "American", display_order: 4 },
+      { name: "Middle Eastern", display_order: 5 },
+      { name: "Special", display_order: 6 },
+      { name: "Dining Type", display_order: 7 },
+      { name: "Other", display_order: 8 }
     ]
-    
-    # Only delete cuisine types that aren't associated with any restaurants
-    obsolete_cuisine_types.each do |name|
-      cuisine_type = CuisineType.find_by(name: name)
-      if cuisine_type && cuisine_type.restaurants.empty?
-        cuisine_type.destroy
-        puts "Deleted unused cuisine type: #{name}"
-      elsif cuisine_type
-        puts "Keeping cuisine type '#{name}' because it has #{cuisine_type.restaurants.count} associated restaurants"
-      end
-    end
-    
-    # Define the new categories and their cuisine types
-    categories_data = {
-      'African' => ['ethiopian', 'eritrean', 'senegalese', 'moroccan', 'south_african', 'african_fusion'],
-      'Asian' => ['chinese', 'japanese', 'korean', 'thai', 'vietnamese', 'indian', 'asian_fusion'],
-      'European' => ['french', 'italian', 'spanish', 'greek', 'german', 'polish', 'hungarian', 'russian', 'austrian', 'swiss', 'british', 'scandinavian', 'european_fusion'],
-      'American' => ['us', 'southern', 'bbq', 'soul_food', 'mexican', 'brazilian', 'cajun', 'american_fusion'],
-      'Special' => ['vegetarian', 'vegan', 'keto', 'paleo', 'gluten_free', 'special_fusion'],
-      'Dining Type' => ['cafe', 'wine_bar', 'pub', 'brewery', 'fast_food', 'dining_fusion'],
-      'Other' => ['other']
-    }
-    
-    # Create categories
-    categories_data.each_with_index do |(name, _), index|
-      Category.create!(name: name, display_order: index)
-    end
-    
-    # Assign cuisine types to categories
-    categories_data.each do |category_name, cuisine_names|
-      category = Category.find_by!(name: category_name)
-      
-      cuisine_names.each_with_index do |cuisine_name, index|
-        # Try to find existing cuisine type or create a new one
-        cuisine_type = CuisineType.find_by(name: cuisine_name)
-        if cuisine_type
-          cuisine_type.update!(category: category, display_order: index)
-          puts "Updated existing cuisine type: #{cuisine_name}"
-        else
-          CuisineType.create!(name: cuisine_name, category: category, display_order: index)
-          puts "Created new cuisine type: #{cuisine_name}"
+
+    ActiveRecord::Base.transaction do
+      categories.each do |category_data|
+        Category.find_or_create_by!(name: category_data[:name]) do |category|
+          category.display_order = category_data[:display_order]
         end
       end
-    end
-    
-    # Assign remaining cuisine types to 'Other' category
-    CuisineType.where(category_id: nil).each_with_index do |cuisine_type, index|
-      cuisine_type.update!(category: Category.find_by(name: 'Other'), display_order: index)
-    end
-    
-    # Handle restaurants with obsolete cuisine types
-    # Find all restaurants with cuisine types that will be removed
-    restaurants_to_update = Restaurant.joins(:cuisine_type)
-                                    .where(cuisine_types: { name: obsolete_cuisine_types })
-    
-    if restaurants_to_update.any?
-      puts "Found #{restaurants_to_update.count} restaurants with obsolete cuisine types"
       
-      # Map old cuisine types to new ones where possible
+      puts "Created #{Category.count} categories"
+      
+      cuisine_types_by_category = {
+        "African" => [
+          { name: "african", display_order: 1 },
+          { name: "ethiopian", display_order: 2 },
+          { name: "eritrean", display_order: 3 },
+          { name: "senegalese", display_order: 4 },
+          { name: "moroccan", display_order: 5 },
+          { name: "south_african", display_order: 6 },
+          { name: "african_fusion", display_order: 7 }
+        ],
+        "Asian" => [
+          { name: "asian", display_order: 1 },
+          { name: "chinese", display_order: 2 },
+          { name: "japanese", display_order: 3 },
+          { name: "korean", display_order: 4 },
+          { name: "thai", display_order: 5 },
+          { name: "vietnamese", display_order: 6 },
+          { name: "indian", display_order: 7 },
+          { name: "taiwanese", display_order: 8 },
+          { name: "asian_fusion", display_order: 9 }
+        ],
+        "European" => [
+          { name: "european", display_order: 1 },
+          { name: "french", display_order: 2 },
+          { name: "italian", display_order: 3 },
+          { name: "spanish", display_order: 4 },
+          { name: "greek", display_order: 5 },
+          { name: "german", display_order: 6 },
+          { name: "polish", display_order: 7 },
+          { name: "hungarian", display_order: 8 },
+          { name: "russian", display_order: 9 },
+          { name: "austrian", display_order: 10 },
+          { name: "swiss", display_order: 11 },
+          { name: "british", display_order: 12 },
+          { name: "portuguese", display_order: 13 },
+          { name: "mediterranean", display_order: 14 },
+          { name: "scandinavian", display_order: 15 },
+          { name: "european_fusion", display_order: 16 }
+        ],
+        "American" => [
+          { name: "american", display_order: 1 },
+          { name: "us", display_order: 2 },
+          { name: "southern", display_order: 3 },
+          { name: "bbq", display_order: 4 },
+          { name: "soul_food", display_order: 5 },
+          { name: "mexican", display_order: 6 },
+          { name: "brazilian", display_order: 7 },
+          { name: "peruvian", display_order: 8 },
+          { name: "cajun", display_order: 9 },
+          { name: "american_fusion", display_order: 10 }
+        ],
+        "Middle Eastern" => [
+          { name: "middle_eastern", display_order: 1 },
+          { name: "lebanese", display_order: 2 },
+          { name: "turkish", display_order: 3 },
+          { name: "israeli", display_order: 4 },
+          { name: "persian", display_order: 5 },
+          { name: "arabic", display_order: 6 },
+          { name: "middle_eastern_fusion", display_order: 7 }
+        ],
+        "Special" => [
+          { name: "special", display_order: 1 },
+          { name: "vegetarian", display_order: 2 },
+          { name: "vegan", display_order: 3 },
+          { name: "keto", display_order: 4 },
+          { name: "paleo", display_order: 5 },
+          { name: "gluten_free", display_order: 6 },
+          { name: "special_fusion", display_order: 7 }
+        ],
+        "Dining Type" => [
+          { name: "dining_type", display_order: 1 },
+          { name: "cafe", display_order: 2 },
+          { name: "wine_bar", display_order: 3 },
+          { name: "pub", display_order: 4 },
+          { name: "brewery", display_order: 5 },
+          { name: "fast_food", display_order: 6 },
+          { name: "dining_fusion", display_order: 7 }
+        ],
+        "Other" => [
+          { name: "other", display_order: 1 }
+        ]
+      }
+
+      cuisine_types_by_category.each do |category_name, cuisine_types|
+        category = Category.find_by!(name: category_name)
+        
+        cuisine_types.each do |cuisine_type_data|
+          CuisineType.find_or_create_by!(name: cuisine_type_data[:name]) do |cuisine_type|
+            cuisine_type.category = category
+            cuisine_type.display_order = cuisine_type_data[:display_order]
+          end
+        end
+      end
+      
+      puts "Created #{CuisineType.count} cuisine types"
+      
+      # Get the "Other" cuisine type
+      other_cuisine = CuisineType.find_by!(name: "other")
+      
+      # Update existing restaurants without a cuisine type
+      restaurants_updated = Restaurant.where(cuisine_type_id: nil).update_all(cuisine_type_id: other_cuisine.id)
+      
+      puts "Updated #{restaurants_updated} restaurants with 'Other' cuisine type"
+      
+      # Map old cuisine types to new ones
       cuisine_type_mapping = {
         'african' => 'african_fusion',
         'asian' => 'asian_fusion',
@@ -238,32 +321,25 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
         'caribbean' => 'american_fusion',
         'dim_sum' => 'chinese',
         'fusion' => 'special_fusion',
-        'mediterranean' => 'european_fusion',
-        'middle_eastern' => 'european_fusion',
+        'middle_eastern' => 'middle_eastern_fusion',
         'noodles' => 'asian_fusion',
-        'peruvian' => 'american_fusion',
-        'portuguese' => 'european_fusion',
         'ramen' => 'japanese',
         'seafood' => 'european_fusion',
         'steakhouse' => 'american_fusion',
-        'taiwanese' => 'chinese',
-        'turkish' => 'european_fusion'
+        'turkish' => 'turkish',
+        # Keeping: taiwanese, portuguese, peruvian, mediterranean
       }
       
       # Update restaurants with mapped cuisine types
-      restaurants_to_update.each do |restaurant|
-        old_cuisine = restaurant.cuisine_type.name
-        new_cuisine_name = cuisine_type_mapping[old_cuisine] || 'other'
+      cuisine_type_mapping.each do |old_name, new_name|
+        old_cuisine = CuisineType.find_by(name: old_name)
+        next unless old_cuisine && old_cuisine.restaurants.any?
         
-        # Find or create the new cuisine type
-        new_cuisine_type = CuisineType.find_by(name: new_cuisine_name)
-        if new_cuisine_type.nil?
-          category = Category.find_by(name: 'Other')
-          new_cuisine_type = CuisineType.create!(name: new_cuisine_name, category: category, display_order: 0)
+        new_cuisine = CuisineType.find_by(name: new_name)
+        if new_cuisine
+          count = Restaurant.where(cuisine_type_id: old_cuisine.id).update_all(cuisine_type_id: new_cuisine.id)
+          puts "Updated #{count} restaurants from '#{old_name}' to '#{new_name}'"
         end
-        
-        restaurant.update!(cuisine_type: new_cuisine_type)
-        puts "Updated restaurant '#{restaurant.name}' from '#{old_cuisine}' to '#{new_cuisine_name}'"
       end
     end
   end
@@ -569,6 +645,94 @@ class CuisineTypesController < ApplicationController
 end
 ```
 
+### 3.3 Update API Controllers and Serializers
+
+**Task:** Update API controllers and serializers to handle categorized cuisine types
+
+**Implementation:**
+
+```ruby
+# app/controllers/api/v1/cuisine_types_controller.rb (if it exists)
+module Api
+  module V1
+    class CuisineTypesController < ApiBaseController
+      def index
+        @categories = Category.includes(:cuisine_types).ordered
+        
+        render json: {
+          categories: @categories.as_json(
+            only: [:id, :name],
+            include: {
+              cuisine_types: { only: [:id, :name] }
+            }
+          )
+        }
+      end
+      
+      # If you have an endpoint that returns all cuisine types without categories
+      def all
+        @cuisine_types = CuisineType.includes(:category).by_category
+        
+        render json: {
+          cuisine_types: @cuisine_types.as_json(
+            only: [:id, :name],
+            include: {
+              category: { only: [:id, :name] }
+            }
+          )
+        }
+      end
+    end
+  end
+end
+```
+
+```ruby
+# app/serializers/cuisine_type_serializer.rb (if you're using serializers)
+class CuisineTypeSerializer < BaseSerializer
+  attributes :id, :name, :category
+  
+  def category
+    object.category.present? ? { id: object.category.id, name: object.category.name } : nil
+  end
+end
+```
+
+```ruby
+# app/serializers/category_serializer.rb
+class CategorySerializer < BaseSerializer
+  attributes :id, :name
+  
+  has_many :cuisine_types
+end
+```
+
+```ruby
+# Update any other API controllers that use cuisine types
+# For example, in RestaurantsController:
+
+def create
+  @restaurant = Restaurant.new(restaurant_params)
+  @restaurant.organization = Current.organization
+  
+  # If your API allows setting cuisine_type_id directly
+  if params[:restaurant][:cuisine_type_id].present?
+    @restaurant.cuisine_type_id = params[:restaurant][:cuisine_type_id]
+  # If your API uses cuisine_type_name
+  elsif params[:restaurant][:cuisine_type_name].present?
+    result, cuisine_or_error = validate_cuisine_type(params[:restaurant][:cuisine_type_name])
+    
+    if result
+      @restaurant.cuisine_type = cuisine_or_error
+    else
+      return render_error(cuisine_or_error, :unprocessable_entity)
+    end
+  end
+  
+  # Rest of the create action...
+end
+```
+
 ## Phase 4: Frontend Updates
 
 ### 4.1 Update Views
@@ -655,9 +819,10 @@ categories = [
   { name: "Asian", display_order: 2 },
   { name: "European", display_order: 3 },
   { name: "American", display_order: 4 },
-  { name: "Special", display_order: 5 },
-  { name: "Dining Type", display_order: 6 },
-  { name: "Other", display_order: 7 }
+  { name: "Middle Eastern", display_order: 5 },
+  { name: "Special", display_order: 6 },
+  { name: "Dining Type", display_order: 7 },
+  { name: "Other", display_order: 8 }
 ]
 
 ActiveRecord::Base.transaction do
@@ -675,62 +840,81 @@ end
 # db/seeds/02_cuisine_types.rb (renamed from 01_cuisine_types.rb)
 cuisine_types_by_category = {
   "African" => [
-    { name: "ethiopian", display_order: 1 },
-    { name: "eritrean", display_order: 2 },
-    { name: "senegalese", display_order: 3 },
-    { name: "moroccan", display_order: 4 },
-    { name: "south_african", display_order: 5 },
-    { name: "african_fusion", display_order: 6 }
+    { name: "african", display_order: 1 },
+    { name: "ethiopian", display_order: 2 },
+    { name: "eritrean", display_order: 3 },
+    { name: "senegalese", display_order: 4 },
+    { name: "moroccan", display_order: 5 },
+    { name: "south_african", display_order: 6 },
+    { name: "african_fusion", display_order: 7 }
   ],
   "Asian" => [
-    { name: "chinese", display_order: 1 },
-    { name: "japanese", display_order: 2 },
-    { name: "korean", display_order: 3 },
-    { name: "thai", display_order: 4 },
-    { name: "vietnamese", display_order: 5 },
-    { name: "indian", display_order: 6 },
-    { name: "asian_fusion", display_order: 7 }
+    { name: "asian", display_order: 1 },
+    { name: "chinese", display_order: 2 },
+    { name: "japanese", display_order: 3 },
+    { name: "korean", display_order: 4 },
+    { name: "thai", display_order: 5 },
+    { name: "vietnamese", display_order: 6 },
+    { name: "indian", display_order: 7 },
+    { name: "taiwanese", display_order: 8 },
+    { name: "asian_fusion", display_order: 9 }
   ],
   "European" => [
-    { name: "french", display_order: 1 },
-    { name: "italian", display_order: 2 },
-    { name: "spanish", display_order: 3 },
-    { name: "greek", display_order: 4 },
-    { name: "german", display_order: 5 },
-    { name: "polish", display_order: 6 },
-    { name: "hungarian", display_order: 7 },
-    { name: "russian", display_order: 8 },
-    { name: "austrian", display_order: 9 },
-    { name: "swiss", display_order: 10 },
-    { name: "british", display_order: 11 },
-    { name: "scandinavian", display_order: 12 },
-    { name: "european_fusion", display_order: 13 }
+    { name: "european", display_order: 1 },
+    { name: "french", display_order: 2 },
+    { name: "italian", display_order: 3 },
+    { name: "spanish", display_order: 4 },
+    { name: "greek", display_order: 5 },
+    { name: "german", display_order: 6 },
+    { name: "polish", display_order: 7 },
+    { name: "hungarian", display_order: 8 },
+    { name: "russian", display_order: 9 },
+    { name: "austrian", display_order: 10 },
+    { name: "swiss", display_order: 11 },
+    { name: "british", display_order: 12 },
+    { name: "portuguese", display_order: 13 },
+    { name: "mediterranean", display_order: 14 },
+    { name: "scandinavian", display_order: 15 },
+    { name: "european_fusion", display_order: 16 }
   ],
   "American" => [
-    { name: "us", display_order: 1 },
-    { name: "southern", display_order: 2 },
-    { name: "bbq", display_order: 3 },
-    { name: "soul_food", display_order: 4 },
-    { name: "mexican", display_order: 5 },
-    { name: "brazilian", display_order: 6 },
-    { name: "cajun", display_order: 7 },
-    { name: "american_fusion", display_order: 8 }
+    { name: "american", display_order: 1 },
+    { name: "us", display_order: 2 },
+    { name: "southern", display_order: 3 },
+    { name: "bbq", display_order: 4 },
+    { name: "soul_food", display_order: 5 },
+    { name: "mexican", display_order: 6 },
+    { name: "brazilian", display_order: 7 },
+    { name: "peruvian", display_order: 8 },
+    { name: "cajun", display_order: 9 },
+    { name: "american_fusion", display_order: 10 }
+  ],
+  "Middle Eastern" => [
+    { name: "middle_eastern", display_order: 1 },
+    { name: "lebanese", display_order: 2 },
+    { name: "turkish", display_order: 3 },
+    { name: "israeli", display_order: 4 },
+    { name: "persian", display_order: 5 },
+    { name: "arabic", display_order: 6 },
+    { name: "middle_eastern_fusion", display_order: 7 }
   ],
   "Special" => [
-    { name: "vegetarian", display_order: 1 },
-    { name: "vegan", display_order: 2 },
-    { name: "keto", display_order: 3 },
-    { name: "paleo", display_order: 4 },
-    { name: "gluten_free", display_order: 5 },
-    { name: "special_fusion", display_order: 6 }
+    { name: "special", display_order: 1 },
+    { name: "vegetarian", display_order: 2 },
+    { name: "vegan", display_order: 3 },
+    { name: "keto", display_order: 4 },
+    { name: "paleo", display_order: 5 },
+    { name: "gluten_free", display_order: 6 },
+    { name: "special_fusion", display_order: 7 }
   ],
   "Dining Type" => [
-    { name: "cafe", display_order: 1 },
-    { name: "wine_bar", display_order: 2 },
-    { name: "pub", display_order: 3 },
-    { name: "brewery", display_order: 4 },
-    { name: "fast_food", display_order: 5 },
-    { name: "dining_fusion", display_order: 6 }
+    { name: "dining_type", display_order: 1 },
+    { name: "cafe", display_order: 2 },
+    { name: "wine_bar", display_order: 3 },
+    { name: "pub", display_order: 4 },
+    { name: "brewery", display_order: 5 },
+    { name: "fast_food", display_order: 6 },
+    { name: "dining_fusion", display_order: 7 }
   ],
   "Other" => [
     { name: "other", display_order: 1 }
@@ -738,6 +922,10 @@ cuisine_types_by_category = {
 }
 
 ActiveRecord::Base.transaction do
+  # First, clear out all existing cuisine types that aren't associated with restaurants
+  CuisineType.includes(:restaurants).where(restaurants: { id: nil }).destroy_all
+  puts "Removed unused cuisine types"
+  
   cuisine_types_by_category.each do |category_name, cuisine_types|
     category = Category.find_by!(name: category_name)
     
@@ -758,6 +946,39 @@ ActiveRecord::Base.transaction do
   restaurants_updated = Restaurant.where(cuisine_type_id: nil).update_all(cuisine_type_id: other_cuisine.id)
   
   puts "Updated #{restaurants_updated} restaurants with 'Other' cuisine type"
+  
+  # Map old cuisine types to new ones
+  cuisine_type_mapping = {
+    'african' => 'african_fusion',
+    'asian' => 'asian_fusion',
+    'asian_fusion' => 'asian_fusion',
+    'bakery' => 'cafe',
+    'bar' => 'pub',
+    'brunch' => 'cafe',
+    'burger' => 'fast_food',
+    'caribbean' => 'american_fusion',
+    'dim_sum' => 'chinese',
+    'fusion' => 'special_fusion',
+    'middle_eastern' => 'middle_eastern_fusion',
+    'noodles' => 'asian_fusion',
+    'ramen' => 'japanese',
+    'seafood' => 'european_fusion',
+    'steakhouse' => 'american_fusion',
+    'turkish' => 'turkish',
+    # Keeping: taiwanese, portuguese, peruvian, mediterranean
+  }
+  
+  # Update restaurants with mapped cuisine types
+  cuisine_type_mapping.each do |old_name, new_name|
+    old_cuisine = CuisineType.find_by(name: old_name)
+    next unless old_cuisine && old_cuisine.restaurants.any?
+    
+    new_cuisine = CuisineType.find_by(name: new_name)
+    if new_cuisine
+      count = Restaurant.where(cuisine_type_id: old_cuisine.id).update_all(cuisine_type_id: new_cuisine.id)
+      puts "Updated #{count} restaurants from '#{old_name}' to '#{new_name}'"
+    end
+  end
 end
 ```
 
@@ -810,7 +1031,11 @@ Total estimated time: 6-9 days
 
 4. **Testing Coverage**
    - Challenge: Ensuring all edge cases are covered in tests
-   - Mitigation: Add comprehensive tests for each component and integration tests
+   - Mitigation: Add comprehensive tests for each functionality
+
+5. **API Changes**
+   - Challenge: Updating API controllers and serializers
+   - Mitigation: Update API controllers and serializers to handle categorized cuisine types
 
 ## Conclusion
 

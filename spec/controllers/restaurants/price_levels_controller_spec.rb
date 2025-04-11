@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Restaurants::PriceLevelsController, type: :controller do
   let(:organization) { create(:organization) }
   let(:user) { create(:user) }
-  let!(:restaurant) { create(:restaurant, organization: organization) }
+  let!(:restaurant) { create(:restaurant, organization: organization, price_level: 2) }
   let(:locale) { 'en' }
 
   before do
