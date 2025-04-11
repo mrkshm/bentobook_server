@@ -103,13 +103,13 @@ class ListRestaurantsController < ApplicationController
   def set_list
     # Find list that is either owned by or shared with the current organization
     @list = List.find(params[:list_id])
-    
+
     # Check if the list is viewable by the current organization
     unless @list.viewable_by?(Current.organization)
       raise ActiveRecord::RecordNotFound
     end
   rescue ActiveRecord::RecordNotFound
-    render file: 'public/404.html', status: :not_found, layout: false
+    render file: Rails.root.join("public", "404.html").to_s, status: :not_found, layout: false
   end
 
   def ensure_editable
