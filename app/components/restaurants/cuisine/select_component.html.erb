@@ -13,9 +13,9 @@
       <%= form.hidden_field :cuisine_type_name, 
                            value: form.object.cuisine_type&.name,
                            data: { cuisine_type_select_target: "hiddenInput" } %>
-      <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-full mt-1 hidden max-h-60 overflow-auto"
+      <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-full mt-1 hidden max-h-60 overflow-auto z-50"
           data-cuisine-type-select-target="results">
-        <!-- Results will be inserted here by JavaScript -->
+        <!-- Categories and cuisine types will be inserted here by JavaScript -->
       </ul>
     </div>
   </div>
@@ -24,7 +24,10 @@
     <%= turbo_frame_tag dom_id(restaurant, :cuisine_type) do %>
       <% if readonly? %>
         <span class="text-lg text-surface-600">
-          <%= t(restaurant.cuisine_type&.name) %>
+          <%= restaurant.cuisine_type&.translated_name %>
+          <span class="text-sm text-surface-400 ml-1">
+            (<%= restaurant.cuisine_type&.category&.translated_name %>)
+          </span>
         </span>
       <% else %>
         <%= link_to restaurant_path(id: restaurant.id, locale: current_locale, modal: :cuisine_type),
@@ -33,7 +36,10 @@
                 turbo: true,
                 turbo_stream: true
               } do %>
-          <%= t(restaurant.cuisine_type&.name) %>
+          <%= restaurant.cuisine_type&.translated_name %>
+          <span class="text-sm text-surface-400 ml-1">
+            (<%= restaurant.cuisine_type&.category&.translated_name %>)
+          </span>
         <% end %>
       <% end %>
     <% end %>

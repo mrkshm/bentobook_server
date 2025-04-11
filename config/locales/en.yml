@@ -55,6 +55,15 @@ en:
   add_image: "Add Image"
   add_images: "Add Images"
   add_tags_placeholder: "Add Tags..."
+  categories:
+    african: "African"
+    asian: "Asian"
+    european: "European"
+    american: "American"
+    middle_eastern: "Middle Eastern"
+    special: "Special Diets"
+    dining_type: "Dining Type"
+    other: "Other"
   activerecord:
     attributes:
       list:
