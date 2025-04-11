@@ -123,7 +123,6 @@ The new system will organize cuisine types into categories as follows:
     }
   ]
 }
-```
 
 ## Phase 1: Database Changes
 
@@ -646,6 +645,94 @@ class CuisineTypesController < ApplicationController
 end
 ```
 
+### 3.3 Update API Controllers and Serializers
+
+**Task:** Update API controllers and serializers to handle categorized cuisine types
+
+**Implementation:**
+
+```ruby
+# app/controllers/api/v1/cuisine_types_controller.rb (if it exists)
+module Api
+  module V1
+    class CuisineTypesController < ApiBaseController
+      def index
+        @categories = Category.includes(:cuisine_types).ordered
+        
+        render json: {
+          categories: @categories.as_json(
+            only: [:id, :name],
+            include: {
+              cuisine_types: { only: [:id, :name] }
+            }
+          )
+        }
+      end
+      
+      # If you have an endpoint that returns all cuisine types without categories
+      def all
+        @cuisine_types = CuisineType.includes(:category).by_category
+        
+        render json: {
+          cuisine_types: @cuisine_types.as_json(
+            only: [:id, :name],
+            include: {
+              category: { only: [:id, :name] }
+            }
+          )
+        }
+      end
+    end
+  end
+end
+```
+
+```ruby
+# app/serializers/cuisine_type_serializer.rb (if you're using serializers)
+class CuisineTypeSerializer < BaseSerializer
+  attributes :id, :name, :category
+  
+  def category
+    object.category.present? ? { id: object.category.id, name: object.category.name } : nil
+  end
+end
+```
+
+```ruby
+# app/serializers/category_serializer.rb
+class CategorySerializer < BaseSerializer
+  attributes :id, :name
+  
+  has_many :cuisine_types
+end
+```
+
+```ruby
+# Update any other API controllers that use cuisine types
+# For example, in RestaurantsController:
+
+def create
+  @restaurant = Restaurant.new(restaurant_params)
+  @restaurant.organization = Current.organization
+  
+  # If your API allows setting cuisine_type_id directly
+  if params[:restaurant][:cuisine_type_id].present?
+    @restaurant.cuisine_type_id = params[:restaurant][:cuisine_type_id]
+  # If your API uses cuisine_type_name
+  elsif params[:restaurant][:cuisine_type_name].present?
+    result, cuisine_or_error = validate_cuisine_type(params[:restaurant][:cuisine_type_name])
+    
+    if result
+      @restaurant.cuisine_type = cuisine_or_error
+    else
+      return render_error(cuisine_or_error, :unprocessable_entity)
+    end
+  end
+  
+  # Rest of the create action...
+end
+```
+
 ## Phase 4: Frontend Updates
 
 ### 4.1 Update Views
@@ -944,7 +1031,11 @@ Total estimated time: 6-9 days
 
 4. **Testing Coverage**
    - Challenge: Ensuring all edge cases are covered in tests
-   - Mitigation: Add comprehensive tests for each component and integration tests
+   - Mitigation: Add comprehensive tests for each functionality
+
+5. **API Changes**
+   - Challenge: Updating API controllers and serializers
+   - Mitigation: Update API controllers and serializers to handle categorized cuisine types
 
 ## Conclusion
 
