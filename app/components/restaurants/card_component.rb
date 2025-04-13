@@ -6,6 +6,11 @@ module Restaurants
       @restaurant = restaurant
     end
 
+    # Add helper method for view context access
+    def hotwire_native_app?
+      view_context.respond_to?(:hotwire_native_app?) && view_context.hotwire_native_app?
+    end
+
     private
 
     attr_reader :restaurant
