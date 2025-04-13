@@ -16,8 +16,7 @@ module Restaurants
         else
           render turbo_stream: turbo_stream.replace(
             dom_id(@restaurant, :price_level),
-            Restaurants::PriceLevelComponent.new(restaurant: @restaurant).render_in(view_context)
-          )
+            partial: "restaurants/price_levels/display", locals: { restaurant: @restaurant })
         end
       else
         render template: "restaurants/price_levels/edit",

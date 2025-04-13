@@ -1,0 +1,95 @@
+<div class="p-6 max-w-7xl mx-auto">
+  <h1 class="text-2xl font-bold mb-6">Image Variant Diagnostics</h1>
+
+  <% if @image %>
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-bold mb-2">Image #<%= @image.id %> Information</h2>
+      <div class="space-y-2 mb-4">
+        <div><strong>Type:</strong> <%= @image.imageable_type %> #<%= @image.imageable_id %></div>
+        <div><strong>Blob ID:</strong> <%= @image.file.blob.id %></div>
+        <div><strong>Service:</strong> <%= @image.file.blob.service_name %></div>
+        <div><strong>Key:</strong> <%= @image.file.blob.key %></div>
+        <div><strong>Content Type:</strong> <%= @image.file.blob.content_type %></div>
+        <div><strong>Original URL:</strong> <a href="<%= url_for(@image.file) %>" target="_blank" class="text-primary-600 hover:underline"><%= url_for(@image.file) %></a></div>
+      </div>
+      
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-2">Original Image</h3>
+        <img src="<%= url_for(@image.file) %>" class="max-h-64 border" />
+      </div>
+      
+      <div class="bg-surface-50 p-4 rounded mb-6">
+        <h3 class="text-lg font-semibold mb-4">Blob Raw Metadata</h3>
+        <pre class="text-xs overflow-auto bg-surface-100 p-2 rounded"><%= JSON.pretty_generate(@image.file.blob.attributes) %></pre>
+      </div>
+
+      <h3 class="text-lg font-semibold mb-4">Variants Debug</h3>
+      
+      <div class="space-y-8">
+        <% variants = [
+          { name: "Thumbnail (300px WebP)", options: { resize_to_limit: [300, nil], format: :webp, saver: { quality: 65 }} },
+          { name: "Small (600px WebP)", options: { resize_to_limit: [600, nil], format: :webp, saver: { quality: 70 }} },
+          { name: "Medium (1200px WebP)", options: { resize_to_limit: [1200, nil], format: :webp, saver: { quality: 80 }} },
+          { name: "Large (2000px WebP)", options: { resize_to_limit: [2000, nil], format: :webp, saver: { quality: 85 }} },
+          { name: "Original Format (1200px)", options: { resize_to_limit: [1200, nil] }}
+        ] %>
+        
+        <% variants.each do |variant| %>
+          <div class="border p-4 rounded-lg">
+            <h4 class="text-lg font-semibold mb-2"><%= variant[:name] %></h4>
+            <% begin %>
+              <% variant_record = @image.file.variant(variant[:options]) %>
+              <div class="text-sm text-slate-500 mb-2">
+                Variation Digest: <%= variant_record.send(:variation).digest %>
+              </div>
+              <div class="text-sm text-slate-500 mb-4">
+                URL: <a href="<%= url_for(variant_record) %>" target="_blank" class="text-primary-600 hover:underline"><%= url_for(variant_record) %></a>
+              </div>
+              <img src="<%= url_for(variant_record) %>" class="max-h-64 border" />
+            <% rescue => e %>
+              <div class="bg-red-100 text-red-700 p-2 rounded">
+                Error: <%= e.message %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="mt-6">
+      <a href="<%= variants_images_path %>" class="text-primary-600 hover:underline">&larr; Back to all images</a>
+    </div>
+  <% else %>
+    <div class="bg-surface-50 p-6 rounded-lg">
+      <h2 class="text-xl font-semibold mb-4">All Images</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <% Image.all.each do |image| %>
+          <% if image.file.attached? %>
+            <div class="border rounded-lg overflow-hidden bg-white">
+              <div class="p-3 bg-surface-100 flex justify-between items-center">
+                <div class="font-medium">Image #<%= image.id %></div>
+                <div class="text-xs text-slate-500"><%= image.imageable_type %> #<%= image.imageable_id %></div>
+              </div>
+              <%= link_to variants_image_path(image) do %>
+                <div class="h-48 flex items-center justify-center bg-surface-50 relative">
+                  <% begin %>
+                    <%= image_tag url_for(image.file), class: "h-full w-full object-contain" %>
+                  <% rescue => e %>
+                    <div class="text-red-500 text-center p-4 text-sm">
+                      <div class="font-bold">Error loading image</div>
+                      <div class="text-xs mt-1"><%= e.message %></div>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+              <div class="p-3 text-xs">
+                <div><%= image.file.blob.filename %></div>
+                <div class="text-slate-500"><%= image.file.blob.service_name %> • <%= image.file.blob.content_type %></div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
