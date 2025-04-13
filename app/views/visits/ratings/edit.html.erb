@@ -1,0 +1,30 @@
+<%= render partial: "shared/header", locals: { title: t("visits.rating.edit") } %>
+
+<%= turbo_frame_tag dom_id(@visit, :rating) do %>
+  <div class="bg-surface-50 p-4">
+    <%# Add timestamp parameter to form submission URL to prevent caching %>
+    <% timestamp = Time.current.to_i %>
+    <%= form_with model: @visit, 
+                  url: visit_rating_path(visit_id: @visit.id, locale: current_locale, t: timestamp),
+                  data: { 
+                    turbo_frame: hotwire_native_app? ? "_top" : dom_id(@visit, :rating),
+                    turbo_action: hotwire_native_app? ? "replace" : nil
+                  },
+                  method: :patch,
+                  class: "bg-white rounded-lg shadow p-4" do |f| %>
+      <div class="flex justify-center space-x-2">
+        <% 5.times do |i| %>
+          <%= f.button type: "submit",
+                      name: "visit[rating]",
+                      value: i + 1,
+                      formnovalidate: true,
+                      class: "text-3xl focus:outline-none" do %>
+            <span class="<%= i < @visit.rating.to_i ? 'text-yellow-400' : 'text-surface-300' %>">
+              <%= i < @visit.rating.to_i ? '★' : '☆' %>
+            </span>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -5,29 +5,36 @@ module Visits
     before_action :set_visit
 
     def show
-      render(Visits::RatingComponent.new(visit: @visit))
+      render partial: "visits/ratings/display", locals: { visit: @visit }
     end
 
     def edit
-      render(Visits::Rating::FormComponent.new(visit: @visit))
+      render template: "visits/ratings/edit"
     end
 
     def update
       if @visit.update(rating_params)
-        respond_to do |format|
-          if hotwire_native_app?
-            format.html { redirect_to visit_path(id: @visit.id, locale: current_locale) }
-          else
-            format.turbo_stream do
-              render turbo_stream: turbo_stream.update(
-                dom_id(@visit, :rating),
-                Visits::RatingComponent.new(visit: @visit).render_in(view_context)
-              )
-            end
-          end
+        # Force cache control headers to prevent stale data
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+        if hotwire_native_app?
+          # Add timestamp to URL to bust cache
+          timestamp = Time.current.to_i
+          redirect_url = visit_path(id: @visit.id, locale: current_locale, t: timestamp)
+
+          redirect_to redirect_url,
+            data: { turbo_action: "replace", turbo_frame: "_top" }
+        else
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@visit, :rating),
+            partial: "visits/ratings/display", locals: { visit: @visit.reload }
+          )
         end
       else
-        render(Visits::Rating::FormComponent.new(visit: @visit), status: :unprocessable_entity)
+        render template: "visits/ratings/edit",
+               status: :unprocessable_entity
       end
     end
 

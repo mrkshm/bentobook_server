@@ -10,13 +10,25 @@ module Restaurants
     end
 
     def update
+      @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
+
       if @restaurant.update(rating_params)
+        # Force cache control headers to prevent stale data
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
         if hotwire_native_app?
-          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
+          # Add timestamp to URL to bust cache
+          timestamp = Time.current.to_i
+          redirect_url = restaurant_path(id: @restaurant.id, locale: current_locale, t: timestamp)
+
+          redirect_to redirect_url,
+            data: { turbo_action: "replace", turbo_frame: "_top" }
         else
           render turbo_stream: turbo_stream.replace(
             dom_id(@restaurant, :rating),
-            Restaurants::RatingComponent.new(restaurant: @restaurant).render_in(view_context)
+            partial: "restaurants/ratings/display", locals: { restaurant: @restaurant.reload }
           )
         end
       else

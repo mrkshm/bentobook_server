@@ -32,14 +32,8 @@
         <div class="mt-8 grid grid-cols-1 gap-8">
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
             <div class="flex gap-8 hotwire-native:justify-between">
-              <%= render(Restaurants::PriceLevelComponent.new(
-                restaurant: @restaurant,
-                readonly:true
-              )) %>
-              <%= render(Restaurants::RatingComponent.new(
-                restaurant: @restaurant,
-                readonly: true
-              )) %>
+              <%= render "restaurants/price_levels/display", restaurant: @restaurant %>
+              <%= render "restaurants/ratings/display", restaurant: @restaurant, readonly: false %>
             </div>
           </div>
           <!-- Address Section -->

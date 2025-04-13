@@ -177,10 +177,9 @@ Rails.application.routes.draw do
     resource :profile, only: [ :show, :edit, :update ] do
       member do
         patch :update_theme
-        post :change_locale
         delete :avatar, action: :delete_avatar
-        get "/language/edit", to: "profiles#edit_language", as: :edit_language
       end
+      resource :language, only: [ :edit, :update ], module: :profiles
     end
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
     get "/organizations/search", to: "organizations#search", as: :search_organizations, format: :html

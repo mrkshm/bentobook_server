@@ -1,0 +1,30 @@
+<%# locals: (user:, readonly: false) -%>
+<% frame_id = dom_id(user, :language) %>
+
+<% if readonly %>
+  <div class="flex items-center" data-testid="language-component">
+    <div class="text-surface-700">
+      <%= t("locales.#{user.language}") %>
+    </div>
+  </div>
+<% else %>
+  <%= turbo_frame_tag frame_id do %>
+    <%= link_to edit_profile_language_path(locale: I18n.locale),
+          class: "block group",
+          data: {
+            turbo_frame: hotwire_native_app? ? "_top" : nil,
+            turbo_visit_control: hotwire_native_app? ? "reload" : nil,
+            turbo_cache: false,
+            turbo_prefetch: true
+          } do %>
+      <div class="flex items-center" data-testid="language-component">
+        <div class="text-surface-700">
+          <%= t("locales.#{user.language}") %>
+        </div>
+        <div class="ml-2 text-primary-500">
+          <%= heroicon "pencil", options: { class: "h-5 w-5" } %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

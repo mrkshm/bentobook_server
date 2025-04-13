@@ -14,17 +14,21 @@ export default class extends Controller {
 
   handleFiles() {
     const files = this.inputTarget.files;
-    
+
     if (files?.length > 0) {
       this.previewTarget.innerHTML = '';
-      Array.from(files).forEach(file => this.createPreview(file));
+      Array.from(files).forEach(file => {
+        this.createPreview(file);
+      });
     } else {
       this.reset();
     }
   }
 
   createPreview(file) {
-    if (!file.type.startsWith('image/')) return;
+    if (!file.type.startsWith('image/')) {
+      return;
+    }
 
     const reader = new FileReader();
     const preview = document.createElement('div');
@@ -33,10 +37,15 @@ export default class extends Controller {
     const img = document.createElement('img');
     img.className = 'rounded-lg shadow-md w-full h-48 object-cover';
     
+    // Add the preview to the DOM first
+    this.previewTarget.appendChild(preview);
+    
     reader.onload = (e) => {
+      // Set the source and append the image
       img.src = e.target.result;
       preview.appendChild(img);
       
+      // Add remove button
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md text-red-600 hover:text-red-800';
@@ -49,10 +58,18 @@ export default class extends Controller {
         }
       }
       preview.appendChild(removeBtn);
+      
+      // Add filename display
+      const fileNameDisplay = document.createElement('div');
+      fileNameDisplay.className = 'text-xs text-surface-600 truncate mt-1 px-1';
+      fileNameDisplay.textContent = file.name;
+      preview.appendChild(fileNameDisplay);
+    }
+
+    reader.onerror = (e) => {
     }
 
     reader.readAsDataURL(file);
-    this.previewTarget.appendChild(preview);
   }
 
   reset() {

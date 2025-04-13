@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_user_and_organization, only: [ :show, :edit, :update, :change_locale, :delete_avatar ]
+  before_action :set_user_and_organization, only: [ :show, :edit, :update, :delete_avatar ]
 
   def show
     Rails.logger.debug "User language: #{@user.language.inspect}"
@@ -81,20 +81,6 @@ class ProfilesController < ApplicationController
     end
   end
 
-  def change_locale
-    locale = params[:locale].to_s
-
-    if I18n.available_locales.map(&:to_s).include?(locale)
-      session[:locale] = locale
-      @user.update(language: locale)
-
-      # Simple redirect based on platform
-      redirect_to(hotwire_native_app? ? home_dashboard_path(locale: locale) : profile_path(locale: locale))
-    else
-      redirect_to profile_path(locale: current_locale), alert: t(".invalid_locale")
-    end
-  end
-
   def search
     return head(:bad_request) unless request.xhr?
 
@@ -128,13 +114,6 @@ class ProfilesController < ApplicationController
     else
       render json: { status: "error", message: "Invalid theme" }, status: :unprocessable_entity
     end
-  end
-
-  def edit_language
-    @available_locales = I18n.available_locales.map do |locale|
-      { code: locale.to_s, name: I18n.t("locales.#{locale}") }
-    end
-    @current_locale = (@user.language || I18n.locale).to_s
   end
 
   def delete_avatar

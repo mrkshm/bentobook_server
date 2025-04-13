@@ -1,3 +1,6 @@
+<%# locals: (restaurant:, readonly: false) -%>
+<% frame_id = dom_id(restaurant, :price_level) %>
+
 <% if readonly %>
   <div class="flex items-center" data-testid="price-level-component">
     <div class="flex items-center">
@@ -9,15 +12,14 @@
     </div>
   </div>
 <% else %>
-  <%= helpers.turbo_frame_tag frame_id do %>
-    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: current_locale),
+  <%= turbo_frame_tag frame_id do %>
+    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: I18n.locale),
           class: "block group",
-          data: { 
+          data: {
             turbo_frame: hotwire_native_app? ? "_top" : nil,
             turbo_visit_control: hotwire_native_app? ? "reload" : nil,
-            controller: hotwire_native_app? ? "loading" : nil,
-            action: hotwire_native_app? ? "loading#start" : nil,
-            turbo_prefetch: false
+            turbo_cache: false,
+            turbo_prefetch: true
           } do %>
       <div class="flex items-center" data-testid="price-level-component">
         <div class="flex items-center">

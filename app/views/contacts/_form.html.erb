@@ -1,193 +1,120 @@
-<div class="max-w-2xl mx-auto p-4 bg-surface-50">
-  <%= form_with(model: contact, 
-    url: contact.new_record? ? contacts_path : contact_path(id: contact.id), 
-    local: true) do |form| %>
-    
-    <div class="space-y-12">
-      <%# Contact Information Section %>
-      <div class="border-b border-surface-900/10 pb-12">
-
-        <%# Error Messages %>
-        <% if contact.errors.any? %>
-          <div class="mt-6 rounded-md bg-error-50 p-4">
-            <div class="flex">
-              <%= heroicon "exclamation-circle", options: { class: "h-5 w-5 text-error-400" } %>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-error-800">
-                  <%= pluralize(contact.errors.count, "error") %> prohibited this contact from being saved:
-                </h3>
-                <div class="mt-2 text-sm text-error-700">
-                  <ul class="list-disc space-y-1 pl-5">
-                    <% contact.errors.full_messages.each do |message| %>
-                      <li><%= message %></li>
-                    <% end %>
-                  </ul>
-                </div>
-              </div>
-            </div>
+<%# locals: (contact:, submit_text:) -%>
+<div class="max-w-2xl mx-auto p-4">
+  <%= form_with(model: contact, url: contact.persisted? ? contact_path(id: contact.id, locale: nil) : contacts_path(locale: nil), multipart: true, html: { class: "space-y-6" }) do |form| %>
+    <% if contact.errors.any? %>
+      <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <%= heroicon "x-circle", options: { class: "h-5 w-5 text-red-400" } %>
           </div>
-        <% end %>
-
-        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-          <%# Avatar Upload %>
-          <div class="col-span-full">
-            <label class="block text-sm/6 font-medium text-surface-900"><%= t("contacts.form.photo") %></label>
-            <div class="mt-2 flex items-center gap-x-3">
-              <div class="relative size-12 overflow-hidden rounded-full bg-surface-100">
-                <% if contact.avatar_medium.attached? %>
-                  <%= image_tag contact.avatar_medium, 
-                      class: "h-full w-full object-cover", 
-                      id: "current-avatar" %>
-                <% else %>
-                  <%= heroicon "user-circle", options: { class: "size-12 text-surface-300" } %>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800"><%= pluralize(contact.errors.count, "error") %> prohibited this contact from being saved:</h3>
+            <div class="mt-2 text-sm text-red-700">
+              <ul class="list-disc pl-5 space-y-1">
+                <% contact.errors.each do |error| %>
+                  <li><%= error.full_message %></li>
                 <% end %>
-              </div>
-              <div class="relative">
-                <%= form.file_field :avatar,
-                  onchange: "previewAvatar(this);",
-                  class: "sr-only",
-                  accept: "image/*",
-                  id: "avatar-upload" %>
-                <label for="avatar-upload"
-                  class: "rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-surface-900 
-                        shadow-sm ring-1 ring-inset ring-surface-300 hover:bg-surface-50 cursor-pointer">
-                  <%= t("contacts.form.change_photo") %>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <%# Name Field %>
-          <div class="sm:col-span-4">
-            <%= form.label :name, 
-                class: "block text-sm/6 font-medium text-surface-900" %>
-            <div class="mt-2">
-              <%= form.text_field :name, 
-                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
-                          text-surface-900 outline-1 outline-surface-300 
-                          placeholder:text-surface-400 focus:outline-2 
-                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
-            </div>
-          </div>
-
-          <%# Email Field %>
-          <div class="sm:col-span-4">
-            <%= form.label :email, 
-                class: "block text-sm/6 font-medium text-surface-900" %>
-            <div class="mt-2">
-              <%= form.email_field :email, 
-                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
-                          text-surface-900 outline-1 outline-surface-300 
-                          placeholder:text-surface-400 focus:outline-2 
-                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
-            </div>
-          </div>
-
-          <%# Location Fields %>
-          <div class="sm:col-span-3">
-            <%= form.label :city, 
-                class: "block text-sm/6 font-medium text-surface-900" %>
-            <div class="mt-2">
-              <%= form.text_field :city, 
-                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
-                          text-surface-900 outline-1 outline-surface-300 
-                          placeholder:text-surface-400 focus:outline-2 
-                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
-            </div>
-          </div>
-
-          <div class="sm:col-span-3">
-            <%= form.label :country, 
-                class: "block text-sm/6 font-medium text-surface-900" %>
-            <div class="mt-2">
-              <%= form.text_field :country, 
-                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
-                          text-surface-900 outline-1 outline-surface-300 
-                          placeholder:text-surface-400 focus:outline-2 
-                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
-            </div>
-          </div>
-
-          <%# Phone Field %>
-          <div class="sm:col-span-4">
-            <%= form.label :phone, 
-                class: "block text-sm/6 font-medium text-surface-900" %>
-            <div class="mt-2">
-              <%= form.telephone_field :phone, 
-                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
-                          text-surface-900 outline-1 outline-surface-300 
-                          placeholder:text-surface-400 focus:outline-2 
-                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
-            </div>
-          </div>
-
-          <%# Notes Field %>
-          <div class="col-span-full">
-            <%= form.label :notes, 
-                class: "block text-sm/6 font-medium text-surface-900" %>
-            <div class="mt-2">
-              <%= form.text_area :notes, rows: 3,
-                  class: "block w-full rounded-md bg-white px-3 py-1.5 text-base 
-                          text-surface-900 outline-1 outline-surface-300 
-                          placeholder:text-surface-400 focus:outline-2 
-                          focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm/6" %>
+              </ul>
             </div>
           </div>
         </div>
       </div>
+    <% end %>
+
+    <div class="rounded-lg bg-surface-50 shadow-sm p-6 space-y-6">
+      <%# Avatar upload field %>
+      <div>
+        <%= form.label :avatar, class: "block text-sm font-medium text-surface-700" %>
+        <div class="mt-2 flex items-center gap-4" data-controller="image-preview">
+          <%# Existing avatar display %>
+          <%= render(AvatarComponent.new(
+            contact: contact,
+            text: contact.name,
+            size: :lg
+          )) %>
+          
+          <div class="flex-grow">
+            <%# Hidden file input triggered by Stimulus %>
+            <%= form.file_field :avatar, 
+                accept: "image/jpeg,image/png,image/gif,image/webp", 
+                class: "sr-only", 
+                data: { 
+                  image_preview_target: "input", 
+                  action: "change->image-preview#handleFiles"
+                } %>
+
+            <%# Button to trigger the file input %>
+            <button type="button" 
+                    data-action="click->image-preview#triggerFileInput" 
+                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-surface-700 bg-white border border-surface-300 rounded-md shadow-sm hover:bg-surface-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+              <%= heroicon "arrow-up-tray", options: { class: "w-4 h-4 mr-2" } %>
+              Change Avatar
+            </button>
+
+            <p class="mt-1 text-xs text-surface-500">JPG, PNG, GIF, WebP up to 10MB</p>
+            
+            <%# Preview area %>
+            <div data-image-preview-target="preview" class="mt-2 grid grid-cols-3 gap-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <%# Name field %>
+      <div>
+        <%= form.label :name, class: "block text-sm font-medium text-surface-700" %>
+        <div class="mt-1">
+          <%= form.text_field :name, class: "block w-full rounded-md border-surface-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50" %>
+        </div>
+      </div>
+
+      <%# Email field %>
+      <div>
+        <%= form.label :email, class: "block text-sm font-medium text-surface-700" %>
+        <div class="mt-1">
+          <%= form.email_field :email, class: "block w-full rounded-md border-surface-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50" %>
+        </div>
+      </div>
+
+      <%# Location fields %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <%= form.label :city, class: "block text-sm font-medium text-surface-700" %>
+          <div class="mt-1">
+            <%= form.text_field :city, class: "block w-full rounded-md border-surface-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50" %>
+          </div>
+        </div>
+
+        <div>
+          <%= form.label :country, class: "block text-sm font-medium text-surface-700" %>
+          <div class="mt-1">
+            <%= form.text_field :country, class: "block w-full rounded-md border-surface-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50" %>
+          </div>
+        </div>
+      </div>
+
+      <%# Phone number %>
+      <div>
+        <%= form.label :phone, class: "block text-sm font-medium text-surface-700" %>
+        <div class="mt-1">
+          <%= form.telephone_field :phone, class: "block w-full rounded-md border-surface-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50" %>
+        </div>
+      </div>
+
+      <%# Notes field %>
+      <div>
+        <%= form.label :notes, class: "block text-sm font-medium text-surface-700" %>
+        <div class="mt-1">
+          <%= form.text_area :notes, rows: 4, class: "block w-full rounded-md border-surface-300 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50" %>
+        </div>
+      </div>
     </div>
 
-    <%# Form Actions %>
-    <div class="mt-6 flex items-center justify-between gap-x-6">
-      
-      <% unless contact.new_record? %>
-        <%= link_to contact_path(id: contact.id),
-              class: "inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600",
-              data: { 
-                turbo_method: :delete,
-                turbo_confirm: t("contacts.confirm_delete") 
-              } do %>
-          <%= heroicon "trash", options: { class: "w-5 h-5" } %>
-          <%= t("delete") %>
-        <% end %>
-      <% else %>
-        <div></div> <!-- Empty div to maintain the justify-between spacing -->
+    <%# Submit buttons %>
+    <div class="flex justify-end gap-3">
+      <%= link_to contacts_path(locale: nil), class: "inline-flex items-center px-4 py-2 text-sm font-medium text-surface-700 hover:text-surface-900" do %>
+        <%= t("cancel") %>
       <% end %>
-      
-      <div class="space-x-4">
-        <%= link_to t("cancel"), contacts_path,
-            class: "text-sm/6 font-semibold text-surface-900 hover:text-surface-700" %>
-        <%= form.submit submit_text,
-            class: "rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white 
-                   shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 
-                   focus-visible:outline-offset-2 focus-visible:outline-primary-600" %>
-      </div>
+      <%= form.submit submit_text, class: "inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" %>
     </div>
   <% end %>
 </div>
-
-<script>
-function previewAvatar(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-      // Find the avatar container and create/update image
-      const container = document.querySelector('.size-12');
-      let previewImg = document.getElementById('current-avatar');
-      
-      if (!previewImg) {
-        previewImg = document.createElement('img');
-        previewImg.id = 'current-avatar';
-        previewImg.className = 'h-full w-full object-cover';
-        container.innerHTML = '';
-        container.appendChild(previewImg);
-      }
-      
-      previewImg.src = e.target.result;
-    };
-
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-</script>

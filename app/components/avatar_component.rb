@@ -84,11 +84,18 @@ class AvatarComponent < ViewComponent::Base
   def render_avatar
     wrapper_classes = [ "inline-block", SIZES[@size] || SIZES[:md], "rounded-full" ]
 
+    # Log avatar URLs for debugging
+    thumbnail_url = Rails.application.routes.url_helpers.rails_blob_url(@entity.avatar_thumbnail, only_path: true) rescue "N/A"
+    medium_url = Rails.application.routes.url_helpers.rails_blob_url(@entity.avatar_medium, only_path: true) rescue "N/A"
+    puts "Avatar URLs for #{resolve_name}:"
+    puts "  Thumbnail: #{thumbnail_url}"
+    puts "  Medium: #{medium_url}"
+
     content_tag :div, class: wrapper_classes.join(" ") do
       # Use thumbnail for small sizes, medium for larger ones
       avatar = %i[xs sm].include?(@size) ? @entity.avatar_thumbnail : @entity.avatar_medium
       # Add HTML comment with image size info before the image tag
-      comment = "<!-- Avatar: #{avatar.blob.filename} (#{ActiveSupport::NumberHelper.number_to_human_size(avatar.blob.byte_size)}) -->"
+      comment = "<!-- Avatar: #{avatar.blob.filename} (#{ActiveSupport::NumberHelper.number_to_human_size(avatar.blob.byte_size)}) URL: #{Rails.application.routes.url_helpers.rails_blob_url(avatar, only_path: true)} -->"
       (comment + image_tag(avatar,
         class: "rounded-full object-cover w-full h-full",
         alt: resolve_name || "Avatar")).html_safe

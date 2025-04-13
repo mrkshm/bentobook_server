@@ -1,3 +1,4 @@
+<%# locals: (form:, visit:) -%>
 <div class="space-y-6 py-4 px-4 bg-surface-50">
   <div class="mb-4 max-w-lg">
     <%= form.label :restaurant_id, t("select_restaurant"), class: "block text-sm/6 font-medium text-surface-900" %>
@@ -12,10 +13,10 @@
   </div>
 
   <div class="mb-4 max-w-lg">
-  <%= form.label :date, t("date"), class: "block text-sm font-medium text-surface-900 mb-1" %>
-  <%= form.date_field :date, value: visit.date || Date.current, 
-                     class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
-</div>
+    <%= form.label :date, t("date"), class: "block text-sm font-medium text-surface-900 mb-1" %>
+    <%= form.date_field :date, value: visit.date || Date.current, 
+                      class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm" %>
+  </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
     <div class="mb-4 md:col-span-2">
@@ -89,3 +90,30 @@
 </div>
 
 <%= turbo_frame_tag "new_contact" %>
+
+<script data-turbo-eval="false">
+  document.addEventListener('turbo:load', () => {
+    // Fix for avatar preview
+    const avatarInputs = document.querySelectorAll('input[type="file"][accept="image/*"]');
+    avatarInputs.forEach(input => {
+      const previewElement = input.nextElementSibling?.querySelector('.avatar-preview');
+      if (!previewElement) return;
+      
+      input.addEventListener('change', (event) => {
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          
+          reader.onload = (e) => {
+            // Clear any existing style that might interfere with the display
+            previewElement.style.removeProperty('background-color');
+            previewElement.style.backgroundImage = `url('${e.target.result}')`;
+            previewElement.style.backgroundSize = 'cover';
+            previewElement.style.backgroundPosition = 'center';
+          };
+          
+          reader.readAsDataURL(input.files[0]);
+        }
+      });
+    });
+  });
+</script>

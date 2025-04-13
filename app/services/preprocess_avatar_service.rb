@@ -23,8 +23,8 @@ class PreprocessAvatarService
   }.freeze
 
   class << self
-    def call(upload)
-      new(upload).process
+    def call(upload_file)
+      new(upload_file).process
     end
 
     private
@@ -34,8 +34,8 @@ class PreprocessAvatarService
     end
   end
 
-  def initialize(upload)
-    @upload = upload
+  def initialize(upload_file)
+    @upload = upload_file
     @variants = {}
   end
 
@@ -53,8 +53,15 @@ class PreprocessAvatarService
 
   def validate_upload!
     raise "No file uploaded" if @upload.nil?
-    raise "File too large" if @upload.size > MAX_FILE_SIZE
-    raise "Invalid file type" unless ALLOWED_CONTENT_TYPES.include?(@upload.content_type)
+
+    # Check if it's an uploaded file with proper methods
+    if @upload.respond_to?(:size)
+      raise "File too large" if @upload.size > MAX_FILE_SIZE
+    end
+
+    if @upload.respond_to?(:content_type)
+      raise "Invalid file type" unless ALLOWED_CONTENT_TYPES.include?(@upload.content_type)
+    end
   end
 
   def process_all_variants

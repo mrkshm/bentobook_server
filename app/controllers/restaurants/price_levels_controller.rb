@@ -12,12 +12,12 @@ module Restaurants
     def update
       if @restaurant.update(price_level_params)
         if hotwire_native_app?
-          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
+          timestamp = Time.current.to_i
+          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale, t: timestamp)
         else
           render turbo_stream: turbo_stream.replace(
             dom_id(@restaurant, :price_level),
-            Restaurants::PriceLevelComponent.new(restaurant: @restaurant).render_in(view_context)
-          )
+            partial: "restaurants/price_levels/display", locals: { restaurant: @restaurant })
         end
       else
         render template: "restaurants/price_levels/edit",

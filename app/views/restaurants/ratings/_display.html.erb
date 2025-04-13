@@ -1,9 +1,12 @@
+<%# locals: (restaurant:, readonly: false) -%>
+
 <%
   # Calculate the rating once
   star_count = restaurant.respond_to?(:rating) && restaurant.rating ? restaurant.rating.to_i : 0
+  frame_id = dom_id(restaurant, :rating)
 %>
 
-<% if readonly? %>
+<% if readonly %>
   <div class="flex items-center" data-testid="rating-component">
     <div class="flex items-center">
       <% star_count.times do %>
@@ -24,9 +27,14 @@
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
-    <%= link_to restaurant_path(id: restaurant.id, locale: nil, modal: :rating),
+    <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id, locale: I18n.locale),
           class: "cursor-pointer",
-          data: { turbo_frame: frame_id } do %>
+          data: {
+            turbo_frame: hotwire_native_app? ? "_top" : frame_id,
+            turbo_visit_control: hotwire_native_app? ? "reload" : nil,
+            turbo_cache: false,
+            turbo_prefetch: true
+          } do %>
       <div class="flex items-center" data-testid="rating-component">
         <div class="flex items-center">
           <% star_count.times do %>

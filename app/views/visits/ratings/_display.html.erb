@@ -1,0 +1,23 @@
+<%# locals: (visit:, readonly: false) -%>
+
+<% if readonly %>
+  <div class="flex items-center gap-1">
+    <% (1..5).each do |rating_value| %>
+      <%= heroicon "star", options: { 
+        class: "w-6 h-6 #{visit.rating.present? && rating_value <= visit.rating ? 'text-yellow-400' : 'text-surface-300'}" 
+      } %>
+    <% end %>
+  </div>
+<% else %>
+  <%= turbo_frame_tag dom_id(visit, :rating) do %>
+    <%= link_to edit_visit_rating_path(visit_id: visit.id, locale: current_locale),
+        class: "flex items-center gap-1 group",
+        data: { turbo_frame: hotwire_native_app? ? "_top" : dom_id(visit, :rating) } do %>
+      <% (1..5).each do |rating_value| %>
+        <%= heroicon "star", options: { 
+          class: "w-6 h-6 #{visit.rating.present? && rating_value <= visit.rating ? 'text-yellow-400' : 'text-surface-300'}" 
+        } %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

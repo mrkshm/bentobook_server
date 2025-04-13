@@ -19,17 +19,11 @@
             <span><%= restaurant.cuisine_type.name %></span>
             <span class="mx-2">·</span>
           <% end %>
-          <%= render(Restaurants::PriceLevelComponent.new(
-            restaurant: restaurant,
-            readonly: true
-          )) %>
+          <%= render "restaurants/price_levels/display", restaurant: restaurant, readonly: true %>
         </div>
 
         <div class="mt-2">
-          <%= render(Restaurants::RatingComponent.new(
-            restaurant: restaurant,
-            readonly: true
-          )) %>
+          <%= render "restaurants/ratings/display", restaurant: restaurant, readonly: true %>
         </div>
 
         <% if restaurant.tags.any? %>
