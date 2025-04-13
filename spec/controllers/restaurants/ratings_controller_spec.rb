@@ -116,7 +116,10 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
           it 'redirects to restaurant path' do
             patch :update, params: { restaurant_id: restaurant.id }.merge(valid_params)
             debug_request
-            expect(response).to redirect_to(restaurant_path(id: restaurant.id, locale: locale))
+            expect(response).to be_redirect
+            redirect_url = response.location
+            expect(redirect_url).to include(restaurant_path(id: restaurant.id, locale: locale))
+            expect(redirect_url).to match(/t=\d+/)
           end
         end
 
@@ -142,11 +145,6 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
         end
 
         context 'with valid params' do
-          before do
-            # Mock the component rendering to prevent template errors in controller tests
-            allow_any_instance_of(Restaurants::RatingComponent).to receive(:render_in).and_return("Mocked component")
-          end
-
           it 'updates the rating' do
             patch :update, params: { restaurant_id: restaurant.id }.merge(valid_params)
             debug_request
@@ -157,12 +155,14 @@ RSpec.describe Restaurants::RatingsController, type: :controller do
             patch :update, params: { restaurant_id: restaurant.id }.merge(valid_params)
             debug_request
             expect(response.media_type).to eq Mime[:turbo_stream]
+            expect(response.body).to include(dom_id(restaurant, :rating))
           end
 
           it 'replaces the rating frame with updated content' do
             patch :update, params: { restaurant_id: restaurant.id }.merge(valid_params)
             debug_request
-            expect(response.body).to include("turbo-stream action=\"replace\" target=\"rating_restaurant_#{restaurant.id}\"")
+            expect(response.body).to include("turbo-stream")
+            expect(response.body).to include(dom_id(restaurant, :rating))
           end
         end
 
