@@ -11,13 +11,48 @@ class RestaurantsController < ApplicationController
     order_params = parse_order_params
     return if performed?
 
+
     items_per_page = params[:per_page].to_i.positive? ? params[:per_page].to_i : 12
     page = params[:page].to_i.positive? ? params[:page].to_i : 1
 
+    # Start with the base scope
     restaurants_scope = Current.organization.restaurants.with_google.includes(:visits, :cuisine_type, :tags)
+    
+    # Merge all query parameters for the view and pagination
+    @query_params = {
+      search: params[:search],
+      tag: params[:tag],
+      order_by: params[:order_by],
+      order_direction: params[:order_direction],
+      per_page: items_per_page
+    }.compact
+
+    # Add location params if present for distance sorting
+    if params[:latitude].present? && params[:longitude].present?
+      @query_params[:latitude] = params[:latitude].to_f
+      @query_params[:longitude] = params[:longitude].to_f
+    end
+
+    # Apply search and filters first
     query_params = search_params.merge(order_params)
-    @restaurants = RestaurantQuery.new(restaurants_scope, query_params).call
-    @pagy, @restaurants = pagy_countless(@restaurants, items: items_per_page, page: page)
+    
+    # For distance sorting, we'll handle pagination differently
+    if params[:order_by] == 'distance' && params[:latitude].present? && params[:longitude].present?
+      # Get the query with distance calculation and proper ordering
+      query = RestaurantQuery.new(restaurants_scope, query_params).call
+      
+      # Use pagy_countless with the pre-ordered query
+      @pagy, @restaurants = pagy_countless(
+        query,
+        items: items_per_page,
+        page: page
+      )
+    else
+      # For other sort orders, use the standard approach
+      @restaurants = RestaurantQuery.new(restaurants_scope, query_params).call
+      @pagy, @restaurants = pagy_countless(@restaurants, items: items_per_page, page: page)
+    end
+    
     @tags = ActsAsTaggableOn::Tag.most_used(10)
 
     respond_to do |format|

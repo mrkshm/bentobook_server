@@ -16,7 +16,8 @@ class RestaurantQuery
       scoped = search(scoped)
       scoped = filter_by_tag(scoped)
       scoped = sort(scoped)
-      scoped.order(:id)
+      # Remove the default order(:id) as it can override our custom sorting
+      scoped
     end
 
     private
@@ -45,14 +46,14 @@ class RestaurantQuery
       when "distance"
         sort_by_distance(scoped)
       when "created_at"
-        scoped.order(restaurants: { created_at: order_direction })
+        scoped.reorder(created_at: order_direction, id: :asc)
       when "rating"
-        scoped.order(restaurants: { rating: order_direction })
+        scoped.reorder(rating: order_direction, id: :asc)
       when "price_level"
-        scoped.order(restaurants: { price_level: order_direction })
+        scoped.reorder(price_level: order_direction, id: :asc)
       else
-        # Fix the reference to google_restaurants by using the proper join alias
-        scoped.order(Arel.sql("LOWER(restaurants.name) #{order_direction}"))
+        # For name or default sorting, use case-insensitive sort with ID as secondary sort
+        scoped.reorder(Arel.sql("LOWER(restaurants.name) #{order_direction}"), id: :asc)
       end
     end
 
@@ -62,10 +63,21 @@ class RestaurantQuery
       lat = params[:latitude].to_f
       lon = params[:longitude].to_f
 
-      # Using the Pythagorean theorem for approximate distance calculation in tests
-      # This avoids the need for PostGIS functions in tests
-      scoped.select("restaurants.*,
-        SQRT(POW(restaurants.latitude - #{lat}, 2) + POW(restaurants.longitude - #{lon}, 2)) as distance")
-        .order("distance")
+      # Calculate distance with consistent precision
+      distance_sql = <<~SQL.squish
+        CAST(ROUND(
+          SQRT(
+            POW(CAST(restaurants.latitude AS DECIMAL(15, 10)) - #{lat}, 2) + 
+            POW(CAST(restaurants.longitude AS DECIMAL(15, 10)) - #{lon}, 2)
+          ), 
+          8
+        ) AS DECIMAL(15, 8))
+      SQL
+
+      # First, select with the distance calculation
+      scoped = scoped.select("restaurants.*, #{distance_sql} as distance")
+      
+      # Then order by the calculated distance and ID
+      scoped.reorder("distance ASC, restaurants.id ASC")
     end
 end

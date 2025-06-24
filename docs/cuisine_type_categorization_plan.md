@@ -1,4 +1,4 @@
-# Cuisine Type Categorization Implementation Plan
+****# Cuisine Type Categorization Implementation Plan
 
 This document outlines the detailed plan to transition from the current flat cuisine type structure to a hierarchical categorization system.
 
@@ -59,20 +59,22 @@ The new system will organize cuisine types into categories as follows:
     {
       "name": "european",
       "cuisine_types": [
-        "European",
-        "French",
-        "Italian",
-        "Spanish",
-        "Greek",
-        "German",
-        "Austrian",
-        "Austrian",
-        "Swiss",
-        "British",
-        "Portuguese",
-        "Mediterranean",
-        "Scandinavian",
-        "European Fusion"
+        "european",
+        "french",
+        "italian",
+        "spanish",
+        "greek",
+        "belgian",
+        "dutch",
+        "flemish",
+        "german",
+        "austrian",
+        "swiss",
+        "british",
+        "portuguese",
+        "mediterranean",
+        "scandinavian",
+        "european fusion"
       ]
     },
     {
@@ -133,6 +135,7 @@ The new system will organize cuisine types into categories as follows:
     {
       "name": "dietary",
       "cuisine_types": [
+        "generic",
         "vegetarian",
         "vegan",
         "keto",

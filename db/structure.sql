@@ -202,38 +202,6 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
--- Name: categories; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.categories (
-    id bigint NOT NULL,
-    name character varying NOT NULL,
-    display_order integer DEFAULT 0,
-    created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
-);
-
-
---
--- Name: categories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.categories_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.categories_id_seq OWNED BY public.categories.id;
-
-
---
 -- Name: contacts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -271,6 +239,38 @@ ALTER SEQUENCE public.contacts_id_seq OWNED BY public.contacts.id;
 
 
 --
+-- Name: cuisine_categories; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.cuisine_categories (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    display_order integer DEFAULT 0,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: cuisine_categories_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.cuisine_categories_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: cuisine_categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.cuisine_categories_id_seq OWNED BY public.cuisine_categories.id;
+
+
+--
 -- Name: cuisine_types; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -279,8 +279,8 @@ CREATE TABLE public.cuisine_types (
     name character varying,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    category_id bigint,
-    display_order integer DEFAULT 0
+    display_order integer DEFAULT 0,
+    cuisine_category_id bigint NOT NULL
 );
 
 
@@ -910,17 +910,17 @@ ALTER TABLE ONLY public.allowlisted_jwts ALTER COLUMN id SET DEFAULT nextval('pu
 
 
 --
--- Name: categories id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.categories ALTER COLUMN id SET DEFAULT nextval('public.categories_id_seq'::regclass);
-
-
---
 -- Name: contacts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.contacts ALTER COLUMN id SET DEFAULT nextval('public.contacts_id_seq'::regclass);
+
+
+--
+-- Name: cuisine_categories id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cuisine_categories ALTER COLUMN id SET DEFAULT nextval('public.cuisine_categories_id_seq'::regclass);
 
 
 --
@@ -1076,19 +1076,19 @@ ALTER TABLE ONLY public.ar_internal_metadata
 
 
 --
--- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.categories
-    ADD CONSTRAINT categories_pkey PRIMARY KEY (id);
-
-
---
 -- Name: contacts contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.contacts
     ADD CONSTRAINT contacts_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: cuisine_categories cuisine_categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cuisine_categories
+    ADD CONSTRAINT cuisine_categories_pkey PRIMARY KEY (id);
 
 
 --
@@ -1284,20 +1284,6 @@ CREATE INDEX index_allowlisted_jwts_on_user_id ON public.allowlisted_jwts USING 
 
 
 --
--- Name: index_categories_on_display_order; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_categories_on_display_order ON public.categories USING btree (display_order);
-
-
---
--- Name: index_categories_on_name; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_categories_on_name ON public.categories USING btree (name);
-
-
---
 -- Name: index_contacts_on_name_and_organization_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1312,10 +1298,17 @@ CREATE INDEX index_contacts_on_organization_id ON public.contacts USING btree (o
 
 
 --
--- Name: index_cuisine_types_on_category_id; Type: INDEX; Schema: public; Owner: -
+-- Name: index_cuisine_categories_on_name; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_cuisine_types_on_category_id ON public.cuisine_types USING btree (category_id);
+CREATE UNIQUE INDEX index_cuisine_categories_on_name ON public.cuisine_categories USING btree (name);
+
+
+--
+-- Name: index_cuisine_types_on_cuisine_category_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_cuisine_types_on_cuisine_category_id ON public.cuisine_types USING btree (cuisine_category_id);
 
 
 --
@@ -1757,6 +1750,14 @@ ALTER TABLE ONLY public.restaurants
 
 
 --
+-- Name: cuisine_types fk_rails_2c9f9d97a8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cuisine_types
+    ADD CONSTRAINT fk_rails_2c9f9d97a8 FOREIGN KEY (cuisine_category_id) REFERENCES public.cuisine_categories(id);
+
+
+--
 -- Name: restaurant_copies fk_rails_3ea502fa9a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1877,14 +1878,6 @@ ALTER TABLE ONLY public.contacts
 
 
 --
--- Name: cuisine_types fk_rails_c07a12ca22; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.cuisine_types
-    ADD CONSTRAINT fk_rails_c07a12ca22 FOREIGN KEY (category_id) REFERENCES public.categories(id);
-
-
---
 -- Name: restaurants fk_rails_c2e9970bf8; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1955,6 +1948,12 @@ ALTER TABLE ONLY public.shares
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250624133403'),
+('20250624132727'),
+('20250624130031'),
+('20250624125433'),
+('20250624123817'),
+('20250624123753'),
 ('20250411153415'),
 ('20250411153403'),
 ('20250411153340'),

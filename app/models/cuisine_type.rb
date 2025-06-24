@@ -20,7 +20,7 @@
 #  fk_rails_...  (category_id => categories.id)
 #
 class CuisineType < ApplicationRecord
-  belongs_to :category, optional: true
+  belongs_to :cuisine_category
   has_many :restaurants
 
   validates :name, presence: true, uniqueness: {case_sensitive: false}
