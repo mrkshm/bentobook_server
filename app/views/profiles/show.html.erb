@@ -40,7 +40,8 @@
           </button>
         </div>
       </div>
-      <div data-controller="bridge--theme" data-bridge--theme-theme-value="<%= @user.theme || 'light' %>"></div>
+      # <div data-controller="bridge--theme" data-bridge--theme-theme-value="<%= @user.theme || 'light' %>"></div>
+      <div data-controller="bridge--theme" data-bridge--theme-theme-value="<%= 'dark' %>"></div>
 
       <div>
         <h4 class="font-semibold mb-2 text-surface-900"><%= t('profiles.language') %></h4>
@@ -49,3 +50,35 @@
     </div>
   </div>
 </div>
+
+<%= content_for :scripts do %>
+  <script>
+    document.addEventListener('turbo:load', () => {
+      document.querySelectorAll('.theme-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const theme = button.dataset.theme;
+          fetch('<%= update_theme_profile_path(locale: nil) %>', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ theme })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              // Update the bridge component with new theme
+              const bridgeElement = document.querySelector('[data-controller="bridge--theme"]');
+              if (bridgeElement) {
+                bridgeElement.setAttribute('data-bridge--theme-theme-value', theme);
+              }
+              document.querySelectorAll('.theme-button').forEach(btn => btn.classList.remove('active'));
+              button.classList.add('active');
+            }
+          });
+        });
+      });
+    });
+  </script>
+<% end %>

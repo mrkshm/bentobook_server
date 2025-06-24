@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_user_and_organization, only: [ :show, :edit, :update, :delete_avatar ]
+  before_action :set_user_and_organization, only: [ :show, :edit, :update, :delete_avatar, :update_theme ]
 
   def show
     Rails.logger.debug "User language: #{@user.language.inspect}"

@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: organizations
+#
+#  id         :bigint           not null, primary key
+#  about      :text
+#  email      :string
+#  name       :string
+#  username   :string
+#  created_at :datetime         not null
+#  updated_at :datetime         not null
+#
 require 'rails_helper'
 
 RSpec.describe Organization, type: :model do

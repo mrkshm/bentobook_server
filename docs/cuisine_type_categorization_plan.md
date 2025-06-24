@@ -18,33 +18,46 @@ The new system will organize cuisine types into categories as follows:
 {
   "categories": [
     {
-      "name": "African",
+      "name": "african",
       "cuisine_types": [
-        "African",
-        "Ethiopian",
-        "Eritrean",
-        "Senegalese",
-        "Moroccan",
-        "South African",
-        "African Fusion"
+        "generic",
+        "ethiopian",
+        "eritrean",
+        "nigerian",
+        "egyptian",
+        "senegalese",
+        "moroccan",
+        "south_african",
+        "ghanaian",
+        "somali",
+        "african_fusion",
+        "congolese"
       ]
     },
     {
-      "name": "Asian",
+      "name": "asian",
       "cuisine_types": [
-        "Asian",
-        "Chinese",
-        "Japanese",
-        "Korean",
-        "Thai",
-        "Vietnamese",
-        "Indian",
-        "Taiwanese",
-        "Asian Fusion"
+        "generic",
+        "chinese",
+        "japanese",
+        "korean",
+        "thai",
+        "vietnamese",
+        "indian",
+        "pakistani",
+        "indonesian",
+        "malaysian",
+        "filipino",
+        "singaporean",
+        "sri_lankan",
+        "central_asian",
+        "tibetan_nepalese",
+        "burmese_myanmar",
+        "asian_fusion"
       ]
     },
     {
-      "name": "European",
+      "name": "european",
       "cuisine_types": [
         "European",
         "French",
@@ -52,9 +65,7 @@ The new system will organize cuisine types into categories as follows:
         "Spanish",
         "Greek",
         "German",
-        "Polish",
-        "Hungarian",
-        "Russian",
+        "Austrian",
         "Austrian",
         "Swiss",
         "British",
@@ -65,60 +76,86 @@ The new system will organize cuisine types into categories as follows:
       ]
     },
     {
-      "name": "American",
+      "name": "eastern_european",
       "cuisine_types": [
-        "American",
-        "US",
-        "Southern",
-        "BBQ",
-        "Soul Food",
-        "Mexican",
-        "Brazilian",
-        "Peruvian",
-        "Cajun",
-        "American Fusion"
+        "generic",
+        "eastern_european_fusion",
+        "polish",
+        "hungarian",
+        "russian",
+        "czech_slovak",
+        "baltic",
+        "romanian",
+        "bulgarian",
+        "georgian",
+        "armenian",
+        "balkan",
+        "ukrainian"
       ]
     },
     {
-      "name": "Middle Eastern",
+      "name": "americas",
       "cuisine_types": [
-        "Middle Eastern",
-        "Lebanese",
-        "Turkish",
-        "Israeli",
-        "Persian",
-        "Arabic",
-        "Middle Eastern Fusion"
+        "generic",
+        "usa",
+        "southern",
+        "mexican",
+        "brazilian",
+        "argentinean",
+        "caribbean",
+        "chilean",
+        "colombien",
+        "venezuelan",
+        "peruvian",
+        "american_fusion"
       ]
     },
     {
-      "name": "Special",
+      "name": "middle_eastern",
       "cuisine_types": [
-        "Special",
-        "Vegetarian",
-        "Vegan",
-        "Keto",
-        "Paleo",
-        "Gluten-Free",
-        "Special Fusion"
+        "generic",
+        "lebanese",
+        "turkish",
+        "israeli",
+        "persian",
+        "arabic",
+        "egyptian",
+        "israeli",
+        "iraqi",
+        "yemeni",
+        "gulf",
+        "persian",
+        "syrian",
+        "levantine",
+        "middle-eastern-fusion"
       ]
     },
     {
-      "name": "Dining Type",
+      "name": "dietary",
       "cuisine_types": [
-        "Dining Type",
-        "Cafe",
-        "Wine Bar",
-        "Pub",
-        "Brewery",
-        "Fast Food",
-        "Dining Fusion"
+        "vegetarian",
+        "vegan",
+        "keto",
+        "paleo",
+        "gluten_free",
       ]
     },
     {
-      "name": "Other",
+      "name": "social",
       "cuisine_types": [
-        "Other"
+        "generic",
+        "bar",
+        "cafe",
+        "wine_bar",
+        "pub",
+        "brewery",
+        "fast_food",
+      ]
+    },
+    {
+      "name": "other",
+      "cuisine_types": [
+        "other"
       ]
     }
   ]
@@ -184,7 +221,7 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
     # First, clear out all existing cuisine types that aren't associated with restaurants
     CuisineType.includes(:restaurants).where(restaurants: { id: nil }).destroy_all
     puts "Removed unused cuisine types"
-    
+
     categories = [
       { name: "African", display_order: 1 },
       { name: "Asian", display_order: 2 },
@@ -202,9 +239,9 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
           category.display_order = category_data[:display_order]
         end
       end
-      
+
       puts "Created #{Category.count} categories"
-      
+
       cuisine_types_by_category = {
         "African" => [
           { name: "african", display_order: 1 },
@@ -290,7 +327,7 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
 
       cuisine_types_by_category.each do |category_name, cuisine_types|
         category = Category.find_by!(name: category_name)
-        
+
         cuisine_types.each do |cuisine_type_data|
           CuisineType.find_or_create_by!(name: cuisine_type_data[:name]) do |cuisine_type|
             cuisine_type.category = category
@@ -298,17 +335,17 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
           end
         end
       end
-      
+
       puts "Created #{CuisineType.count} cuisine types"
-      
+
       # Get the "Other" cuisine type
       other_cuisine = CuisineType.find_by!(name: "other")
-      
+
       # Update existing restaurants without a cuisine type
       restaurants_updated = Restaurant.where(cuisine_type_id: nil).update_all(cuisine_type_id: other_cuisine.id)
-      
+
       puts "Updated #{restaurants_updated} restaurants with 'Other' cuisine type"
-      
+
       # Map old cuisine types to new ones
       cuisine_type_mapping = {
         'african' => 'african_fusion',
@@ -329,12 +366,12 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
         'turkish' => 'turkish',
         # Keeping: taiwanese, portuguese, peruvian, mediterranean
       }
-      
+
       # Update restaurants with mapped cuisine types
       cuisine_type_mapping.each do |old_name, new_name|
         old_cuisine = CuisineType.find_by(name: old_name)
         next unless old_cuisine && old_cuisine.restaurants.any?
-        
+
         new_cuisine = CuisineType.find_by(name: new_name)
         if new_cuisine
           count = Restaurant.where(cuisine_type_id: old_cuisine.id).update_all(cuisine_type_id: new_cuisine.id)
@@ -343,11 +380,11 @@ class PopulateCategoriesAndAssignCuisineTypes < ActiveRecord::Migration[7.0]
       end
     end
   end
-  
+
   def down
     # Remove category associations
     CuisineType.update_all(category_id: nil, display_order: 0)
-    
+
     # Remove categories
     Category.destroy_all
   end
@@ -368,16 +405,16 @@ class CuisineType < ApplicationRecord
   has_many :restaurants
 
   validates :name, presence: true, uniqueness: {case_sensitive: false}
-  
+
   # Scopes
   scope :alphabetical, -> { all.sort_by { |ct| ct.translated_name.downcase } }
   scope :by_category, -> { includes(:category).order('categories.display_order', :display_order) }
   scope :in_category, ->(category_id) { where(category_id: category_id).order(:display_order) }
-  
+
   def translated_name
     I18n.t("cuisine_types.#{name}", default: name)
   end
-  
+
   # Helper method to get cuisine types grouped by category
   def self.grouped_by_category
     by_category.group_by(&:category)
@@ -394,17 +431,17 @@ end
 # app/models/category.rb
 class Category < ApplicationRecord
   has_many :cuisine_types, dependent: :nullify
-  
+
   validates :name, presence: true, uniqueness: {case_sensitive: false}
   validates :display_order, presence: true
-  
+
   # Scopes
   scope :ordered, -> { order(:display_order) }
-  
+
   def translated_name
     I18n.t("categories.#{name.parameterize.underscore}", default: name)
   end
-  
+
   # Get all cuisine types in this category, ordered by display_order
   def ordered_cuisine_types
     cuisine_types.order(:display_order)
@@ -471,7 +508,7 @@ RSpec.describe Category, type: :model do
         category1 = create(:category, display_order: 2)
         category2 = create(:category, display_order: 1)
         category3 = create(:category, display_order: 3)
-        
+
         expect(Category.ordered).to eq([category2, category1, category3])
       end
     end
@@ -481,14 +518,14 @@ RSpec.describe Category, type: :model do
     it 'returns the translated name if available' do
       category = create(:category, name: 'Asian')
       allow(I18n).to receive(:t).with('categories.asian', default: 'Asian').and_return('Asiatisch')
-      
+
       expect(category.translated_name).to eq('Asiatisch')
     end
-    
+
     it 'returns the original name if no translation is available' do
       category = create(:category, name: 'Special Category')
       allow(I18n).to receive(:t).with('categories.special_category', default: 'Special Category').and_return('Special Category')
-      
+
       expect(category.translated_name).to eq('Special Category')
     end
   end
@@ -499,7 +536,7 @@ RSpec.describe Category, type: :model do
       cuisine_type1 = create(:cuisine_type, category: category, display_order: 2)
       cuisine_type2 = create(:cuisine_type, category: category, display_order: 1)
       cuisine_type3 = create(:cuisine_type, category: category, display_order: 3)
-      
+
       expect(category.ordered_cuisine_types).to eq([cuisine_type2, cuisine_type1, cuisine_type3])
     end
   end
@@ -529,22 +566,22 @@ RSpec.describe CuisineType, type: :model do
       it 'returns cuisine types ordered by category display_order and then cuisine type display_order' do
         category1 = create(:category, display_order: 2)
         category2 = create(:category, display_order: 1)
-        
+
         cuisine_type1 = create(:cuisine_type, category: category1, display_order: 2)
         cuisine_type2 = create(:cuisine_type, category: category1, display_order: 1)
         cuisine_type3 = create(:cuisine_type, category: category2, display_order: 1)
-        
+
         expect(CuisineType.by_category).to eq([cuisine_type3, cuisine_type2, cuisine_type1])
       end
     end
-    
+
     describe '.in_category' do
       it 'returns cuisine types in the specified category ordered by display_order' do
         category = create(:category)
         cuisine_type1 = create(:cuisine_type, category: category, display_order: 2)
         cuisine_type2 = create(:cuisine_type, category: category, display_order: 1)
         cuisine_type3 = create(:cuisine_type, category: create(:category), display_order: 1)
-        
+
         expect(CuisineType.in_category(category.id)).to eq([cuisine_type2, cuisine_type1])
         expect(CuisineType.in_category(category.id)).not_to include(cuisine_type3)
       end
@@ -555,13 +592,13 @@ RSpec.describe CuisineType, type: :model do
     it 'returns cuisine types grouped by category' do
       category1 = create(:category)
       category2 = create(:category)
-      
+
       cuisine_type1 = create(:cuisine_type, category: category1)
       cuisine_type2 = create(:cuisine_type, category: category1)
       cuisine_type3 = create(:cuisine_type, category: category2)
-      
+
       grouped = CuisineType.grouped_by_category
-      
+
       expect(grouped.keys).to contain_exactly(category1, category2)
       expect(grouped[category1]).to contain_exactly(cuisine_type1, cuisine_type2)
       expect(grouped[category2]).to contain_exactly(cuisine_type3)
@@ -586,7 +623,7 @@ module CuisineTypeValidation
 
   def validate_cuisine_type(cuisine_type_name)
     Rails.logger.debug "=== DEBUG: Validating cuisine type: #{cuisine_type_name} ==="
-    
+
     if cuisine_type_name.blank?
       available_categories = format_available_categories
       return [ false, "Cuisine type is required. Available categories: #{available_categories}" ]
@@ -594,7 +631,7 @@ module CuisineTypeValidation
 
     cuisine_type = CuisineType.find_by(name: cuisine_type_name.downcase)
     Rails.logger.debug "Found cuisine type: #{cuisine_type.inspect}"
-    
+
     unless cuisine_type
       available_categories = format_available_categories
       error_message = "Invalid cuisine type: #{cuisine_type_name}. Available categories: #{available_categories}"
@@ -604,16 +641,16 @@ module CuisineTypeValidation
 
     [ true, cuisine_type ]
   end
-  
+
   def format_available_categories
     categories = Category.includes(:cuisine_types).ordered
-    
+
     categories.map do |category|
       cuisine_types = category.cuisine_types.order(:display_order).pluck(:name).join(', ')
       "#{category.name} (#{cuisine_types})"
     end.join('; ')
   end
-  
+
   # Helper method to get all cuisine types grouped by category
   def grouped_cuisine_types
     CuisineType.includes(:category).group_by(&:category)
@@ -634,13 +671,13 @@ class CuisineTypesController < ApplicationController
   def index
     @categories = Category.includes(:cuisine_types).ordered
     @cuisine_types_by_category = CuisineType.grouped_by_category
-    
+
     respond_to do |format|
       format.html
       format.json { render json: @categories.as_json(include: { cuisine_types: { only: [:id, :name] } }) }
     end
   end
-  
+
   # Other actions...
 end
 ```
@@ -658,7 +695,7 @@ module Api
     class CuisineTypesController < ApiBaseController
       def index
         @categories = Category.includes(:cuisine_types).ordered
-        
+
         render json: {
           categories: @categories.as_json(
             only: [:id, :name],
@@ -668,11 +705,11 @@ module Api
           )
         }
       end
-      
+
       # If you have an endpoint that returns all cuisine types without categories
       def all
         @cuisine_types = CuisineType.includes(:category).by_category
-        
+
         render json: {
           cuisine_types: @cuisine_types.as_json(
             only: [:id, :name],
@@ -691,7 +728,7 @@ end
 # app/serializers/cuisine_type_serializer.rb (if you're using serializers)
 class CuisineTypeSerializer < BaseSerializer
   attributes :id, :name, :category
-  
+
   def category
     object.category.present? ? { id: object.category.id, name: object.category.name } : nil
   end
@@ -702,7 +739,7 @@ end
 # app/serializers/category_serializer.rb
 class CategorySerializer < BaseSerializer
   attributes :id, :name
-  
+
   has_many :cuisine_types
 end
 ```
@@ -714,21 +751,21 @@ end
 def create
   @restaurant = Restaurant.new(restaurant_params)
   @restaurant.organization = Current.organization
-  
+
   # If your API allows setting cuisine_type_id directly
   if params[:restaurant][:cuisine_type_id].present?
     @restaurant.cuisine_type_id = params[:restaurant][:cuisine_type_id]
   # If your API uses cuisine_type_name
   elsif params[:restaurant][:cuisine_type_name].present?
     result, cuisine_or_error = validate_cuisine_type(params[:restaurant][:cuisine_type_name])
-    
+
     if result
       @restaurant.cuisine_type = cuisine_or_error
     else
       return render_error(cuisine_or_error, :unprocessable_entity)
     end
   end
-  
+
   # Rest of the create action...
 end
 ```
@@ -745,7 +782,7 @@ end
 <div id="cuisine-type-modal" class="modal">
   <div class="modal-content">
     <h2>Select Cuisine Type</h2>
-    
+
     <div class="categories-container">
       <% Category.includes(:cuisine_types).ordered.each do |category| %>
         <div class="category">
@@ -760,7 +797,7 @@ end
         </div>
       <% end %>
     </div>
-    
+
     <div class="modal-actions">
       <button type="button" class="cancel-button">Cancel</button>
     </div>
@@ -779,27 +816,27 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["select", "modal", "input", "display"]
-  
+
   connect() {
     // Initialization code
   }
-  
+
   openModal(event) {
     event.preventDefault()
     this.modalTarget.classList.add("open")
   }
-  
+
   closeModal() {
     this.modalTarget.classList.remove("open")
   }
-  
+
   selectCuisineType(event) {
     const cuisineType = event.currentTarget.dataset.value
     const cuisineTypeName = event.currentTarget.textContent.trim()
-    
+
     this.inputTarget.value = cuisineType
     this.displayTarget.textContent = cuisineTypeName
-    
+
     this.closeModal()
   }
 }
@@ -831,7 +868,7 @@ ActiveRecord::Base.transaction do
       category.display_order = category_data[:display_order]
     end
   end
-  
+
   puts "Created #{Category.count} categories"
 end
 ```
@@ -925,10 +962,10 @@ ActiveRecord::Base.transaction do
   # First, clear out all existing cuisine types that aren't associated with restaurants
   CuisineType.includes(:restaurants).where(restaurants: { id: nil }).destroy_all
   puts "Removed unused cuisine types"
-  
+
   cuisine_types_by_category.each do |category_name, cuisine_types|
     category = Category.find_by!(name: category_name)
-    
+
     cuisine_types.each do |cuisine_type_data|
       CuisineType.find_or_create_by!(name: cuisine_type_data[:name]) do |cuisine_type|
         cuisine_type.category = category
@@ -936,17 +973,17 @@ ActiveRecord::Base.transaction do
       end
     end
   end
-  
+
   puts "Created #{CuisineType.count} cuisine types"
-  
+
   # Get the "Other" cuisine type
   other_cuisine = CuisineType.find_by!(name: "other")
-  
+
   # Update existing restaurants without a cuisine type
   restaurants_updated = Restaurant.where(cuisine_type_id: nil).update_all(cuisine_type_id: other_cuisine.id)
-  
+
   puts "Updated #{restaurants_updated} restaurants with 'Other' cuisine type"
-  
+
   # Map old cuisine types to new ones
   cuisine_type_mapping = {
     'african' => 'african_fusion',
@@ -967,12 +1004,12 @@ ActiveRecord::Base.transaction do
     'turkish' => 'turkish',
     # Keeping: taiwanese, portuguese, peruvian, mediterranean
   }
-  
+
   # Update restaurants with mapped cuisine types
   cuisine_type_mapping.each do |old_name, new_name|
     old_cuisine = CuisineType.find_by(name: old_name)
     next unless old_cuisine && old_cuisine.restaurants.any?
-    
+
     new_cuisine = CuisineType.find_by(name: new_name)
     if new_cuisine
       count = Restaurant.where(cuisine_type_id: old_cuisine.id).update_all(cuisine_type_id: new_cuisine.id)

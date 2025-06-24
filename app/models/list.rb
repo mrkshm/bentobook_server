@@ -1,3 +1,28 @@
+# == Schema Information
+#
+# Table name: lists
+#
+#  id              :bigint           not null, primary key
+#  description     :text
+#  name            :string           not null
+#  position        :integer
+#  premium         :boolean          default(FALSE)
+#  visibility      :integer          default("personal")
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  creator_id      :bigint           not null
+#  organization_id :bigint           not null
+#
+# Indexes
+#
+#  index_lists_on_creator_id       (creator_id)
+#  index_lists_on_organization_id  (organization_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (creator_id => users.id)
+#  fk_rails_...  (organization_id => organizations.id)
+#
 class List < ApplicationRecord
   belongs_to :organization
   belongs_to :creator, class_name: "User"
