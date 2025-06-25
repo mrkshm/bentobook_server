@@ -1,26 +1,23 @@
 <!DOCTYPE html>
-<html <%= "data-hotwire-native-app" if hotwire_native_app? %> lang="en"">
+<html lang="en">
   <head>
     <title><%= content_for(:title) || "BentoBook" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= vite_client_tag %>
-    <%= vite_javascript_tag 'entrypoints/application', defer: false %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    
+    <%= javascript_importmap_tags %>
     
     <%= javascript_tag nonce: true do %>
+      // Set up global variables
       window.googleMapsApiKey = "<%= Rails.application.credentials.google_maps_api_key %>";
     <% end %>
     
-    <!-- Inline critical CSS -->
-    <style>
-      body { 
-        margin: 0;
-        # background-color: oklch(0.25 0.004 270);
-      }
-    </style>
+    <%= yield :head %>
   </head>
+
   <body data-theme="light" class="bg-surface-100 text-surface-700">
     <div id="loading-indicator" 
      class="fixed inset-0 flex items-center justify-center bg-surface-300/50 z-50" 
@@ -77,7 +74,5 @@
     <!-- Modals container -->
     <%= yield :modals if content_for?(:modals) %>
     
-    <!-- Include Tailwind safelist to preserve utility classes in production -->
-    <%= render partial: "shared/tailwind_safelist" %>
   </body>
 </html>

@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import './safelist.css';
 
 @source "../../../app/views/**/*.html.erb";
 @source "../../../app/views/**/*.rb";
@@ -7,6 +6,10 @@
 @source "../../../app/components/**/*.rb";
 @source "../../../app/components/**/*.html.erb";
 @source "../../../app/frontend/**/*.js";
+
+@theme {
+  --color-mint-500: oklch(0.72 0.11 178);
+}
 
 @theme inline {
   /* PRIMARY */

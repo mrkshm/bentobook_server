@@ -24,13 +24,18 @@ gem "solid_cable"
 
 gem "turbo-rails"
 
+gem "importmap-rails", "~> 2.1"
+gem "stimulus-rails", "~> 1.3"
+
+gem "tailwindcss-rails", "~> 4.2"
+
+gem "tailwindcss-ruby", "~> 4.1"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", ">= 2.1.0", require: false
-
-gem "vite_rails"
 
 gem "pagy"
 
@@ -82,7 +87,7 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
-  gem 'annotaterb'
+  gem "annotaterb"
 end
 
 group :development, :test do
