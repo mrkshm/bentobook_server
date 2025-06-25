@@ -2,9 +2,6 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "tailwindcss": "^4.0.6",
-    "@tailwindcss/cli": "^4.0.6",
-    "@tailwindcss/vite": "^4.0.6",
     "vite": "^5.4.14",
     "vite-plugin-ruby": "^5.1.1"
   },
@@ -13,6 +10,9 @@
     "build": "bun run vite build"
   },
   "dependencies": {
+    "tailwindcss": "^4.0.6",
+    "@tailwindcss/cli": "^4.0.6",
+    "@tailwindcss/vite": "^4.0.6",
     "@hotwired/hotwire-native-bridge": "^1.2.1",
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo": "^8.0.12",
