@@ -39,6 +39,9 @@ class RestaurantQuery
     end
 
     def sort(scoped)
+      # If we have forced IDs, we'll handle the ordering manually after fetching
+      return scoped if params[:force_ids].present?
+      
       order_field = params[:order_by] || DEFAULT_ORDER[:field]
       order_direction = params[:order_direction] || DEFAULT_ORDER[:direction]
 
@@ -52,7 +55,6 @@ class RestaurantQuery
       when "price_level"
         scoped.reorder(price_level: order_direction, id: :asc)
       else
-        # For name or default sorting, use case-insensitive sort with ID as secondary sort
         scoped.reorder(Arel.sql("LOWER(restaurants.name) #{order_direction}"), id: :asc)
       end
     end
@@ -74,10 +76,10 @@ class RestaurantQuery
         ) AS DECIMAL(15, 8))
       SQL
 
-      # First, select with the distance calculation
+      # Select with the distance calculation and order by it
       scoped = scoped.select("restaurants.*, #{distance_sql} as distance")
       
-      # Then order by the calculated distance and ID
-      scoped.reorder("distance ASC, restaurants.id ASC")
+      # Order by the calculated distance and ID
+      scoped.reorder(Arel.sql("#{distance_sql} ASC, restaurants.id ASC"))
     end
 end

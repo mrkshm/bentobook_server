@@ -1,31 +1,32 @@
+<% logger.debug "\n#{'='*80}" %>
+<% logger.debug "Rendering turbo_stream response" %>
+<% logger.debug "Page: #{params[:page]}" %>
+<% logger.debug "Restaurants count: #{@restaurants.size}" %>
+<% logger.debug "Pagy next page: #{@pagy.next}" %>
+<% logger.debug "#{'='*80}" %>
+
 <%= turbo_stream.append "restaurants-list" do %>
   <% @restaurants.each do |restaurant| %>
-    <div class="grid gap-6">
-      <%= render(Restaurants::CardComponent.new(restaurant: restaurant)) %>
+    <div class="grid gap-6" id="restaurant_<%= restaurant.id %>">
+      <%= render Restaurants::CardComponent.new(restaurant: restaurant) %>
     </div>
   <% end %>
 <% end %>
 
-<% if @pagy.next %>
+<% if @pagy.next.present? %>
   <%= turbo_stream.replace "pagination" do %>
-    <%= turbo_frame_tag :pagination,
-        loading: :lazy,
-        src: restaurants_path(
-          format: :turbo_stream,
-          page: @pagy.next,
-          **@query_params.except(:per_page).merge(locale: I18n.locale)
-        ) do %>
-      <div class="mt-8 text-center">
-        <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
-          <div class="animate-pulse flex space-x-2">
-            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
-            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
-            <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
-          </div>
-          <span class="ml-2 text-sm"><%= t('pagy.loading') %></span>
+    <% next_params = params.slice(:order_by, :order_direction, :latitude, :longitude, :lat, :lng, :per_page)
+                 .merge(page: @pagy.next, format: :turbo_stream) %>
+    <div id="pagination"
+         data-controller="infinite-scroll"
+         data-infinite-scroll-next-url="<%= restaurants_path(next_params) %>"
+         data-infinite-scroll-target="pagination">
+      <div class="flex justify-center py-8">
+        <div class="animate-pulse text-gray-500">
+          Loading more restaurants...
         </div>
       </div>
-    <% end %>
+    </div>
   <% end %>
 <% else %>
   <%= turbo_stream.remove "pagination" %>
