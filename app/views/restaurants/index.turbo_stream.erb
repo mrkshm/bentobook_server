@@ -15,8 +15,17 @@
 
 <% if @pagy.next.present? %>
   <%= turbo_stream.replace "pagination" do %>
-    <% next_params = params.slice(:order_by, :order_direction, :latitude, :longitude, :lat, :lng, :per_page)
-                 .merge(page: @pagy.next, format: :turbo_stream) %>
+    <% next_params = {
+          field: @current_field,
+          direction: @current_direction,
+          tag: params[:tag],
+          search: params[:search],
+          latitude: params[:latitude] || params[:lat],
+          longitude: params[:longitude] || params[:lng],
+          per_page: params[:per_page],
+          page: @pagy.next,
+          format: :turbo_stream
+        }.compact %>
     <div id="pagination"
          data-controller="infinite-scroll"
          data-infinite-scroll-next-url="<%= restaurants_path(next_params) %>"

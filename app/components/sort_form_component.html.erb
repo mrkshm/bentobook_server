@@ -1,61 +1,44 @@
-<%= form_tag @url, method: :get, 
-            id: "sort-form",
-            class: 'w-full md:w-auto', 
-            data: {
-              controller: "sort-form",
-              sort_form_target: "form"
-            } do %>
-  <%= hidden_field_tag :search, params[:search] %>
-  <%= hidden_field_tag :latitude, nil, data: { sort_form_target: "lat" } %>
-  <%= hidden_field_tag :longitude, nil, data: { sort_form_target: "lng" } %>
+<%= form_with url: @url,
+              method: :get,
+              class: "flex items-center gap-2",
+              data: { controller: "location" } do |f| %>
   
-  <% @additional_fields.each do |name, value| %>
-    <%= hidden_field_tag name, value %>
+  <%# Hidden fields for additional params %>
+  <% @additional_params.each do |name, value| %>
+    <%= hidden_field_tag name, value if value.present? %>
   <% end %>
-  
-  <div class="flex items-end gap-4">
-    <div class="flex-1">
-      <label for="sort-select" class="block mb-2">
-        <span class="label-text text-sm/6 font-medium text-surface-900"><%= t('common.sort.sort_by') %></span>
-      </label>
-      <div class="grid grid-cols-1">
-        <select id="sort-select" 
-                name="order_by" 
-                class="w-full md:w-64 appearance-none rounded-md bg-surface-50 py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
-                data-sort-form-target="sort"
-                data-action="change->sort-form#sortChanged">
-          <% @fields.each do |value, label| %>
-            <option value="<%= value %>" <%= 'selected' if @current_order == value %>><%= label %></option>
-          <% end %>
-        </select>
-        <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-        </svg>
-      </div>
-    </div>
 
-    <div class="flex gap-2 h-[38px]" data-sort-form-target="directionButtons" <%= "style='display: #{@current_order != 'distance' ? 'flex' : 'none'};'" %>>
-      <%= button_tag type: 'submit', 
-                    name: 'order_direction',
-                    value: 'asc',
-                    data: { 
-                      action: "sort-form#orderChanged",
-                      order_direction: "asc"
-                    },
-                    class: "h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm #{@current_direction == 'asc' ? 'btn-active bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
-        <%= heroicon "arrow-down", options: { class: "w-4 h-4" } %>
-      <% end %>
-      
-      <%= button_tag type: 'submit',
-                    name: 'order_direction',
-                    value: 'desc',
-                    data: { 
-                      action: "sort-form#orderChanged",
-                      order_direction: "desc"
-                    },
-                    class: "h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm #{@current_direction == 'desc' ? 'btn-active bg-primary-600 text-surface-50 hover:bg-primary-700' : 'bg-surface-50 text-surface-700 hover:bg-surface-100'} focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" do %>
-        <%= heroicon "arrow-up", options: { class: "w-4 h-4" } %>
-      <% end %>
+  <%# Hidden field for current direction %>
+  <%= hidden_field_tag :direction, @current_direction %>
+  
+  <%# Sort field select - submits on change %>
+  <div class="relative">
+    <%= select_tag :field, 
+                  options_for_select(@sort_options, @current_field),
+                  class: "appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-base focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500",
+                  onchange: "this.form.submit()" %>
+    
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+      <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
     </div>
+  </div>
+
+  <%# Direction toggle buttons - each is a submit button with the appropriate direction %>
+  <div class="flex align-center">
+    <button type="submit" 
+            name="direction" 
+            value="asc" 
+            class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'asc' ? 'text-surface-500' : 'text-surface-900' %>"
+    >
+      <%= heroicon "arrow-up", options: { class: "w-5 h-5" } %>
+    </button>
+    <button type="submit" 
+            name="direction" 
+            value="desc" 
+            class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'desc' ? 'text-surface-500' : 'text-surface-900' %>">
+      <%= heroicon "arrow-down", options: { class: "w-5 h-5" } %>
+    </button>
   </div>
 <% end %>

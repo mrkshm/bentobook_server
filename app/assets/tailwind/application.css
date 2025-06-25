@@ -7,6 +7,10 @@
 @source "../../../app/components/**/*.html.erb";
 @source "../../../app/frontend/**/*.js";
 
+@theme {
+  --color-mint-500: oklch(0.72 0.11 178);
+}
+
 @theme inline {
   /* PRIMARY */
   --color-primary-50: var(--color-primary-50);

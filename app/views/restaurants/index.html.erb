@@ -41,23 +41,25 @@
 
     <%= render SortFormComponent.new(
       url: restaurants_path,
-      fields: {
-        'name' => t('restaurants.index.sort_options.name'),
-        'rating' => t('restaurants.index.sort_options.rating'),
-        'price_level' => t('restaurants.index.sort_options.price_level'),
-        'distance' => t('restaurants.index.sort_options.distance'),
-        'created_at' => t('restaurants.index.sort_options.created_at'),
-        'updated_at' => t('restaurants.index.sort_options.updated_at')
+      sort_options: {
+        t('restaurants.sort.name') => 'name',
+        t('restaurants.sort.rating') => 'rating',
+        t('restaurants.sort.price_level') => 'price_level',
+        t('restaurants.sort.distance') => 'distance',
+        t('restaurants.sort.created_at') => 'created_at',
+        t('restaurants.sort.updated_at') => 'updated_at'
       },
-      current_order: params[:order_by] || 'name',
-      current_direction: params[:order_direction] || 'asc',
-      additional_fields: {
+      current_field: @current_field,
+      current_direction: @current_direction,
+      additional_params: {
         tag: params[:tag],
-        search: params[:search]
+        search: params[:search],
+        latitude: params[:latitude] || params[:lat],
+        longitude: params[:longitude] || params[:lng]
       }
     ) %>
-  </div>
 </div>
+
 
 <%# Add the FAB for mobile %>
 <div class="md:hidden fixed bottom-6 right-6 z-50">
@@ -91,8 +93,8 @@
             page: @pagy.next,
             search: params[:search],
             tag: params[:tag],
-            order_by: params[:order_by],
-            order_direction: params[:order_direction],
+            field: @current_field,
+            direction: @current_direction,
             latitude: params[:latitude] || params[:lat],
             longitude: params[:longitude] || params[:lng],
             per_page: params[:per_page] || 12,
@@ -114,18 +116,3 @@
   </div>
 </div>
 
-<%# Add JavaScript to handle native button clicks %>
-<%= javascript_tag nonce: true do %>
-  document.addEventListener('turbo:load', function() {
-    window.nativeNavigationBarButtonClicked = function(buttonId) {
-      const searchContainer = document.querySelector('[data-mobile-search-target="searchContainer"]');
-      
-      if (buttonId === 'search' || buttonId === 'sort') {
-        if (searchContainer) {
-          const currentDisplay = searchContainer.style.display;
-          searchContainer.style.display = currentDisplay === 'none' ? 'flex' : 'none';
-        }
-      }
-    }
-  });
-<% end %>

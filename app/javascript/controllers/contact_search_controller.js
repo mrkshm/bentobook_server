@@ -1,5 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
-import { debounce } from "lodash-es"
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 export default class extends Controller {
   static targets = ["input", "frequent"]
