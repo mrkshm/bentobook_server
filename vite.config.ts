@@ -10,4 +10,9 @@ export default defineConfig({
       '@hotwired/turbo': '@hotwired/turbo/dist/turbo.es2017-esm.js',
     },
   },
+  // Disable CSS code splitting and minification to preserve all classes
+  build: {
+    cssCodeSplit: false,
+    cssMinify: false,
+  }
 });
