@@ -304,8 +304,11 @@ Devise.setup do |config|
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
 
+  jwt_secret = Rails.application.credentials.dig(:devise_jwt_secret_key) || ENV["DEVISE_JWT_SECRET_KEY"]
+  raise "Missing devise_jwt_secret_key" if jwt_secret.blank?
+
   config.jwt do |jwt|
-    jwt.secret = Rails.application.credentials.devise_jwt_secret_key!
+    jwt.secret = jwt_secret
 
     # Configure which requests should generate a token
     jwt.dispatch_requests = [
@@ -333,7 +336,7 @@ Devise.setup do |config|
     if auth.env["devise.skip_jwt"] || !auth.env["devise.jwt_scope"]
       next
     end
-    
+
     aud = opts[:scope]
     token = Warden::JWTAuth::UserEncoder.new.call(
       user, aud, auth.env["devise.jwt_scope"]
