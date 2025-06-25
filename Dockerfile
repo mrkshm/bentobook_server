@@ -93,6 +93,8 @@ ENV RAILS_ENV="production" \
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
+# Copy bun binary for one-off exec commands (e.g., vite builds)
+COPY --from=build /usr/local/bin/bun /usr/local/bin/bun
 
 # Create and set up the rails user
 RUN groupadd --system --gid 1000 rails && \
