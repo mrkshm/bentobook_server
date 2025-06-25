@@ -62,8 +62,10 @@ RUN curl -fsSL https://bun.sh/install | bash && \
 COPY package.json ./
 COPY bun.lockb ./
 
-# Install JavaScript dependencies
+# Install JavaScript dependencies (include devDependencies for asset build)
+ENV NODE_ENV=development
 RUN bun install --frozen-lockfile
+ENV NODE_ENV=production
 
 # Copy application code
 COPY . .
