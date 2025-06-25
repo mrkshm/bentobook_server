@@ -76,8 +76,5 @@
 
     <!-- Modals container -->
     <%= yield :modals if content_for?(:modals) %>
-    
-    <!-- Include Tailwind safelist to preserve utility classes in production -->
-    <%= render partial: "shared/tailwind_safelist" %>
   </body>
 </html>
