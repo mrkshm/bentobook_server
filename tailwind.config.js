@@ -11,7 +11,7 @@ module.exports = {
     "./app/helpers/**/*.rb",
   ],
   safelist: [
-    { pattern: /^(p|px|py|m|mx|my|gap)-[0-9]+$/ },
+    { pattern: /^(p[trblxy]?|m[trblxy]?|gap)-\d+$/ },
   ],
   theme: {
     extend: {},
