@@ -1,7 +1,7 @@
 module Api
   module V1
     class PasswordsController < Devise::PasswordsController
-      skip_before_action :authenticate_user!, only: [ :create, :update ]
+      skip_before_action :authenticate_user!, only: [ :create, :update ], raise: false
       respond_to :json
 
       # POST /api/v1/auth/password/reset

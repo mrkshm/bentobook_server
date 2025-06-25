@@ -1,7 +1,7 @@
 module Api
   module V1
     class SessionsController < BaseController
-      skip_before_action :authenticate_user!, only: [ :create, :refresh ]
+      skip_before_action :authenticate_user!, only: [ :create, :refresh ], raise: false
       skip_before_action :set_current_organization, only: [ :create, :refresh ]
       before_action :ensure_params_exist, only: [ :create ]
 
