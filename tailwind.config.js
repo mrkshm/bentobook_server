@@ -10,6 +10,9 @@ module.exports = {
     // Helpers (if you embed Tailwind classes in Ruby strings)
     "./app/helpers/**/*.rb",
   ],
+  safelist: [
+    { pattern: /^(p|px|py|m|mx|my|gap)-[0-9]+$/ },
+  ],
   theme: {
     extend: {},
   },
