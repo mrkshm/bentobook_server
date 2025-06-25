@@ -1,7 +1,7 @@
 module Api
   module V1
     class ConfirmationsController < Devise::ConfirmationsController
-      skip_before_action :authenticate_user!, only: [:create, :show]
+      skip_before_action :authenticate_user!, only: [ :create, :show ], raise: false
       respond_to :json
 
       # POST /api/v1/auth/email/verify
@@ -10,9 +10,9 @@ module Api
         if successfully_sent?(resource)
           render json: { message: "Confirmation instructions have been sent to your email." }
         else
-          render json: { 
+          render json: {
             error: "Failed to send confirmation instructions",
-            details: resource.errors.full_messages 
+            details: resource.errors.full_messages
           }, status: :unprocessable_entity
         end
       end
@@ -23,7 +23,7 @@ module Api
         if resource.errors.empty?
           # Sign in the user after confirmation if they're not signed in
           sign_in(resource) unless user_signed_in?
-          
+
           # Get the latest token if we signed them in
           token = resource.allowlisted_jwts.order(created_at: :desc).first if user_signed_in?
 
@@ -32,9 +32,9 @@ module Api
             token: token
           }
         else
-          render json: { 
+          render json: {
             error: "Failed to confirm email",
-            details: resource.errors.full_messages 
+            details: resource.errors.full_messages
           }, status: :unprocessable_entity
         end
       end
