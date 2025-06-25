@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html  lang="en"">
+  <head>
+    <title>My Restaurants</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="5rHmW0Y0esAmaVfjQ5ulAqn3cnOG8XoCX25YA95_SFaV76Wpmx5ezkCg3F2sXPSzsKIWwKf08G_fXwqNdqpy6A" />
+    
+
+    
+    <script src="/vite/assets/application-Cu5W7uAE.js" crossorigin="anonymous" type="module"></script><link rel="stylesheet" href="/vite/assets/application-DqtyfS-K.css" media="screen" />
+    
+    <script>
+//<![CDATA[
+
+      window.googleMapsApiKey = "AIzaSyCZ716ZPdajBlkZqpV_9vpEUtiaXAPuo3s";
+
+//]]>
+</script>    
+    <!-- Inline critical CSS -->
+    <style>
+      body { 
+        margin: 0;
+        # background-color: oklch(0.25 0.004 270);
+      }
+    </style>
+  </head>
+  <body data-theme="light" class="bg-surface-100 text-surface-700">
+    <div id="loading-indicator" 
+     class="fixed inset-0 flex items-center justify-center bg-surface-300/50 z-50" 
+     style="display: none;"
+     data-turbo-permanent>
+      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+      <nav class="sticky top-0 z-50 text-surface-700 bg-surface-100 border-b border-surface-200" data-controller="app--frontend--controllers--mobile-menu">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="flex justify-between h-16 items-center hotwire-native:hidden">
+            <div class="flex-shrink-0">
+    <a class="text-xl font-bold text-blue-600" href="/restaurants">BentoBook</a>
+</div>
+
+            
+            <!-- Hamburger menu for mobile -->
+            <div class="lg:hidden hotwire-native:hidden">
+  <button 
+    class="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100" 
+    data-mobile-menu-target="button"
+    data-action="mobile-menu#toggle"
+    aria-controls="mobile-menu"
+    aria-expanded="false">
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      class="w-6 h-6 stroke-current">
+      <path 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        stroke-width="2" 
+        d="M4 6h16M4 12h16M4 18h16">
+      </path>
+    </svg>
+  </button>
+</div>
+
+
+            <!-- Desktop menu -->
+            <div class="hidden lg:flex lg:items-center lg:space-x-4">
+  
+    <a class="px-3 py-2 rounded-md text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-200" href="/restaurants">
+      Restaurants
+</a><!-- 
+    <a class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/lists">
+      Lists
+      
+</a>-->
+    <a class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/visits">
+      Visits
+</a>
+    <a class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/contacts">Contacts</a>
+
+    <a class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/profile">Profile</a>
+</div>
+
+          </div>
+        </div>
+        
+        <!-- Mobile menu (hidden by default) -->
+        <div 
+  id="mobile-menu" 
+  class="lg:hidden hidden hotwire-native:hidden fixed inset-x-0 top-16 bottom-0 bg-surface-100 z-40 overflow-y-auto"
+  data-mobile-menu-target="menu">
+  <div class="px-4 py-6 space-y-3">
+      <a class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/restaurants">Restaurants</a>
+      
+      <a class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/lists">
+        Lists
+        
+</a>      
+      <a class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/visits">Visits</a>
+      
+      <a class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/contacts">Contacts</a>
+      
+      <a class="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100" href="/profile">Profile</a>
+  </div>
+</div>
+
+      </nav>
+
+    <main class="flex-grow bg-surface-100" data-turbo-permanent>
+      <div class="w-full flex justify-center">
+        <div class="w-full max-w-7xl px-4 sm:px-6 lg:px-8 hotwire-native:px-2">
+            <div class="container bg-surface-100 hotwire-native:hidden">
+<h1 class="mt-4 mb-2 px-4 py-6 text-4xl font-semibold tracking-tight text-pretty text-surface-900 sm:text-5xl">My Restaurants</h1>
+</div>
+  
+
+
+
+<div class="flex flex-col gap-4">
+  <div class="flex flex-col md:flex-row gap-4 items-center">
+   
+
+    <div class="hidden md:block">
+      <a class="inline-flex items-center px-4 py-2 bg-primary-600 text-surface-50 font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" href="/restaurants/new">Create New Restaurant</a>
+    </div>
+  </div>
+
+  <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
+    <form class="relative" action="/restaurants" accept-charset="UTF-8" method="get">
+      <input type="hidden" name="order_by" id="order_by" autocomplete="off" />
+      <input type="hidden" name="order_direction" id="order_direction" autocomplete="off" />
+      <input type="hidden" name="tag" id="tag" autocomplete="off" />
+      <div class="relative">
+        <input type="text" name="search" id="search" class="w-full px-4 py-2 pr-10 border border-surface-300 rounded-lg bg-surface-50 text-surface-900 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Search restaurants..." />
+        <button type="submit" class="absolute inset-y-0 right-0 flex items-center px-3 text-surface-400 hover:text-surface-600">
+          <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="currentColor" aria-hidden="true" class="w-5 h-5">
+  <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd"></path>
+</svg>
+
+        </button>
+      </div>
+</form>
+    <form id="sort-form" class="w-full md:w-auto" data-controller="sort-form" data-sort-form-target="form" action="/restaurants" accept-charset="UTF-8" method="get">
+  <input type="hidden" name="search" id="search" autocomplete="off" />
+  <input type="hidden" name="latitude" id="latitude" data-sort-form-target="lat" autocomplete="off" />
+  <input type="hidden" name="longitude" id="longitude" data-sort-form-target="lng" autocomplete="off" />
+  
+    <input type="hidden" name="tag" id="tag" autocomplete="off" />
+    <input type="hidden" name="search" id="search" autocomplete="off" />
+  
+  <div class="flex items-end gap-4">
+    <div class="flex-1">
+      <label for="sort-select" class="block mb-2">
+        <span class="label-text text-sm/6 font-medium text-surface-900">Sort by</span>
+      </label>
+      <div class="grid grid-cols-1">
+        <select id="sort-select" 
+                name="order_by" 
+                class="w-full md:w-64 appearance-none rounded-md bg-surface-50 py-1.5 pr-8 pl-3 text-base text-surface-900 outline-1 -outline-offset-1 outline-surface-300 focus:outline-2 focus:-outline-offset-2 focus:outline-primary-600 sm:text-sm/6"
+                data-sort-form-target="sort"
+                data-action="change->sort-form#sortChanged">
+            <option value="name" selected>Name</option>
+            <option value="rating" >Rating</option>
+            <option value="price_level" >Price</option>
+            <option value="distance" >Distance</option>
+            <option value="created_at" >Creation Date</option>
+            <option value="updated_at" >Last Modified</option>
+        </select>
+        <svg class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-surface-500 sm:size-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="flex gap-2 h-[38px]" data-sort-form-target="directionButtons" style=&#39;display: flex;&#39;>
+      <button name="order_direction" type="submit" value="asc" data-action="sort-form#orderChanged" data-order-direction="asc" class="h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm btn-active bg-primary-600 text-surface-50 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="currentColor" aria-hidden="true" class="w-4 h-4">
+  <path fill-rule="evenodd" d="M12 2.25a.75.75 0 01.75.75v16.19l6.22-6.22a.75.75 0 111.06 1.06l-7.5 7.5a.75.75 0 01-1.06 0l-7.5-7.5a.75.75 0 111.06-1.06l6.22 6.22V3a.75.75 0 01.75-.75z" clip-rule="evenodd"></path>
+</svg>
+
+</button>      
+      <button name="order_direction" type="submit" value="desc" data-action="sort-form#orderChanged" data-order-direction="desc" class="h-full inline-flex items-center rounded-md px-3 text-sm font-medium shadow-sm bg-surface-50 text-surface-700 hover:bg-surface-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="currentColor" aria-hidden="true" class="w-4 h-4">
+  <path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 011.06 0l7.5 7.5a.75.75 0 11-1.06 1.06l-6.22-6.22V21a.75.75 0 01-1.5 0V4.81l-6.22 6.22a.75.75 0 11-1.06-1.06l7.5-7.5z" clip-rule="evenodd"></path>
+</svg>
+
+</button>    </div>
+  </div>
+</form>
+  </div>
+</div>
+
+<div class="md:hidden fixed bottom-6 right-6 z-50">
+  <a class="flex items-center justify-center w-14 h-14 rounded-full bg-primary-600 text-surface-50 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors" aria-label="Create New Restaurant" href="/restaurants/new">
+    <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="currentColor" aria-hidden="true" class="h-6 w-6">
+  <path fill-rule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clip-rule="evenodd"></path>
+</svg>
+
+</a></div>
+
+<div class="min-h-screen bg-surface-100">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 hotwire-native:px-0">
+      <turbo-frame class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" id="restaurants-list">
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/67">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">Brasserie Dubillot</h3>
+        <span class="badge inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+          1
+        </span>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+          
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>222 Rue Saint Denis</span>
+        </div>
+        <div class="">
+          <span>75002 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/21">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">Chez les Garçons</h3>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+            <div class="mt-1">
+              <span>04 78 24 51 07</span>
+            </div>
+          
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>5 Rue Cuvier</span>
+        </div>
+        <div class="">
+          <span>69006 Lyon</span>
+        </div>
+          <div class="">
+            <span>Auvergne-Rhône-Alpes, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/19">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">Chez Magda</h3>
+        <span class="badge inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+          1
+        </span>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+            <div class="mt-1">
+              <span>07 51 20 90 64</span>
+            </div>
+          
+            <div class="mt-1">
+              <a class="text-primary-500 hover:text-primary-700" target="_blank" href="https://www.chez-magda.com/">https://www.chez-magda.com/</a>
+            </div>
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>5 Avenue Jean Jaurès</span>
+        </div>
+        <div class="">
+          <span>75019 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/63">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">Dishny</h3>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+          
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>25 Rue Cail</span>
+        </div>
+        <div class="">
+          <span>75010 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/22">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">La Grange de Belle Eglise</h3>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+          <div class="mt-4 flex flex-wrap gap-1">
+              <span class="inline-flex items-center rounded-full bg-surface-100 px-2 py-0.5 text-xs font-medium text-surface-700 ring-1 ring-surface-600/20 ring-inset">
+                ⭐️
+              </span>
+          </div>
+        
+        <div class="mt-4 text-sm text-surface-600">
+            <div class="mt-1">
+              <span>03 44 08 49 00</span>
+            </div>
+          
+            <div class="mt-1">
+              <a class="text-primary-500 hover:text-primary-700" target="_blank" href="http://www.lagrangedebelleeglise.fr/">http://www.lagrangedebelleeglise.fr/</a>
+            </div>
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>28 Boulevard de Belle Église</span>
+        </div>
+        <div class="">
+          <span>60540 Belle-Église</span>
+        </div>
+          <div class="">
+            <span>Hauts-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/1">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">La Guincheuse</h3>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+          <div class="mt-4 flex flex-wrap gap-1">
+              <span class="inline-flex items-center rounded-full bg-surface-100 px-2 py-0.5 text-xs font-medium text-surface-700 ring-1 ring-surface-600/20 ring-inset">
+                wtg
+              </span>
+          </div>
+        
+        <div class="mt-4 text-sm text-surface-600">
+            <div class="mt-1">
+              <span>01 42 09 41 53</span>
+            </div>
+          
+            <div class="mt-1">
+              <a class="text-primary-500 hover:text-primary-700" target="_blank" href="https://www.instagram.com/laguincheuse/">https://www.instagram.com/laguincheuse/</a>
+            </div>
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>266 Rue du Faubourg Saint-Martin</span>
+        </div>
+        <div class="">
+          <span>75010 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/62">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">La Scene Theleme</h3>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+          
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>18 Rue Troyon</span>
+        </div>
+        <div class="">
+          <span>75017 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/68">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">La Terrasse du Châtel</h3>
+        <span class="badge inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+          1
+        </span>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+          
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>8 Place du Châtel</span>
+        </div>
+        <div class="">
+          <span>77160 Provins</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/20">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">Le Baron Rouge</h3>
+        <span class="badge inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+          2
+        </span>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+          <div class="mt-4 flex flex-wrap gap-1">
+              <span class="inline-flex items-center rounded-full bg-surface-100 px-2 py-0.5 text-xs font-medium text-surface-700 ring-1 ring-surface-600/20 ring-inset">
+                wine
+              </span>
+          </div>
+        
+        <div class="mt-4 text-sm text-surface-600">
+            <div class="mt-1">
+              <span>01 43 43 14 32</span>
+            </div>
+          
+            <div class="mt-1">
+              <a class="text-primary-500 hover:text-primary-700" target="_blank" href="http://lebaronrouge.net/">http://lebaronrouge.net/</a>
+            </div>
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>1 Rue Théophile Roussel</span>
+        </div>
+        <div class="">
+          <span>75012 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+          <div class="grid gap-6">
+            <a class="block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" data-turbo-frame="_top" href="/restaurants/18">
+  <div class="p-6">
+    <div class="flex items-end justify-between mb-4">
+      <h3 class="text-lg font-medium text-surface-900">Le Bastringue</h3>
+        <span class="badge inline-flex items-center rounded-full bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700">
+          1
+        </span>
+    </div>
+
+    <div class="flex">
+      <div class="flex-1 pr-6">
+        <div class="flex items-center text-sm text-surface-600">
+            <span>other</span>
+            <span class="mx-2">·</span>
+          
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-primary-500 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+        <span class="text-surface-300 text-xl">
+          $
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        <div class="mt-2">
+          
+
+  <div class="flex items-center" data-testid="rating-component">
+    <div class="flex items-center">
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-primary-500">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+        <span class="text-surface-300">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </span>
+    </div>
+  </div>
+
+        </div>
+
+        
+        <div class="mt-4 text-sm text-surface-600">
+            <div class="mt-1">
+              <span>01 42 09 89 27</span>
+            </div>
+          
+        </div>
+      </div>
+
+      <div class="text-sm text-surface-600 text-right">
+        <div>
+          <span>67 Quai de la Seine</span>
+        </div>
+        <div class="">
+          <span>75019 Paris</span>
+        </div>
+          <div class="">
+            <span>Île-de-France, France</span>
+          </div>
+      </div>
+    </div>
+  </div>
+</a>
+          </div>
+</turbo-frame>
+      <turbo-frame loading="lazy" id="pagination" src="/en/restaurants.turbo_stream?page=2&amp;per_page=12">
+        <div class="mt-8 text-center">
+          <div class="inline-flex items-center px-4 py-2 bg-surface-100 text-surface-500 rounded-md">
+            <div class="animate-pulse flex space-x-2">
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+              <div class="h-2 w-2 bg-primary-600 rounded-full"></div>
+            </div>
+            <span class="ml-2 text-sm">Loading more...</span>
+          </div>
+        </div>
+</turbo-frame>  </div>
+</div>
+
+<script>
+//<![CDATA[
+
+  document.addEventListener('turbo:load', function() {
+    window.nativeNavigationBarButtonClicked = function(buttonId) {
+      const searchContainer = document.querySelector('[data-mobile-search-target="searchContainer"]');
+      
+      if (buttonId === 'search' || buttonId === 'sort') {
+        if (searchContainer) {
+          const currentDisplay = searchContainer.style.display;
+          searchContainer.style.display = currentDisplay === 'none' ? 'flex' : 'none';
+        }
+      }
+    }
+  });
+
+//]]>
+</script>
+          <turbo-frame id="modal"></turbo-frame>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bg-surface-50 hotwire-native:hidden">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-col items-center space-y-4">
+      <div class="flex items-center space-x-4">
+        <a class="text-sm text-gray-600 hover:text-gray-900" href="/pages/privacy"><span class="translation_missing" title="translation missing: en.privacy">Privacy</span></a>
+      </div>
+      <p class="text-center text-gray-600 text-sm">&copy; 2025 BentoBook. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+
+
+    <!-- Modals container -->
+    
+  </body>
+</html>
