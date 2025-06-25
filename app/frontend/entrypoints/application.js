@@ -23,8 +23,9 @@ document.addEventListener("turbo:visit", () => {
 })
 
 // Prevent Turbo from caching pages
-Turbo.setProgressBarDelay(100)
-Turbo.setConfirmMethod((message) => Promise.resolve(confirm(message)))
+Turbo.config.drive.progressBarDelay = 100
+Turbo.config.forms.confirm = (message) => Promise.resolve(confirm(message))
+// Turbo.config.confirmMethod = (message) => Promise.resolve(confirm(message))
 
 // Initialize Stimulus application
 const application = Application.start();
