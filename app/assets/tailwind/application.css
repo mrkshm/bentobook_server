@@ -11,7 +11,7 @@
   --color-mint-500: oklch(0.72 0.11 178);
   
   /* SPACING SCALE */
-  --spacing: 0.25rem;
+  /* --spacing: 0.25rem;
   --spacing-px: 1px;
   --spacing-0: 0px;
   --spacing-0_5: 0.125rem;
@@ -47,7 +47,7 @@
   --spacing-72: 18rem;
   --spacing-80: 20rem;
   --spacing-96: 24rem;
-}
+} */
 
 @theme inline {
   /* PRIMARY */
