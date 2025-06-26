@@ -82,6 +82,21 @@ RUN SECRET_KEY_BASE_DUMMY=1 \
     RUBY_GC_MALLOC_LIMIT=100000000 \
     ./bin/rails assets:precompile
 
+# Debug CSS file sizes to identify where truncation occurs
+RUN echo "=== CSS file analysis ===" && \
+    ls -la /rails/public/assets/tailwind*.css && \
+    echo "=== File sizes ===" && \
+    wc -c /rails/public/assets/tailwind*.css && \
+    echo "=== Source CSS file size ===" && \
+    wc -c /rails/app/assets/builds/tailwind.css && \
+    echo "=== Checking if CSS file is complete ===" && \
+    TAILWIND_SIZE=$(wc -c < /rails/public/assets/tailwind*.css | head -1) && \
+    if [ "$TAILWIND_SIZE" -gt 50000 ]; then \
+      echo "CSS file size OK: $TAILWIND_SIZE bytes"; \
+    else \
+      echo "CSS file truncated: $TAILWIND_SIZE bytes, failing build" && exit 1; \
+    fi
+
 # Final stage for app image
 FROM base
 
