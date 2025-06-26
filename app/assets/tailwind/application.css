@@ -7,8 +7,8 @@
 @source "app/components/**/*.html.erb";
 @source "app/javascript/**/*.js";
 
-@theme {
-  --color-mint-500: oklch(0.72 0.11 178);
+/* @theme {V
+  --color-mint-500: oklch(0.72 0.11 178); */
   
   /* SPACING SCALE */
   /* --spacing: 0.25rem;
@@ -46,8 +46,8 @@
   --spacing-64: 16rem;
   --spacing-72: 18rem;
   --spacing-80: 20rem;
-  --spacing-96: 24rem;
-} */
+  --spacing-96: 24rem; *
+/* } */
 
 @theme inline {
   /* PRIMARY */
