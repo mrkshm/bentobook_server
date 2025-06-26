@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 
-@source "../../../app/views/**/*.html.erb";
-@source "../../../app/views/**/*.rb";
-@source "../../../app/helpers/**/*.rb";
-@source "../../../app/components/**/*.rb";
-@source "../../../app/components/**/*.html.erb";
-@source "../../../app/frontend/**/*.js";
+@source "app/views/**/*.html.erb";
+@source "app/views/**/*.rb";
+@source "app/helpers/**/*.rb";
+@source "app/components/**/*.rb";
+@source "app/components/**/*.html.erb";
+@source "app/javascript/**/*.js";
 
 @theme {
   --color-mint-500: oklch(0.72 0.11 178);
