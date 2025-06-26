@@ -12,15 +12,15 @@ class RestaurantsController < ApplicationController
   before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :update_price_level, :edit_images ]
 
   def index
-    @current_field = params[:field].presence_in(%w[name rating price_level distance created_at updated_at]) || 'name'
-    @current_direction = %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
+    @current_field = params[:field].presence_in(%w[name rating price_level distance created_at updated_at]) || "name"
+    @current_direction = %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
 
     restaurants_scope = Current.organization.restaurants
                             .with_google
                             .includes(:visits, :cuisine_type, :tags)
 
     if params[:search].present?
-      restaurants_scope = restaurants_scope.search_by_name_and_address(params[:search])
+      restaurants_scope = restaurants_scope.search(params[:search])
     end
 
     if params[:tag].present?

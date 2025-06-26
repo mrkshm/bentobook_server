@@ -1,6 +1,4 @@
 class SearchFormComponent < ApplicationComponent
-  include HeroiconHelper
-
   def initialize(url:, placeholder:, search_value:, additional_fields: {})
     @url = url
     @placeholder = placeholder

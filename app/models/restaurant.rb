@@ -98,8 +98,8 @@ class Restaurant < ApplicationRecord
                       }
                     }
 
-    def self.search_by_name_and_address(query, organization)
-      search_by_all_fields(query).where(organization_id: organization.id)
+    def self.search(query)
+      search_by_all_fields(query)
     end
 
     # Update scope to use restaurant's own location data

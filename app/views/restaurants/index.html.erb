@@ -25,20 +25,17 @@
 
   <%# Search and sort forms - visible at all times %>
   <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
-    <%= form_tag restaurants_path, method: :get, class: "relative" do %>
-      <%= hidden_field_tag :order_by, params[:order_by] %>
-      <%= hidden_field_tag :order_direction, params[:order_direction] %>
-      <%= hidden_field_tag :tag, params[:tag] %>
-      <div class="relative">
-        <%= text_field_tag :search, params[:search], 
-            class: "w-full px-4 py-2 pr-10 border border-surface-300 rounded-lg bg-surface-50 text-surface-900 focus:outline-none focus:ring-2 focus:ring-primary-500",
-            placeholder: t('restaurants.index.search_placeholder') %>
-        <button type="submit" class="absolute inset-y-0 right-0 flex items-center px-3 text-surface-400 hover:text-surface-600">
-          <%= heroicon "magnifying-glass", options: { class: "w-5 h-5" } %>
-        </button>
-      </div>
-    <% end %>
 
+    <%= render SearchFormComponent.new(
+      url: restaurants_path,
+      placeholder: t('restaurants.index.search_placeholder'),
+      search_value: params[:search],
+      additional_fields: {
+        order_by: params[:order_by],
+        order_direction: params[:order_direction],
+        tag: params[:tag]
+      }
+    ) %>
     <%= render SortFormComponent.new(
       url: restaurants_path,
       sort_options: {
