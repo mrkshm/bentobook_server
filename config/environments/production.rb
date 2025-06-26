@@ -25,6 +25,7 @@ Rails.application.configure do
   config.active_storage.service = :amazon
 
   config.assets.css_compressor = nil
+  config.assets.configure { |env| env.css_compressor = nil }
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
