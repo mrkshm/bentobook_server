@@ -63,7 +63,14 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
+# Ensure any change to production config busts the cache for the next layer
+COPY config/environments/production.rb ./config/environments/production.rb
 
+
+
+# Force a rebuild of the assets layer on every build (pass --build-arg ASSETS_REV=$(date +%s))
+ARG ASSETS_REV
+ENV ASSETS_REV=${ASSETS_REV}
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 \
