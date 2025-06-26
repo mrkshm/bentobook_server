@@ -69,15 +69,18 @@ COPY config/environments/production.rb ./config/environments/production.rb
 
 
 # Force a rebuild of the assets layer on every build (pass --build-arg ASSETS_REV=$(date +%s))
-ARG ASSETS_REV=1750962000
+ARG ASSETS_REV=1750962400
 ENV ASSETS_REV=${ASSETS_REV}
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 # Fix CSS truncation by copying complete CSS after normal build
+# Build Tailwind CSS first (doesn't need full Rails environment)
+RUN RAILS_ENV=production ./bin/rails tailwindcss:build
+
+# Then precompile assets with all required environment variables  
 RUN SECRET_KEY_BASE_DUMMY=1 \
     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
     RAILS_ENV=production \
-    ./bin/rails tailwindcss:build && \
     ./bin/rails assets:precompile
 
 # Copy complete CSS over truncated version
