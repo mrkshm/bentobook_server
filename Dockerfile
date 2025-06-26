@@ -63,6 +63,11 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
+# Cache-busting: include the current git commit hash to invalidate cache automatically
+# Whenever HEAD changes, this COPY produces a different checksum, forcing subsequent layers to rebuild.
+COPY .git/HEAD .git/refs /tmp/git-commit/
+
+
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 \
     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
