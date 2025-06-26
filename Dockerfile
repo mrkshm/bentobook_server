@@ -23,11 +23,7 @@ ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    NODE_ENV="production" \
-    VITE_RUBY_ENV="production" \
-    VITE_RUBY_AUTO_BUILD="true" \
-    RAILS_SERVE_STATIC_FILES="true" \
-    VITE_RUBY_SKIP_COMPATIBILITY_CHECK="true"
+    RAILS_SERVE_STATIC_FILES="true"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
@@ -40,8 +36,6 @@ RUN apt-get update -qq && \
     libpq-dev \
     pkg-config \
     unzip \
-    nodejs \
-    npm \
     curl \
     libgeos-dev \
     libproj-dev \
@@ -54,18 +48,14 @@ RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# Install bun
-RUN curl -fsSL https://bun.sh/install | bash && \
-    mv /root/.bun/bin/bun /usr/local/bin/
+# (Removed Bun installation – no asset build needed)
 
-# Copy JavaScript package files
-COPY package.json ./
-COPY bun.lockb ./
 
-# Install JavaScript dependencies (include devDependencies for asset build)
-ENV NODE_ENV=development
-RUN bun install --frozen-lockfile
-ENV NODE_ENV=production
+
+
+
+
+
 
 # Copy application code
 COPY . .
@@ -74,18 +64,15 @@ COPY . .
 RUN bundle exec bootsnap precompile app/ lib/
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-# This will also run vite:build through the asset pipeline integration
 RUN SECRET_KEY_BASE_DUMMY=1 \
     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
     RAILS_ENV=production \
-    NODE_ENV=production \
     ./bin/rails assets:precompile
 
 # Final stage for app image
 FROM base
 
 ENV RAILS_ENV="production" \
-    NODE_ENV="production" \
     BUNDLE_WITHOUT="development:test" \
     RAILS_SERVE_STATIC_FILES="true" \
     RAILS_LOG_TO_STDOUT="true"
@@ -93,14 +80,12 @@ ENV RAILS_ENV="production" \
 # Copy built artifacts: gems, application
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
-# Copy bun binary for one-off exec commands (e.g., vite builds)
-COPY --from=build /usr/local/bin/bun /usr/local/bin/bun
+
 
 # Create and set up the rails user
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    mkdir -p /rails/public/vite && \
-    chown -R rails:rails db log storage tmp public/vite
+    chown -R rails:rails db log storage tmp
 
 USER 1000:1000
 
