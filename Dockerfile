@@ -85,7 +85,7 @@ RUN COMPLETE_CSS_SIZE=$(wc -c < /rails/app/assets/builds/tailwind.css) && \
     for css_file in /rails/public/assets/tailwind-*.css; do \
         CURRENT_SIZE=$(wc -c < "$css_file") && \
         echo "Current CSS size: $CURRENT_SIZE bytes" && \
-        if [ "$CURRENT_SIZE" -lt 50000 ]; then \
+        if [ "$CURRENT_SIZE" -lt 60000 ]; then \
             echo "Replacing truncated CSS with complete version" && \
             cp /rails/app/assets/builds/tailwind.css "$css_file" && \
             echo "✅ CSS fix applied: $(wc -c < "$css_file") bytes"; \
