@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+echo "Starting robust Tailwind CSS build..."
+
+# Function to check if CSS file is complete
+check_css_completeness() {
+    local css_file="$1"
+    local min_size=50000
+    
+    if [ -f "$css_file" ]; then
+        local file_size=$(wc -c < "$css_file")
+        echo "CSS file size: $file_size bytes"
+        
+        if [ "$file_size" -gt "$min_size" ]; then
+            echo "✅ CSS file appears complete"
+            return 0
+        else
+            echo "❌ CSS file appears truncated"
+            return 1
+        fi
+    else
+        echo "❌ CSS file not found"
+        return 1
+    fi
+}
+
+# Function to run command with timeout (works on Linux containers)
+run_with_timeout() {
+    local cmd="$1"
+    local timeout_duration=300
+    
+    # Check if timeout command exists (Linux containers)
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$timeout_duration" $cmd
+    else
+        # Fallback for systems without timeout (like macOS)
+        $cmd
+    fi
+}
+
+# Remove any existing truncated CSS
+rm -f app/assets/builds/tailwind.css
+
+# Set memory and performance options
+export MALLOC_ARENA_MAX=2
+export RUBY_GC_HEAP_INIT_SLOTS=1000000
+export RUBY_GC_MALLOC_LIMIT=100000000
+export NODE_OPTIONS="--max-old-space-size=4096"
+
+# Build Tailwind CSS with multiple attempts
+for attempt in 1 2 3; do
+    echo "Attempt $attempt: Building Tailwind CSS..."
+    
+    # Use Rails task to build Tailwind
+    if run_with_timeout "bin/rails tailwindcss:build"; then
+        echo "Build command completed for attempt $attempt"
+    else
+        echo "Build attempt $attempt failed or timed out"
+        rm -f app/assets/builds/tailwind.css
+        sleep 2
+        continue
+    fi
+    
+    # Check if the result is complete
+    if check_css_completeness "app/assets/builds/tailwind.css"; then
+        echo "✅ Tailwind CSS build successful on attempt $attempt"
+        exit 0
+    else
+        echo "🔄 Retrying build (attempt $attempt produced incomplete CSS)"
+        rm -f app/assets/builds/tailwind.css
+        sleep 2
+    fi
+done
+
+echo "❌ All build attempts failed"
+exit 1

@@ -69,24 +69,20 @@ COPY config/environments/production.rb ./config/environments/production.rb
 
 
 # Force a rebuild of the assets layer on every build (pass --build-arg ASSETS_REV=$(date +%s))
-ARG ASSETS_REV=1750954800
+ARG ASSETS_REV=1750955500
 ENV ASSETS_REV=${ASSETS_REV}
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-# Add memory allocation and timeout to prevent OOM/truncation issues during asset compilation
+# Build Tailwind CSS first with robust error handling
 RUN SECRET_KEY_BASE_DUMMY=1 \
     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
     RAILS_ENV=production \
-    MALLOC_ARENA_MAX=2 \
-    RUBY_GC_HEAP_INIT_SLOTS=1000000 \
-    RUBY_GC_MALLOC_LIMIT=100000000 \
-    NODE_OPTIONS="--max-old-space-size=4096" \
-    timeout 300 ./bin/rails assets:precompile || \
-    (echo "First compilation attempt failed or timed out, retrying..." && \
-     SECRET_KEY_BASE_DUMMY=1 \
-     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
-     RAILS_ENV=production \
-     ./bin/rails assets:precompile)
+    ./bin/robust_tailwind_build
+
+# Precompiling remaining assets for production
+RUN SECRET_KEY_BASE_DUMMY=1 \
+    DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
+    RAILS_ENV=production \
+    ./bin/rails assets:precompile
 
 # Debug CSS file sizes to identify where truncation occurs
 RUN echo "=== CSS file analysis ===" && \
