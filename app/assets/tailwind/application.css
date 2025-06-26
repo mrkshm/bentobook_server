@@ -35,7 +35,8 @@
   --color-surface-600: var(--color-surface-600);
   --color-surface-700: var(--color-surface-700);
   --color-surface-800: var(--color-surface-800);
-  --color-surface-900: var(--color-surface-900);
+  /* --color-surface-900: var(--color-surface-900); */
+  --color-surface-900: #333;
   --color-surface-950: var(--color-surface-950);
 
   /* SUCCESS */
