@@ -69,7 +69,7 @@ COPY config/environments/production.rb ./config/environments/production.rb
 
 
 # Force a rebuild of the assets layer on every build (pass --build-arg ASSETS_REV=$(date +%s))
-ARG ASSETS_REV=1750961000
+ARG ASSETS_REV=1750961400
 ENV ASSETS_REV=${ASSETS_REV}
 
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
