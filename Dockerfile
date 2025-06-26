@@ -69,34 +69,30 @@ COPY config/environments/production.rb ./config/environments/production.rb
 
 
 # Force a rebuild of the assets layer on every build (pass --build-arg ASSETS_REV=$(date +%s))
-ARG ASSETS_REV=1750956500
+ARG ASSETS_REV=1750957000
 ENV ASSETS_REV=${ASSETS_REV}
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY  
-# Use custom task that fixes Tailwind CSS truncation
+# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
+# Fix CSS truncation by copying complete CSS after normal build
 RUN SECRET_KEY_BASE_DUMMY=1 \
     DEVISE_JWT_SECRET_KEY=dummy_key_for_asset_compilation \
     RAILS_ENV=production \
-    ./bin/rails assets:precompile_with_fix
+    ./bin/rails assets:precompile
 
-# Debug CSS file sizes to identify where truncation occurs
-RUN echo "=== CSS file analysis ===" && \
-    ls -la /rails/public/assets/tailwind*.css && \
-    echo "=== File sizes ===" && \
-    wc -c /rails/public/assets/tailwind*.css && \
-    echo "=== Source CSS file size ===" && \
-    wc -c /rails/app/assets/builds/tailwind.css && \
-    echo "=== Checking if CSS file is complete ===" && \
-    TAILWIND_SIZE=$(wc -c < /rails/public/assets/tailwind*.css | head -1) && \
-    echo "Final CSS file size: $TAILWIND_SIZE bytes" && \
-    if [ "$TAILWIND_SIZE" -gt 50000 ]; then \
-      echo "CSS file size OK: $TAILWIND_SIZE bytes"; \
-    else \
-      echo "CSS file truncated: $TAILWIND_SIZE bytes" && \
-      echo "=== Showing end of CSS file ===" && \
-      tail -c 200 /rails/public/assets/tailwind*.css && \
-      echo "=== Build will continue but CSS is truncated ==="; \
-    fi
+# Copy complete CSS over truncated version
+RUN COMPLETE_CSS_SIZE=$(wc -c < /rails/app/assets/builds/tailwind.css) && \
+    echo "Complete CSS size: $COMPLETE_CSS_SIZE bytes" && \
+    for css_file in /rails/public/assets/tailwind-*.css; do \
+        CURRENT_SIZE=$(wc -c < "$css_file") && \
+        echo "Current CSS size: $CURRENT_SIZE bytes" && \
+        if [ "$CURRENT_SIZE" -lt 50000 ]; then \
+            echo "Replacing truncated CSS with complete version" && \
+            cp /rails/app/assets/builds/tailwind.css "$css_file" && \
+            echo "✅ CSS fix applied: $(wc -c < "$css_file") bytes"; \
+        else \
+            echo "✅ CSS file already complete: $CURRENT_SIZE bytes"; \
+        fi; \
+    done
 
 # Final stage for app image
 FROM base
