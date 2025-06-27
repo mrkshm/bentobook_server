@@ -1,31 +1,42 @@
-<%= form_tag @url, method: :get, data: {turbo_action: "replace"}, class: 'w-full md:w-1/2', id: 'search-form' do %>
-  <div class="flex flex-col md:flex-row items-end gap-2">
-    <div class="w-full">
-      <label for="search-input" class="block mb-2">
-        <span class="label-text text-sm font-medium text-surface-900"><%= t('search') %>:</span>
-      </label>
-      <div class="flex gap-2 mt-2">
+<% search_term = params[:search].presence || @search_value.presence %>
+<%= form_with url: @url, method: :get, 
+    data: { 
+      controller: "search debounce", 
+      action: "input->debounce#submit",
+      turbo_frame: "restaurants-list" 
+    }, 
+    class: "w-full" do |f| %>
+  <div class="form-control w-full max-w-xs">
+    <div class="flex gap-2">
+      <div class="relative flex-1">
         <input type="text" 
-               id="search-input" 
                name="search" 
-               value="<%= @search_value %>" 
-               class="input input-bordered w-full" 
-               placeholder="<%= @placeholder %>">
+               value="<%= search_term %>" 
+               class="input input-bordered w-full p-3 rounded-sm pr-10" 
+               placeholder="<%= @placeholder %>"
+               data-action="input->search#handleInput"
+               data-search-target="input">
         
-        <% @additional_fields.each do |name, value| %>
-          <%= hidden_field_tag name, value %>
-        <% end %>
-        
-        <%= button_tag type: "submit", class: "btn btn-primary" do %>
-          <%= t("search") %>
-        <% end %>
-
         <button type="button" 
-                class="btn btn-ghost"
-                onclick="window.location='<%= @url %>'">
-          <%= t("reset") %>
+                class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 hidden"
+                data-search-target="clearButton"
+                data-action="click->search#clear">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
         </button>
+        
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none <%= 'hidden' if search_term.present? %>" data-search-target="searchIcon">
+          <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
       </div>
+      
+      <% @additional_fields.each do |name, value| %>
+        <%= hidden_field_tag name, value if value.present? %>
+      <% end %>
+      
     </div>
   </div>
 <% end %>

@@ -46,7 +46,10 @@
           
           <% if restaurant.url.present? %>
             <div class="mt-1">
-              <%= link_to restaurant.url, restaurant.url, class: "text-primary-500 hover:text-primary-700", target: "_blank" %>
+              <%= link_to restaurant.url, restaurant.url, 
+                  class: "text-primary-500 hover:text-primary-700 hover:underline", 
+                  target: "_blank",
+                  onclick: "event.stopPropagation();" %>
             </div>
           <% end %>
         </div>

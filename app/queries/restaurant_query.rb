@@ -28,7 +28,7 @@ class RestaurantQuery
 
     def search(scoped)
       if params[:search].present?
-        scoped.search_by_name_and_address(params[:search], params[:organization])
+        scoped.search(params[:search], params[:organization])
       else
         scoped
       end
@@ -41,7 +41,7 @@ class RestaurantQuery
     def sort(scoped)
       # If we have forced IDs, we'll handle the ordering manually after fetching
       return scoped if params[:force_ids].present?
-      
+
       order_field = params[:order_by] || DEFAULT_ORDER[:field]
       order_direction = params[:order_direction] || DEFAULT_ORDER[:direction]
 
@@ -69,16 +69,16 @@ class RestaurantQuery
       distance_sql = <<~SQL.squish
         CAST(ROUND(
           SQRT(
-            POW(CAST(restaurants.latitude AS DECIMAL(15, 10)) - #{lat}, 2) + 
+            POW(CAST(restaurants.latitude AS DECIMAL(15, 10)) - #{lat}, 2) +#{' '}
             POW(CAST(restaurants.longitude AS DECIMAL(15, 10)) - #{lon}, 2)
-          ), 
+          ),#{' '}
           8
         ) AS DECIMAL(15, 8))
       SQL
 
       # Select with the distance calculation and order by it
       scoped = scoped.select("restaurants.*, #{distance_sql} as distance")
-      
+
       # Order by the calculated distance and ID
       scoped.reorder(Arel.sql("#{distance_sql} ASC, restaurants.id ASC"))
     end
