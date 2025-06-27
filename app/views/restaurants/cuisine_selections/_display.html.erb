@@ -1,5 +1,28 @@
-<div id="<%= dom_id(restaurant, :cuisine_type) %>" class="inline-block">
-  <%= link_to restaurant.cuisine_type&.name || "Select Cuisine",
-            edit_restaurant_cuisine_selection_path(restaurant),
-            class: "text-blue-600 hover:text-blue-800 hover:underline" %>
-</div>
+<%# locals: (restaurant:, readonly: false) -%>
+<% frame_id = dom_id(restaurant, :cuisine_type) %>
+
+<% if readonly %>
+  <div class="flex items-center" data-testid="price-level-component">
+    <div class="flex items-center">
+      <% 4.times do |i| %>
+        <span class="<%= i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
+          $
+        </span>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <%= turbo_frame_tag frame_id do %>
+    <div id="<%= dom_id(restaurant, :cuisine_type) %>" class="inline-block">
+      <%= link_to restaurant.cuisine_type&.name || "Select Cuisine",
+                edit_restaurant_cuisine_selection_path(restaurant),
+                class: "text-blue-600 hover:text-blue-800 hover:underline",
+                data: {
+              turbo_frame: hotwire_native_app? ? "_top" : nil,
+              turbo_visit_control: hotwire_native_app? ? "reload" : nil,
+              turbo_cache: false,
+              turbo_prefetch: true
+            }%>
+    </div>
+  <% end %>
+<% end %>

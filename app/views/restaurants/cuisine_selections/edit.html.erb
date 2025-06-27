@@ -1,6 +1,5 @@
-<div class="p-4">
-  <h2 class="text-lg font-bold mb-4">Select Cuisine Type</h2>
   
+<%= turbo_frame_tag dom_id(@restaurant, :cuisine_type) do %>
   <%= render "restaurants/cuisine_selections/categories",
             categories: @categories,
             selected: @selected_category,
@@ -12,4 +11,4 @@
               types: @cuisine_types,
               restaurant: @restaurant %>
   <% end %>
-</div>
+<% end %>

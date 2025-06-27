@@ -1,7 +1,8 @@
 module Restaurants
   class CuisineSelectionsController < ApplicationController
-    before_action :set_restaurant, only: [ :update_cuisine_type ]
-    before_action :load_categories, only: [ :index, :cuisine_types ]
+    include ActionView::RecordIdentifier
+    before_action :set_restaurant
+    before_action :load_categories, only: [ :index, :edit, :cuisine_types ]
     before_action :authenticate_user!
 
     def index
@@ -9,12 +10,16 @@ module Restaurants
 
     def edit
       @categories = CuisineCategory.ordered
-      @selected_category = if params[:category_id]
-                            CuisineCategory.find(params[:category_id])
+      @selected_category = if params[:category_id].present?
+        # Find the category by ID and ensure it exists
+        category = CuisineCategory.find_by(id: params[:category_id])
+        # If category not found, use the restaurant's cuisine type's category
+        category || @restaurant.cuisine_type&.cuisine_category || @categories.first
       else
-                            @restaurant.cuisine_type&.cuisine_category
+        @restaurant.cuisine_type&.cuisine_category || @categories.first
       end
       @cuisine_types = @selected_category&.cuisine_types&.ordered || []
+      render template: "restaurants/cuisine_selections/edit"
     end
 
     def update
@@ -22,10 +27,14 @@ module Restaurants
         if hotwire_native_app?
           redirect_to restaurant_path(@restaurant)
         else
-          render partial: "restaurants/cuisine_selections/display", locals: { restaurant: @restaurant }
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@restaurant, :cuisine_type),
+            partial: "restaurants/cuisine_selections/display",
+            locals: { restaurant: @restaurant }
+          )
         end
       else
-        render :edit, status: :unprocessable_entity
+        render template: "restaurants/cuisine_selections/edit", status: :unprocessable_entity
       end
     end
 
