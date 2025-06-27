@@ -1,0 +1,5 @@
+<div id="<%= dom_id(restaurant, :cuisine_type) %>" class="inline-block">
+  <%= link_to restaurant.cuisine_type&.name || "Select Cuisine",
+            edit_restaurant_cuisine_selection_path(restaurant),
+            class: "text-blue-600 hover:text-blue-800 hover:underline" %>
+</div>

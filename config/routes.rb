@@ -109,6 +109,9 @@ Rails.application.routes.draw do
         get "tagged/:tag", action: :index, as: :tagged
         post "new/confirm", to: "restaurants#new_confirm"
       end
+
+      resource :cuisine_selection, only: [ :edit, :update ], controller: "restaurants/cuisine_selections"
+
       resources :images, only: [ :new, :create, :destroy ] do
         collection do
           get :edit, to: "restaurants#edit_images", as: :edit

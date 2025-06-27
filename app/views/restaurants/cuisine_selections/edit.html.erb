@@ -1,0 +1,15 @@
+<div class="p-4">
+  <h2 class="text-lg font-bold mb-4">Select Cuisine Type</h2>
+  
+  <%= render "restaurants/cuisine_selections/categories",
+            categories: @categories,
+            selected: @selected_category,
+            restaurant: @restaurant %>
+
+  <% if @selected_category && @cuisine_types.any? %>
+    <%= render "restaurants/cuisine_selections/types",
+              category: @selected_category,
+              types: @cuisine_types,
+              restaurant: @restaurant %>
+  <% end %>
+</div>
