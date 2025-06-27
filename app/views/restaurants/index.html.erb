@@ -69,20 +69,23 @@
 
 <div class="min-h-screen bg-surface-100">
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 hotwire-native:px-0">
-    <% if @restaurants.empty? %>
-      <p class="text-surface-600 text-center py-8"><%= t('restaurants.index.no_restaurants_found') %></p>
-    <% else %>
-      <%# Restaurant list container %>
-      <%= turbo_frame_tag "restaurants-list", class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" do %>
+    <%# Always render the restaurants list Turbo Frame, even when empty %>
+    <%= turbo_frame_tag "restaurants-list", class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" do %>
+      <% if @restaurants.empty? %>
+        <div class="col-span-full text-center py-8">
+          <p class="text-surface-600"><%= t('restaurants.index.no_restaurants_found') %></p>
+        </div>
+      <% else %>
         <% @restaurants.each do |restaurant| %>
           <div class="grid gap-6">
             <%= render(Restaurants::CardComponent.new(restaurant: restaurant)) %>
           </div>
         <% end %>
       <% end %>
+    <% end %>
 
-      <%# Infinite scroll trigger %>
-      <% if @pagy.next %>
+    <%# Infinite scroll trigger - only show if there are more pages %>
+    <% if @pagy && @pagy.next %>
       <%= turbo_frame_tag :pagination,
           loading: :lazy,
           src: restaurants_path(
@@ -108,7 +111,6 @@
           </div>
         </div>
       <% end %>
-    <% end %>
     <% end %>
   </div>
 </div>

@@ -86,6 +86,7 @@ class Restaurant < ApplicationRecord
                       google_restaurant: {
                         name: "A",
                         address: "B",
+                        postal_code: "C",
                         city: "C",
                         country: "C"
                       }
