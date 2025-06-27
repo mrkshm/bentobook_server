@@ -1,5 +1,12 @@
-  
 <%= turbo_frame_tag dom_id(@restaurant, :cuisine_type) do %>
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-lg font-bold">Select Cuisine Type</h2>
+    <%= link_to "Cancel", 
+              restaurant_path(@restaurant), 
+              class: "text-sm text-gray-600 hover:text-gray-900",
+              data: { turbo_frame: "_top" } %>
+  </div>
+
   <%= render "restaurants/cuisine_selections/categories",
             categories: @categories,
             selected: @selected_category,

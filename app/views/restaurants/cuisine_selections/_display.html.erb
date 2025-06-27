@@ -2,19 +2,15 @@
 <% frame_id = dom_id(restaurant, :cuisine_type) %>
 
 <% if readonly %>
-  <div class="flex items-center" data-testid="price-level-component">
+  <div class="flex items-center" data-testid="cuisine-type-component">
     <div class="flex items-center">
-      <% 4.times do |i| %>
-        <span class="<%= i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
-          $
-        </span>
-      <% end %>
+      <%= t("cuisine_types.#{restaurant.cuisine_type&.name}") %>
     </div>
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
     <div id="<%= dom_id(restaurant, :cuisine_type) %>" class="inline-block">
-      <%= link_to restaurant.cuisine_type&.name || "Select Cuisine",
+      <%= link_to t("cuisine_types.#{restaurant.cuisine_type&.name}") || "Select Cuisine Type",
                 edit_restaurant_cuisine_selection_path(restaurant),
                 class: "text-blue-600 hover:text-blue-800 hover:underline",
                 data: {
