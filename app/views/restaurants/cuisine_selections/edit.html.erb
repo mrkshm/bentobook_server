@@ -2,7 +2,7 @@
   <div class="flex justify-start gap-4 items-center mb-4">
     <h2 class="text-lg font-bold">Select Cuisine Type</h2>
     <%= link_to "Cancel", 
-              restaurant_path(@restaurant), 
+              restaurant_path(id: @restaurant.id), 
               class: "text-sm text-gray-600 hover:text-gray-900",
               data: { turbo_frame: "_top" } %>
   </div>
