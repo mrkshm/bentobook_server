@@ -3,22 +3,38 @@
 
 <% if readonly %>
   <div class="flex items-center" data-testid="cuisine-type-component">
-    <div class="flex items-center">
-      <%= t("cuisine_types.#{restaurant.cuisine_type&.name}") %>
-    </div>
+    <% if restaurant.cuisine_type.present? %>
+      <span class="<%= type_color_classes(restaurant.cuisine_type, selected: false) %>">
+        <%= t("cuisine_types.#{restaurant.cuisine_type.name}") %>
+      </span>
+    <% else %>
+      <span class="text-gray-500 italic">No cuisine type selected</span>
+    <% end %>
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
     <div id="<%= dom_id(restaurant, :cuisine_type) %>" class="inline-block">
-      <%= link_to t("cuisine_types.#{restaurant.cuisine_type&.name}") || "Select Cuisine Type",
-                edit_restaurant_cuisine_selection_path(restaurant),
-                class: "text-blue-600 hover:text-blue-800 hover:underline",
-                data: {
-              turbo_frame: hotwire_native_app? ? "_top" : nil,
-              turbo_visit_control: hotwire_native_app? ? "reload" : nil,
-              turbo_cache: false,
-              turbo_prefetch: true
-            }%>
+      <% if restaurant.cuisine_type.present? %>
+        <%= link_to t("cuisine_types.#{restaurant.cuisine_type.name}"),
+                  edit_restaurant_cuisine_selection_path(restaurant),
+                  class: type_color_classes(restaurant.cuisine_type, selected: false),
+                  data: {
+                    turbo_frame: hotwire_native_app? ? "_top" : nil,
+                    turbo_visit_control: hotwire_native_app? ? "reload" : nil,
+                    turbo_cache: false,
+                    turbo_prefetch: true
+                  } %>
+      <% else %>
+        <%= link_to "Select Cuisine Type",
+                  edit_restaurant_cuisine_selection_path(restaurant),
+                  class: "text-blue-600 hover:text-blue-800 hover:underline",
+                  data: {
+                    turbo_frame: hotwire_native_app? ? "_top" : nil,
+                    turbo_visit_control: hotwire_native_app? ? "reload" : nil,
+                    turbo_cache: false,
+                    turbo_prefetch: true
+                  } %>
+      <% end %>
     </div>
   <% end %>
 <% end %>

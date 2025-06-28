@@ -1,5 +1,5 @@
 <%= turbo_frame_tag dom_id(@restaurant, :cuisine_type) do %>
-  <div class="flex justify-between items-center mb-4">
+  <div class="flex justify-start gap-4 items-center mb-4">
     <h2 class="text-lg font-bold">Select Cuisine Type</h2>
     <%= link_to "Cancel", 
               restaurant_path(@restaurant), 
