@@ -7,14 +7,70 @@
 @source "app/components/**/*.html.erb";
 @source "app/javascript/**/*.js";
 
+@import 'tailwindcss';
+
+/* Safelist dynamic category classes */
+@source inline("{hover:,}bg-category-{african,asian,european,eastern_european,middle_eastern,american,dietary,social,other}-{light,hover}");
+@source inline("text-category-{african,asian,european,eastern_european,middle_eastern,american,dietary,social,other}-dark");
+@source inline("ring-{2,}ring-category-{african,asian,european,eastern_european,middle_eastern,american,dietary,social,other}");
+
 
 @theme inline {
 
   /* CUISINE CATEGORIES */
-  --color-category-asian: var(--color-red-500);        /* Base color */
-  --color-category-asian-light: var(--color-red-100);   /* Light variant for backgrounds */
-  --color-category-asian-dark: var(--color-red-800);    /* Dark variant for text */
-  --color-category-asian-hover: var(--color-red-200);   /* Hover state */
+  /* African - Warm yellow/earth tones */
+  --color-category-african: var(--color-yellow-500);
+  --color-category-african-light: var(--color-yellow-100);
+  --color-category-african-dark: var(--color-yellow-800);
+  --color-category-african-hover: var(--color-yellow-200);
+
+  /* Asian - Vibrant red */
+  --color-category-asian: var(--color-red-500);
+  --color-category-asian-light: var(--color-red-100);
+  --color-category-asian-dark: var(--color-red-800);
+  --color-category-asian-hover: var(--color-red-200);
+
+  /* European - Cool blue */
+  --color-category-european: var(--color-blue-500);
+  --color-category-european-light: var(--color-blue-100);
+  --color-category-european-dark: var(--color-blue-800);
+  --color-category-european-hover: var(--color-blue-200);
+
+  /* Eastern European - Deep blue/indigo */
+  --color-category-eastern_european: var(--color-indigo-600);
+  --color-category-eastern_european-light: var(--color-indigo-100);
+  --color-category-eastern_european-dark: var(--color-indigo-900);
+  --color-category-eastern_european-hover: var(--color-indigo-200);
+
+  /* Middle Eastern - Warm orange */
+  --color-category-middle_eastern: var(--color-orange-500);
+  --color-category-middle_eastern-light: var(--color-orange-100);
+  --color-category-middle_eastern-dark: var(--color-orange-800);
+  --color-category-middle_eastern-hover: var(--color-orange-200);
+
+  /* American - Nature green */
+  --color-category-american: var(--color-green-500);
+  --color-category-american-light: var(--color-green-100);
+  --color-category-american-dark: var(--color-green-800);
+  --color-category-american-hover: var(--color-green-200);
+
+  /* Dietary - Fresh emerald */
+  --color-category-dietary: var(--color-emerald-500);
+  --color-category-dietary-light: var(--color-emerald-100);
+  --color-category-dietary-dark: var(--color-emerald-800);
+  --color-category-dietary-hover: var(--color-emerald-200);
+
+  /* Social - Fun purple */
+  --color-category-social: var(--color-purple-500);
+  --color-category-social-light: var(--color-purple-100);
+  --color-category-social-dark: var(--color-purple-800);
+  --color-category-social-hover: var(--color-purple-200);
+
+  /* Other - Neutral gray */
+  --color-category-other: var(--color-gray-500);
+  --color-category-other-light: var(--color-gray-100);
+  --color-category-other-dark: var(--color-gray-800);
+  --color-category-other-hover: var(--color-gray-200);
 
   /* PRIMARY */
   --color-primary-50: var(--color-primary-50);
