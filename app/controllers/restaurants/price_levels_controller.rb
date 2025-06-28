@@ -1,38 +1,35 @@
 module Restaurants
   class PriceLevelsController < ApplicationController
     include ActionView::RecordIdentifier
+    include RestaurantScoped
 
     before_action :authenticate_user!
     before_action :set_restaurant
 
     def edit
-        render template: "restaurants/price_levels/edit"
+      respond_to do |format|
+        format.html { render template: "restaurants/price_levels/edit" }
+        format.turbo_stream # renders app/views/restaurants/price_levels/edit.turbo_stream.erb
+      end
     end
 
     def update
       if @restaurant.update(price_level_params)
-        if hotwire_native_app?
-          timestamp = Time.current.to_i
-          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale, t: timestamp)
-        else
-          render turbo_stream: turbo_stream.replace(
-            dom_id(@restaurant, :price_level),
-            partial: "restaurants/price_levels/display", locals: { restaurant: @restaurant })
+        respond_to do |format|
+          format.html do
+            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
+          end
+          format.turbo_stream
         end
       else
-        render template: "restaurants/price_levels/edit",
-               status: :unprocessable_entity
+        respond_to do |format|
+          format.html { render :edit, status: :unprocessable_entity }
+          format.turbo_stream { render :edit, status: :unprocessable_entity }
+        end
       end
     end
 
     private
-
-    def set_restaurant
-      @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
-    rescue ActiveRecord::RecordNotFound
-      render json: { error: "Restaurant not found" }, status: :not_found
-      false # Return false to halt the filter chain
-    end
 
     def price_level_params
       params.require(:restaurant).permit(:price_level)

@@ -57,8 +57,6 @@ gem "devise"
 
 gem "acts-as-taggable-on"
 gem "browser"
-gem "rswag-api"
-gem "rswag-ui"
 gem "sidekiq"
 gem "sidekiq-cron"
 
@@ -91,9 +89,7 @@ group :development do
 end
 
 group :development, :test do
-  gem "rspec-rails"
   gem "factory_bot_rails"
-  gem "rswag-specs"
 end
 
 group :test do

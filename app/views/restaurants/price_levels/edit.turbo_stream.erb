@@ -1,0 +1,10 @@
+<%= turbo_stream.append_all "body" do %>
+  <dialog data-controller="dialog" data-turbo-temporary class="dialog">
+    <article class="">
+      <%= turbo_frame_tag "edit_restaurant_price_level",
+                          src: edit_restaurant_price_level_path(restaurant_id: @restaurant.id,
+                                                           locale: current_locale) %>
+    </article>
+
+  </dialog>
+<% end %>

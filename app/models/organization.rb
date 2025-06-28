@@ -11,6 +11,8 @@
 #  updated_at :datetime         not null
 #
 class Organization < ApplicationRecord
+  include CurrencySupport
+
   has_many :memberships
   has_many :users, through: :memberships
   has_many :restaurants
@@ -27,6 +29,7 @@ class Organization < ApplicationRecord
   # Validations
   validates :username, uniqueness: true, allow_blank: true
   validates :about, length: { maximum: 500 }, allow_blank: true
+  validates :preferred_currency_symbol, presence: true, allow_blank: true, format: { with: /\A(?:dollar|yen|euro|ukp|rupees)\z/ }, allow_nil: true
 
   # Shares where this organization is the source (owner sharing with others)
   has_many :outgoing_shares, class_name: "Share", foreign_key: "source_organization_id", dependent: :destroy
@@ -39,6 +42,8 @@ class Organization < ApplicationRecord
 
   has_many :contacts, dependent: :destroy
   has_many :visits, dependent: :destroy
+
+  after_initialize :ensure_currency_symbol_set, if: :new_record?
 
   # Display methods
   def display_name
@@ -107,5 +112,16 @@ class Organization < ApplicationRecord
   rescue StandardError => e
     Rails.logger.error "Error generating avatar URL: #{e.message}"
     nil
+  end
+
+  def ensure_currency_symbol_set
+    return unless preferred_currency_symbol.blank?
+
+    if defined?(Current.request) && Current.request&.env["HTTP_ACCEPT_LANGUAGE"].present?
+      browser_locale = Current.request.env["HTTP_ACCEPT_LANGUAGE"].scan(/^[a-z]{2}\-[A-Z]{2}/).first
+      detect_and_set_currency(browser_locale) if browser_locale.present?
+    else
+      detect_and_set_currency(I18n.locale)
+    end
   end
 end

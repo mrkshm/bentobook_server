@@ -1,15 +1,7 @@
-<%= render partial: "shared/header", locals: { title: t("restaurants.rating.edit") } %>
-
-<%= turbo_frame_tag dom_id(@restaurant, :rating) do %>
+<%= turbo_frame_tag "edit_restaurant_rating" do %>
 <div class="bg-surface-50 p-4">
-  <%# Add timestamp parameter to form submission URL to prevent caching %>
-  <% timestamp = Time.current.to_i %>
   <%= form_with model: @restaurant, 
-                url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: current_locale, t: timestamp),
-                data: { 
-                  turbo_frame: hotwire_native_app? ? "_top" : dom_id(@restaurant, :rating),
-                  turbo_action: hotwire_native_app? ? "replace" : nil
-                },
+                url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: current_locale),
                 method: :patch,
                 class: "bg-white rounded-lg shadow p-4" do |f| %>
     <div class="flex justify-center space-x-2">
@@ -17,7 +9,6 @@
         <%= f.button type: "submit",
                     name: "restaurant[rating]",
                     value: i + 1,
-                    formnovalidate: true,
                     class: "text-3xl focus:outline-none" do %>
           <span class="<%= i < @restaurant.rating.to_i ? 'text-primary-500' : 'text-surface-300' %>">
             <%= i < @restaurant.rating.to_i ? '★' : '☆' %>

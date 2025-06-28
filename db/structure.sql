@@ -502,7 +502,8 @@ CREATE TABLE public.organizations (
     username character varying,
     name character varying,
     about text,
-    email character varying
+    email character varying,
+    preferred_currency_symbol character varying
 );
 
 
@@ -1948,6 +1949,7 @@ ALTER TABLE ONLY public.shares
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250630154325'),
 ('20250624133403'),
 ('20250624132727'),
 ('20250624130031'),

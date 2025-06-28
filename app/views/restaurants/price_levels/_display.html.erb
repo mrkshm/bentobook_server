@@ -3,30 +3,21 @@
 
 <% if readonly %>
   <div class="flex items-center" data-testid="price-level-component">
-    <div class="flex items-center">
+    <div class="flex items-center space-x-1">
       <% 4.times do |i| %>
-        <span class="<%= i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
-          $
-        </span>
+        <%= currency_icon(class: "#{i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300'} h-5 w-5") %>
       <% end %>
     </div>
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
     <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: I18n.locale),
-          class: "block group",
-          data: {
-            turbo_frame: hotwire_native_app? ? "_top" : nil,
-            turbo_visit_control: hotwire_native_app? ? "reload" : nil,
-            turbo_cache: false,
-            turbo_prefetch: true
-          } do %>
+          class: "cursor-pointer",
+          data: { turbo_stream: true } do %>
       <div class="flex items-center" data-testid="price-level-component">
-        <div class="flex items-center">
+        <div class="flex items-center space-x-1">
           <% 4.times do |i| %>
-            <span class="<%= i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300' %> text-xl">
-              $
-            </span>
+            <%= currency_icon(size: :md, class: "#{i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300'} h-5 w-5") %>
           <% end %>
         </div>
       </div>

@@ -38,7 +38,7 @@
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
             <div class="flex gap-8 hotwire-native:justify-between">
               <%= render "restaurants/price_levels/display", restaurant: @restaurant %>
-              <%= render "restaurants/ratings/display", restaurant: @restaurant, readonly: false %>
+              <%= render "restaurants/ratings/display", restaurant: @restaurant %>
             </div>
           </div>
           <!-- Address Section -->
@@ -85,7 +85,7 @@
             </div>
           </div>
 
-          <!-- Images Section -->
+          <!-- Images Section  -->
           <div class="rounded-lg bg-surface-100/50 p-2 md:p-6 backdrop-blur-sm">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
@@ -107,7 +107,7 @@
               </div>
             </div>
 
-            <% if @restaurant.images.any? %>
+            <% if not @restaurant.images.any? %>
               <%= render(GalleryComponent.new(images: @restaurant.images)) %>
             <% else %>
               <div class="text-center py-8 text-surface-500">

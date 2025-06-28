@@ -1,10 +1,24 @@
+<% if hotwire_native_app? %>
+  <% render 'shared/header', title: t('cuisine_selections.edit_cuisine_type', default: 'Select Cuisine Type') %>
+  <div class="min-h-screen bg-surface-50">
+    <div class="container mx-auto px-4 py-6">
+<% end %>
+
 <%= turbo_frame_tag dom_id(@restaurant, :cuisine_type) do %>
   <div class="flex justify-start gap-4 items-center mb-4">
-    <h2 class="text-lg font-bold">Select Cuisine Type</h2>
-    <%= link_to "Cancel", 
-              restaurant_path(id: @restaurant.id), 
-              class: "text-sm text-gray-600 hover:text-gray-900",
-              data: { turbo_frame: "_top" } %>
+    <% if hotwire_native_app? %>
+      <h1 class="text-2xl font-bold">Select Cuisine Type</h1>
+      <%= link_to "Cancel", 
+                restaurant_path(id: @restaurant.id), 
+                class: "text-sm text-gray-600 hover:text-gray-900",
+                data: { turbo_action: "replace" } %>
+    <% else %>
+      <h2 class="text-lg font-bold">Select Cuisine Type</h2>
+      <%= link_to "Cancel", 
+                restaurant_path(id: @restaurant.id), 
+                class: "text-sm text-gray-600 hover:text-gray-900",
+                data: { turbo_frame: "_top" } %>
+    <% end %>
   </div>
 
   <%= render "restaurants/cuisine_selections/categories",

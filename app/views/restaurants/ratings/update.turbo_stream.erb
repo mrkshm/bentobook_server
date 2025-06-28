@@ -1,0 +1,2 @@
+<%= turbo_stream.action "close_frame_dialog", turbo_frame_request_id %>
+<%= turbo_stream.replace dom_id(@restaurant, :rating), partial: "restaurants/ratings/display", locals: { restaurant: @restaurant.reload } %>
