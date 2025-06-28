@@ -16,20 +16,20 @@
     <div id="<%= dom_id(restaurant, :cuisine_type) %>" class="inline-block">
       <% if restaurant.cuisine_type.present? %>
         <%= link_to t("cuisine_types.#{restaurant.cuisine_type.name}"),
-                  edit_restaurant_cuisine_selection_path(restaurant),
+                  edit_restaurant_cuisine_selection_path(restaurant_id: restaurant.id),
                   class: type_color_classes(restaurant.cuisine_type, selected: false),
                   data: {
-                    turbo_frame: hotwire_native_app? ? "_top" : nil,
+                    turbo_frame: hotwire_native_app? ? "_top" : frame_id,
                     turbo_visit_control: hotwire_native_app? ? "reload" : nil,
                     turbo_cache: false,
                     turbo_prefetch: true
                   } %>
       <% else %>
         <%= link_to "Select Cuisine Type",
-                  edit_restaurant_cuisine_selection_path(restaurant),
+                  edit_restaurant_cuisine_selection_path(restaurant_id: restaurant.id),
                   class: "text-blue-600 hover:text-blue-800 hover:underline",
                   data: {
-                    turbo_frame: hotwire_native_app? ? "_top" : nil,
+                    turbo_frame: hotwire_native_app? ? "_top" : frame_id,
                     turbo_visit_control: hotwire_native_app? ? "reload" : nil,
                     turbo_cache: false,
                     turbo_prefetch: true
