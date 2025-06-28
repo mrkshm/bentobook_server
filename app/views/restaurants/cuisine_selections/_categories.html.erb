@@ -4,7 +4,7 @@
   <div class="flex flex-wrap gap-2">
     <% categories.each do |category| %>
       <%= link_to t("cuisine_categories.#{category.name}"),
-                edit_restaurant_cuisine_selection_path(restaurant, category_id: category.id),
+                edit_restaurant_cuisine_selection_path(restaurant_id: restaurant.id, category_id: category.id),
                 class: category_color_classes(category, selected: category == selected) %>
     <% end %>
   </div>
