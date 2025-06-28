@@ -1,0 +1,11 @@
+<%# locals: (category:, types:, restaurant:) -%>
+<div class="space-y-2">
+  <% types.each do |type| %>
+    <%= button_to type.translated_name,
+                  restaurant_cuisine_selection_path(restaurant),
+                  method: :patch,
+                  params: { cuisine_type_id: type.id },
+                  class: type_color_classes(type, selected: restaurant.cuisine_type == type),
+                  form: { class: "inline" } %>
+  <% end %>
+</div>
