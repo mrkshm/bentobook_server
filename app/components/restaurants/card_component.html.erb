@@ -15,10 +15,8 @@
       <%# Left side: cuisine, price, rating, tags %>
       <div class="flex-1 pr-6">
         <div class="flex items-center text-sm text-surface-600">
-          <% if restaurant.cuisine_type %>
-            <span><%= restaurant.cuisine_type.name %></span>
-            <span class="mx-2">·</span>
-          <% end %>
+          <%= render "restaurants/cuisine_selections/display", restaurant: restaurant, readonly: true %>
+          <span class="mx-2">·</span>
           <%= render "restaurants/price_levels/display", restaurant: restaurant, readonly: true %>
         </div>
 
