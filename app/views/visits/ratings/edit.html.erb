@@ -5,7 +5,7 @@
     <%# Add timestamp parameter to form submission URL to prevent caching %>
     <% timestamp = Time.current.to_i %>
     <%= form_with model: @visit, 
-                  url: visit_rating_path(visit_id: @visit.id, locale: current_locale, t: timestamp),
+                  url: visit_rating_path(visit_id: @visit.id, t: timestamp),
                   data: { 
                     turbo_frame: hotwire_native_app? ? "_top" : dom_id(@visit, :rating),
                     turbo_action: hotwire_native_app? ? "replace" : nil

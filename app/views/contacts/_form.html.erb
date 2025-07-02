@@ -1,6 +1,6 @@
 <%# locals: (contact:, submit_text:) -%>
 <div class="max-w-2xl mx-auto p-4">
-  <%= form_with(model: contact, url: contact.persisted? ? contact_path(id: contact.id, locale: nil) : contacts_path(locale: nil), multipart: true, html: { class: "space-y-6" }) do |form| %>
+  <%= form_with(model: contact, url: contact.persisted? ? contact_path(id: contact.id) : contacts_path(locale: nil), multipart: true, html: { class: "space-y-6" }) do |form| %>
     <% if contact.errors.any? %>
       <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
         <div class="flex">
@@ -111,7 +111,7 @@
 
     <%# Submit buttons %>
     <div class="flex justify-end gap-3">
-      <%= link_to contacts_path(locale: nil), class: "inline-flex items-center px-4 py-2 text-sm font-medium text-surface-700 hover:text-surface-900" do %>
+      <%= link_to contacts_path, class: "inline-flex items-center px-4 py-2 text-sm font-medium text-surface-700 hover:text-surface-900" do %>
         <%= t("cancel") %>
       <% end %>
       <%= form.submit submit_text, class: "inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" %>

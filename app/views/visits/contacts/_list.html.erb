@@ -2,7 +2,7 @@
   <% if contacts.any? %>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <% contacts.each do |contact| %>
-        <%= button_to visit_contacts_path(visit_id: params[:visit_id], contact_id: contact.id, locale: current_locale),
+        <%= button_to visit_contacts_path(visit_id: params[:visit_id], contact_id: contact.id),
             class: "w-full text-left p-4 rounded-lg hover:bg-surface-100 transition-colors duration-200 group" do %>
           <div class="flex items-center gap-4">
             <%= render(AvatarComponent.new(

@@ -92,16 +92,27 @@ Rails.application.routes.draw do
     end
   end
 
-  # Web routes
-  scope "(:locale)", locale: /#{I18n.available_locales.join("|")}/ do
+  # Public area (SEO, shareable)
+  scope "(:locale)", locale: /#{I18n.available_locales.join('|')}/ do
+    root "pages#home"
     post "/subscribe", to: "subscriptions#create", as: :subscribe
+    get "/pages/terms", to: "pages#terms", as: :terms
+    get "/pages/privacy", to: "pages#privacy", as: :pages_privacy
 
-    # Devise routes
-    devise_for :users,
-      controllers: {
-        confirmations: "users/confirmations",
-        sessions: "users/sessions"
-      }
+    # Devise routes for session management
+    devise_for :users, only: [:sessions, :confirmations], controllers: {
+      sessions: "users/sessions",
+      confirmations: "users/confirmations"
+    }
+  end
+
+  # Authenticated area - no locale segment
+  authenticate :user do
+    # Devise routes without locale
+    devise_for :users, skip: [:sessions, :confirmations], controllers: {
+      # registrations: "users/registrations",
+      # passwords: "users/passwords"
+    }
 
     # Restaurant routes
     resources :restaurants do
@@ -187,16 +198,9 @@ Rails.application.routes.draw do
     get "/profiles/search", to: "profiles#search", as: :search_profiles, format: :html
     get "/organizations/search", to: "organizations#search", as: :search_organizations, format: :html
 
-    # Static pages
-    get "/pages/terms", to: "pages#terms", as: :terms
-    get "/pages/home", to: "pages#home", as: :pages_home
-    get "/pages/privacy", to: "pages#privacy", as: :pages_privacy
-
     get "/debug/test_s3/:blob_id", to: "debug#test_s3"
 
     get "home/dashboard", as: :home_dashboard
-
-    root to: "pages#home"
   end
 
   # Health check

@@ -73,7 +73,7 @@
               <%= t("visits.delete_warning") %>
             </p>
             
-            <%= button_to visit_path(id: @visit.id, locale: current_locale),
+            <%= button_to visit_path(id: @visit.id),
                   method: :delete,
                   class: "inline-flex items-center px-4 py-2 rounded-md border 
                          border-error-300 text-error-700 hover:bg-error-50 

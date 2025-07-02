@@ -30,20 +30,16 @@
     </div>
 
     <!-- Theme and Language switchers -->
-    <div class="mt-8 flex gap-16 items-start">
+    <div class="mt-8 flex w-full justify-between items-start">
       <div>
         <h4 class="font-semibold mb-2 text-surface-900"><%= t('profiles.theme') %></h4>
-        <div class="flex gap-4">
-          <button data-theme="light" class="theme-button <%= @user.theme == 'light' ? 'active' : '' %>">
-            <%= t('profiles.themes.light') %>
-          </button>
-          <button data-theme="dark" class="theme-button <%= @user.theme == 'dark' ? 'active' : '' %>">
-            <%= t('profiles.themes.dark') %>
-          </button>
-        </div>
+        <button data-controller="theme-toggle" 
+                data-action="click->theme-toggle#toggle" 
+                data-theme-toggle-current-theme-value="<%= @user.theme %>" 
+                data-theme-toggle-theme-path-value="<%= update_theme_profile_path %>" 
+                class="btn btn-outline theme-button text-surface-900">
+        </button>
       </div>
-      # <div data-controller="bridge--theme" data-bridge--theme-theme-value="<%= @user.theme || 'light' %>"></div>
-      <div data-controller="bridge--theme" data-bridge--theme-theme-value="<%= 'dark' %>"></div>
 
       <div>
         <h4 class="font-semibold mb-2 text-surface-900"><%= t('profiles.language') %></h4>
@@ -53,34 +49,4 @@
   </div>
 </div>
 
-<%= content_for :scripts do %>
-  <script>
-    document.addEventListener('turbo:load', () => {
-      document.querySelectorAll('.theme-button').forEach(button => {
-        button.addEventListener('click', () => {
-          const theme = button.dataset.theme;
-          fetch('<%= update_theme_profile_path(locale: nil) %>', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ theme })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === 'success') {
-              // Update the bridge component with new theme
-              const bridgeElement = document.querySelector('[data-controller="bridge--theme"]');
-              if (bridgeElement) {
-                bridgeElement.setAttribute('data-bridge--theme-theme-value', theme);
-              }
-              document.querySelectorAll('.theme-button').forEach(btn => btn.classList.remove('active'));
-              button.classList.add('active');
-            }
-          });
-        });
-      });
-    });
-  </script>
-<% end %>
+

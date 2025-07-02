@@ -11,7 +11,7 @@
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
-    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id, locale: I18n.locale),
+    <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id),
           class: "cursor-pointer",
           data: { turbo_stream: true } do %>
       <div class="flex items-center" data-testid="price-level-component">

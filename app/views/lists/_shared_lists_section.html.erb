@@ -6,7 +6,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <% accepted_lists.each do |list| %>
           <div class="card bg-surface-50 shadow-sm hover:shadow">
-            <%= link_to list_path(id: list.id, locale: nil), class: "card-body" do %>
+            <%= link_to list_path(id: list.id), class: "card-body" do %>
               <h3 class="card-title text-lg mb-2"><%= list.name %></h3>
               
               <div class="flex items-center mb-2">

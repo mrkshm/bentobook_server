@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" <%= "data-hotwire-native-app" if hotwire_native_app? %>>
   <head>
     <title><%= content_for(:title) || "BentoBook" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -18,6 +18,7 @@
   </head>
 
   <body data-theme="light" class="bg-surface-100 text-surface-700">
+    <%= render 'layouts/body' %>
     <div id="loading-indicator" 
      class="fixed inset-0 flex items-center justify-center bg-surface-300/50 z-50" 
      style="display: none;"

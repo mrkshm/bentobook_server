@@ -15,27 +15,23 @@ module Profiles
     end
 
     def update
-      language = params[:language].to_s
+    lang = params[:locale].to_s
+    return render :edit, status: :unprocessable_entity unless I18n.available_locales.map(&:to_s).include?(lang)
 
-      if I18n.available_locales.map(&:to_s).include?(language)
-        if @user.update(language: language)
-          # Update the session
-          session[:locale] = language
-          I18n.locale = language
+    session[:locale] = lang
+    current_user&.update(language: lang)
 
-          # Simple redirect to profile with the new locale
-          # This works because the form has data-turbo-frame="_top"
-          redirect_to profile_path(locale: language)
+    respond_to do |format|
+      format.html { redirect_to request.referer.presence || profile_path, status: :see_other }
+      format.turbo_stream do
+        if hotwire_native_app?
+          render "profiles/language/update"
         else
-          render template: "profiles/language/edit",
-                status: :unprocessable_entity
+          redirect_to profile_path, status: :see_other
         end
-      else
-        flash[:alert] = t("profiles.invalid_locale")
-        render template: "profiles/language/edit",
-              status: :unprocessable_entity
       end
     end
+  end
 
     private
 

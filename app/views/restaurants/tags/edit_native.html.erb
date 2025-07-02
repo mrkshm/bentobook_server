@@ -19,7 +19,7 @@
                    method: :patch,
                    data: { 
                      "tags--editor-target": "form",
-                     "success-url": restaurant_path(id: @restaurant.id, locale: current_locale)
+                     "success-url": restaurant_path(id: @restaurant.id)
                    },
                    id: "tags-editor-form" do |form| %>
         
@@ -61,7 +61,7 @@
         
         <div class="flex justify-between mt-6">
           <%= link_to "Cancel", 
-                     restaurant_path(id: @restaurant.id, locale: current_locale), 
+                     restaurant_path(id: @restaurant.id), 
                      class: "px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors",
                      data: { turbo_action: "replace" } %>
           

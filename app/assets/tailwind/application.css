@@ -236,13 +236,13 @@
   --color-warning-700: oklch(0.85 0.16 85);
 }
 
-@custom-variant hotwire-native {
+@variant hotwire-native {
   html[data-hotwire-native-app] & {
     @slot;
   }
 }
 
-@custom-variant not-hotwire-native {
+@variant not-hotwire-native {
   html:not([data-hotwire-native-app]) & {
     @slot;
   }

@@ -32,12 +32,12 @@
 
     <div class="flex items-center justify-end gap-3 mt-6">
       <%= link_to t("cancel"), 
-          new_restaurant_path(locale: current_locale), 
+          new_restaurant_path, 
           data: {turbo_frame: "_top"},
           class: "px-4 py-2 text-sm font-medium text-[var(--color-surface-700)] hover:text-[var(--color-surface-900)]" %>
       
       <%= button_to t("restaurants.new.add_to_my_restaurants"),
-          restaurants_path(locale: I18n.locale),
+          restaurants_path,
           method: :post,
           data: { turbo_frame: "_top" },
           class: "px-4 py-2 text-sm font-medium text-white bg-[var(--color-primary-600)] hover:bg-[var(--color-primary-700)] rounded-md",

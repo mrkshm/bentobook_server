@@ -9,7 +9,7 @@
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
-    <%= link_to edit_profile_language_path(locale: I18n.locale),
+    <%= link_to edit_profile_language_path,
           class: "block group",
           data: {
             turbo_frame: hotwire_native_app? ? "_top" : nil,

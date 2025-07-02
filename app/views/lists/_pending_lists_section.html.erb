@@ -24,7 +24,7 @@
                 </div>
                 
                 <div class="flex gap-2">
-                  <%= form_with url: share_path(list.shares.find_by(target_organization: organization), locale: nil),
+                  <%= form_with url: share_path(list.shares.find_by(target_organization: organization)),
                                 method: :patch,
                                 data: {
                                   controller: "submit-form",
@@ -34,7 +34,7 @@
                     <%= f.submit t('.accept'), class: "btn btn-sm btn-primary" %>
                   <% end %>
                   
-                  <%= form_with url: share_path(list.shares.find_by(target_organization: organization), locale: nil), 
+                  <%= form_with url: share_path(list.shares.find_by(target_organization: organization)), 
                                 method: :delete,
                                 data: {
                                   controller: "submit-form",

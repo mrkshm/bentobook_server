@@ -45,7 +45,7 @@
   <%# Keep cancel button outside form %>
   <div class="flex justify-end mt-4">
     <%= link_to t("cancel"), 
-        visit_path(id: @visit.id, locale: current_locale), 
+        visit_path(id: @visit.id), 
         data: { turbo_frame: "_top" },
         class: "px-4 py-2 bg-surface-200 text-surface-700 rounded-md hover:bg-surface-300 transition-colors" %>
   </div>

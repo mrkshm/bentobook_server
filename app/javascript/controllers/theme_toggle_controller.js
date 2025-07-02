@@ -13,6 +13,7 @@ export default class extends Controller {
   connect() {
     if (this.hasInitialized) return
     this.hasInitialized = true
+    console.log("we are doing it LIVE")
     
     const storedTheme = localStorage.getItem('theme')
     const theme = storedTheme || this.currentThemeValue || 'light'
@@ -60,12 +61,7 @@ export default class extends Controller {
   }
 
   updateIcon(theme) {
-    console.log('Updating icon for theme:', theme)
     this.element.innerHTML = theme === 'light' ? this.darkIcon : this.lightIcon
-    this.element.setAttribute(
-      'aria-label',
-      `Switch to ${theme === 'light' ? 'dark' : 'light'} theme`
-    )
   }
 
   get darkIcon() {

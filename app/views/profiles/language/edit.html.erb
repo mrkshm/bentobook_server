@@ -8,11 +8,11 @@
       <div class="space-y-2">
         <% @available_locales.each do |locale| %>
           <% is_selected = locale[:code].to_s == @current_locale.to_s %>
-          <%= form_with url: profile_language_path(locale: current_locale), 
+          <%= form_with url: profile_language_path, 
                         method: :patch,
                         class: "language-form",
                         data: { turbo_frame: "_top" } do |f| %>
-            <%= f.hidden_field :language, value: locale[:code] %>
+            <%= f.hidden_field :locale, value: locale[:code] %>
             <%= f.button type: "submit", 
                       class: "w-full flex items-center justify-between px-4 py-3 rounded-md #{is_selected ? 'bg-primary-50 text-primary-700' : 'bg-surface-100 text-surface-700'} hover:bg-surface-200" do %>
               <span><%= locale[:name] %></span>

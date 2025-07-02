@@ -14,7 +14,7 @@
         
         <div class="flex justify-end gap-3">
             <%= link_to t("cancel"), 
-                restaurant_path(id: @restaurant.id, locale: current_locale),
+                restaurant_path(id: @restaurant.id),
                 data: { turbo_frame: hotwire_native_app? ? "_top" : nil },
                 class: "rounded-md bg-white px-3 py-2 text-sm font-semibold text-surface-900 shadow-sm ring-1 ring-inset ring-surface-300 hover:bg-surface-50" %>
           

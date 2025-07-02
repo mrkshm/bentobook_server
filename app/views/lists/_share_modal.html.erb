@@ -67,7 +67,7 @@
         <div class="modal-action">
           <%= f.submit t('.share'), class: "btn btn-primary" %>
           <%= link_to t('common.cancel'), 
-              list_path(@list, locale: I18n.locale == I18n.default_locale ? nil : I18n.locale), 
+              list_path(@list), 
               class: "btn btn-ghost",
               data: { turbo_frame: "modal" } %>
         </div>
@@ -75,7 +75,7 @@
     </div>
     
     <div class="modal-backdrop">
-      <%= link_to "", list_path(@list, locale: I18n.locale == I18n.default_locale ? nil : I18n.locale), 
+      <%= link_to "", list_path(@list), 
           data: { turbo_frame: "modal" } %>
     </div>
   </div>

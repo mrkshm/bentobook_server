@@ -1,7 +1,7 @@
 <%= turbo_frame_tag "edit_restaurant_rating" do %>
 <div class="bg-surface-50 p-4">
   <%= form_with model: @restaurant, 
-                url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: current_locale),
+                url: restaurant_rating_path(restaurant_id: @restaurant.id),
                 method: :patch,
                 class: "bg-white rounded-lg shadow p-4" do |f| %>
     <div class="flex justify-center space-x-2">

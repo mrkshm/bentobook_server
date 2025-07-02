@@ -43,8 +43,8 @@
       <div class="flex justify-between items-center mt-8">
         <%= form.submit 'Update Visit', class: 'rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500' %>
         <div class="flex items-center gap-2">
-          <%= link_to 'Show', visit_path(id: @visit.id, locale: nil), class: 'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
-          <%= link_to 'Back to Visits', visits_path(locale: nil), class: 'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
+          <%= link_to 'Show', visit_path(id: @visit.id), class: 'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
+          <%= link_to 'Back to Visits', visits_path, class: 'inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-surface-700 bg-surface-100 hover:bg-surface-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-surface-500' %>
         </div>
       </div>
     <% end %>
