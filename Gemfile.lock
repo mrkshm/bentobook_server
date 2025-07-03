@@ -209,7 +209,7 @@ GEM
       activesupport (>= 5.0.0)
     jmespath (1.6.2)
     json (2.12.2)
-    jwt (2.10.1)
+    jwt (2.10.2)
       base64
     kamal (2.7.0)
       activesupport (>= 7.0)
