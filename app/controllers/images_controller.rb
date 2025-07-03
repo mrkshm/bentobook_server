@@ -2,7 +2,7 @@ class ImagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_image_and_imageable, only: [ :destroy ]
   before_action :set_restaurant, only: [ :new, :create ]
-  skip_before_action :ensure_locale_matches_url, only: [ :create ]
+  
 
   def new
     # Just renders the view for image upload
