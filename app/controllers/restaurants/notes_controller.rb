@@ -10,18 +10,23 @@ module Restaurants
 
     def update
       if @restaurant.update(notes_params)
-          if hotwire_native_app?
-            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
-          else
-            render turbo_stream: turbo_stream.replace(
-              dom_id(@restaurant, :notes),
-              partial: "restaurants/notes/notes",
-              locals: { restaurant: @restaurant }
-            )
+        respond_to do |format|
+          format.html { redirect_to restaurant_path(id: @restaurant.id, locale: current_locale) }
+          format.turbo_stream do
+            if hotwire_native_app?
+              render "restaurants/notes/update"
+            else
+              render turbo_stream: turbo_stream.replace(
+                dom_id(@restaurant, :notes),
+                partial: "restaurants/notes/notes",
+                locals: { restaurant: @restaurant }
+              )
+            end
           end
+        end
       else
-          render template: "restaurants/notes/edit",
-                 status: :unprocessable_entity
+        render template: "restaurants/notes/edit",
+               status: :unprocessable_entity
       end
     end
 

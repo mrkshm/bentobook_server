@@ -4,7 +4,7 @@
 <% if readonly %>
   <div class="flex items-center" data-testid="cuisine-type-component">
     <% if restaurant.cuisine_type.present? %>
-      <span class="<%= type_color_classes(restaurant.cuisine_type, selected: false) %>">
+      <span class="<%= type_color_classes(restaurant.cuisine_type, selected: false, readonly: readonly) %>">
         <%= t("cuisine_types.#{restaurant.cuisine_type.name}") %>
       </span>
     <% else %>

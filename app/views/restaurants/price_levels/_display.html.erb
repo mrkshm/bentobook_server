@@ -3,7 +3,7 @@
 
 <% if readonly %>
   <div class="flex items-center" data-testid="price-level-component">
-    <div class="flex items-center space-x-1">
+    <div class="flex items-center">
       <% 4.times do |i| %>
         <%= currency_icon(class: "#{i < restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300'} h-5 w-5") %>
       <% end %>
