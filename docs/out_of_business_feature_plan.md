@@ -14,7 +14,7 @@ We will adhere to the Google Places API `business_status` values for consistency
 ### 1. Backend (Rails)
 
 #### 1.1. Restaurant Model & Database
-*   **Enum & Default:** Convert `business_status` to an `enum`, which automatically validates the value **and** gives helpers/scopes (`restaurant.closed_permanently?`). Set the default to `OPERATIONAL` and create a back-fill migration for existing `NULL` values.
+* DONE   **Enum & Default:** Convert `business_status` to an `enum`, which automatically validates the value **and** gives helpers/scopes (`restaurant.closed_permanently?`). Set the default to `OPERATIONAL` and create a back-fill migration for existing `NULL` values.
     ```ruby
     # app/models/restaurant.rb
     class Restaurant < ApplicationRecord
@@ -26,7 +26,7 @@ We will adhere to the Google Places API `business_status` values for consistency
     end
     ```
 
-*   **Database Index:** Add an index on `business_status` to optimize filtering, as most queries will filter for `OPERATIONAL` restaurants:
+* DONE   **Database Index:** Add an index on `business_status` to optimize filtering, as most queries will filter for `OPERATIONAL` restaurants:
     ```ruby
     # db/migrate/YYYYMMDDHHMMSS_add_business_status_index_to_restaurants.rb
     class AddBusinessStatusIndexToRestaurants < ActiveRecord::Migration[7.0]
@@ -39,7 +39,7 @@ We will adhere to the Google Places API `business_status` values for consistency
 
 
 #### 1.1.3. Data Migration:
-*   Update any existing `NULL` values to `OPERATIONAL`:
+* DONE  Update any existing `NULL` values to `OPERATIONAL`:
     ```ruby
     # db/migrate/YYYYMMDDHHMMSS_backfill_business_status.rb
     class BackfillBusinessStatus < ActiveRecord::Migration[7.0]

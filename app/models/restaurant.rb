@@ -52,6 +52,12 @@
 class Restaurant < ApplicationRecord
     include PgSearch::Model
 
+    enum business_status: {
+        operational: "OPERATIONAL",
+        closed_permanently: "CLOSED_PERMANENTLY",
+        closed_temporarily: "CLOSED_TEMPORARILY"
+    }, _default: :operational
+
     belongs_to :organization
     belongs_to :google_restaurant, optional: true
     accepts_nested_attributes_for :google_restaurant
@@ -69,7 +75,7 @@ class Restaurant < ApplicationRecord
     validates :name, presence: true, unless: -> { google_restaurant.present? }
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
     validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
-    validates :business_status, inclusion: { in: [ "OPERATIONAL", "CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY" ] }, allow_nil: true
+    validates :business_status, inclusion: { in: business_statuses.keys }, allow_nil: true
     validates :organization, presence: true
     validates :latitude, numericality: true, allow_nil: true
     validates :longitude, numericality: true, allow_nil: true
