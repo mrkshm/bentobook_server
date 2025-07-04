@@ -23,7 +23,7 @@ module Restaurants
           return Result.error("Maximum #{MAX_TAGS} tags allowed")
         end
 
-        @record.tag_list = tags
+        @record.tag_list = tags.join(", ")
 
         if @record.save
           Result.success

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["input", "tagList", "suggestions", "hiddenInput", "form", "error"]
+  static targets = ["input", "tagList", "suggestions", "hiddenInput", "form", "error", "suggestedTagsDisplay"]
   static values = { 
     availableTags: Array,
     currentTags: Array,
@@ -35,6 +35,7 @@ export default class extends Controller {
         
         this.hideError()
         this.updateTagsDisplay()
+        this.updateSuggestions()
         this.clearInput()
       }
     }
@@ -65,9 +66,10 @@ export default class extends Controller {
     const currentTags = this.getCurrentTags()
     const suggestions = this.availableTagsValue
       .filter(tag => {
-        return !currentTags.has(tag.toLowerCase()) && 
-               tag.toLowerCase().includes(input) &&
-               tag.toLowerCase() !== input
+        const lowercasedTag = tag.toLowerCase();
+        return !currentTags.has(lowercasedTag) && 
+               lowercasedTag.includes(input) &&
+               lowercasedTag !== input
       })
       .slice(0, 5)
 
@@ -171,6 +173,26 @@ export default class extends Controller {
     `).join("")
     
     this.tagListTarget.innerHTML = tagElements
+  }
+
+  updateSuggestions() {
+    if (!this.hasSuggestedTagsDisplayTarget) return
+
+    const currentTags = this.getCurrentTags()
+    const suggestedTags = this.availableTagsValue.filter(tag => !currentTags.has(tag.toLowerCase()))
+
+    this.suggestedTagsDisplayTarget.innerHTML = this.renderSuggestedTags(suggestedTags)
+  }
+
+  renderSuggestedTags(tags) {
+    return tags.map(tag => `
+      <button type="button"
+              data-tag="${tag}"
+              data-action="click->tags--editor#addTag"
+              class="inline-flex items-center bg-surface-100 text-surface-800 rounded-full px-3 py-1 text-sm font-medium hover:bg-surface-200 transition-colors">
+        ${tag}
+      </button>
+    `).join("")
   }
 
   renderSuggestions(suggestions, input) {

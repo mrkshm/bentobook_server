@@ -15,23 +15,23 @@ module Profiles
     end
 
     def update
-    lang = params[:locale].to_s
-    return render :edit, status: :unprocessable_entity unless I18n.available_locales.map(&:to_s).include?(lang)
+      lang = params[:locale].to_s
+      return render :edit, status: :unprocessable_entity unless I18n.available_locales.map(&:to_s).include?(lang)
 
-    session[:locale] = lang
-    current_user&.update(language: lang)
+      session[:locale] = lang
+      current_user&.update(language: lang)
 
-    respond_to do |format|
-      format.html { redirect_to request.referer.presence || profile_path, status: :see_other }
-      format.turbo_stream do
-        if hotwire_native_app?
-          render "profiles/language/update"
-        else
-          redirect_to profile_path, status: :see_other
+      respond_to do |format|
+        format.html { redirect_to request.referer.presence || profile_path, status: :see_other }
+        format.turbo_stream do
+          if hotwire_native_app?
+            render "profiles/language/update"
+          else
+            redirect_to profile_path, status: :see_other
+          end
         end
       end
     end
-  end
 
     private
 

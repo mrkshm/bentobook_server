@@ -23,27 +23,22 @@ module Restaurants
     end
 
     def update
-      if @restaurant.update(cuisine_type_id: params[:cuisine_type_id])
-        respond_to do |format|
-          format.html do
-            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
-          end
-          format.turbo_stream do
-            if hotwire_native_app?
-              # For Hotwire Native, we'll use a custom template to break out of the frame
-              render template: "restaurants/cuisine_selections/update"
-            else
-              # For web, we'll continue to replace the partial
-              render turbo_stream: turbo_stream.replace(
-                dom_id(@restaurant, :cuisine_type),
-                partial: "restaurants/cuisine_selections/display",
-                locals: { restaurant: @restaurant }
-              )
-            end
+      ct_id = params[:cuisine_type_id].to_i
+      return render :edit, status: :unprocessable_entity unless CuisineType.exists?(ct_id)
+
+      @restaurant.update(cuisine_type_id: ct_id)
+
+      respond_to do |format|
+        format.html do
+          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale), status: :see_other
+        end
+        format.turbo_stream do
+          if hotwire_native_app?
+            render "restaurants/cuisine_selections/update"
+          else
+            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale), status: :see_other
           end
         end
-      else
-        render template: "restaurants/cuisine_selections/edit", status: :unprocessable_entity
       end
     end
 
@@ -56,8 +51,18 @@ module Restaurants
     def update_cuisine_type
       @restaurant.update!(cuisine_type_id: params[:cuisine_type_id])
       respond_to do |format|
-        format.turbo_stream
         format.html { redirect_to @restaurant, notice: "Cuisine type updated" }
+        format.turbo_stream do
+          if hotwire_native_app?
+            render "restaurants/cuisine_selections/update"
+          else
+            render turbo_stream: turbo_stream.replace(
+              dom_id(@restaurant, :cuisine_type),
+              partial: "restaurants/cuisine_selections/display",
+              locals: { restaurant: @restaurant }
+            )
+          end
+        end
       end
     end
 

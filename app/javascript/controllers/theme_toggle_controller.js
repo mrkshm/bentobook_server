@@ -13,11 +13,7 @@ export default class extends Controller {
   connect() {
     if (this.hasInitialized) return
     this.hasInitialized = true
-    console.log("we are doing it LIVE")
-    
-    const storedTheme = localStorage.getItem('theme')
-    const theme = storedTheme || this.currentThemeValue || 'light'
-    this.setTheme(theme, false) // Don't sync with server on initial load
+    this.updateIcon(this.currentThemeValue)
   }
 
   toggle() {
