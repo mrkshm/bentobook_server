@@ -52,11 +52,35 @@
 class Restaurant < ApplicationRecord
     include PgSearch::Model
 
-    enum business_status: {
-        operational: "OPERATIONAL",
-        closed_permanently: "CLOSED_PERMANENTLY",
-        closed_temporarily: "CLOSED_TEMPORARILY"
-    }, _default: :operational
+    # Business status constants
+    BUSINESS_STATUS = {
+      operational: "OPERATIONAL",
+      closed_permanently: "CLOSED_PERMANENTLY",
+      closed_temporarily: "CLOSED_TEMPORARILY"
+    }
+    
+    # Validation for business_status
+    validates :business_status, inclusion: { in: BUSINESS_STATUS.values }, allow_nil: true
+    
+    # Set default business status
+    after_initialize :set_default_business_status, if: :new_record?
+    
+    def set_default_business_status
+      self.business_status ||= BUSINESS_STATUS[:operational]
+    end
+    
+    # Helper methods for business status
+    def operational?
+      business_status == BUSINESS_STATUS[:operational]
+    end
+    
+    def closed_permanently?
+      business_status == BUSINESS_STATUS[:closed_permanently]
+    end
+    
+    def closed_temporarily?
+      business_status == BUSINESS_STATUS[:closed_temporarily]
+    end
 
     belongs_to :organization
     belongs_to :google_restaurant, optional: true
@@ -75,7 +99,7 @@ class Restaurant < ApplicationRecord
     validates :name, presence: true, unless: -> { google_restaurant.present? }
     validates :rating, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 5 }, allow_nil: true
     validates :price_level, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 4 }, allow_nil: true
-    validates :business_status, inclusion: { in: business_statuses.keys }, allow_nil: true
+    validates :business_status, inclusion: { in: BUSINESS_STATUS.values }, allow_nil: true
     validates :organization, presence: true
     validates :latitude, numericality: true, allow_nil: true
     validates :longitude, numericality: true, allow_nil: true

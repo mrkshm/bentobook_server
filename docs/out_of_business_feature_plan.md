@@ -14,15 +14,39 @@ We will adhere to the Google Places API `business_status` values for consistency
 ### 1. Backend (Rails)
 
 #### 1.1. Restaurant Model & Database
-* DONE   **Enum & Default:** Convert `business_status` to an `enum`, which automatically validates the value **and** gives helpers/scopes (`restaurant.closed_permanently?`). Set the default to `OPERATIONAL` and create a back-fill migration for existing `NULL` values.
+* DONE   **Business Status Implementation:** Implement `business_status` using constants and validation with helper methods for better control and explicit behavior.
     ```ruby
     # app/models/restaurant.rb
     class Restaurant < ApplicationRecord
-      enum business_status: {
+      # Business status constants
+      BUSINESS_STATUS = {
         operational: "OPERATIONAL",
         closed_permanently: "CLOSED_PERMANENTLY",
         closed_temporarily: "CLOSED_TEMPORARILY"
-      }, _default: :operational
+      }
+      
+      # Validation for business_status
+      validates :business_status, inclusion: { in: BUSINESS_STATUS.values }, allow_nil: true
+      
+      # Set default business status
+      after_initialize :set_default_business_status, if: :new_record?
+      
+      def set_default_business_status
+        self.business_status ||= BUSINESS_STATUS[:operational]
+      end
+      
+      # Helper methods for business status
+      def operational?
+        business_status == BUSINESS_STATUS[:operational]
+      end
+      
+      def closed_permanently?
+        business_status == BUSINESS_STATUS[:closed_permanently]
+      end
+      
+      def closed_temporarily?
+        business_status == BUSINESS_STATUS[:closed_temporarily]
+      end
     end
     ```
 
@@ -49,27 +73,85 @@ We will adhere to the Google Places API `business_status` values for consistency
     end
     ```
 
-#### 1.2. Authorization
-*   All restaurant look-ups already scope through `Current.organization`, e.g. `Current.organization.restaurants.find(...)`, which restricts updates to members of the owning organization. No additional policy layer is required for this feature.
-
-#### 1.3. Service Object (Optional but Recommended)
-*   Create a service object (e.g., `app/services/restaurants/business_status_updater_service.rb`) to encapsulate the logic for updating the `business_status`. This keeps the controller lean and makes the logic reusable and testable.
+#### 1.2. Business Status Controller
+* DONE **BusinessStatusController:** Handles updating the business status with proper validation and error handling.
     ```ruby
-    # app/services/restaurants/business_status_updater_service.rb
-    module Restaurants
-      class BusinessStatusUpdaterService
-        def initialize(restaurant, new_status)
-          @restaurant = restaurant
-          @new_status = new_status
-        end
+    # app/controllers/restaurants/business_status_controller.rb
+    class Restaurants::BusinessStatusController < ApplicationController
+      before_action :set_restaurant
+      before_action :authenticate_user!
+      before_action :validate_business_status, only: :update
 
-        def call
-          # Add any business logic here, e.g., logging, notifications
-          @restaurant.update(business_status: @new_status)
+      # GET /restaurants/:restaurant_id/business_status/edit
+      def edit
+        respond_to do |format|
+          format.html { render layout: !hotwire_native_app? }
+        end
+      end
+
+      # PATCH/PUT /restaurants/:restaurant_id/business_status
+      def update
+        if @restaurant.update(business_status: params[:business_status])
+          handle_successful_update
+        else
+          handle_failed_update
+        end
+      end
+
+      private
+
+      def set_restaurant
+        @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
+      end
+
+      def validate_business_status
+        return if Restaurant::BUSINESS_STATUS.value?(params[:business_status])
+        
+        flash[:alert] = "Invalid business status"
+        redirect_to edit_restaurant_business_status_path(@restaurant)
+      end
+
+      def handle_successful_update
+        respond_to do |format|
+          format.html do
+            redirect_to @restaurant,
+                        status: :see_other,
+                        notice: "Business status updated successfully"
+          end
+          format.turbo_stream do
+            render turbo_stream: turbo_stream.action(
+              "visit",
+              restaurant_path(@restaurant),
+              "data-turbo-action": "replace"
+            )
+          end
+        end
+      end
+
+      def handle_failed_update
+        respond_to do |format|
+          format.html do
+            flash.now[:alert] = @restaurant.errors.full_messages.to_sentence
+            render :edit, status: :unprocessable_entity
+          end
+          format.turbo_stream do
+            render :edit, status: :unprocessable_entity
+          end
         end
       end
     end
     ```
+
+    **Routes:**
+    ```ruby
+    # config/routes.rb
+    resources :restaurants do
+      resource :business_status, only: [:edit, :update], controller: 'restaurants/business_status'
+    end
+    ```
+
+#### 1.3. Authorization
+*   All restaurant look-ups scope through `Current.organization` (e.g., `Current.organization.restaurants.find(...)`), which restricts updates to members of the owning organization. No additional policy layer is required for this feature.
 
 ### 2. Frontend (Rails Views & Stimulus)
 
