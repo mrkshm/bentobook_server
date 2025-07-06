@@ -1,8 +1,8 @@
-<%= link_to restaurant_path(id: restaurant.id, locale: nil), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200", data: { turbo_frame: "_top" } do %>
+<%= link_to restaurant_path(id: restaurant.id, locale: nil), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200 #{ 'opacity-50' unless restaurant.operational? }", data: { turbo_frame: "_top" } do %>
   <div class="card py-4 px-2 gap-2 min-h-[220px]">
     <%# Header with name and visits %>
     <div class="header flex items-center justify-between">
-      <h2 class="text-xl font-medium text-surface-900"><%= restaurant.name %></h2>
+      <h2 class="text-xl font-medium text-surface-900 #{ 'line-through' unless restaurant.operational? }"><%= restaurant.name %></h2>
       <% if visit_count.positive? %>
         <span class="badge rounded-full bg-primary-100 text-xs font-medium text-primary-700">
           <%= visit_count %>

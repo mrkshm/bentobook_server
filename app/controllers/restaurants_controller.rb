@@ -19,6 +19,10 @@ class RestaurantsController < ApplicationController
                             .with_google
                             .includes(:visits, :cuisine_type, :tags)
 
+    if params[:show_closed] != 'true'
+      restaurants_scope = restaurants_scope.where(business_status: 'OPERATIONAL')
+    end
+
     if params[:search].present?
       restaurants_scope = restaurants_scope.search(params[:search])
     end

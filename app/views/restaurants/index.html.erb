@@ -24,38 +24,46 @@
   </div>
 
   <%# Search and sort forms - visible at all times %>
-  <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
+  <%= form_with url: restaurants_path, method: :get, data: { turbo_frame: "restaurants-list", turbo_action: "advance" } do |form| %>
+    <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
 
-    <%= render SearchFormComponent.new(
-      url: restaurants_path,
-      placeholder: t('restaurants.index.search_placeholder'),
-      search_value: params[:search],
-      additional_fields: {
-        order_by: params[:order_by],
-        order_direction: params[:order_direction],
-        tag: params[:tag]
-      }
-    ) %>
-    <%= render SortFormComponent.new(
-      url: restaurants_path,
-      sort_options: {
-        t('restaurants.sort.name') => 'name',
-        t('restaurants.sort.rating') => 'rating',
-        t('restaurants.sort.price_level') => 'price_level',
-        t('restaurants.sort.distance') => 'distance',
-        t('restaurants.sort.created_at') => 'created_at',
-        t('restaurants.sort.updated_at') => 'updated_at'
-      },
-      current_field: @current_field,
-      current_direction: @current_direction,
-      additional_params: {
-        tag: params[:tag],
-        search: params[:search],
-        latitude: params[:latitude] || params[:lat],
-        longitude: params[:longitude] || params[:lng]
-      }
-    ) %>
-</div>
+      <div class="flex items-center">
+        <%= check_box_tag :show_closed, 'true', params[:show_closed] == 'true', class: "form-checkbox h-5 w-5 text-primary-600" %>
+        <%= label_tag :show_closed, "Show closed", class: "ml-2 text-surface-700" %>
+      </div>
+
+      <%= render SearchFormComponent.new(
+        url: restaurants_path,
+        placeholder: t('restaurants.index.search_placeholder'),
+        search_value: params[:search],
+        additional_fields: {
+          order_by: params[:order_by],
+          order_direction: params[:order_direction],
+          tag: params[:tag]
+        }
+      ) %>
+      <%= render SortFormComponent.new(
+        url: restaurants_path,
+        sort_options: {
+          t('restaurants.sort.name') => 'name',
+          t('restaurants.sort.rating') => 'rating',
+          t('restaurants.sort.price_level') => 'price_level',
+          t('restaurants.sort.distance') => 'distance',
+          t('restaurants.sort.created_at') => 'created_at',
+          t('restaurants.sort.updated_at') => 'updated_at'
+        },
+        current_field: @current_field,
+        current_direction: @current_direction,
+        additional_params: {
+          tag: params[:tag],
+          search: params[:search],
+          latitude: params[:latitude] || params[:lat],
+          longitude: params[:longitude] || params[:lng]
+        }
+      ) %>
+      <%= form.submit "Filter", class: "btn btn-primary" %>
+    </div>
+  <% end %>
 
 
 <%# Add the FAB for mobile %>

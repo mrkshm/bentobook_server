@@ -43,11 +43,7 @@ class Restaurants::BusinessStatusController < ApplicationController
                     notice: "Business status updated successfully"
       end
       format.turbo_stream do
-        render turbo_stream: turbo_stream.action(
-          "visit",
-          restaurant_path(@restaurant),
-          "data-turbo-action": "replace"
-        )
+        render turbo_stream: %(<turbo-stream action="visit" location="#{restaurant_path(@restaurant)}"></turbo-stream>)
       end
     end
   end

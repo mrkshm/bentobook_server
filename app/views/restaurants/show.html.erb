@@ -15,6 +15,9 @@
           <div class="w-full">
             <div class="flex justify-between w-full items-center">
               <h1 class="text-4xl hotwire-native:text-2xl font-bold tracking-tight text-surface-900"><%= @restaurant.name %></h1>
+              <% if @restaurant.closed_permanently? %>
+                <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Out of Business</span>
+              <% end %>
               <div class="hotwire-native:hidden">
                 <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: "inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200" do %>
                   <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
@@ -163,6 +166,38 @@
           <% end %>
           <%= link_to t('common.back'), restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors' %>
         </div>
+
+        <hr class="my-6">
+
+        <details class="danger-zone">
+          <summary class="text-red-600 cursor-pointer font-semibold">
+            Danger Zone
+          </summary>
+
+          <div class="mt-4 space-y-2">
+            <% if @restaurant.operational? %>
+              <%= button_to "Mark as Out of Business",
+                  restaurant_business_status_path(@restaurant),
+                  method: :patch,
+                  params: { business_status: 'CLOSED_PERMANENTLY' },
+                  class: "btn btn-danger w-full",
+                  data: { turbo_confirm: "Really mark this restaurant as out of business?" } %>
+            <% else %>
+              <%= button_to "Mark as Operational",
+                  restaurant_business_status_path(@restaurant),
+                  method: :patch,
+                  params: { business_status: 'OPERATIONAL' },
+                  class: "btn btn-success w-full",
+                  data: { turbo_confirm: "Really mark this restaurant as operational?" } %>
+            <% end %>
+
+            <%= button_to "Delete Restaurant",
+                restaurant_path(@restaurant),
+                method: :delete,
+                class: "btn btn-danger w-full",
+                data: { turbo_confirm: "This cannot be undone. Delete restaurant?" } %>
+          </div>
+        </details>
       </div>
     </div>
   </div>
