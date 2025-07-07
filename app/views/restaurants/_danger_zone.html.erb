@@ -1,0 +1,32 @@
+<%# locals: (restaurant:) -%>
+<hr class="my-6">
+
+<details class="danger-zone">
+  <summary class="text-red-600 cursor-pointer font-semibold">
+    Danger Zone
+  </summary>
+
+  <div class="mt-4 space-y-2">
+    <% if restaurant.operational? %>
+      <%= button_to "Mark as Out of Business",
+          restaurant_business_status_path(restaurant),
+          method: :patch,
+          params: { business_status: 'CLOSED_PERMANENTLY' },
+          class: "btn btn-danger w-full",
+          data: { turbo_confirm: "Really mark this restaurant as out of business?" } %>
+    <% else %>
+      <%= button_to "Mark as Operational",
+          restaurant_business_status_path(restaurant),
+          method: :patch,
+          params: { business_status: 'OPERATIONAL' },
+          class: "btn btn-success w-full",
+          data: { turbo_confirm: "Really mark this restaurant as operational?" } %>
+    <% end %>
+
+    <%= button_to "Delete Restaurant",
+        restaurant_path(restaurant),
+        method: :delete,
+        class: "btn btn-danger w-full",
+        data: { turbo_confirm: "This cannot be undone. Delete restaurant?" } %>
+  </div>
+</details>
