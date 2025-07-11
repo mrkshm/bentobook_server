@@ -1,0 +1,30 @@
+<%# app/views/restaurants/_lists_section.html.erb %>
+<%#
+  Lists Section Partial
+  
+  Displays a list of lists that include the current restaurant.
+  
+  Parameters:
+    - lists: Array of List objects that include this restaurant (required)
+    - current_user: The currently logged-in user (optional, used for ownership check)
+%>
+
+<% if lists.any? %>
+  <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm mb-8">
+    <h2 class="text-xl font-semibold text-surface-900 mb-4">Lists</h2>
+    <div class="space-y-3">
+      <% lists.each do |list| %>
+        <%= link_to list_path(list), class: "block p-3 rounded-lg hover:bg-surface-200/50 transition-colors" do %>
+          <div class="flex items-center justify-between">
+            <span class="text-surface-900 font-medium"><%= list.name %></span>
+            <% if list.owner == current_user %>
+              <span class="text-sm text-surface-600">Your list</span>
+            <% else %>
+              <span class="text-sm text-surface-600">By <%= list.owner.profile.display_name %></span>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

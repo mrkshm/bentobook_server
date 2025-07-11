@@ -52,77 +52,15 @@
             <%= render partial: "restaurants/notes/notes", locals: { restaurant: @restaurant } %>
           </div>
 
-          <!-- Images Section  -->
-          <div class="rounded-lg bg-surface-100/50 p-2 md:p-6 backdrop-blur-sm">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
-              <div class="flex gap-4">
-              <% if @restaurant.organization == Current.organization %>
-                <% if @restaurant.images.exists? %>
-                <%= link_to edit_restaurant_images_path(restaurant_id: @restaurant.id), class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
-                  <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1" } %>
-                  <%= t("images.edit_photos") %>
-                <% end %>
-                <% end %>
-                <%= link_to new_restaurant_image_path(restaurant_id: @restaurant.id), class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                  </svg>
-                  <%= t("images.add_photos") %>
-                <% end %>
-              <% end %>
-              </div>
-            </div>
-
-            <% if not @restaurant.images.any? %>
-              <%= render(GalleryComponent.new(images: @restaurant.images)) %>
-            <% else %>
-              <div class="text-center py-8 text-surface-500">
-                <p><%= t("images.no_photos") %></p>
-              </div>
-            <% end %>
-          </div>
+          <!-- Images Section -->
+          <%= render 'restaurants/images/gallery', restaurant: @restaurant %>
         </div>
       </div>
 
       <!-- Sidebar -->
       <div class="lg:col-span-5 mt-8 lg:mt-0">
-        <!-- Lists Section -->
-        <% if @lists.any? %>
-          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm mb-8">
-            <h2 class="text-xl font-semibold text-surface-900 mb-4">Lists</h2>
-            <div class="space-y-3">
-              <% @lists.each do |list| %>
-                <%= link_to list_path(list), class: "block p-3 rounded-lg hover:bg-surface-200/50 transition-colors" do %>
-                  <div class="flex items-center justify-between">
-                    <span class="text-surface-900 font-medium"><%= list.name %></span>
-                    <% if list.owner == current_user %>
-                      <span class="text-sm text-surface-600">Your list</span>
-                    <% else %>
-                      <span class="text-sm text-surface-600">By <%= list.owner.profile.display_name %></span>
-                    <% end %>
-                  </div>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-
-        <!-- Visits Section -->
-        <% if @visits.any? %>
-          <div class="rounded-lg bg-surface-100/50 p-2 md:p-6 backdrop-blur-sm">
-            <h2 class="text-xl font-semibold text-surface-900 mb-4">Visits</h2>
-            <div class="space-y-4">
-              <% @visits.each do |visit| %>
-                <%= render(Visits::CardComponent.new(visit: visit)) %>
-              <% end %>
-            </div>
-          </div>
-        <% else %>
-          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm text-center">
-            <p class="text-surface-600 mb-4">No visits recorded yet</p>
-          </div>
-        <% end %>
+        <%= render 'lists_section', lists: @lists, current_user: current_user %>
+        <%= render 'visits_section', visits: @visits, restaurant: @restaurant %>
 
         <!-- Action Buttons -->
         <div class="mt-8 flex flex-col">
