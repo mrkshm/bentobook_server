@@ -6,7 +6,6 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/scripts", under: "scripts"
 
 # Pin lightbox component
-pin "@stimulus-components/lightbox", to: "https://ga.jspm.io/npm:@stimulus-components/lightbox@3.1.0/dist/stimulus-lightbox.mjs"
 pin "@hotwired/hotwire-native-bridge", to: "@hotwired--hotwire-native-bridge.js" # @1.2.1
 pin "@hotwired/stimulus", to: "@hotwired--stimulus.js" # @3.2.2
 pin "@hotwired/turbo", to: "@hotwired--turbo.js" # @8.0.13

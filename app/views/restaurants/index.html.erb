@@ -14,10 +14,39 @@
 <% end %>
 
 <div class="flex flex-col gap-4">
-  <div class="flex flex-col md:flex-row gap-4 items-center">
+  <div class="flex flex-col md:flex-row justify-between gap-4 items-center">
    
 
     <%# Keep the original button but hide it on mobile %>
+
+    <!-- Filters dropdown -->
+    <div data-controller="dropdown-menu" class="relative">
+      <button type="button"
+              data-dropdown-menu-target="trigger"
+              data-action="click->dropdown-menu#toggle"
+              aria-haspopup="menu"
+              aria-expanded="false"
+              class="inline-flex items-center px-4 py-2 bg-surface-50 text-surface-700 border border-surface-300 rounded-lg shadow-sm hover:bg-surface-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        <%= heroicon "adjustments-horizontal", options: { class: "h-5 w-5 mr-2" } %>
+        <span><%= t('restaurants.filters.label', default: 'Filters') %></span>
+      </button>
+
+      <div data-dropdown-menu-target="popover"
+           class="absolute right-0 mt-2 w-48 bg-surface-50 border border-surface-200 rounded-md shadow-lg hidden"
+           aria-hidden="true">
+        <div role="menu" data-dropdown-menu-target="menu" class="py-1">
+          <%= link_to (params[:show_closed] == 'true' ? t('restaurants.filters.hide_closed', default: 'Hide closed') : t('restaurants.filters.show_closed', default: 'Show closed')),
+                      restaurants_path(request.query_parameters.merge(show_closed: params[:show_closed] == 'true' ? nil : 'true')),
+                      class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
+                      role: 'menuitem' %>
+          <%= link_to t('restaurants.filters.reset', default: 'Reset filters'),
+                      restaurants_path,
+                      class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
+                      role: 'menuitem' %>
+        </div>
+      </div>
+    </div>
+
     <div class="hidden md:block">
       <%= link_to t('restaurants.create_restaurant_button'), new_restaurant_path, class: 'inline-flex items-center px-4 py-2 bg-primary-600 text-surface-50 font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors' %>
     </div>
@@ -27,10 +56,6 @@
   <%= form_with url: restaurants_path, method: :get, data: { turbo_frame: "restaurants-list", turbo_action: "advance" } do |form| %>
     <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
 
-      <div class="flex items-center">
-        <%= check_box_tag :show_closed, 'true', params[:show_closed] == 'true', class: "form-checkbox h-5 w-5 text-primary-600" %>
-        <%= label_tag :show_closed, "Show closed", class: "ml-2 text-surface-700" %>
-      </div>
 
       <%= render SearchFormComponent.new(
         url: restaurants_path,
@@ -61,7 +86,7 @@
           longitude: params[:longitude] || params[:lng]
         }
       ) %>
-      <%= form.submit "Filter", class: "btn btn-primary" %>
+
     </div>
   <% end %>
 

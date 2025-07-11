@@ -1,0 +1,77 @@
+<!-- Dropdown Test Page -->
+<%= render "shared/header", title: "Dropdown Test" %>
+
+<div class="p-8">
+  <h1 class="text-2xl font-bold mb-6">Dropdown Test Page</h1>
+  
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">Simple Dropdown</h2>
+    
+    <div data-controller="dropdown" class="relative inline-block">
+      <button type="button"
+              class="inline-flex items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
+              data-action="click->dropdown#toggle"
+              aria-haspopup="true" aria-expanded="false"
+              data-dropdown-target="button">
+        <%= heroicon "funnel", options: { class: "w-4 h-4 mr-2" } %>
+        Test Dropdown
+      </button>
+
+      <div data-dropdown-target="menu"
+           class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-surface-200 z-10">
+        <div class="py-1">
+          <div class="block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100 cursor-pointer">
+            Menu Item 1
+          </div>
+          <div class="block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100 cursor-pointer">
+            Menu Item 2
+          </div>
+          <div class="block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100 cursor-pointer">
+            Menu Item 3
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mt-8">
+    <h3 class="text-lg font-medium mb-2">Debugging Info:</h3>
+    <div class="bg-surface-100 p-4 rounded">
+      <pre id="debug-output" class="text-sm"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Add debugging output
+  document.addEventListener('DOMContentLoaded', () => {
+    const debugOutput = document.getElementById('debug-output');
+    
+    // Check if Stimulus is loaded
+    if (window.Stimulus) {
+      debugOutput.textContent += "✅ Stimulus is loaded\n";
+    } else {
+      debugOutput.textContent += "❌ Stimulus is not loaded\n";
+    }
+    
+    // Check for dropdown controller
+    setTimeout(() => {
+      const dropdownElement = document.querySelector('[data-controller="dropdown"]');
+      if (dropdownElement) {
+        debugOutput.textContent += "✅ Found dropdown element\n";
+        
+        // Check if controller is attached
+        if (dropdownElement.getAttribute('data-controller') === 'dropdown') {
+          debugOutput.textContent += "✅ Dropdown controller attribute is set\n";
+        }
+      } else {
+        debugOutput.textContent += "❌ No dropdown element found\n";
+      }
+    }, 500);
+    
+    // Log click events
+    document.querySelector('[data-dropdown-target="button"]').addEventListener('click', () => {
+      debugOutput.textContent += `🖱️ Button clicked at ${new Date().toLocaleTimeString()}\n`;
+    });
+  });
+</script>
