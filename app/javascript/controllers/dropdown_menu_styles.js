@@ -23,14 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     [data-dropdown-menu-target="popover"][aria-hidden="true"] {
       display: none !important;
       visibility: hidden !important;
-      opacity: 0 !important;
       pointer-events: none !important;
     }
     
     /* Temporary debugging styles */
     .dropdown-menu [data-dropdown-menu-target="popover"] {
       border: 2px solid red;
-      background-color: white;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
