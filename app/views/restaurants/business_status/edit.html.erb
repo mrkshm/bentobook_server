@@ -1,0 +1,37 @@
+<%# app/views/restaurants/business_status/edit.html.erb %>
+<% if hotwire_native_app? %>
+  <% render 'shared/header', title: 'Update Business Status' %>
+  <div class="min-h-screen bg-surface-50">
+    <div class="container mx-auto px-4 py-6">
+<% end %>
+
+<%= turbo_frame_tag dom_id(@restaurant, :business_status) do %>
+  <div class="space-y-4">
+    <h2 class="text-lg font-bold">Update Business Status</h2>
+    
+    <%= button_to "Mark as Out of Business",
+                restaurant_business_status_path(@restaurant),
+                method: :patch,
+                params: { business_status: 'CLOSED_PERMANENTLY' },
+                class: "btn btn-danger w-full" %>
+
+    <%= button_to "Mark as Operational",
+                restaurant_business_status_path(@restaurant),
+                method: :patch,
+                params: { business_status: 'OPERATIONAL' },
+                class: "btn btn-success w-full" %>
+
+    <%= link_to "Cancel", 
+              @restaurant, 
+              class: "btn btn-outline w-full",
+              data: { 
+                turbo_frame: hotwire_native_app? ? "_top" : "_self",
+                turbo_action: "replace" 
+              } %>
+  </div>
+<% end %>
+
+<% if hotwire_native_app? %>
+    </div>
+  </div>
+<% end %>

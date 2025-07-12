@@ -1,4 +1,10 @@
+<%# locals: (title:, show_on_web: true) -%>
+<% show_on_web = local_assigns.fetch(:show_on_web, true) %>
 <% content_for :title, title %>
-<div class="container bg-surface-100 hotwire-native:hidden">
-<h1 class="mt-4 mb-2 px-4 py-6 text-4xl font-semibold tracking-tight text-pretty text-surface-900 sm:text-5xl"><%= title %></h1>
+<div class="container bg-surface-100">
+  <div class="hotwire-native:hidden">
+    <% if show_on_web %>
+      <h1 class="mt-4 mb-2 py-6 text-4xl font-semibold tracking-tight text-pretty text-surface-900 sm:text-5xl"><%= title %></h1>
+    <% end %>
+  </div>
 </div>

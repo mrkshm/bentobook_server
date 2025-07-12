@@ -1,26 +1,33 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-  <div>
-    <h2 class="text-xl font-semibold mb-3">Address</h2>
-    <p><%= "#{@restaurant.street_number} #{@restaurant.street}" %></p>
-    <p><%= "#{@restaurant.postal_code} #{@restaurant.city}" %></p>
-    <% if @restaurant.state.present? %>
-          <p><%= @restaurant.state %></p>
-        <% end %>
-    <p><%= @restaurant.country %></p>
-  </div>
-  <div>
-    <h2 class="text-xl font-semibold mb-3">Contact</h2>
-    <% if @restaurant.phone_number.present? %>
-      <p class="flex items-center">
-        <%= heroicon "phone", options: { class: "w-5 h-5 mr-2" } %>
-        <%= @restaurant.phone_number %>
-      </p>
-    <% end %>
-    <% if @restaurant.url.present? %>
-      <p class="flex items-center mt-2">
-        <%= heroicon "globe-alt", options: { class: "w-5 h-5 mr-2" } %>
-        <%= link_to @restaurant.url, @restaurant.url, target: "_blank", class: "link link-primary no-underline" %>
-      </p>
-    <% end %>
+<%# locals: (restaurant:) -%>
+<div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <div class="flex items-start space-x-3">
+        <%= heroicon "map-pin", options: { class: "w-5 h-5 text-primary-500 mt-1" } %>
+        <div>
+          <p class="text-surface-700"><%= "#{restaurant.combined_street_number} #{restaurant.combined_street}" %></p>
+          <p class="text-surface-700"><%= "#{restaurant.combined_postal_code} #{restaurant.combined_city}" %></p>
+          <% if restaurant.combined_state.present? %>
+            <p class="text-surface-700"><%= restaurant.combined_state %></p>
+          <% end %>
+          <p class="text-surface-700"><%= restaurant.combined_country %></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-end gap-2">
+      <% if restaurant.phone_number.present? %>
+        <div class="flex items-center space-x-3">
+          <%= heroicon "phone", options: { class: "w-5 h-5 text-primary-500" } %>
+          <p class="text-surface-700"><%= restaurant.phone_number %></p>
+        </div>
+      <% end %>
+      <% if restaurant.url.present? %>
+        <div class="flex items-center space-x-3">
+          <%= heroicon "globe-alt", options: { class: "w-5 h-5 text-primary-500" } %>
+          <%= link_to URI.parse(restaurant.url).host.gsub(/^www\./, ''), restaurant.url, target: "_blank", class: "text-primary-600 hover:text-primary-700" %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>

@@ -1467,6 +1467,13 @@ CREATE INDEX index_restaurants_on_address ON public.restaurants USING btree (add
 
 
 --
+-- Name: index_restaurants_on_business_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_restaurants_on_business_status ON public.restaurants USING btree (business_status);
+
+
+--
 -- Name: index_restaurants_on_city; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1949,6 +1956,7 @@ ALTER TABLE ONLY public.shares
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250704143511'),
 ('20250630154325'),
 ('20250624133403'),
 ('20250624132727'),

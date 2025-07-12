@@ -132,6 +132,7 @@ Rails.application.routes.draw do
       resource :tags, only: [ :edit, :update ], module: :restaurants
       resource :rating, only: [ :edit, :update ], module: :restaurants
       resource :price_level, only: [ :edit, :update ], module: :restaurants
+      resource :business_status, only: [:edit, :update], controller: 'restaurants/business_status'
     end
 
     resources :visits do

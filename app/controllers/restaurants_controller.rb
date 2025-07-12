@@ -12,6 +12,9 @@ class RestaurantsController < ApplicationController
   before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :update_price_level, :edit_images ]
 
   def index
+    params[:field] = params[:order_by] if params[:order_by].present?
+    params[:direction] = params[:order_direction] if params[:order_direction].present?
+
     @current_field = params[:field].presence_in(%w[name rating price_level distance created_at updated_at]) || "name"
     @current_direction = %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
 
@@ -19,12 +22,20 @@ class RestaurantsController < ApplicationController
                             .with_google
                             .includes(:visits, :cuisine_type, :tags)
 
+    if params[:show_closed] != 'true'
+      restaurants_scope = restaurants_scope.where(business_status: 'OPERATIONAL')
+    end
+
     if params[:search].present?
       restaurants_scope = restaurants_scope.search(params[:search])
     end
 
     if params[:tag].present?
       restaurants_scope = restaurants_scope.tagged_with(params[:tag])
+    end
+
+    if params[:min_rating].present?
+      restaurants_scope = restaurants_scope.where("rating >= ?", params[:min_rating])
     end
 
     @restaurants = apply_sort(restaurants_scope)

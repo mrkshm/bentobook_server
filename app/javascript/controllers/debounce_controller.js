@@ -44,7 +44,9 @@ export default class extends Controller {
     clearTimeout(this.timeout)
     
     this.timeout = setTimeout(() => {
-      form.requestSubmit()
+      const params = new URLSearchParams(new FormData(form)).toString();
+      const url = form.getAttribute('action');
+      Turbo.visit(`${url}?${params}`, { frame: "restaurants_page" });
     }, this.delayValue)
   }
 

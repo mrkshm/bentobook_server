@@ -14,7 +14,7 @@
           data: {
             turbo_frame: hotwire_native_app? ? "_top" : nil,
             turbo_visit_control: hotwire_native_app? ? "reload" : nil,
-            turbo_cache: false,
+            turbo_temporary: true,
           } do %>
       <div class="flex items-center" data-testid="language-component">
         <div class="text-surface-700">

@@ -1,20 +1,19 @@
-<%= render 'shared/header', title: @restaurant.name %>
-
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-  <%= render "shared/flash" %>
-</div>
-
-<%= turbo_frame_tag "modal" %>
+<%= render 'shared/header', title: @restaurant.name, show_on_web: false %>
 
 <div class="relative isolate overflow-hidden bg-surface-50 pt-6 pb-12 sm:py-16 lg:overflow-visible">
-  <div class="mx-auto max-w-7xl px-2 md:px-4 lg:px-8">
+  <div class="mx-auto">
     <div class="lg:grid lg:grid-cols-12 lg:gap-x-8">
+      <%= render "shared/flash" %>
+
       <!-- Main Content -->
-      <div class="lg:col-span-7">
+      <div class="px-4 lg:col-span-7">
         <div class="flex justify-between items-center mb-6">
           <div class="w-full">
             <div class="flex justify-between w-full items-center">
               <h1 class="text-4xl hotwire-native:text-2xl font-bold tracking-tight text-surface-900"><%= @restaurant.name %></h1>
+              <% if @restaurant.closed_permanently? %>
+                <span class="bg-red-100 text-red-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-red-900 dark:text-red-300">Out of Business</span>
+              <% end %>
               <div class="hotwire-native:hidden">
                 <%= link_to new_visit_path(restaurant_id: @restaurant.id), class: "inline-flex items-center px-4 py-2 rounded-md bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200" do %>
                   <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
@@ -41,128 +40,36 @@
             </div>
           </div>
           <!-- Address Section -->
-          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <div class="flex items-start space-x-3">
-                  <%= heroicon "map-pin", options: { class: "w-5 h-5 text-primary-500 mt-1" } %>
-                  <div>
-                    <p class="text-surface-700"><%= "#{@restaurant.combined_street_number} #{@restaurant.combined_street}" %></p>
-                    <p class="text-surface-700"><%= "#{@restaurant.combined_postal_code} #{@restaurant.combined_city}" %></p>
-                    <% if @restaurant.combined_state.present? %>
-                      <p class="text-surface-700"><%= @restaurant.combined_state %></p>
-                    <% end %>
-                    <p class="text-surface-700"><%= @restaurant.combined_country %></p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex flex-col justify-end gap-2">
-                <% if @restaurant.phone_number.present? %>
-                  <div class="flex items-center space-x-3">
-                    <%= heroicon "phone", options: { class: "w-5 h-5 text-primary-500" } %>
-                    <p class="text-surface-700"><%= @restaurant.phone_number %></p>
-                  </div>
-                <% end %>
-                <% if @restaurant.url.present? %>
-                  <div class="flex items-center space-x-3">
-                    <%= heroicon "globe-alt", options: { class: "w-5 h-5 text-primary-500" } %>
-                    <%= link_to URI.parse(@restaurant.url).host.gsub(/^www\./, ''), @restaurant.url, target: "_blank", class: "text-primary-600 hover:text-primary-700" %>
-                  </div>
-                <% end %>
-              </div>
-            </div>
-          </div>
+          <%= render 'basic_display', restaurant: @restaurant %>
 
           <!-- Restaurant Details -->
           <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
             <%= render Restaurants::Tags::DisplayComponent.new(record: @restaurant) %>
-
-            <div class="mt-4">
-              <h3 class="text-sm font-medium text-surface-700 mb-2">Notes</h3>
-              <%= render partial: "restaurants/notes/notes", locals: { restaurant: @restaurant } %>
-            </div>
           </div>
 
-          <!-- Images Section  -->
-          <div class="rounded-lg bg-surface-100/50 p-2 md:p-6 backdrop-blur-sm">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-xl font-semibold text-surface-900">Photos</h2>
-              <div class="flex gap-4">
-              <% if @restaurant.organization == Current.organization %>
-                <% if @restaurant.images.exists? %>
-                <%= link_to edit_restaurant_images_path(restaurant_id: @restaurant.id), class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
-                  <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1" } %>
-                  <%= t("images.edit_photos") %>
-                <% end %>
-                <% end %>
-                <%= link_to new_restaurant_image_path(restaurant_id: @restaurant.id), class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                  </svg>
-                  <%= t("images.add_photos") %>
-                <% end %>
-              <% end %>
-              </div>
-            </div>
+          <div class="mt-4 rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm">
+            <h3 class="text-sm font-medium text-surface-700 mb-2">Notes</h3>
+            <%= render partial: "restaurants/notes/notes", locals: { restaurant: @restaurant } %>
+          </div>
 
-            <% if not @restaurant.images.any? %>
-              <%= render(GalleryComponent.new(images: @restaurant.images)) %>
-            <% else %>
-              <div class="text-center py-8 text-surface-500">
-                <p><%= t("images.no_photos") %></p>
-              </div>
-            <% end %>
+          <!-- Images Section -->
+          <%= render 'restaurants/images/gallery', restaurant: @restaurant %>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 flex flex-col gap-4">
+            <%= render 'danger_zone', restaurant: @restaurant %>
+            <%= link_to t('common.back'), restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors' %>
           </div>
         </div>
       </div>
 
       <!-- Sidebar -->
       <div class="lg:col-span-5 mt-8 lg:mt-0">
-        <!-- Lists Section -->
-        <% if @lists.any? %>
-          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm mb-8">
-            <h2 class="text-xl font-semibold text-surface-900 mb-4">Lists</h2>
-            <div class="space-y-3">
-              <% @lists.each do |list| %>
-                <%= link_to list_path(list), class: "block p-3 rounded-lg hover:bg-surface-200/50 transition-colors" do %>
-                  <div class="flex items-center justify-between">
-                    <span class="text-surface-900 font-medium"><%= list.name %></span>
-                    <% if list.owner == current_user %>
-                      <span class="text-sm text-surface-600">Your list</span>
-                    <% else %>
-                      <span class="text-sm text-surface-600">By <%= list.owner.profile.display_name %></span>
-                    <% end %>
-                  </div>
-                <% end %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
+        <%= render 'lists_section', lists: @lists, current_user: current_user %>
+        <%= render 'visits_section', visits: @visits, restaurant: @restaurant %>
 
-        <!-- Visits Section -->
-        <% if @visits.any? %>
-          <div class="rounded-lg bg-surface-100/50 p-2 md:p-6 backdrop-blur-sm">
-            <h2 class="text-xl font-semibold text-surface-900 mb-4">Visits</h2>
-            <div class="space-y-4">
-              <% @visits.each do |visit| %>
-                <%= render(Visits::CardComponent.new(visit: visit)) %>
-              <% end %>
-            </div>
-          </div>
-        <% else %>
-          <div class="rounded-lg bg-surface-100/50 p-6 backdrop-blur-sm text-center">
-            <p class="text-surface-600 mb-4">No visits recorded yet</p>
-          </div>
-        <% end %>
 
-        <!-- Action Buttons -->
-        <div class="mt-8 flex space-x-4">
-          <% if @restaurant.organization == Current.organization %>
-            <%= link_to t('restaurants.edit'), edit_restaurant_path(id: @restaurant.id), class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-primary-600 text-primary-50 hover:bg-primary-700 transition-colors' %>
-          <% end %>
-          <%= link_to t('common.back'), restaurants_path, class: 'flex-1 inline-flex justify-center items-center px-4 py-2 rounded-md bg-surface-200 text-surface-700 hover:bg-surface-300 transition-colors' %>
-        </div>
+
       </div>
     </div>
   </div>
