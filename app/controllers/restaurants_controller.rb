@@ -34,6 +34,10 @@ class RestaurantsController < ApplicationController
       restaurants_scope = restaurants_scope.tagged_with(params[:tag])
     end
 
+    if params[:min_rating].present?
+      restaurants_scope = restaurants_scope.where("rating >= ?", params[:min_rating])
+    end
+
     @restaurants = apply_sort(restaurants_scope)
 
     @pagy, @restaurants = pagy(

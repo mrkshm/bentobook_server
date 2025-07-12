@@ -41,6 +41,11 @@
                           class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
                           data: { turbo_frame: "restaurants_page", turbo_action: "replace", action: "click->dropdown-menu#close" },
                           role: 'menuitem' %>
+              <%= link_to t('restaurants.filters.four_stars_and_up', default: '4 stars & up'),
+                          restaurants_path(request.query_parameters.merge(min_rating: 4)),
+                          class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
+                          data: { turbo_frame: "restaurants_page", turbo_action: "replace", action: "click->dropdown-menu#close" },
+                          role: 'menuitem' %>
               <%= link_to t('restaurants.filters.reset', default: 'Reset filters'),
                           restaurants_path,
                           class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
