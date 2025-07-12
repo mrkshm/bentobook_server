@@ -39,12 +39,12 @@
               <%= link_to (params[:show_closed] == 'true' ? t('restaurants.filters.hide_closed', default: 'Hide closed') : t('restaurants.filters.show_closed', default: 'Show closed')),
                           restaurants_path(request.query_parameters.merge(show_closed: params[:show_closed] == 'true' ? nil : 'true')),
                           class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
-                          data: { turbo_frame: "restaurants-list", turbo_action: "replace" },
+                          data: { turbo_frame: "restaurants-list", turbo_action: "replace", action: "click->dropdown-menu#close" },
                           role: 'menuitem' %>
               <%= link_to t('restaurants.filters.reset', default: 'Reset filters'),
                           restaurants_path,
                           class: 'block px-4 py-2 text-sm text-surface-700 hover:bg-surface-100',
-                          data: { turbo_frame: "restaurants-list", turbo_action: "replace" },
+                          data: { turbo_frame: "restaurants-list", turbo_action: "replace", action: "click->dropdown-menu#close" },
                           role: 'menuitem' %>
             </div>
           </div>
