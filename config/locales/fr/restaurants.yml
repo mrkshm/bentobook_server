@@ -6,8 +6,16 @@ fr:
     change_cuisine: 'Changer la cuisine'
     created: "Le restaurant a été ajouté avec succès. Vous pouvez ajouter des details ou commencer à ajouter une visite immédiatement."
     already_exists: "Le restaurant est déjà dans votre liste. Voulez-vous apporter une modification ou ajouter une visite ?"
+    delete_restaurant: "Supprimer le restaurant"
+    mark_as_out_of_business: "Marquer comme définitivement fermé"
+    mark_as_operational: "Marquer comme ouvert"
     confirmations:
       delete: "Êtes-vous sur de vouloir supprimer ce restaurant?"
+    filters:
+      show_closed: "Afficher les restaurants fermés"
+      hide_closed: "Masquer les restaurants fermés"
+      four_stars_and_up: "4 étoiles et au-dessus"
+      reset: "Réinitialiser les filtres"
     search_by:
       name: 'Nom'
       created_at: 'Créé le'

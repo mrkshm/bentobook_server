@@ -1,5 +1,5 @@
 <%= link_to restaurant_path(id: restaurant.id, locale: nil), class: "block col-span-1 divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200 #{ 'opacity-50' unless restaurant.operational? }", data: { turbo_frame: "_top" } do %>
-  <div class="card py-4 px-2 gap-2 min-h-[220px]">
+  <div class="card bg-surface-50 py-4 px-2 gap-2 min-h-[220px]">
     <%# Header with name and visits %>
     <div class="header flex items-center justify-between">
       <h2 class="text-xl font-medium text-surface-900 #{ 'line-through' unless restaurant.operational? }"><%= restaurant.name %></h2>
@@ -15,7 +15,7 @@
     <%# Main content container with left and right sides %>
     <div class="flex">
       <%# Left side: cuisine, price, rating, tags %>
-      <div class="flex-1 pr-6 flex flex-col justify-between">
+      <div class="text-surface-900 flex-1 pr-6 flex flex-col justify-between">
         <div class="space-y-2">
           <%= render "restaurants/price_levels/display", restaurant: restaurant, readonly: true %>
           <%= render "restaurants/ratings/display", restaurant: restaurant, readonly: true %>
@@ -32,7 +32,7 @@
       </div>
 
       <%# Right side: address %>
-      <div class="text-sm text-surface-600 text-right">
+      <div class="text-sm text-surface-700 text-right">
         <div>
           <span><%= "#{restaurant.combined_street_number} #{restaurant.combined_street}" %></span>
         </div>

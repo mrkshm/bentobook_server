@@ -29,7 +29,7 @@
                   aria-expanded="false"
                   class="inline-flex items-center px-4 py-2 bg-surface-50 text-surface-700 border border-surface-300 rounded-lg shadow-sm hover:bg-surface-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
             <%= heroicon "adjustments-horizontal", options: { class: "h-5 w-5 mr-2" } %>
-            <span><%= t('restaurants.filters.label', default: 'Filters') %></span>
+            <span><%= t('restaurants.filters.label', default: t('common.filters')) %></span>
           </button>
 
           <div data-dropdown-menu-target="popover"
@@ -58,12 +58,12 @@
         <%= render SortFormComponent.new(
           url: restaurants_path,
           sort_options: {
-            t('restaurants.sort.name') => 'name',
-            t('restaurants.sort.rating') => 'rating',
-            t('restaurants.sort.price_level') => 'price_level',
-            t('restaurants.sort.distance') => 'distance',
-            t('restaurants.sort.created_at') => 'created_at',
-            t('restaurants.sort.updated_at') => 'updated_at'
+            t('restaurants.index.sort_options.name') => 'name',
+            t('restaurants.index.sort_options.rating') => 'rating',
+            t('restaurants.index.sort_options.price_level') => 'price_level',
+            t('restaurants.index.sort_options.distance') => 'distance',
+            t('restaurants.index.sort_options.created_at') => 'created_at',
+            t('restaurants.index.sort_options.updated_at') => 'updated_at'
           },
           current_field: @current_field,
           current_direction: @current_direction,

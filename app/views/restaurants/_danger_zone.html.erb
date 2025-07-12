@@ -3,19 +3,19 @@
 
 <details class="danger-zone">
   <summary class="text-red-600 cursor-pointer font-semibold btn btn-danger w-full">
-    Danger Zone
+    <%= t('common.danger_zone') %>
   </summary>
 
   <div class="mt-4 space-y-2">
     <% if restaurant.operational? %>
-      <%= button_to "Mark as Out of Business",
+      <%= button_to t('restaurants.mark_as_out_of_business'),
           restaurant_business_status_path(restaurant),
           method: :patch,
           params: { business_status: 'CLOSED_PERMANENTLY' },
           class: "btn btn-danger w-full",
           data: { turbo_confirm: "Really mark this restaurant as out of business?" } %>
     <% else %>
-      <%= button_to "Mark as Operational",
+      <%= button_to t('restaurants.mark_as_operational'),
           restaurant_business_status_path(restaurant),
           method: :patch,
           params: { business_status: 'OPERATIONAL' },
@@ -23,7 +23,7 @@
           data: { turbo_confirm: "Really mark this restaurant as operational?" } %>
     <% end %>
 
-    <%= button_to "Delete Restaurant",
+    <%= button_to t('restaurants.delete_restaurant'),
         restaurant_path(restaurant),
         method: :delete,
         class: "btn btn-danger w-full",

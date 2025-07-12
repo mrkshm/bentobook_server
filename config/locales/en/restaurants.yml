@@ -6,8 +6,16 @@ en:
     change_cuisine: 'Change cuisine type'
     created: "The restaurant was successfully added. You can add notes, rating etc. or simply start adding a visit right away."
     already_exists: "The restaurant was already in your list. You can make a change or add a visit."
+    delete_restaurant: "Delete Restaurant"
+    mark_as_out_of_business: "Mark as out of business"
+    mark_as_operational: "Mark as operational"
     confirmations:
       delete: "Are you sure you want to remove this restaurant?"
+    filters:
+      show_closed: "Show closed"
+      hide_closed: "Hide closed"
+      four_stars_and_up: "4 stars & up"
+      reset: "Reset filters"
     form:
       name: 'Name'
       address: 'Address'

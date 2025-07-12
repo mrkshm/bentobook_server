@@ -1,7 +1,9 @@
 fr:
   common:
     back: "Retour"
+    danger_zone: "Zone de danger"
     edit: "Modifier"
+    filters: "Filtres"
     finished: "Terminé"
     save: "Enregistrer"
     sort:
