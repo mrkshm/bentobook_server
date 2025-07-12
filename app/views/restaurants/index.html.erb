@@ -1,26 +1,14 @@
 <%= render "shared/header", title: t('restaurants.index.title') %>
   
 
-<% flash.each do |type, message| %>
-  <div class="px-4 py-3 rounded-lg mb-4 <%= type == 'notice' ? 'bg-primary-100 text-primary-700' : 'bg-error-100 text-error-700' %>">
-    <%= message %>
-  </div>
-<% end %>
 
-<% if params[:tag].present? %>
-  <div class="px-4 py-3 rounded-lg mb-4 bg-primary-100 text-primary-700">
-    Showing restaurants tagged with "<%= params[:tag] %>"
-  </div>
-<% end %>
-
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4 container">
+  <% if params[:tag].present? %>
+    <div class="px-4 py-3 rounded-lg mb-4 bg-primary-100 text-primary-700">
+      Showing restaurants tagged with "<%= params[:tag] %>"
+    </div>
+  <% end %>
   <div class="flex flex-col md:flex-row justify-between gap-4 items-center">
-   
-
-    <%# Keep the original button but hide it on mobile %>
-
-
-
     <div class="hidden md:block">
       <%= link_to t('restaurants.create_restaurant_button'), new_restaurant_path, class: 'inline-flex items-center px-4 py-2 bg-primary-600 text-surface-50 font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors' %>
     </div>
@@ -28,8 +16,7 @@
 
   <%# Search and sort forms - visible at all times %>
   <%= form_with url: restaurants_path, method: :get, data: { turbo_frame: "restaurants-list", turbo_action: "advance" } do |form| %>
-    <div class="mb-4 flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
-
+    <div class="mb-0 flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
 
       <div class="flex items-center gap-4">
         <!-- Filters dropdown -->
@@ -110,7 +97,7 @@
 </div>
 
 <div class="min-h-screen bg-surface-100">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 hotwire-native:px-0">
+  <div class="mx-auto max-w-7xl">
     <%# Always render the restaurants list Turbo Frame, even when empty %>
     <%= turbo_frame_tag "restaurants-list", class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start" do %>
       <% if @restaurants.empty? %>
