@@ -12,6 +12,9 @@ class RestaurantsController < ApplicationController
   before_action :set_restaurant, only: [ :show, :edit, :update, :destroy, :update_price_level, :edit_images ]
 
   def index
+    params[:field] = params[:order_by] if params[:order_by].present?
+    params[:direction] = params[:order_direction] if params[:order_direction].present?
+
     @current_field = params[:field].presence_in(%w[name rating price_level distance created_at updated_at]) || "name"
     @current_direction = %w[asc desc].include?(params[:direction]) ? params[:direction] : "asc"
 
