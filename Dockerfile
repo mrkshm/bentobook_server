@@ -50,14 +50,12 @@ RUN apt-get update && apt-get install -y libyaml-dev && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
     bundle exec bootsnap precompile --gemfile
 
-# (Removed Bun installation – no asset build needed)
-
-
-
-
-
-
-
+# Install bun and JavaScript dependencies for Vite
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
+COPY package.json bun.lock* vite.config.js ./
+COPY app/frontend ./app/frontend
+RUN bun install --frozen-lockfile
 
 # Copy application code
 COPY . .

@@ -16,7 +16,6 @@
 
   <%= turbo_frame_tag "restaurants_page" do %>
   <%# Search and sort forms - visible at all times %>
-  <%= form_with url: restaurants_path, method: :get, data: { turbo_action: "advance" } do |form| %>
     <div class="mb-0 flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
 
       <div class="flex items-center gap-4">
@@ -90,14 +89,14 @@
       </div>
 
     </div>
-  <% end %>
 
 
 <%# Add the FAB for mobile %>
 <div class="md:hidden fixed bottom-6 right-6 z-50">
   <%= link_to new_restaurant_path, 
       class: "flex items-center justify-center w-14 h-14 rounded-full bg-primary-600 text-surface-50 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors",
-      aria: { label: t('restaurants.create_restaurant_button') } do %>
+      aria: { label: t('restaurants.create_restaurant_button') },
+      data: { turbo_frame: "_top" } do %>
     <%= heroicon "plus", options: { class: "h-6 w-6" } %>
   <% end %>
 </div>

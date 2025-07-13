@@ -46,7 +46,7 @@ class ContactSerializer < BaseSerializer
           rating: visit.rating,
           restaurant: {
             id: visit.restaurant.id,
-            name: visit.restaurant.combined_name,
+            name: visit.restaurant.name,
             cuisine_type: visit.restaurant.cuisine_type&.name,
             location: {
               address: visit.restaurant.address,

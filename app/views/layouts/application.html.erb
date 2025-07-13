@@ -7,7 +7,6 @@
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
     
     <%= javascript_tag nonce: true do %>
       // Set up global variables
@@ -21,6 +20,18 @@
       })();
     </script>
     <%= yield :head %>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'application' %>
+    <!--
+      If using a TypeScript entrypoint file:
+        vite_typescript_tag 'application'
+
+      If using a .jsx or .tsx entrypoint, add the extension:
+        vite_javascript_tag 'application.jsx'
+
+      Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
+    -->
+
   </head>
 
   <body data-controller="theme-loader" data-theme="<%= user_signed_in? ? current_user.theme : 'light' %>" class="bg-surface-100 text-surface-700">
@@ -71,10 +82,6 @@
 
 
     <% if content_for?(:google_maps) %>
-      <%= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.credentials.google_maps_api_key}&libraries=places&callback=initGooglePlaces", 
-          defer: true,
-          async: true,
-          "data-turbo-track": "reload" %>
     <% end %>
 
     <!-- Modals container -->

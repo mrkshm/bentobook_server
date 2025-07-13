@@ -50,7 +50,7 @@ class ContactsController < ApplicationController
       end
       Rails.logger.debug "Contact saved: #{@contact.inspect}"
       Rails.logger.debug "Generated path: #{contact_path(@contact.id, locale: I18n.locale)}"
-      redirect_to contact_path(@contact.id, locale: I18n.locale), notice: "Contact was successfully created."
+      redirect_to contact_path(@contact.id, locale: I18n.locale), notice: t("contacts.success.creation")
     else
       Rails.logger.error "Failed to create contact: #{@contact.errors.full_messages}"
       render :new, status: :unprocessable_entity
@@ -61,7 +61,7 @@ class ContactsController < ApplicationController
     @contact = Current.organization.contacts.includes(visits: [ :restaurant, :images, :contacts ]).find(params[:id])
   rescue ActiveRecord::RecordNotFound
     Rails.logger.error "Attempted to access invalid contact #{params[:id]} for organization #{Current.organization.id}"
-    redirect_to contacts_path, alert: "Contact not found."
+    redirect_to contacts_path, alert: t("contacts.error.not_found")
   end
 
   def edit
@@ -83,7 +83,7 @@ class ContactsController < ApplicationController
           Rails.logger.error "Failed to process avatar: #{result[:error]}"
         end
       end
-      redirect_to contacts_path, notice: "Contact was successfully updated."
+      redirect_to contacts_path, notice: t("contacts.success.update")
     else
       Rails.logger.error "Failed to update contact: #{@contact.errors.full_messages}"
       render :edit, status: :unprocessable_entity
@@ -92,11 +92,11 @@ class ContactsController < ApplicationController
 
   def destroy
     if @contact.destroy
-      flash[:notice] = "Contact was successfully deleted."
+      flash[:notice] = t("contacts.success.deletion")
       redirect_to contacts_path
     else
       Rails.logger.error "Failed to delete contact #{@contact.id} for organization #{Current.organization.id}"
-      flash[:alert] = "Failed to delete contact."
+      flash[:alert] = t("contacts.error.deletion")
       redirect_to contacts_path
     end
   end
@@ -107,7 +107,7 @@ class ContactsController < ApplicationController
     @contact = Current.organization.contacts.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     Rails.logger.error "Attempted to access invalid contact #{params[:id]} for organization #{Current.organization.id}"
-    redirect_to contacts_path, alert: "Contact not found."
+    redirect_to contacts_path, alert: t("contacts.error.not_found")
   end
 
   def contact_params_without_avatar

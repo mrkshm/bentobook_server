@@ -1,7 +1,12 @@
+<!-- DEBUG: SortFormComponent rendering -->
 <%= form_with url: @url,
               method: :get,
               class: "flex items-center gap-2",
-              data: { controller: "location" } do |f| %>
+              data: { 
+                controller: "restaurant-sort",
+                restaurant_sort_url_value: @url,
+                restaurant_sort_frame_value: "restaurants_page"
+              } do |f| %>
   
   <%# Hidden fields for additional params %>
   <% @additional_params.each do |name, value| %>
@@ -11,12 +16,15 @@
   <%# Hidden field for current direction %>
   <%= hidden_field_tag :order_direction, @current_direction %>
   
-  <%# Sort field select - submits on change %>
-  <div class="relative" data-controller="submit-on-change" data-action="change->submit-on-change#submit">
+  <%# Sort field select %>
+  <div class="relative">
     <%= select_tag :order_by, 
                   options_for_select(@sort_options, @current_field),
-                  class: "appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-base focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
-                  %>
+                  class: "appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-base focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500",
+                  data: { 
+                    restaurant_sort_target: "sortField",
+                    action: "change->restaurant-sort#sortFieldChanged"
+                  } %>
     
     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
       <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -25,19 +33,20 @@
     </div>
   </div>
 
-  <%# Direction toggle buttons - each is a submit button with the appropriate direction %>
+  <%# Direction toggle buttons %>
   <div class="flex align-center">
     <button type="submit" 
             name="order_direction" 
             value="asc" 
             class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'asc' ? 'text-surface-900' : 'text-surface-500' %>"
-    >
+            data-action="click->restaurant-sort#sortDirectionChanged">
       <%= heroicon "arrow-up", options: { class: "w-5 h-5" } %>
     </button>
     <button type="submit" 
             name="order_direction" 
             value="desc" 
-            class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'desc' ? 'text-surface-900' : 'text-surface-500' %>">
+            class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'desc' ? 'text-surface-900' : 'text-surface-500' %>"
+            data-action="click->restaurant-sort#sortDirectionChanged">
       <%= heroicon "arrow-down", options: { class: "w-5 h-5" } %>
     </button>
   </div>

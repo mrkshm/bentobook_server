@@ -62,7 +62,7 @@ class RestaurantSerializer < BaseSerializer
 
   # Core restaurant details
   attribute :name do |restaurant|
-    restaurant.combined_name
+    restaurant.name
   end
 
   attribute :cuisine_type do |restaurant|
@@ -78,19 +78,19 @@ class RestaurantSerializer < BaseSerializer
   end
 
   attribute :business_status do |restaurant|
-    restaurant.combined_business_status
+    restaurant.business_status
   end
 
   # Location details
   attribute :location do |restaurant|
     {
-      address: restaurant.combined_address,
-      street: restaurant.combined_street,
-      street_number: restaurant.combined_street_number,
-      city: restaurant.combined_city,
-      state: restaurant.combined_state,
-      country: restaurant.combined_country,
-      postal_code: restaurant.combined_postal_code,
+      address: restaurant.address,
+      street: restaurant.street,
+      street_number: restaurant.street_number,
+      city: restaurant.city,
+      state: restaurant.state,
+      country: restaurant.country,
+      postal_code: restaurant.postal_code,
       latitude: restaurant.latitude&.to_f,
       longitude: restaurant.longitude&.to_f
     }
@@ -123,8 +123,8 @@ class RestaurantSerializer < BaseSerializer
   # Contact information
   attribute :contact_info do |restaurant|
     {
-      phone_number: restaurant.combined_phone_number,
-      url: restaurant.combined_url
+      phone_number: restaurant.phone_number,
+      url: restaurant.url
     }
   end
 

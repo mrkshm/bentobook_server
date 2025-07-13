@@ -1,7 +1,20 @@
 en:
   notices:
+    cuisine_type:
+      invalid: "Invalid cuisine type"
+    images:
+      uploaded: "Images were successfully uploaded."
+      processing_failed: "There was an error processing the images."
+      none_selected: "No images were selected."
+      error: "There was an error processing the images."
     profile:
       updated: "Profile was successfully updated."
+    restaurant:
+      created: "Restaurant was successfully created."
+      updated: "Restaurant was successfully updated."
+      deleted: "Restaurant was successfully removed from your list."
+      sort_invalid: "Invalid order parameter. Using default sorting."
+      sort_direction_invalid: "Invalid order direction. Using default direction."
     visits:
       created: "Visit was successfully created."
       updated: "Visit was successfully updated."

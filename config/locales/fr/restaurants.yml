@@ -9,6 +9,7 @@ fr:
     delete_restaurant: "Supprimer le restaurant"
     mark_as_out_of_business: "Marquer comme définitivement fermé"
     mark_as_operational: "Marquer comme ouvert"
+    select_cuisine_type: "Sélectionner le type de cuisine"
     confirmations:
       delete: "Êtes-vous sur de vouloir supprimer ce restaurant?"
     filters:

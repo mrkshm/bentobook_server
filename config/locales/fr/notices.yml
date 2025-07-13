@@ -1,7 +1,20 @@
 fr:
   notices:
+    cuisine_type:
+      invalid: "Type de cuisine invalide"
+    images:
+      uploaded: "Images téléchargées avec succès."
+      processing_failed: "Une erreur s'est produite lors du traitement des images."
+      none_selected: "Aucune image sélectionnée."
+      error: "Une erreur s'est produite lors du traitement des images."
     profile:
       updated: "Le profil a été mis à jour avec succès."
+    restaurant:
+      created: "Le restaurant a été créé avec succès."
+      updated: "Le restaurant a été mis à jour avec succès."
+      deleted: "Le restaurant a été supprimé avec succès."
+      sort_invalid: "Paramètre d'ordre invalide. Utilisation de tri par défaut."
+      sort_direction_invalid: "Direction d'ordre invalide. Utilisation de tri par défaut."
     visits:
       created: "La visite a été créée avec succès."
       updated: "La visite a été mise à jour avec succès."

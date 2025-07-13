@@ -15,6 +15,7 @@ export default class extends Controller {
       return;
     }
 
+
     const params = new URLSearchParams(new FormData(form)).toString();
     // We can't use form.action because the browser resolves it to a full URL,
     // and we need a path for Turbo.visit. We read it from the data attribute instead.

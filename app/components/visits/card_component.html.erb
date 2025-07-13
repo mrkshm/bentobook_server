@@ -31,7 +31,8 @@
       <div class="flex justify-between">
         <div class="mt-2">
           <%= render(Visits::RatingComponent.new(
-                visit: visit
+                visit: visit,
+                readonly: true
               )) %>
         </div>
         <% if has_contacts? %>

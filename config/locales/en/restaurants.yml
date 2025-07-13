@@ -9,6 +9,7 @@ en:
     delete_restaurant: "Delete Restaurant"
     mark_as_out_of_business: "Mark as out of business"
     mark_as_operational: "Mark as operational"
+    select_cuisine_type: "Select cuisine type"
     confirmations:
       delete: "Are you sure you want to remove this restaurant?"
     filters:

@@ -151,24 +151,9 @@ class Restaurant < ApplicationRecord
         .order("distance")
     }
 
-    GOOGLE_FALLBACK_ATTRIBUTES = [
-      :name, :address, :street, :street_number, :city, :state, :country,
-      :postal_code, :phone_number, :url, :business_status
-    ]
-
-    GOOGLE_FALLBACK_ATTRIBUTES.each do |attr|
-      define_method("combined_#{attr}") do
-        self[attr].presence || google_restaurant&.public_send(attr)
-      end
-    end
-
+    # Simplified scope - no longer needs Google fallbacks since data is migrated
     def self.with_google
-      joins("LEFT JOIN google_restaurants ON restaurants.google_restaurant_id = google_restaurants.id")
-        .select("restaurants.*, " +
-                GOOGLE_FALLBACK_ATTRIBUTES.map { |attr|
-                  "COALESCE(restaurants.#{attr}, google_restaurants.#{attr}) AS combined_#{attr}"
-                }.join(", ") +
-                ", restaurants.price_level AS restaurant_price_level, restaurants.rating AS restaurant_rating")
+      left_joins(:google_restaurant)
     end
 
     def visit_count

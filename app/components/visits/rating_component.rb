@@ -4,8 +4,9 @@ module Visits
     include ActionView::RecordIdentifier
     include Rails.application.routes.url_helpers
 
-    def initialize(visit:)
+    def initialize(visit:, readonly: false)
       @visit = visit
+      @readonly = readonly
     end
 
     private

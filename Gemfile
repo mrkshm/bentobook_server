@@ -24,7 +24,8 @@ gem "solid_cable"
 
 gem "turbo-rails"
 
-gem "importmap-rails", "~> 2.1"
+# gem "importmap-rails", "~> 2.1"  # Replaced with Vite
+gem "vite_rails", "~> 3.0"
 gem "stimulus-rails", "~> 1.3"
 
 gem "tailwindcss-rails", "~> 4.3"

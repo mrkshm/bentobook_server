@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import getLoader from "~/lib/google_maps_loader"
 
 function extractAddressFromGooglePlace(place) {
   if (!place.address_components) {
@@ -40,28 +41,18 @@ export default class extends Controller {
     locale: String
   }
 
-  connect() {
-    // If Google is already loaded, initialize immediately
-    if (window.google && window.google.maps && window.google.maps.places) {
-      this.initializeAutocomplete()
-    } else {
-      // If not loaded yet, set up the callback
-      window.initGooglePlaces = () => {
-        // Initialize all places-autocomplete controllers
-        document.querySelectorAll('[data-controller="places-autocomplete"]').forEach(element => {
-          const controller = this.application.getControllerForElementAndIdentifier(element, 'places-autocomplete')
-          if (controller) {
-            controller.initializeAutocomplete()
-          }
-        })
-      }
+  async connect() {
+    try {
+      await getLoader();
+      this.initializeAutocomplete();
+    } catch (error) {
+      console.error("Failed to load Google Maps for autocomplete.", error);
     }
   }
 
   initializeAutocomplete() {
-    if (!window.google || !window.google.maps || !window.google.maps.places) {
-      console.warn('Google Maps API not loaded yet')
-      return
+    if (this.autocomplete) {
+      return;
     }
 
     this.autocomplete = new google.maps.places.Autocomplete(this.element, {
@@ -70,12 +61,9 @@ export default class extends Controller {
     this.autocomplete.addListener("place_changed", this.placeSelected.bind(this))
   }
 
-  reset() {
-    this.element.value = ""
-    this.element.disabled = false
-  }
 
   placeSelected() {
+    console.log("Place selected from autocomplete.");
     const place = this.autocomplete.getPlace()
     if (!place.place_id) return
 
@@ -103,7 +91,7 @@ export default class extends Controller {
       }
     }
 
-    fetch(`/${this.localeValue}/restaurants/new/confirm`, {  // Use the existing locale getter
+    fetch(`/restaurants/new/confirm`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

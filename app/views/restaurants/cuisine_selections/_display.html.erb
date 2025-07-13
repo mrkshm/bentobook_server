@@ -25,7 +25,7 @@
                     turbo_prefetch: true
                   } %>
       <% else %>
-        <%= link_to "Select Cuisine Type",
+        <%= link_to t("restaurants.select_cuisine_type"),
                   edit_restaurant_cuisine_selection_path(restaurant_id: restaurant.id),
                   class: "text-blue-600 hover:text-blue-800 hover:underline",
                   data: {

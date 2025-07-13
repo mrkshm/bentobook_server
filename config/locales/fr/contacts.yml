@@ -27,3 +27,11 @@ fr:
       placeholder: "Chercher un contact"
     selector:
       title: "Sélectionnez vos compagnons de table"
+    success:
+      creation: "Contact créé avec succès."
+      update: "Contact mis à jour avec succès."
+      deletion: "Contact supprimé avec succès."
+    error:
+      not_found: "Contact non trouvé."
+      deletion: "Échec de la suppression du contact."
+

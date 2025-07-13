@@ -22,8 +22,8 @@ class RestaurantsController < ApplicationController
                             .with_google
                             .includes(:visits, :cuisine_type, :tags)
 
-    if params[:show_closed] != 'true'
-      restaurants_scope = restaurants_scope.where(business_status: 'OPERATIONAL')
+    if params[:show_closed] != "true"
+      restaurants_scope = restaurants_scope.where(business_status: "OPERATIONAL")
     end
 
     if params[:search].present?
@@ -131,14 +131,7 @@ class RestaurantsController < ApplicationController
     @restaurant = Current.organization.restaurants.find(params[:id])
     load_edit_dependencies
 
-    Rails.logger.debug "\n=== Controller Debug ==="
-    Rails.logger.debug "Restaurant before update: #{@restaurant.inspect}"
-    Rails.logger.debug "Update params: #{restaurant_params.inspect}"
-    Rails.logger.debug "Request format: #{request.format}"
-    Rails.logger.debug "Request accepts: #{request.accepts.map(&:to_s).join(', ')}"
-
     if @restaurant.update(restaurant_params)
-      Rails.logger.debug "Update successful"
       respond_to do |format|
         format.turbo_stream do
           if restaurant_params.key?(:price_level)
@@ -213,14 +206,30 @@ class RestaurantsController < ApplicationController
     @restaurant = Restaurant.new(restaurant_params)
     @restaurant.organization = Current.organization
 
-    Rails.logger.debug "\n=== Create Action Debug ==="
-    Rails.logger.debug "Restaurant params: #{restaurant_params.inspect}"
-    Rails.logger.debug "Request format: #{request.format}"
+    # If a google_restaurant_id is present, copy attributes from the GoogleRestaurant
+    if @restaurant.google_restaurant_id.present?
+      google_restaurant = GoogleRestaurant.find(@restaurant.google_restaurant_id)
+      # Only copy attributes if they are not already set by user input
+      @restaurant.name ||= google_restaurant.name
+      @restaurant.address ||= google_restaurant.address
+      @restaurant.latitude ||= google_restaurant.latitude
+      @restaurant.longitude ||= google_restaurant.longitude
+      @restaurant.phone_number ||= google_restaurant.phone_number
+      @restaurant.url ||= google_restaurant.url
+      @restaurant.business_status ||= google_restaurant.business_status
+      @restaurant.price_level ||= google_restaurant.price_level
+      @restaurant.street_number ||= google_restaurant.street_number
+      @restaurant.street ||= google_restaurant.street
+      @restaurant.postal_code ||= google_restaurant.postal_code
+      @restaurant.city ||= google_restaurant.city
+      @restaurant.state ||= google_restaurant.state
+      @restaurant.country ||= google_restaurant.country
+      @restaurant.opening_hours ||= google_restaurant.opening_hours
+    end
 
     if @restaurant.save
-      Rails.logger.debug "Restaurant saved successfully"
       respond_to do |format|
-        format.html { redirect_to restaurant_path(@restaurant, locale: I18n.locale), notice: "Restaurant was successfully created." }
+        format.html { redirect_to restaurant_path(@restaurant, locale: I18n.locale), notice: t("notices.restaurant.created") }
         format.json { render json: @restaurant, status: :created, location: restaurant_path(@restaurant, locale: I18n.locale) }
       end
     else
@@ -237,7 +246,7 @@ class RestaurantsController < ApplicationController
 
   def destroy
     @restaurant.destroy
-    redirect_to restaurants_path, notice: "Restaurant was successfully removed from your list."
+    redirect_to restaurants_path, notice: t("notices.restaurant.deleted")
   end
 
   def search
@@ -262,12 +271,12 @@ class RestaurantsController < ApplicationController
     order_direction = params[:order_direction] || RestaurantQuery::DEFAULT_ORDER[:direction]
 
     unless RestaurantQuery::ALLOWED_ORDER_FIELDS.include?(order_field)
-      flash[:alert] = "Invalid order_by parameter. Using default sorting."
+      flash[:alert] = t("notices.restaurant.sort_invalid")
       order_field = RestaurantQuery::DEFAULT_ORDER[:field]
     end
 
     unless valid_order_direction?(order_direction)
-      flash[:alert] = "Invalid order_direction parameter. Using default direction."
+      flash[:alert] = t("notices.restaurant.sort_direction_invalid")
       order_direction = RestaurantQuery::DEFAULT_ORDER[:direction]
     end
 
@@ -337,7 +346,7 @@ class RestaurantsController < ApplicationController
 
   def handle_invalid_cuisine_type
     load_edit_dependencies
-    flash[:alert] = "Invalid cuisine type: #{restaurant_params[:cuisine_type_name]}. Available types: #{@cuisine_types.pluck(:name).join(', ')}"
+    flash[:alert] = t("notices.cuisine_type.invalid")
     render :new, status: :unprocessable_entity
   end
 

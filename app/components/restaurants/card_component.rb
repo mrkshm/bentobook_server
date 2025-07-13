@@ -17,10 +17,10 @@ module Restaurants
 
     def formatted_address
       [
-        "#{restaurant.combined_street_number} #{restaurant.combined_street}",
-        [ restaurant.combined_postal_code, restaurant.combined_city ].compact.join(" "),
-        restaurant.combined_state,
-        restaurant.combined_country
+        "#{restaurant.street_number} #{restaurant.street}",
+        [ restaurant.postal_code, restaurant.city ].compact.join(" "),
+        restaurant.state,
+        restaurant.country
       ].compact.reject(&:empty?).join(", ")
     end
 

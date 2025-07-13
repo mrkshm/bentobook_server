@@ -1,11 +1,21 @@
-<%= turbo_frame_tag frame_id do %>
-  <%= link_to edit_visit_rating_path(visit_id: @visit.id, locale: current_locale),
-      class: "flex items-center gap-1 group",
-      data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
+<% if @readonly %>
+  <div class="flex items-center gap-1 group">
     <% (1..5).each do |rating_value| %>
-      <%= heroicon "star", options: { 
-        class: "w-6 h-6 #{@visit.rating.present? && rating_value <= @visit.rating ? 'text-yellow-400' : 'text-surface-300'}" 
+      <%= heroicon "star", options: {
+        class: "w-6 h-6 #{@visit.rating.present? && rating_value <= @visit.rating ? 'text-yellow-400' : 'text-surface-300'}"
       } %>
+    <% end %>
+  </div>
+<% else %>
+  <%= turbo_frame_tag frame_id do %>
+    <%= link_to edit_visit_rating_path(visit_id: @visit.id, locale: current_locale),
+        class: "flex items-center gap-1 group",
+        data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
+      <% (1..5).each do |rating_value| %>
+        <%= heroicon "star", options: {
+          class: "w-6 h-6 #{@visit.rating.present? && rating_value <= @visit.rating ? 'text-yellow-400' : 'text-surface-300'}"
+        } %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

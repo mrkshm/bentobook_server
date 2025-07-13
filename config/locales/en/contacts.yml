@@ -27,3 +27,10 @@ en:
       placeholder: "Search a contact"
     selector:
       title: "Select your dining companions"
+    success:
+      creation: "Contact was successfully created."
+      update: "Contact was successfully updated."
+      deletion: "Contact was successfully deleted."
+    error:
+      not_found: "Contact not found."
+      deletion: "Failed to delete contact."
