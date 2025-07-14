@@ -556,6 +556,7 @@ DEPENDENCIES
   rails-controller-testing
   recaptcha (~> 5.19)
   rubocop-rails-omakase
+  ruby-vips
   selenium-webdriver
   shoulda-matchers
   sidekiq
