@@ -84,7 +84,7 @@ class PreprocessAvatarService
     source_path = @upload.respond_to?(:tempfile) ? @upload.tempfile.path : @upload.path
     Rails.logger.debug "Source path: #{source_path}"
 
-    processor = ImageProcessing::MiniMagick
+    processor = ImageProcessing::Vips
       .source(source_path)
       .resize_to_limit(size[0], size[1])
       .convert(OUTPUT_FORMAT)
