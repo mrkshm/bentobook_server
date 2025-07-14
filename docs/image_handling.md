@@ -1,28 +1,35 @@
 # Image Handling in BentoBook Server
 
 ## Overview
-BentoBook Server uses Active Storage with Cloudflare R2 for image storage and processing. Images are processed during upload to create multiple variants for different use cases, optimized for web delivery using libvips.
+BentoBook Server uses Active Storage for handling image uploads and storage. The application employs two different strategies for image processing: one for avatars and another for general, polymorphic images.
 
 ## Storage Configuration
-Images are stored on Cloudflare R2. The configuration is defined in `config/storage.yml`:
+Images are stored on Amazon S3 in the production environment. The configuration is defined in `config/storage.yml`:
 
 ```yml
-cloudflare:
+amazon:
   service: S3
-  endpoint: https://<account_id>.r2.cloudflarestorage.com
-  access_key_id: <%= Rails.application.credentials.dig(:cloudflare, :access_key_id) %>
-  secret_access_key: <%= Rails.application.credentials.dig(:cloudflare, :secret_access_key) %>
-  region: auto
-  bucket: <%= Rails.application.credentials.dig(:cloudflare, :bucket_name) %>-<%= Rails.env %>
+  access_key_id: <%= Rails.application.credentials.dig(:aws, :access_key_id) %>
+  secret_access_key: <%= Rails.application.credentials.dig(:aws, :secret_access_key) %>
+  region: eu-west-3
+  bucket: bentobook-<%= Rails.env %>
 ```
 
 ## Image Processing
-Images are processed using the `image_processing` gem with the `vips` processor for better performance. Processing happens in two ways:
+Images are processed using the `image_processing` gem with the `vips` processor for better performance. The processing strategy depends on the type of image.
 
-1. **On Upload (Compression)**: Through `ImageHandlingService` for avatars and profile pictures
-2. **On Demand**: Through Active Storage variants for general images
+### 1. Avatars (Pre-processed)
+Avatars for both `Contacts` and `Organizations` are pre-processed by the `PreprocessAvatarService` *before* being attached to the model. This service:
 
-### Image Variants
+*   Validates the file size and type.
+*   Converts the image to WEBP format.
+*   Creates two variants: a 100x100 thumbnail and a 400x400 medium version.
+
+This manual preprocessing ensures that the variants are created before the record is saved, and it makes the application compatible with storage services that don't support on-the-fly variant generation.
+
+### 2. General Images (On-Demand)
+For the polymorphic `Image` model, the application uses the standard Active Storage approach of generating variants on-demand. When a variant is requested for the first time, Active Storage processes the original image and caches the result.
+
 The application defines several standard image sizes used throughout the UI:
 
 ```ruby
@@ -47,89 +54,26 @@ format: :webp
 saver: { quality: 80 }
 ```
 
-### Upload Compression
-For avatar uploads, images are automatically compressed using these settings:
-```ruby
-resize_to_limit: [1200, 1200]
-format: :jpg
-saver: { quality: 73, strip: true }
-```
-
-## Components
-The application includes several components for handling images:
-
-### S3ImageComponent
-A ViewComponent that handles rendering images with proper variants:
-
-```ruby
-class S3ImageComponent < ViewComponent::Base
-  def initialize(image:, size: :medium, html_class: nil, data: {})
-    @image = image
-    @size = size
-    @html_class = html_class
-    @data = data
-  end
-end
-```
-
-Usage:
-```erb
-<%= render(S3ImageComponent.new(image: user.avatar, size: :thumbnail)) %>
-```
-
-### GalleryComponent
-Handles displaying multiple images in a grid layout with modal view support:
-
-```ruby
-class GalleryComponent < ViewComponent::Base
-  def initialize(images:, columns: 3)
-    @images = images.is_a?(Array) ? images : Array(images)
-    @columns = columns
-  end
-end
-```
-
-Usage:
-```erb
-<%= render(GalleryComponent.new(images: @restaurant.images)) %>
-```
-
-### ImageUploadComponent
-Handles image upload UI with preview functionality:
-
-```ruby
-class ImageUploadComponent < ViewComponent::Base
-  def initialize(form, imageable, template = nil)
-    @form = form
-    @imageable = imageable
-    @template = template
-  end
-end
-```
-
-Usage:
-```erb
-<%= render(ImageUploadComponent.new(form, @restaurant)) %>
-```
-
 ## Models
 Several models use image attachments through Active Storage:
 
-1. **Image** - General purpose images (polymorphic)
-   ```ruby
-   has_one_attached :file
-   belongs_to :imageable, polymorphic: true
-   ```
+1.  **Image** - General purpose images (polymorphic)
+    ```ruby
+    has_one_attached :file
+    belongs_to :imageable, polymorphic: true
+    ```
 
-2. **Profile** - User avatars
-   ```ruby
-   has_one_attached :avatar
-   ```
+2.  **Organization** - User avatars
+    ```ruby
+    has_one_attached :avatar_medium
+    has_one_attached :avatar_thumbnail
+    ```
 
-3. **Contact** - Contact avatars
-   ```ruby
-   has_one_attached :avatar
-   ```
+3.  **Contact** - Contact avatars
+    ```ruby
+    has_one_attached :avatar_medium
+    has_one_attached :avatar_thumbnail
+    ```
 
 ## Frontend Features
 

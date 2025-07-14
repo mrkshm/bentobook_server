@@ -1,7 +1,7 @@
 <div class="space-y-2">
   <div class="flex items-center justify-between">
     <h3 class="text-xl font-semibold text-surface-900"><%= t("contacts.title") %></h3>
-    <%= link_to edit_visit_contacts_path(visit_id: visit.id, locale: current_locale),
+    <%= link_to edit_visit_contacts_path(visit_id: visit.id),
         class: "inline-flex items-center px-3 py-2 text-sm text-primary-600 hover:text-primary-700",
         data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
       <%= heroicon "plus-circle", options: { class: "w-5 h-5 mr-2" } %>

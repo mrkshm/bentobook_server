@@ -8,7 +8,7 @@ module Visits
       def initialize(visit:)
         @visit = visit
         @frequent_contacts = Contact.frequently_used_with(
-          @visit.user,
+          @visit.organization,
           @visit,
           limit: 5
         )

@@ -3,7 +3,7 @@
       class: "w-full text-left" do %>
     <div class="flex items-center gap-4 p-4 rounded-lg bg-surface-50 hover:bg-surface-100 transition-colors duration-200 group">
       <%= render(AvatarComponent.new(
-        image: contact.avatar,
+        contact: contact,
         text: contact.name,
         size: :md
       )) %>
@@ -29,7 +29,7 @@
   <div class="w-full">
     <div class="flex items-center gap-4 p-4 rounded-lg bg-surface-50 hover:bg-surface-100 transition-colors duration-200 group">
       <%= render(AvatarComponent.new(
-        image: contact.avatar,
+        contact: contact,
         text: contact.name,
         size: :md
       )) %>

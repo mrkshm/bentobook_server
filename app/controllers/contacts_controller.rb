@@ -40,7 +40,7 @@ class ContactsController < ApplicationController
 
     if @contact.save
       if params[:contact][:avatar].present?
-        result = PreprocessAvatarService.call(@contact)
+        result = PreprocessAvatarService.call(params.dig(:contact, :avatar))
         if result[:success]
           @contact.avatar_medium.attach(result[:variants][:medium])
           @contact.avatar_thumbnail.attach(result[:variants][:thumbnail])
@@ -75,7 +75,7 @@ class ContactsController < ApplicationController
         @contact.avatar_thumbnail.purge if @contact.avatar_thumbnail.attached?
 
         # Process and attach new variants
-        result = PreprocessAvatarService.call(@contact)
+        result = PreprocessAvatarService.call(params.dig(:contact, :avatar))
         if result[:success]
           @contact.avatar_medium.attach(result[:variants][:medium])
           @contact.avatar_thumbnail.attach(result[:variants][:thumbnail])

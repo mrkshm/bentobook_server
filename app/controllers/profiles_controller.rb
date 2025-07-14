@@ -14,7 +14,7 @@ class ProfilesController < ApplicationController
     result = PreprocessAvatarService.call(params.dig(:organization, :avatar)) if params.dig(:organization, :avatar).present?
 
     if params.dig(:organization, :avatar).present? && !result[:success]
-      flash.now[:alert] = t(".image_processing_error")
+      flash.now[:alert] = result[:error]
       return render :edit, status: :unprocessable_entity
     end
 
@@ -145,8 +145,7 @@ class ProfilesController < ApplicationController
     params.require(:organization).permit(
       :username,
       :name,
-      :about,
-      :avatar
+      :about
     )
   end
 end

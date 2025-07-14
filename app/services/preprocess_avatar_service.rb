@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PreprocessAvatarService
-  MAX_FILE_SIZE = 10.megabytes
+  MAX_FILE_SIZE = 20.megabytes
   ALLOWED_CONTENT_TYPES = %w[image/jpeg image/png image/gif image/webp].freeze
   OUTPUT_FORMAT = "webp"
   OUTPUT_CONTENT_TYPE = "image/webp"

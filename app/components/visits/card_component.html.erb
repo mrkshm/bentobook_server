@@ -39,7 +39,7 @@
           <div class="flex -space-x-2 overflow-hidden">
             <% visit.contacts.each do |contact| %>
               <%= render(AvatarComponent.new(
-                user: contact,
+                contact: contact,
                 size: :sm,
                 tooltip: contact.name
               )) %>
@@ -84,8 +84,8 @@
         <% if has_contacts? %>
           <div class="flex -space-x-2 overflow-hidden">
             <% visit.contacts.each do |contact| %>
-              <%= render(AvatarComponent.new(
-                user: contact,
+              <% render(AvatarComponent.new(
+                contact: contact,
                 size: :sm,
                 tooltip: contact.name
               )) %>

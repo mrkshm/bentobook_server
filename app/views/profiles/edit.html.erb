@@ -19,7 +19,7 @@
       </div>
     <% end %>
 
-    <%= form_with(model: @organization, url: profile_path, local: true, class: "space-y-6") do |form| %>
+    <%= form_with(model: @organization, url: profile_path, multipart: true, class: "space-y-6") do |form| %>
       <% if @organization.errors.any? || @user.errors.any? %>
         <div class="rounded-md bg-error-50 p-4">
           <div class="flex">
