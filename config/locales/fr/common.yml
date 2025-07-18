@@ -1,6 +1,7 @@
 fr:
   common:
     back: "Retour"
+    cancel: "Annuler"
     danger_zone: "Zone de danger"
     edit: "Modifier"
     filters: "Filtres"

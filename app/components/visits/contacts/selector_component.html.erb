@@ -64,7 +64,7 @@
 
     <%# Suggested contacts section %>
     <% if frequent_contacts? %>
-      <div class="space-y-4">
+      <div class="space-y-4" data-contact-search-target="suggestedContacts">
         <h4 class="font-medium text-surface-900"><%= t("contacts.suggested") %></h4>
         <div data-contact-search-target="frequent">
           <%= render(ContactListComponent.new(

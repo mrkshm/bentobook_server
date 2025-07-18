@@ -158,9 +158,9 @@ class RestaurantsController < ApplicationController
             ]
           end
         end
-        format.html { redirect_to @restaurant, locale: I18n.locale }
-        format.json { render json: @restaurant }
-        format.any { head :not_acceptable }
+        if @restaurant.update(restaurant_params)
+          redirect_to @restaurant, notice: t('restaurants.update.success')
+        end
       end
     else
       Rails.logger.debug "Update failed"

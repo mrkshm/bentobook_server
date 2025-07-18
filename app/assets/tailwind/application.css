@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import './basecoat.css';
 @plugin "daisyui";
 
 @source "app/views/**/*.html.erb";
@@ -15,6 +14,14 @@
 @source inline("text-category-{african,asian,european,eastern_european,middle_eastern,american,dietary,social,other}-dark");
 @source inline("ring-{2,}ring-category-{african,asian,european,eastern_european,middle_eastern,american,dietary,social,other}");
 
+
+.inline-action {
+  display: none;
+}
+
+.inline-edit .inline-action {
+  display: initial;
+}
 
 @theme inline {
 

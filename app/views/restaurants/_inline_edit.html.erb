@@ -1,0 +1,10 @@
+<% frame_id = dom_id(model, "#{attribute}_turbo_frame") %>
+<%= form_with model: model, class: "contents", data: { turbo_frame: frame_id } do |form| %>
+  <%= turbo_frame_tag frame_id, class: "" do %>
+        <%= yield %>
+        <%= link_to edit_restaurant_path(model), class: "display-inline" do %>
+          <%= heroicon "pencil", options: { class: "w-5 h-5 text-primary-500 display-inline" } %>
+        <% end %>
+
+  <% end %>
+<% end %>

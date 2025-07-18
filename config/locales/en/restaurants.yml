@@ -9,6 +9,8 @@ en:
     delete_restaurant: "Delete Restaurant"
     mark_as_out_of_business: "Mark as out of business"
     mark_as_operational: "Mark as operational"
+    save_address: 'Save Address'
+    save_name: "Save Name"
     select_cuisine_type: "Select cuisine type"
     confirmations:
       delete: "Are you sure you want to remove this restaurant?"
@@ -67,3 +69,5 @@ en:
     notes:
       edit:
         title: "Edit notes"
+    update:
+      success: "The restaurant was successfully updated."
