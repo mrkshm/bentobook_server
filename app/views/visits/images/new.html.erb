@@ -6,8 +6,8 @@
       multipart: true, 
       data: { 
         controller: "image-upload",
-        turbo_frame: "_top",
-        turbo_action: "replace"
+        action: "submit->image-upload#submitForm",
+        image_upload_direct_upload_url_value: rails_direct_uploads_url
       } do |form| %>
     
     <div class="bg-surface-100/50 rounded-lg p-6 backdrop-blur-sm mb-6">
@@ -24,13 +24,14 @@
               multiple: true, 
               class: "hidden", 
               accept: "image/png,image/jpeg,image/webp,image.heic", 
-              direct_upload: true,
-              data: { action: "change->image-upload#preview" } %>
+              data: { action: "change->image-upload#preview", image_upload_target: "input" } %>
         </label>
       </div>
       
       <div data-image-upload-target="preview" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6"></div>
     </div>
+
+    <%= render "shared/upload_progress_overlay" %>
 
     <div class="flex justify-end mt-6">
       <button type="submit" 

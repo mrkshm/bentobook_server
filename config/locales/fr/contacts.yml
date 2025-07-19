@@ -18,7 +18,7 @@ fr:
       title: "Ajouter un contact"
       create_contact: "Créer un contact"
     edit:
-      edit_contact: "Modifier le contact"
+      title: "Modifier le contact"
     visits:
       zero: "pas de visited"
       one: "1 visite"

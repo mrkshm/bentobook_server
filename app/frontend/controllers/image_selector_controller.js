@@ -58,7 +58,7 @@ export default class extends Controller {
     button.textContent = "Deleting..."
 
     try {
-      const response = await fetch(`/${this.currentLocaleValue}/images/bulk_destroy`, {
+      const response = await fetch(`/images/bulk_destroy`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -92,10 +92,10 @@ export default class extends Controller {
 
   getRedirectPath() {
     if (this.visitIdValue) {
-      return `/${this.currentLocaleValue}/visits/${this.visitIdValue}`
+      return `/visits/${this.visitIdValue}`
     }
     if (this.restaurantIdValue) {
-      return `/${this.currentLocaleValue}/restaurants/${this.restaurantIdValue}`
+      return `/restaurants/${this.restaurantIdValue}`
     }
     throw new Error('Neither visitId nor restaurantId was provided')
   }

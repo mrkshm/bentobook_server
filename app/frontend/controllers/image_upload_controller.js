@@ -1,85 +1,128 @@
 import { Controller } from "@hotwired/stimulus"
+import { DirectUpload } from "@rails/activestorage"
 
 export default class extends Controller {
-  static targets = ["preview", "uploadButton"]
-  
+  static targets = ["input", "preview", "uploadButton", "overlay", "progressBar", "progressText"]
+  static values = { directUploadUrl: String }
+
   connect() {
-    this.selectedFiles = []
+    console.log("ImageUploadController: Connected.")
+    if (this.hasInputTarget) console.log("ImageUploadController: inputTarget found.")
+    if (this.hasPreviewTarget) console.log("ImageUploadController: previewTarget found.")
+    if (this.hasUploadButtonTarget) console.log("ImageUploadController: uploadButtonTarget found.")
+    if (this.hasOverlayTarget) console.log("ImageUploadController: overlayTarget found.")
+    if (this.hasProgressBarTarget) console.log("ImageUploadController: progressBarTarget found.")
+    if (this.hasProgressTextTarget) console.log("ImageUploadController: progressTextTarget found.")
+    console.log("ImageUploadController: Event listeners will be managed manually.")
   }
-  
+
+  disconnect() {
+    console.log("ImageUploadController: Disconnecting.")
+    console.log("ImageUploadController: Event listeners were managed manually.")
+  }
+
   preview(event) {
-    const files = event.target.files
-    if (!files || files.length === 0) return
-    
-    // Clear previous previews if any
-    this.previewTarget.innerHTML = ''
-    this.selectedFiles = Array.from(files)
-    
-    // Enable upload button if files are selected
-    this.uploadButtonTarget.disabled = false
-    this.uploadButtonTarget.classList.remove("opacity-50", "cursor-not-allowed")
-    this.uploadButtonTarget.classList.add("hover:bg-primary-700")
-    
-    // Generate previews for each file
-    this.selectedFiles.forEach((file, index) => {
-      const reader = new FileReader()
-      
-      reader.onload = (e) => {
-        const previewContainer = document.createElement('div')
-        previewContainer.className = 'relative'
-        previewContainer.innerHTML = `
-          <img src="${e.target.result}" class="w-full h-40 object-cover rounded-lg shadow-sm" />
-          <button type="button" data-action="click->image-upload#removeImage" data-index="${index}" class="absolute top-2 right-2 bg-surface-900 bg-opacity-60 text-white rounded-full p-1 hover:bg-surface-800">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        `
-        
-        this.previewTarget.appendChild(previewContainer)
-      }
-      
-      reader.readAsDataURL(file)
-    })
-  }
-  
-  removeImage(event) {
-    const index = parseInt(event.currentTarget.dataset.index)
-    
-    // Remove the file from the selection
-    this.selectedFiles = this.selectedFiles.filter((_, i) => i !== index)
-    
-    // Update the file input
-    const dataTransfer = new DataTransfer()
-    this.selectedFiles.forEach(file => dataTransfer.items.add(file))
-    this.element.querySelector('input[type="file"]').files = dataTransfer.files
-    
-    // Regenerate all previews with updated indices
-    this.previewTarget.innerHTML = ''
-    this.selectedFiles.forEach((file, idx) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        // Create preview with updated index
-        const previewContainer = document.createElement('div')
-        previewContainer.className = 'relative'
-        previewContainer.innerHTML = `
-          <img src="${e.target.result}" class="w-full h-40 object-cover rounded-lg shadow-sm" />
-          <button type="button" data-action="click->image-upload#removeImage" data-index="${idx}" class="absolute top-2 right-2 bg-surface-900 bg-opacity-60 text-white rounded-full p-1 hover:bg-surface-800">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        `
-        this.previewTarget.appendChild(previewContainer)
-      }
-      reader.readAsDataURL(file)
-    })
-    
-    // Disable upload button if no files are selected
-    if (this.selectedFiles.length === 0) {
+    console.log("ImageUploadController: preview action triggered.")
+    this.previewTarget.innerHTML = "" // Clear existing previews
+    if (event.target.files.length > 0) {
+      this.uploadButtonTarget.disabled = false
+      this.uploadButtonTarget.classList.remove("opacity-50", "cursor-not-allowed")
+      Array.from(event.target.files).forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const img = document.createElement("img")
+          img.src = e.target.result
+          img.classList.add("w-full", "h-32", "object-cover", "rounded-lg")
+          const div = document.createElement("div")
+          div.classList.add("relative")
+          div.appendChild(img)
+          this.previewTarget.appendChild(div)
+        }
+        reader.readAsDataURL(file)
+      })
+    } else {
       this.uploadButtonTarget.disabled = true
       this.uploadButtonTarget.classList.add("opacity-50", "cursor-not-allowed")
-      this.uploadButtonTarget.classList.remove("hover:bg-primary-700")
     }
+  }
+
+  async submitForm(event) {
+    event.preventDefault() // Prevent default form submission
+    console.log("ImageUploadController: submitForm action triggered.")
+
+    this.overlayTarget.classList.remove("hidden")
+    this.uploadButtonTarget.disabled = true
+    this.uploadButtonTarget.classList.add("opacity-50", "cursor-not-allowed")
+    this.updateProgressBar(0)
+
+    const files = Array.from(this.inputTarget.files)
+    const uploads = files.map(file => this.createDirectUpload(file))
+
+    try {
+      await Promise.all(uploads.map(upload => this.performUpload(upload)))
+      console.log("ImageUploadController: All direct uploads complete. Submitting form.")
+
+      // Clear the file input to prevent raw file data from being sent again
+      const dataTransfer = new DataTransfer()
+      this.inputTarget.files = dataTransfer.files
+
+      this.element.submit() // Submit the form after all direct uploads are done
+    } catch (error) {
+      console.error("ImageUploadController: Error during direct uploads:", error)
+      this.handleError({ detail: { error: error.message || "Unknown upload error" } })
+    }
+  }
+
+  createDirectUpload(file) {
+    // Use the directUploadUrlValue from Stimulus values
+    const url = this.directUploadUrlValue
+    const upload = new DirectUpload(file, url, this) // 'this' is the delegate
+    return upload
+  }
+
+  performUpload(upload) {
+    return new Promise((resolve, reject) => {
+      upload.create((error, blob) => {
+        if (error) {
+          reject(error)
+        } else {
+          // Append a hidden input with the signed_id to the form
+          const hiddenField = document.createElement('input')
+          hiddenField.setAttribute('type', 'hidden')
+          hiddenField.setAttribute('name', this.inputTarget.name.replace('[]', '') + '[]') // Adjust name for multiple files
+          hiddenField.setAttribute('value', blob.signed_id)
+          this.element.appendChild(hiddenField)
+          resolve(blob)
+        }
+      })
+    })
+  }
+
+  directUploadWillStoreFileWithXHR(request) {
+    request.upload.addEventListener("progress", event => this.directUploadDidProgress(event))
+  }
+
+  directUploadDidProgress(event) {
+    const progress = (event.loaded / event.total) * 100
+    console.log("ImageUploadController: directUploadDidProgress:", progress)
+    this.updateProgressBar(progress)
+  }
+
+  handleError(event) {
+    console.error("ImageUploadController: Error:", event.detail)
+    this.overlayTarget.classList.add("hidden")
+    this.uploadButtonTarget.disabled = false
+    this.uploadButtonTarget.classList.remove("opacity-50", "cursor-not-allowed")
+    alert("Upload failed: " + event.detail.error) // Simple error display
+  }
+
+  endUpload(event) {
+    // This event is not directly used in this manual flow, as we control submission after all uploads
+    console.log("ImageUploadController: endUpload (not directly used in manual flow)")
+  }
+
+  updateProgressBar(value) {
+    this.progressBarTarget.style.setProperty("--value", value)
+    this.progressTextTarget.textContent = `${Math.round(value)}%`
   }
 }

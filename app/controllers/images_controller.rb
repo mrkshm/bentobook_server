@@ -15,14 +15,12 @@ class ImagesController < ApplicationController
         blobs_to_purge = []
 
         ActiveRecord::Base.transaction do
-          params[:images].each do |image|
-            next if image.blank?
+          params[:images].each do |signed_id|
+            next if signed_id.blank?
 
-            # Create blob and upload file to S3 with pre-calculated checksum
-            blob = create_blob_with_checksum(image)
+            blob = ActiveStorage::Blob.find_signed!(signed_id)
             blobs_to_purge << blob # Track for cleanup in case of error
 
-            # Create image record and attach blob
             @restaurant.images.create!(file: blob)
             images_added += 1
           end
@@ -34,6 +32,11 @@ class ImagesController < ApplicationController
         # All uploads successful, redirect to restaurant page
         redirect_to restaurant_path(id: @restaurant.id, locale: current_locale),
           notice: t("images.notices.uploaded", count: images_added)
+      rescue ActiveStorage::IntegrityError => e
+        # This error occurs if the signed_id is invalid or tampered with
+        Rails.logger.error "Active Storage Integrity Error: #{e.message}"
+        flash[:alert] = t("images.errors.integrity_error")
+        render :new, status: :unprocessable_entity
       rescue StandardError => e
         # Clean up any orphaned blobs if transaction failed
         blobs_to_purge.each(&:purge) if blobs_to_purge.any?
@@ -101,6 +104,12 @@ class ImagesController < ApplicationController
 
   private
 
+  def set_restaurant
+    @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to restaurants_path(locale: current_locale), alert: t("errors.restaurants.not_found")
+  end
+
   def create_blob_with_checksum(file)
     service = ActiveStorage::Blob.service
 
@@ -133,12 +142,6 @@ class ImagesController < ApplicationController
     )
 
     blob
-  end
-
-  def set_restaurant
-    @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
-  rescue ActiveRecord::RecordNotFound
-    redirect_to restaurants_path(locale: current_locale), alert: t("errors.restaurants.not_found")
   end
 
   def set_image_and_imageable
