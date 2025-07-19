@@ -51,7 +51,11 @@ class VisitsController < ApplicationController
 
     def create
       @visit = Current.organization.visits.build(visit_params)
-      save_visit(:new)
+      if @visit.save
+        redirect_to visits_path, notice: I18n.t("notices.visits.created")
+      else
+        render :new, status: :unprocessable_entity
+      end
     end
 
     def edit
@@ -60,7 +64,7 @@ class VisitsController < ApplicationController
 
     def update
       if @visit.update(visit_params)
-        save_visit(:edit)
+        redirect_to visits_path, notice: I18n.t("notices.visits.updated")
       else
         render :edit, status: :unprocessable_entity
       end
@@ -69,6 +73,11 @@ class VisitsController < ApplicationController
     def destroy
       @visit.destroy
       redirect_to visits_path, notice: I18n.t("notices.visits.deleted")
+    end
+
+    def edit_images
+      @visit = Current.organization.visits.includes(images: { file_attachment: :blob }).find(params[:visit_id])
+      @images = @visit.images
     end
 
     private
@@ -95,48 +104,6 @@ class VisitsController < ApplicationController
         if whitelisted[:price_paid].present?
           whitelisted[:price_paid] = Money.from_amount(whitelisted[:price_paid].to_f, whitelisted[:price_paid_currency] || "USD")
         end
-      end
-    end
-
-    def valid_restaurant?(restaurant_id)
-      Current.organization.restaurants.exists?(restaurant_id)
-    end
-
-    def ensure_valid_restaurant
-      return if params[:visit].blank? || params[:visit][:restaurant_id].blank?
-      unless valid_restaurant?(params[:visit][:restaurant_id])
-        flash.now[:alert] = I18n.t("errors.visits.invalid_restaurant")
-        @visit ||= Visit.new
-        @visit.errors.add(:restaurant_id, :invalid)
-        render :new, status: :unprocessable_entity
-      end
-    end
-
-    def save_visit(render_action)
-      if @visit.restaurant_id.blank?
-        flash.now[:alert] = I18n.t("errors.visits.restaurant_required")
-        @visit.errors.add(:restaurant_id, :blank)
-        render render_action, status: :unprocessable_entity
-      elsif @visit.persisted? || @visit.save
-        if params[:visit][:images].present?
-          begin
-            result = ImageProcessorService.new(@visit, params[:visit][:images]).process
-            unless result.success?
-              flash[:alert] = result.error
-              raise StandardError, "Image processing failed"
-            end
-            redirect_to visits_path, notice: I18n.t("notices.visits.#{render_action == :new ? 'created' : 'updated'}")
-          rescue StandardError => e
-            Rails.logger.error "Image processing failed: #{e.message}"
-            @visit.destroy if render_action == :new
-            render render_action, status: :unprocessable_entity
-          end
-        else
-          redirect_to visits_path, notice: I18n.t("notices.visits.#{render_action == :new ? 'created' : 'updated'}")
-        end
-      else
-        flash.now[:alert] = I18n.t("errors.visits.save_failed")
-        render render_action, status: :unprocessable_entity
       end
     end
 end

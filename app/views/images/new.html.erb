@@ -1,10 +1,11 @@
 <%= render 'shared/header', title: t("images.upload.title") %>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <%= form_with url: restaurant_images_path(restaurant_id: @restaurant.id, locale: current_locale), 
-      method: :post, 
-      multipart: true, 
-      data: { 
+  <%= form_with url: polymorphic_path([@imageable, :images], locale: current_locale),
+      method: :post,
+      local: false,
+      multipart: true,
+      data: {
         controller: "image-upload",
         action: "submit->image-upload#submitForm",
         image_upload_direct_upload_url_value: rails_direct_uploads_url
@@ -45,8 +46,8 @@
   
   <%# Keep cancel button outside form %>
   <div class="flex justify-end mt-4">
-    <%= link_to t("cancel"), 
-        restaurant_path(id: @restaurant.id), 
+    <%= link_to t("cancel"),
+        polymorphic_path(@imageable),
         data: { turbo_frame: "_top" },
         class: "px-4 py-2 bg-surface-200 text-surface-700 rounded-md hover:bg-surface-300 transition-colors" %>
   </div>

@@ -4,7 +4,6 @@ class ApplicationController < ActionController::Base
 
   before_action :set_locale
   before_action :configure_turbo_native_auth
-  before_action :debug_request
   before_action :set_current_attributes
 
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
@@ -45,14 +44,5 @@ class ApplicationController < ActionController::Base
     else
       { locale: I18n.locale }
     end
-  end
-
-  def debug_request
-    puts "====== DEBUG ======"
-    puts "Request path: #{request.path}"
-    puts "Request method: #{request.method}"
-    puts "Session: #{session}"
-    puts "Params: #{params}"
-    puts "=================="
   end
 end

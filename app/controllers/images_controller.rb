@@ -1,8 +1,7 @@
 class ImagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_image_and_imageable, only: [ :destroy ]
-  before_action :set_restaurant, only: [ :new, :create ]
-  
+  before_action :set_imageable, only: [ :new, :create ]
 
   def new
     # Just renders the view for image upload
@@ -21,7 +20,7 @@ class ImagesController < ApplicationController
             blob = ActiveStorage::Blob.find_signed!(signed_id)
             blobs_to_purge << blob # Track for cleanup in case of error
 
-            @restaurant.images.create!(file: blob)
+            @imageable.images.create!(file: blob)
             images_added += 1
           end
 
@@ -30,7 +29,7 @@ class ImagesController < ApplicationController
         end
 
         # All uploads successful, redirect to restaurant page
-        redirect_to restaurant_path(id: @restaurant.id, locale: current_locale),
+        redirect_to polymorphic_path([@imageable], locale: current_locale),
           notice: t("images.notices.uploaded", count: images_added)
       rescue ActiveStorage::IntegrityError => e
         # This error occurs if the signed_id is invalid or tampered with
@@ -104,10 +103,14 @@ class ImagesController < ApplicationController
 
   private
 
-  def set_restaurant
-    @restaurant = Current.organization.restaurants.find(params[:restaurant_id])
+  def set_imageable
+    if params[:restaurant_id]
+      @imageable = Current.organization.restaurants.find(params[:restaurant_id])
+    elsif params[:visit_id]
+      @imageable = Current.organization.visits.find(params[:visit_id])
+    end
   rescue ActiveRecord::RecordNotFound
-    redirect_to restaurants_path(locale: current_locale), alert: t("errors.restaurants.not_found")
+    redirect_to root_path, alert: t("errors.imageable.not_found")
   end
 
   def create_blob_with_checksum(file)

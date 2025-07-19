@@ -50,9 +50,9 @@ Rails.application.routes.draw do
     end
 
     resources :visits do
-      resources :images, only: [ :new, :create, :edit, :destroy ], module: :visits do
+      resources :images, only: [ :new, :create, :destroy ] do
         collection do
-          get :edit, to: "images#edit"
+          get :edit, to: "visits#edit_images", as: :edit
         end
       end
       resource :notes, only: [ :show, :edit, :update ], module: :visits
