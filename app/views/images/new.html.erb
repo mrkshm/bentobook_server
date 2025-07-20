@@ -1,7 +1,7 @@
 <%= render 'shared/header', title: t("images.upload.title") %>
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <%= form_with url: polymorphic_path([@imageable, :images], locale: current_locale),
+  <%= form_with url: polymorphic_path([@imageable, :images]),
       method: :post,
       local: false,
       multipart: true,
