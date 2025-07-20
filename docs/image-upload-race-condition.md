@@ -40,9 +40,9 @@ The issue has been fixed by properly implementing the `DirectUpload` delegate pa
 
 4. **Fixed Form Submission**: The form submission process was fixed to:
    - Clear the file input before submission to prevent sending file data
-   - Use the form's built-in FormData after clearing the file input
-   - Submit the form directly without triggering the submit event again
+   - Use `requestSubmit()` instead of manual `fetch()` to allow Turbo Drive to handle navigation
    - Remove the locale parameter from the form URL to prevent issues
+   - Let Turbo Drive handle the redirect after successful upload for proper navigation
 
 5. **Added Error Handling**: Added proper error handling and timeout protection to prevent infinite waiting.
 
@@ -80,7 +80,7 @@ directUploadWillStoreFileWithXHR(request) {
   })
 }
 
-// 3. Fixed form submission to avoid race conditions
+// 3. Fixed form submission to use Turbo Drive navigation
 async submitForm(event) {
   event.preventDefault()
   
@@ -90,16 +90,12 @@ async submitForm(event) {
   this.isUploading = true
   // ... upload logic ...
   
-  // Clear file input and submit form
+  // Clear file input and submit form via Turbo
   this.inputTarget.value = ''
-  const formData = new FormData(this.element)
+  this.isUploading = false
   
-  // Submit form using fetch to have more control
-  const response = await fetch(this.element.action, {
-    method: 'POST',
-    body: formData,
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  })
+  // Use requestSubmit() to allow Turbo Drive to handle the form submission and redirect
+  this.element.requestSubmit()
 }
 ```
 

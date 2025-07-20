@@ -29,8 +29,9 @@ class ImagesController < ApplicationController
         end
 
         # All uploads successful, redirect to restaurant page
-        redirect_to polymorphic_path([@imageable], locale: current_locale),
-          notice: t("images.notices.uploaded", count: images_added)
+        redirect_to polymorphic_path([ @imageable ]),
+        data: { turbo_frame: "replace" },
+        notice: t("images.notices.uploaded", count: images_added)
       rescue ActiveStorage::IntegrityError => e
         # This error occurs if the signed_id is invalid or tampered with
         Rails.logger.error "Active Storage Integrity Error: #{e.message}"
@@ -162,7 +163,7 @@ class ImagesController < ApplicationController
 
   def current_user_can_delete_image?
     return false unless @imageable && Current.organization
-    
+
     case @imageable
     when Restaurant, Visit
       @imageable.organization_id == Current.organization.id

@@ -35,6 +35,13 @@ export default class extends Controller {
   }
 
   async submitForm(event) {
+    // If this is the final submission (files are already uploaded), let it proceed
+    if (this.inputTarget.files.length === 0 && !this.isUploading) {
+      console.log('Final form submission with signed IDs, allowing default behavior')
+      return // Let the form submit naturally
+    }
+    
+    // This is the initial submission with files, prevent default and handle upload
     event.preventDefault()
     
     // Prevent multiple simultaneous uploads
@@ -63,40 +70,13 @@ export default class extends Controller {
       // Clear the file input to prevent sending file data
       this.inputTarget.value = ''
       
+      console.log('All uploads complete, submitting form via Turbo')
+      
       // Reset the uploading flag before submitting
       this.isUploading = false
       
-      // Use the form's built-in FormData (now that file input is cleared)
-      const formData = new FormData(this.element)
-      
-      console.log('Form data:', Array.from(formData.entries()))
-      
-      try {
-        const response = await fetch(this.element.action, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-        
-        console.log('Form submission response:', response.status, response.statusText)
-        
-        if (response.ok) {
-          // Handle successful response
-          if (response.redirected) {
-            window.location.href = response.url
-          } else {
-            const text = await response.text()
-            console.log('Response text:', text)
-          }
-        } else {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-      } catch (fetchError) {
-        console.error('Form submission error:', fetchError)
-        throw fetchError
-      }
+      // Use requestSubmit() to allow Turbo Drive to handle the form submission and redirect
+      this.element.requestSubmit()
     } catch (error) {
       this.isUploading = false
       this.handleError(error.message || "An unknown error occurred")
