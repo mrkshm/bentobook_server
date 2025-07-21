@@ -25,9 +25,8 @@
         <% end %>
         <% if restaurant.url.present? %>
           <div class="flex items-center space-x-3">
-            <%= heroicon "globe-alt", options: { class: "w-5 h-5 text-primary-500" }  do %>
-              <%= link_to URI.parse(restaurant.url).host.gsub(/^www\./, ''), restaurant.url, target: "_blank", rel: "noopener noreferrer", class: "text-primary-600 hover:text-primary-700" %>
-            <% end %>
+            <%= heroicon "globe-alt", options: { class: "w-5 h-5 text-primary-500" } %>
+            <%= link_to URI.parse(restaurant.url).host.gsub(/^www\./, ''), restaurant.url, target: "_blank", rel: "noopener noreferrer", class: "text-primary-600 hover:text-primary-700" %>
           </div>
         <% end %>
       </div>
