@@ -4,7 +4,7 @@
   <div class="space-y-4 hotwire-native:bg-transparent hotwire-native:p-2 hotwire-native:mt-6 bg-surface-100/50 p-4 rounded-lg">
     <%= form_with(
           model: @visit,
-          url: visit_date_path(visit_id: @visit.id, locale: current_locale),
+          url: visit_date_path(visit_id: @visit.id),
           data: { 
             turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id 
           }
@@ -15,7 +15,7 @@
         
         <div class="flex justify-end gap-2">
           <%= button_to t("common.cancel"),
-              visit_date_path(visit_id: @visit.id, locale: current_locale),
+              visit_date_path(visit_id: @visit.id),
               class: "px-3 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-md",
               data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
               

@@ -1,0 +1,5 @@
+<%# Remove the modal by replacing it with nothing %>
+<%= turbo_stream.update "modal", "" %>
+
+<%# Update the rating display %>
+<%= turbo_stream.replace dom_id(@visit, :rating), partial: "visits/ratings/display", locals: { visit: @visit.reload } %>

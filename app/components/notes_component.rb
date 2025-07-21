@@ -24,33 +24,33 @@ class NotesComponent < ApplicationComponent
   def update_url
     case @record
     when Restaurant
-      update_notes_restaurant_path(id: @record.id, locale: current_locale)
+      update_notes_restaurant_path(id: @record.id)
     when Contact
-      contact_path(id: @record.id, locale: current_locale)
+      contact_path(id: @record.id)
     when Visit
-      visit_path(id: @record.id, locale: current_locale)
+      visit_path(id: @record.id)
     end
   end
 
   def edit_path
     case @record
     when Restaurant
-      restaurant_path(id: @record.id, locale: current_locale, notes_edit: true)
+      restaurant_path(id: @record.id, notes_edit: true)
     when Contact
-      contact_path(id: @record.id, locale: current_locale, notes_edit: true)
+      contact_path(id: @record.id, notes_edit: true)
     when Visit
-      visit_path(id: @record.id, locale: current_locale, notes_edit: true)
+      visit_path(id: @record.id, notes_edit: true)
     end
   end
 
   def show_path
     case @record
     when Restaurant
-      restaurant_path(id: @record.id, locale: current_locale)
+      restaurant_path(id: @record.id)
     when Contact
-      contact_path(id: @record.id, locale: current_locale)
+      contact_path(id: @record.id)
     when Visit
-      visit_path(id: @record.id, locale: current_locale)
+      visit_path(id: @record.id)
     end
   end
 

@@ -24,7 +24,7 @@ Added timestamp parameters to URLs to bust caches:
 ```ruby
 # When redirecting after updates
 timestamp = Time.current.to_i
-redirect_url = restaurant_path(id: @restaurant.id, locale: current_locale, t: timestamp)
+redirect_url = restaurant_path(id: @restaurant.id, t: timestamp)
 ```
 
 ### 3. Form Configuration
@@ -33,7 +33,7 @@ Updated form submission behavior:
 
 ```erb
 <%= form_with model: @restaurant, 
-  url: restaurant_rating_path(restaurant_id: @restaurant.id, locale: current_locale, t: timestamp),
+  url: restaurant_rating_path(restaurant_id: @restaurant.id, t: timestamp),
   data: { 
     turbo_frame: hotwire_native_app? ? "_top" : dom_id(@restaurant, :rating),
     turbo_action: hotwire_native_app? ? "replace" : nil

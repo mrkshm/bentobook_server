@@ -2,12 +2,28 @@ fr:
   common:
     back: "Retour"
     cancel: "Annuler"
+    close: "Fermer"
     danger_zone: "Zone de danger"
+    delete: "Supprimer"
     edit: "Modifier"
     filters: "Filtres"
-    finished: "Terminé"
+    photos: "Photos"
+    price_level:
+      title: "Prix"
+      select: "Selectionnez un niveau de prix"
+      set_for: "Selectionnez un niveau de prix pour"
+
+    ratings:
+      title: "Notes"
+      edit: "Modifier la note"
+      rate: "Note"
+      rate_cta: "Selectionnez une étoile pour noter."
     save: "Enregistrer"
     sort:
       recently_added: "Ajouté récemment"
+      created_at: "Date de création"
+      date: "Date"
+      rating: "Note"
       recently_updated: "Mis à jour récemment"
+      restaurant_name: "Nom du restaurant"
       sort_by: "Trier par"

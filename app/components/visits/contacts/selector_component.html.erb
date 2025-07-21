@@ -5,7 +5,7 @@
     <%# Search section with done button %>
     <div class="flex items-start gap-4">
       <div class="flex-grow relative">
-        <%= form_with url: search_visit_contacts_path(visit_id: @visit.id, locale: current_locale),
+        <%= form_with url: search_visit_contacts_path(visit_id: @visit.id),
             method: :get,
             data: { turbo_frame: "search-results" } do |f| %>
           <%= f.search_field :query,
@@ -21,7 +21,7 @@
       </div>
 
       <%= link_to t("common.done"),
-          helpers.hotwire_native_app? ? visit_path(id: @visit.id, locale: current_locale) : visit_contacts_path(visit_id: @visit.id, locale: current_locale),
+          helpers.hotwire_native_app? ? visit_path(id: @visit.id) : visit_contacts_path(visit_id: @visit.id),
           class: "px-4 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-lg transition-colors",
           data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
     </div>
@@ -36,7 +36,7 @@
               <%= render(::ContactCardComponent.new(contact: contact)) %>
               
               <%# Desktop delete button (hidden on native) %>
-              <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id, locale: current_locale),
+              <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id),
                   method: :delete,
                   class: "hotwire-native:hidden absolute -top-2 -right-2 p-1 bg-surface-100 hover:bg-surface-200 rounded-full shadow-sm group-hover:opacity-100 opacity-0 transition-opacity",
                   data: { 
@@ -47,7 +47,7 @@
               <% end %>
 
               <%# Mobile delete button (only shown on native) %>
-              <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id, locale: current_locale),
+              <%= button_to visit_contacts_path(visit_id: @visit.id, contact_id: contact.id),
                   method: :delete,
                   class: "not-hotwire-native:hidden absolute right-2 inset-y-0 my-auto flex items-center justify-center w-10 h-10 bg-red-100 hover:bg-red-200 rounded-lg",
                   data: { 

@@ -4,7 +4,7 @@
       <h1 class="text-2xl font-bold text-surface-900">
         <%= t("images.edit") %>
       </h1>
-      <%= link_to new_visit_image_path(visit_id: @visit.id, locale: current_locale),
+      <%= link_to new_visit_image_path(visit_id: @visit.id),
           class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
         <%= heroicon "plus-circle", options: { class: "h-5 w-5 mr-1" } %>
         <%= t("images.add_photos") %>

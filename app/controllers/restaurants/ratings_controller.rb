@@ -14,11 +14,10 @@ module Restaurants
     end
 
     def update
-
       if @restaurant.update(rating_params)
         respond_to do |format|
           format.html do
-            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
+            redirect_to restaurant_path(id: @restaurant.id)
           end
           format.turbo_stream # renders update.turbo_stream.erb
         end

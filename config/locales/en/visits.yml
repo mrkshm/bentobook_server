@@ -9,7 +9,6 @@ en:
     delete_visit: "Delete this visit"
     back_to_visits: "Back to Visits"
     create_visit: "Create Visit"
-    price_paid: "Price Paid"
     rate_visit: "Rate this Visit"
     edit_contacts: "Edit contacts"
     index:
@@ -28,6 +27,9 @@ en:
     date:
       action_title: "Change the date"
     price_paid:
+      title: "Price Paid"
+      add: "Add price paid"
+      confirm_delete: "Are you sure you want to delete the price you paid?"
       edit: "Edit price paid"
     form:
       quick_create: "Create a new visit"

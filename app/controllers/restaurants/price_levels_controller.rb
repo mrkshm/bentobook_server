@@ -17,7 +17,7 @@ module Restaurants
       if @restaurant.update(price_level_params)
         respond_to do |format|
           format.html do
-            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale)
+            redirect_to restaurant_path(id: @restaurant.id)
           end
           format.turbo_stream
         end

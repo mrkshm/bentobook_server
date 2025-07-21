@@ -1,0 +1,44 @@
+<%= turbo_frame_tag "modal" do %>
+  <dialog class="modal" data-controller="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg"><%= t("visits.price_paid.edit") %></h3>
+      <%= form_with model: @visit,
+          url: visit_price_paid_path(visit_id: @visit.id),
+          method: :patch,
+          class: "space-y-4",
+          html: { id: "price-paid-form" } do |f| %>
+
+        <div class="space-y-2 pt-4">
+          <%# f.label :price_paid, class: "block text-sm font-medium text-surface-700" %>
+          <div class="flex space-x-2">
+            <%= f.number_field :price_paid,
+                value: @visit.price_paid&.amount,
+                step: "0.01",
+                class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 placeholder:text-surface-400 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-32",
+                placeholder: "0.00",
+                autofocus: true %>
+
+            <%= f.select :price_paid_currency,
+                options_for_select(Money::Currency.all.map { |c| [c.iso_code, c.iso_code] }, @visit.price_paid_currency || Money.default_currency.iso_code),
+                {},
+                class: "block rounded-md bg-white px-3 py-1.5 text-base text-surface-900 outline-1 outline-surface-300 focus:outline-2 focus:-outline-offset-1 focus:outline-primary-600 sm:text-sm w-full md:w-40" %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="modal-action">
+        <%= link_to t("common.delete"),
+            visit_price_paid_path(visit_id: @visit.id),
+            data: { turbo_method: :delete, turbo_confirm: t("visits.price_paid.confirm_delete") },
+            class: "btn btn-error mr-auto" %>
+        <button type="submit" form="price-paid-form" class="btn btn-primary"><%= t("common.save") %></button>
+        <form method="dialog">
+          <button class="btn"><%= t("common.close") %></button>
+        </form>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button><%= t("common.close") %></button>
+    </form>
+  </dialog>
+<% end %>

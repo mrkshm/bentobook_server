@@ -1,6 +1,6 @@
 <%= turbo_stream.append "contacts-list" do %>
   <% @contacts.each do |contact| %>
-    <%= link_to contact_path(id: contact.id, locale: current_locale), 
+    <%= link_to contact_path(id: contact.id), 
           data: { turbo_frame: "_top" },
           class: "block divide-y divide-surface-200 rounded-lg bg-surface-50 shadow-sm hover:shadow-md transition-all duration-200" do %>
       <div class="p-6">

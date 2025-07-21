@@ -29,7 +29,7 @@
   <%= turbo_frame_tag frame_id do %>
     <%= link_to edit_restaurant_rating_path(restaurant_id: restaurant.id),
           class: "cursor-pointer",
-          data: { turbo_stream: true } do %>
+          data: { turbo_frame: "modal" } do %>
       <div class="flex items-center" data-testid="rating-component">
         <div class="flex items-center">
           <% star_count.times do %>

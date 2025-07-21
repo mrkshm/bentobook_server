@@ -1,30 +1,32 @@
-<%= render partial: "shared/header", locals: { title: t("visits.rating.edit") } %>
-
-<%= turbo_frame_tag dom_id(@visit, :rating) do %>
-  <div class="bg-surface-50 p-4">
-    <%# Add timestamp parameter to form submission URL to prevent caching %>
-    <% timestamp = Time.current.to_i %>
-    <%= form_with model: @visit, 
-                  url: visit_rating_path(visit_id: @visit.id, t: timestamp),
-                  data: { 
-                    turbo_frame: hotwire_native_app? ? "_top" : dom_id(@visit, :rating),
-                    turbo_action: hotwire_native_app? ? "replace" : nil
-                  },
-                  method: :patch,
-                  class: "bg-white rounded-lg shadow p-4" do |f| %>
-      <div class="flex justify-center space-x-2">
-        <% 5.times do |i| %>
-          <%= f.button type: "submit",
-                      name: "visit[rating]",
-                      value: i + 1,
-                      formnovalidate: true,
-                      class: "text-3xl focus:outline-none" do %>
-            <span class="<%= i < @visit.rating.to_i ? 'text-yellow-400' : 'text-surface-300' %>">
-              <%= i < @visit.rating.to_i ? '★' : '☆' %>
-            </span>
+<%= turbo_frame_tag "modal" do %>
+  <dialog class="modal" data-controller="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg"><%= t("visits.rating.action_title") %></h3>
+      <p class="py-4"><%= t("common.ratings.rate_cta") %></p>
+      <%= form_with model: @visit,
+                    url: visit_rating_path(visit_id: @visit.id),
+                    method: :patch do |f| %>
+        <div class="flex justify-center space-x-2">
+          <% 5.times do |i| %>
+            <%= f.button type: "submit",
+                        name: "visit[rating]",
+                        value: i + 1,
+                        class: "text-3xl focus:outline-none" do %>
+              <span class="<%= i < @visit.rating.to_i ? 'text-yellow-400' : 'text-surface-300' %>">
+                <%= i < @visit.rating.to_i ? '★' : '☆' %>
+              </span>
+            <% end %>
           <% end %>
-        <% end %>
+        </div>
+      <% end %>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn"><%= t("common.close") %></button>
+        </form>
       </div>
-    <% end %>
-  </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button><%= t("common.close") %></button>
+    </form>
+  </dialog>
 <% end %>

@@ -13,7 +13,7 @@
   <%= turbo_frame_tag frame_id do %>
     <%= link_to edit_restaurant_price_level_path(restaurant_id: restaurant.id),
           class: "cursor-pointer",
-          data: { turbo_stream: true } do %>
+          data: { turbo_frame: "modal" } do %>
       <div class="flex items-center" data-testid="price-level-component">
         <div class="flex items-center space-x-1">
           <% 4.times do |i| %>

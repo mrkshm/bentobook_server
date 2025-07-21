@@ -9,25 +9,36 @@ module Visits
     end
 
     def edit
-      render(Visits::PricePaid::FormComponent.new(visit: @visit))
+      respond_to do |format|
+        format.html { render template: "visits/price_paids/edit" }
+        format.turbo_stream { render template: "visits/price_paids/edit" }
+      end
     end
 
     def update
       if @visit.update(price_paid_params)
         respond_to do |format|
           if hotwire_native_app?
-            format.html { redirect_to visit_path(id: @visit.id, locale: current_locale) }
+            format.html { redirect_to visit_path(id: @visit.id) }
           else
             format.turbo_stream do
-              render turbo_stream: turbo_stream.replace(
-                dom_id(@visit, :price_paid),
-                Visits::PricePaidComponent.new(visit: @visit).render_in(view_context)
-              )
+              render turbo_stream: turbo_stream.update("modal", "") +
+                                   turbo_stream.replace(dom_id(@visit, :price_paid), partial: "visits/price_paids/display", locals: { visit: @visit.reload })
             end
           end
         end
       else
-        render(Visits::PricePaid::FormComponent.new(visit: @visit), status: :unprocessable_entity)
+        render :edit, status: :unprocessable_entity
+      end
+    end
+
+    def destroy
+      @visit.update(price_paid: nil)
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update("modal", "") +
+                               turbo_stream.replace(dom_id(@visit, :price_paid), partial: "visits/price_paids/display", locals: { visit: @visit.reload })
+        end
       end
     end
 
@@ -40,7 +51,7 @@ module Visits
     end
 
     def price_paid_params
-      params.require(:visit).permit(:price_paid)
+      params.require(:visit).permit(:price_paid, :price_paid_currency)
     end
   end
 end

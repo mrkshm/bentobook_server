@@ -1,5 +1,5 @@
 <div class="max-w-4xl mx-auto mt-8 bg-surface-50">
-  <%= render 'shared/header', title: @visit.restaurant.name %>
+  <%= render 'shared/header', title: @visit.restaurant.name, show_on_web: false %>
   
   <div class="rounded-lg shadow-xl">
     <div class="p-2 md:p-6">
@@ -19,7 +19,7 @@
       <%# Rating and Price section %>
       <div class="flex items-center justify-between pb-6 border-b border-surface-200 mr-2">
         <%= render "visits/ratings/display", visit: @visit %>
-        <%= render(Visits::PricePaidComponent.new(visit: @visit)) %>
+        <%= render "visits/price_paids/display", visit: @visit %>
       </div>
 
       <div class="my-6"></div>
@@ -35,13 +35,13 @@
           <div class="flex gap-4">
             <% if @visit.organization == Current.organization %>
               <% if @visit.images.exists? %>
-                <%= link_to edit_visit_images_path(visit_id: @visit.id, locale: current_locale),
+                <%= link_to edit_visit_images_path(visit_id: @visit.id),
                     class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
                   <%= heroicon "pencil", options: { class: "h-5 w-5 mr-1 text-primary-600" } %>
                   <%= t("images.edit_photos") %>
                 <% end %>
               <% end %>
-              <%= link_to new_visit_image_path(visit_id: @visit.id, locale: current_locale),
+              <%= link_to new_visit_image_path(visit_id: @visit.id),
                   class: "inline-flex items-center text-primary-600 hover:text-primary-700" do %>
                 <%= heroicon "plus-circle", options: { class: "h-5 w-5 mr-1" } %>
                 <%= t("images.add_photos") %>
@@ -92,3 +92,4 @@
     </div>
   </div>
 </div>
+<%= turbo_frame_tag "modal" %>

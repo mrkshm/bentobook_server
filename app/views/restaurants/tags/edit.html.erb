@@ -5,7 +5,7 @@
          data-tags--editor-current-tags-value="<%= @restaurant.tag_list.to_json %>">
       
       <%= form_with model: @restaurant, 
-                    url: restaurant_tags_path(restaurant_id: @restaurant.id, locale: current_locale), 
+                    url: restaurant_tags_path(restaurant_id: @restaurant.id), 
                     method: :patch,
                     data: { "tags--editor-target": "form" } do |form| %>
         

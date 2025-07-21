@@ -22,15 +22,14 @@ module Visits
         if hotwire_native_app?
           # Add timestamp to URL to bust cache
           timestamp = Time.current.to_i
-          redirect_url = visit_path(id: @visit.id, locale: current_locale, t: timestamp)
+          redirect_url = visit_path(id: @visit.id, t: timestamp)
 
           redirect_to redirect_url,
             data: { turbo_action: "replace", turbo_frame: "_top" }
         else
-          render turbo_stream: turbo_stream.replace(
-            dom_id(@visit, :rating),
-            partial: "visits/ratings/display", locals: { visit: @visit.reload }
-          )
+          respond_to do |format|
+            format.turbo_stream
+          end
         end
       else
         render template: "visits/ratings/edit",

@@ -30,7 +30,6 @@ class ImagesController < ApplicationController
 
         # All uploads successful, redirect to restaurant page
         redirect_to polymorphic_path([ @imageable ]),
-        data: { turbo_frame: "replace" },
         notice: t("images.notices.uploaded", count: images_added)
       rescue ActiveStorage::IntegrityError => e
         # This error occurs if the signed_id is invalid or tampered with
@@ -175,9 +174,9 @@ class ImagesController < ApplicationController
   def edit_polymorphic_path(imageable)
     case imageable
     when Restaurant
-      edit_restaurant_path(id: imageable.id, locale: current_locale)
+      edit_restaurant_path(id: imageable.id)
     when Visit
-      edit_visit_path(id: imageable.id, locale: current_locale)
+      edit_visit_path(id: imageable.id)
     else
       root_path
     end

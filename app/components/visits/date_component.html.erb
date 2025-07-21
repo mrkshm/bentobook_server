@@ -1,5 +1,5 @@
 <%= turbo_frame_tag frame_id do %>
-  <%= link_to edit_visit_date_path(visit_id: visit.id, locale: current_locale),
+  <%= link_to edit_visit_date_path(visit_id: visit.id),
       class: link_classes,
       data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
     <%= visit.date.strftime("%B %d, %Y") %>

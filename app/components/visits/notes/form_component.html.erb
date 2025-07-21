@@ -2,7 +2,7 @@
   <% content_for :title, t("notes.edit") %>
   <%= form_with(
         model: @visit,
-        url: visit_notes_path(visit_id: @visit.id, locale: current_locale),
+        url: visit_notes_path(visit_id: @visit.id),
         data: { 
           turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id 
         }
@@ -15,7 +15,7 @@
       
       <div class="flex justify-end gap-2">
         <%= link_to t('common.cancel'), 
-            helpers.hotwire_native_app? ? visit_path(id: @visit.id, locale: current_locale) : visit_notes_path(visit_id: @visit.id, locale: current_locale),
+            helpers.hotwire_native_app? ? visit_path(id: @visit.id) : visit_notes_path(visit_id: @visit.id),
             class: "px-3 py-2 text-surface-700 bg-surface-100 hover:bg-surface-200 rounded-md",
             data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } %>
             

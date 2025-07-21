@@ -16,7 +16,7 @@ module Visits
       if @visit.update(notes_params)
         respond_to do |format|
           if hotwire_native_app?
-            format.html { redirect_to visit_path(id: @visit.id, locale: current_locale) }
+            format.html { redirect_to visit_path(id: @visit.id) }
           else
             format.turbo_stream do
               render turbo_stream: turbo_stream.update(

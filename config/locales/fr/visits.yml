@@ -10,7 +10,6 @@ fr:
     back_to_visits: "Retour aux visites"
     create_visit: "Créer une Visite"
     rate_visit: "Noter cette Visite"
-    price_paid: "Prix payé"
     edit_contacts: "Modifier contacts"
     index:
       title: "Vos Visites"
@@ -28,6 +27,9 @@ fr:
     date:
       action_title: "Changer la date"
     price_paid:
+      title: "Prix payé"
+      add: "Ajouter le prix payé"
+      confirm_delete: "Êtes-vous sûr de vouloir supprimer le prix payé ?"
       edit: "Modifier le prix payé"
     form:
       quick_create: "Créer une nouvelle visite"

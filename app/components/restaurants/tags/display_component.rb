@@ -19,7 +19,7 @@ module Restaurants
       end
 
       def edit_path
-        edit_restaurant_tags_path(restaurant_id: @record.id, locale: current_locale)
+        edit_restaurant_tags_path(restaurant_id: @record.id)
       end
 
       def current_locale

@@ -1,19 +1,30 @@
-<%= turbo_frame_tag "edit_restaurant_price_level" do %>
-<div class="bg-surface-50 p-4">
-    <%= form_with model: @restaurant, 
-                  url: restaurant_price_level_path(restaurant_id: @restaurant.id),
-                  method: :patch,
-                  class: "bg-white rounded-lg shadow p-4" do |f| %>
-      <div class="flex justify-center space-x-2">
-        <% 4.times do |i| %> 
-          <%= f.button type: "submit",
-                      name: "restaurant[price_level]",
-                      value: i + 1,
-                      class: "focus:outline-none" do %>
-            <%= currency_icon(size: :lg, class: "#{i < @restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300'}") %>
+<%= turbo_frame_tag "modal" do %>
+  <dialog class="modal" data-controller="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg"><%= t("common.price_level.set_for") %> "<%= @restaurant.name %>"</h3>
+      <p class="py-4"><%= t("common.price_level.select") %></p>
+      <%= form_with model: @restaurant,
+                    url: restaurant_price_level_path(restaurant_id: @restaurant.id),
+                    method: :patch do |f| %>
+        <div class="flex justify-center space-x-2">
+          <% 4.times do |i| %>
+            <%= f.button type: "submit",
+                        name: "restaurant[price_level]",
+                        value: i + 1,
+                        class: "focus:outline-none" do %>
+              <%= currency_icon(size: :lg, class: "#{i < @restaurant.price_level.to_i ? 'text-primary-500' : 'text-surface-300'}") %>
+            <% end %>
           <% end %>
-        <% end %>
+        </div>
+      <% end %>
+      <div class="modal-action">
+        <form method="dialog">
+          <button class="btn"><%= t("common.close") %></button>
+        </form>
       </div>
-    <% end %>
-  </div>
-<%end%>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button><%= t("common.close") %></button>
+    </form>
+  </dialog>
+<% end %>

@@ -62,7 +62,7 @@ Rails.application.routes.draw do
       resource :contacts, only: [ :show, :edit, :create, :destroy ], module: :visits do
         get :search, on: :collection
       end
-      resource :price_paid, only: [ :show, :edit, :update ], module: :visits
+      resource :price_paid, only: [ :show, :edit, :update, :destroy ], module: :visits
     end
 
     resources :contacts

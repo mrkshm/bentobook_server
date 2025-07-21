@@ -22,10 +22,10 @@
         <%= render Visits::SortFormComponent.new(
           url: visits_path,
           fields: {
-            'date' => t('visits.index.sort_options.date'),
-            'restaurant_name' => t('visits.index.sort_options.restaurant'),
-            'rating' => t('visits.index.sort_options.rating'),
-            'created_at' => t('visits.index.sort_options.created_at')
+            'date' => t('common.sort.date'),
+            'restaurant_name' => t('common.sort.restaurant_name'),
+            'rating' => t('common.sort.rating'),
+            'created_at' => t('common.sort.created_at')
           },
           current_order: params[:order_by] || 'date',
           current_direction: params[:order_direction] || 'desc',

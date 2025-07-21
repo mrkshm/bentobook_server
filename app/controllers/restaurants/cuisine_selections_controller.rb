@@ -30,13 +30,13 @@ module Restaurants
 
       respond_to do |format|
         format.html do
-          redirect_to restaurant_path(id: @restaurant.id, locale: current_locale), status: :see_other
+          redirect_to restaurant_path(id: @restaurant.id), status: :see_other
         end
         format.turbo_stream do
           if hotwire_native_app?
             render "restaurants/cuisine_selections/update"
           else
-            redirect_to restaurant_path(id: @restaurant.id, locale: current_locale), status: :see_other
+            redirect_to restaurant_path(id: @restaurant.id), status: :see_other
           end
         end
       end

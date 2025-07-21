@@ -8,7 +8,7 @@
   </div>
 <% else %>
   <%= turbo_frame_tag frame_id do %>
-    <%= link_to edit_visit_rating_path(visit_id: @visit.id, locale: current_locale),
+    <%= link_to edit_visit_rating_path(visit_id: @visit.id),
         class: "flex items-center gap-1 group",
         data: { turbo_frame: helpers.hotwire_native_app? ? "_top" : frame_id } do %>
       <% (1..5).each do |rating_value| %>

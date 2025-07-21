@@ -11,7 +11,7 @@ module Restaurants
     def update
       if @restaurant.update(notes_params)
         respond_to do |format|
-          format.html { redirect_to restaurant_path(id: @restaurant.id, locale: current_locale) }
+          format.html { redirect_to restaurant_path(id: @restaurant.id) }
           format.turbo_stream do
             if hotwire_native_app?
               render "restaurants/notes/update"

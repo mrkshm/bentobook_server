@@ -1,5 +1,5 @@
 <% if interactive %>
-  <%= button_to visit_contacts_path(visit_id: visit.id, contact_id: contact.id, locale: current_locale),
+  <%= button_to visit_contacts_path(visit_id: visit.id, contact_id: contact.id),
       class: "w-full text-left" do %>
     <div class="flex items-center gap-4 p-4 rounded-lg bg-surface-50 hover:bg-surface-100 transition-colors duration-200 group">
       <%= render(AvatarComponent.new(

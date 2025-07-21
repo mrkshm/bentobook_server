@@ -3,7 +3,7 @@
 <%= turbo_frame_tag dom_id(@restaurant, :notes) do %>
   <div class="p-4">
     <%= form_with(model: @restaurant, 
-                  url: restaurant_notes_path(restaurant_id: @restaurant.id, locale: current_locale), 
+                  url: restaurant_notes_path(restaurant_id: @restaurant.id), 
                   data: { turbo_frame: hotwire_native_app? ? "_top" : nil},
                   method: :patch) do |f| %>
       <div class="space-y-4">

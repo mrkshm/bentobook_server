@@ -1,8 +1,8 @@
 <% content_tag_for_options = { class: "p-6 space-y-4" } %>
 <div class="w-full">
 <% if link_to_show %>
-  <%= link_to visit_path(id: visit.id, locale: current_locale),
-    data: {turbo_frame: "_top"}, 
+  <%= link_to visit_path(id: visit.id),
+    data: {turbo_frame: "_top"},
     class: "block rounded-lg bg-surface-50" do %>
     <div class="p-6 space-y-4">
       <%# Header with restaurant name and date %>
