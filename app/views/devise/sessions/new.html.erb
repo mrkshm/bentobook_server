@@ -37,12 +37,19 @@
       </div>
 
       <% if devise_mapping.rememberable? %>
-        <div class="flex items-center">
-          <%= f.check_box :remember_me,
-              class: "h-4 w-4 rounded border-surface-300 text-primary-600 focus:ring-primary-600" %>
-          <%= f.label :remember_me,
-              class: "ml-3 block text-sm text-surface-900" %>
-        </div>
+        <% if hotwire_native_app? %>
+          <%# For the native app experience, we want to always "remember" the user %>
+          <%# to provide a persistent login session. %>
+          <%= f.hidden_field :remember_me, value: '1' %>
+        <% else %>
+          <div class="flex items-center">
+            <%= f.check_box :remember_me,
+                class: "h-4 w-4 rounded border-surface-300 text-primary-600 focus:ring-primary-600",
+                checked: true %>
+            <%= f.label :remember_me,
+                class: "ml-3 block text-sm text-surface-900" %>
+          </div>
+        <% end %>
       <% end %>
 
       <div>
