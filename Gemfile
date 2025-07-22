@@ -107,4 +107,4 @@ end
 
 gem "rack-attack", "~> 6.7"
 
-gem "recaptcha", "~> 5.19"
+gem "recaptcha", "~> 5.20"
