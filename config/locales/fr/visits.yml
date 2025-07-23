@@ -1,5 +1,6 @@
 fr:
   visits:
+    add: "Ajouter une visite"
     danger_zone: "Plus d'options"
     count:
       one: "visité %{count} fois"

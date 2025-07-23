@@ -1,5 +1,6 @@
 en:
   visits:
+    add: "Add a visit"
     danger_zone: "More options"
     count:
       one: "visited %{count} time"

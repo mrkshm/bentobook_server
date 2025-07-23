@@ -52,7 +52,7 @@ class VisitsController < ApplicationController
     def create
       @visit = Current.organization.visits.build(visit_params)
       if @visit.save
-        redirect_to visits_path, notice: I18n.t("notices.visits.created")
+        redirect_to @visit, notice: I18n.t("notices.visits.created")
       else
         render :new, status: :unprocessable_entity
       end
@@ -64,7 +64,7 @@ class VisitsController < ApplicationController
 
     def update
       if @visit.update(visit_params)
-        redirect_to visits_path, notice: I18n.t("notices.visits.updated")
+        redirect_to @visit, notice: I18n.t("notices.visits.updated")
       else
         render :edit, status: :unprocessable_entity
       end
@@ -81,6 +81,14 @@ class VisitsController < ApplicationController
     end
 
     private
+
+    def ensure_valid_restaurant
+      restaurant_id = visit_params[:restaurant_id]
+      if restaurant_id.blank? || !Current.organization.restaurants.exists?(restaurant_id)
+        flash[:alert] = I18n.t("errors.restaurants.not_found")
+        redirect_to restaurants_path
+      end
+    end
 
     def set_visit
       @visit = Current.organization.visits.find(params[:id])
