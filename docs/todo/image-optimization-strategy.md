@@ -40,6 +40,9 @@ amazon:
   public: false # Bucket is private
   asset_host: https://cdn.your-domain.com # Public CDN URL
 ```
+
+**Implementation Note:** See the detailed [CDN Setup Guide](./cdn-for-images.md) for step-by-step instructions on configuring Cloudflare with a private S3 bucket.
+
 *Note on R2 vs. S3:* While Cloudflare R2 offers zero egress fees, sticking with the battle-tested S3 for direct uploads is the prudent choice for now to ensure stability. R2 can be considered a future migration path.
 
 ### 3. Hybrid Image Strategy: "Compress-and-Keep"
