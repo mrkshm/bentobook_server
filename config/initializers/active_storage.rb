@@ -3,8 +3,8 @@ Rails.application.configure do
   config.active_storage.variant_processor = :vips
 
   # Configure caching for all variants
-  config.active_storage.service_urls_expire_in = 1.hour
-  config.active_storage.urls_expire_in = 1.hour
+  config.active_storage.service_urls_expire_in = 1.year
+  config.active_storage.urls_expire_in = 1.year
 
   # Enable variant tracking
   config.active_storage.track_variants = true
@@ -29,7 +29,7 @@ Rails.application.configure do
   config.active_storage.web_image_content_types = %w[image/jpeg image/jpg image/png image/gif image/webp]
 
   # Enable direct uploads (allows JavaScript to create direct upload URLs)
-  config.active_storage.service_urls_expire_in = 1.hour
+  config.active_storage.service_urls_expire_in = 1.year
 
   # Enable streaming downloads (important for large files)
   config.active_storage.resolve_model_to_route = :rails_storage_proxy
@@ -38,7 +38,8 @@ Rails.application.configure do
   config.active_storage.routes_prefix = "/rails/active_storage"
 
   # Force variant URLs to use the same host as the app
-  config.active_storage.resolve_model_to_route = :rails_storage_redirect
+  # Using proxy mode so Cloudflare can cache image bytes served by Rails
+  # config.active_storage.resolve_model_to_route = :rails_storage_redirect
 
   # Enable debug logging in development
   if Rails.env.development?

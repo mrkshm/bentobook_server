@@ -8,6 +8,14 @@ en:
     edit: "Edit"
     filters: "Filters"
     finished: "Done"
+    nav:
+      logout: "Log out"
+      restaurants: "Restaurants"
+      visits: "Visits"
+      contacts: "Contacts"
+      settings: "Profile & Settings"
+      view_notifications: "View Notifications"
+      view_user_menu: "View User Menu"
     photos: "Photos"
     price_level:
       title: "Price Level"

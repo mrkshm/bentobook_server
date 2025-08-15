@@ -7,6 +7,14 @@ fr:
     delete: "Supprimer"
     edit: "Modifier"
     filters: "Filtres"
+    nav:
+      logout: "Se deconnecter"
+      restaurants: "Restaurants"
+      visits: "Visites"
+      contacts: "Contacts"
+      settings: "Profil & Paramètres"
+      view_notifications: "Voir les notifications"
+      view_user_menu: "Voir le menu utilisateur"
     photos: "Photos"
     price_level:
       title: "Prix"

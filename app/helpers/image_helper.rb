@@ -1,40 +1,46 @@
 module ImageHelper
+  include Rails.application.routes.url_helpers
   # Helper to easily access our pre-generated image variants
   def image_variant_url(image, size)
     return nil unless image&.file&.attached?
 
     case size
     when :thumbnail
-      image.file.variant(
+      variant = image.file.variant(
         resize_to_limit: [ 300, nil ],
         format: :webp,
         saver: { quality: 70 }
-      ).url
+      )
+      url_for(variant)
     when :small
-      image.file.variant(
+      variant = image.file.variant(
         resize_to_limit: [ 600, nil ],
         format: :webp,
         saver: { quality: 75 }
-      ).url
+      )
+      url_for(variant)
     when :medium
-      image.file.variant(
+      variant = image.file.variant(
         resize_to_limit: [ 1200, nil ],
         format: :webp,
         saver: { quality: 80 }
-      ).url
+      )
+      url_for(variant)
     when :large
-      image.file.variant(
+      variant = image.file.variant(
         resize_to_limit: [ 2000, nil ],
         format: :webp,
         saver: { quality: 85 }
-      ).url
+      )
+      url_for(variant)
     when :fallback # For browsers without WebP support
-      image.file.variant(
+      variant = image.file.variant(
         resize_to_limit: [ 1200, nil ]
-      ).url
+      )
+      url_for(variant)
     else
       # Return the original if no size matches
-      image.file.url
+      url_for(image.file)
     end
   end
 

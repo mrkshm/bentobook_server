@@ -12,41 +12,39 @@
 
 ## Optimization Strategies
 
-### 1. Caching Headers (Server-Side)
-The foundation of any caching strategy is telling the browser it's safe to store a local copy. We will configure Rails to send aggressive caching headers for all Active Storage assets.
+### 1. Caching via Rails routes (recommended)
+Serve images through Rails Active Storage routes and put Cloudflare in front of the app. Cache `/rails/active_storage/*` aggressively.
 
-```ruby
-# config/initializers/active_storage.rb or in a relevant controller
-# This tells browsers that the content at this URL will never change.
-# It's the most effective caching directive for fingerprinted/immutable assets.
-Rails.application.config.active_storage.service_urls_expire_in = 1.year
-Rails.application.config.action_dispatch.default_headers.merge!(
-  'Cache-Control' => 'public, max-age=31536000, immutable'
-)
-```
+- In `config/initializers/active_storage.rb` (already configured):
+  ```ruby
+  # Use proxy so Rails serves bytes that Cloudflare can cache
+  config.active_storage.resolve_model_to_route = :rails_storage_proxy
+  # Long-lived URL expiries (mostly relevant for direct service URLs)
+  config.active_storage.service_urls_expire_in = 1.year
+  config.active_storage.urls_expire_in = 1.year
+  ```
+- Cache headers for Active Storage responses (already added):
+  ```ruby
+  # config/initializers/active_storage_cache_headers.rb
+  headers["Cache-Control"] = "public, max-age=31536000, immutable"
+  ```
+- In Cloudflare, add a Cache Rule for your app host paths matching `/rails/active_storage/*`:
+  - Cache level: Cache everything
+  - Edge TTL: 1 year (or Respect origin)
+  - Origin cache control: On
+  - Cache key: include query string
+  - Optional: Bypass cache on cookies = Off (unless your app sets auth cookies on these URLs)
 
-### 2. CDN Integration (Cloudflare + Private S3)
-A CDN is the single most impactful change for performance and cost savings. We will use Cloudflare to cache our images at the edge, closer to users.
+### 2. CDN Integration (Cloudflare in front of Rails)
+Put Cloudflare in front of your Rails app (orange-cloud proxy). Keep S3 private; Rails reads from S3, serves the bytes, and Cloudflare caches the route responses on first hit.
 
-**Strategy: Private S3 Bucket**
-To enhance security and control costs, the S3 bucket will be kept **private**. This prevents any direct access and ensures all traffic is served through the CDN.
-
-```yaml
-# config/storage.yml
-amazon:
-  service: S3
-  # ... credentials ...
-  bucket: your-private-bucket-name
-  public: false # Bucket is private
-  asset_host: https://cdn.your-domain.com # Public CDN URL
-```
-
-**Implementation Note:** See the detailed [CDN Setup Guide](./cdn-for-images.md) for step-by-step instructions on configuring Cloudflare with a private S3 bucket.
+- Benefits: simplest path; no S3 origin host header tricks; no public bucket reads; great cache-hit after warmup.
+- See [CDN Setup for Image Optimization](./cdn-for-images.md) for Cloudflare Cache Rules and an alternative S3-origin setup.
 
 *Note on R2 vs. S3:* While Cloudflare R2 offers zero egress fees, sticking with the battle-tested S3 for direct uploads is the prudent choice for now to ensure stability. R2 can be considered a future migration path.
 
-### 3. Hybrid Image Strategy: "Compress-and-Keep"
-To provide both a fast, efficient app and a true, archival-quality diary, we will adopt a two-file strategy for every photo.
+### 3. Optional (later): "Display + Original" hybrid
+Keep this as a future enhancement for fidelity/monetization. For now, continue with a single attachment per image.
 
 #### 3.1. The "Display Version"
 This is an optimized image used for all in-app rendering. It ensures the app is fast and bandwidth costs are low.
@@ -70,7 +68,7 @@ This two-file system creates a clear and valuable premium feature set.
     -   A bulk export tool to download all original photos from a visit or date range.
 
 #### 3.4. Model Implementation
-This requires two attachments on the `Image` model:
+If/when adopted, this requires two attachments on the `Image` model:
 
 ```ruby
 class Image < ApplicationRecord
@@ -99,13 +97,13 @@ All variants will be generated from the `display_file` to ensure they are fast a
 
 ## Implementation Plan
 
-### Phase 1: Foundational Wins (3-5 days)
-*Goal: Implement the core infrastructure for the hybrid strategy.*
-1.  **Set up Cloudflare CDN** with a private S3 bucket.
-2.  **Add Caching Headers** via a Rails initializer.
-3.  **Update `Image` Model:** Add the `display_file` and `original_file` attachments.
-4.  **Implement Background Job:** Create a job that takes an `original_file`, generates the `display_file`, and attaches both.
-5.  **Update Upload Logic:** The `image-upload` controller will now trigger this new background job.
+### Phase 1: Foundational Wins (1–2 days)
+*Goal: Ship the CDN with minimal changes.*
+1.  **Put your app behind Cloudflare** (orange-cloud the apex/host).
+2.  **Add Cloudflare Cache Rule**: cache `/rails/active_storage/*` as above.
+3.  **Ensure route URLs**: helpers/components use `url_for`/`rails_blob_url` for variants (done in `ImageHelper`).
+4.  **Prewarm common variants**: `RAILS_ENV=production bin/rails images:generate_variants`.
+5.  **Validate caching**: check Cloudflare cache hit ratio and AWS egress; tune TTLs if needed.
 
 ### Phase 2: Performance & UX (3-5 days)
 *Goal: Optimize the front-end experience.*
@@ -116,5 +114,6 @@ All variants will be generated from the `display_file` to ensure they are fast a
 ### Phase 3: Premium Features (2-3 days)
 *Goal: Build out the monetization hooks.*
 1.  Implement user subscriptions/permissions.
-2.  Add the "Download Original" feature for premium users.
-3.  Build the bulk export functionality.
+2.  Introduce optional "Display + Original" dual attachments with a background job (if/when needed).
+3.  Add the "Download Original" feature for premium users.
+4.  Build the bulk export functionality.

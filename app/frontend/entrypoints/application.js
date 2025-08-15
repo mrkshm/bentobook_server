@@ -5,6 +5,7 @@ import "@hotwired/turbo-rails"
 console.log("✅ Turbo Rails loaded")
 
 import "~/controllers"
+import '@tailwindplus/elements';
 console.log("✅ Controllers import attempted")
 
 // Turbo stream actions
