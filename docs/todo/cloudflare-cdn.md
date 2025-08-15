@@ -40,10 +40,10 @@ Now, configure Cloudflare to handle your domain and cache the images.
     -   Select **Full (strict)**. This ensures a secure connection from the user all the way to your origin server.
 
 2.  **Enable Performance & Security Settings**:
-    -   Navigate to **Speed** > **Optimization**.
-    -   Ensure **Brotli** is enabled.
     -   Navigate to **Network**.
     -   Ensure **HTTP/2** and **HTTP/3** are enabled.
+    -   Enable **0‑RTT Connection Resumption** (recommended; applies to GET/HEAD/OPTIONS and adds the `Early-Data: 1` header).
+    -   Note: **Brotli** compression is enabled by default in Cloudflare; the dashboard toggle was removed.
 
 3.  **Create a Cache Rule for Active Storage**:
     -   Navigate to **Caching** > **Cache Rules**.

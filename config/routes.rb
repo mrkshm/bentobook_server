@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   end
 
   # API routes
-  
+
 
   # Public area (SEO, shareable)
   scope "(:locale)", locale: /#{I18n.available_locales.join('|')}/ do
@@ -14,7 +14,7 @@ Rails.application.routes.draw do
     get "/pages/privacy", to: "pages#privacy", as: :pages_privacy
 
     # Devise routes for session management
-    devise_for :users, only: [:sessions, :confirmations], controllers: {
+    devise_for :users, only: [ :sessions, :confirmations ], controllers: {
       sessions: "users/sessions",
       confirmations: "users/confirmations"
     }
@@ -23,7 +23,7 @@ Rails.application.routes.draw do
   # Authenticated area - no locale segment
   authenticate :user do
     # Devise routes without locale
-    devise_for :users, skip: [:sessions, :confirmations], controllers: {
+    devise_for :users, skip: [ :sessions, :confirmations ], controllers: {
       # registrations: "users/registrations",
       # passwords: "users/passwords"
     }
@@ -46,7 +46,7 @@ Rails.application.routes.draw do
       resource :tags, only: [ :edit, :update ], module: :restaurants
       resource :rating, only: [ :edit, :update ], module: :restaurants
       resource :price_level, only: [ :edit, :update ], module: :restaurants
-      resource :business_status, only: [:edit, :update], controller: 'restaurants/business_status'
+      resource :business_status, only: [ :edit, :update ], controller: "restaurants/business_status"
     end
 
     resources :visits do

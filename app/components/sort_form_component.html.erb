@@ -33,21 +33,17 @@
     </div>
   </div>
 
-  <%# Direction toggle buttons %>
+  <%# Direction toggle button %>
   <div class="flex align-center">
-    <button type="submit" 
-            name="order_direction" 
-            value="asc" 
-            class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'asc' ? 'text-surface-900' : 'text-surface-500' %>"
-            data-action="click->restaurant-sort#sortDirectionChanged">
-      <%= heroicon "arrow-up", options: { class: "w-5 h-5" } %>
-    </button>
-    <button type="submit" 
-            name="order_direction" 
-            value="desc" 
-            class="p-1 hover:text-surface-700 focus:outline-none <%= @current_direction == 'desc' ? 'text-surface-900' : 'text-surface-500' %>"
-            data-action="click->restaurant-sort#sortDirectionChanged">
-      <%= heroicon "arrow-down", options: { class: "w-5 h-5" } %>
+    <% next_direction = @current_direction == 'asc' ? 'desc' : 'asc' %>
+    <button type="submit"
+            name="order_direction"
+            value="<%= next_direction %>"
+            class="p-1 hover:text-surface-700 focus:outline-none text-surface-900"
+            data-action="click->restaurant-sort#sortDirectionChanged"
+            aria-label="Toggle sort direction (currently <%= @current_direction %>)"
+            title="Toggle sort direction (currently <%= @current_direction %>)">
+      <%= heroicon(@current_direction == 'asc' ? 'arrow-up' : 'arrow-down', options: { class: "w-5 h-5" }) %>
     </button>
   </div>
 <% end %>

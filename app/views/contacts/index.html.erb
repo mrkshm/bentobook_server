@@ -1,15 +1,25 @@
 <%= render "shared/header", title: t('contacts.index.title') %>
 <div class="container mx-auto p-4">
   <div class="flex w-full justify-between items-center mb-6">
-    <h1 class="text-2xl font-semibold text-surface-900"><%= t("contacts.index.title") %></h1>
     <%= link_to new_contact_path, 
-          class: "inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600" do %>
+          class: "md:inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 hidden" do %>
       <%= heroicon "plus", options: { class: "w-5 h-5 mr-2" } %>
       <%= t("add_contact") %>
     <% end %>
   </div>
 
-  <div class="mb-4 flex flex-col md:flex-row justify-between items-end gap-4">
+
+  <%# Add the FAB for mobile %>
+  <div class="md:hidden fixed bottom-6 right-6 z-50">
+    <%= link_to new_contact_path, 
+      class: "flex items-center justify-center w-14 h-14 rounded-full bg-primary-600 text-surface-50 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors",
+      aria: { label: t('contacts.create_contact_button') },
+      data: { turbo_frame: "_top" } do %>
+      <%= heroicon "plus", options: { class: "h-6 w-6" } %>
+    <% end %>
+  </div>
+
+  <div class="mb-4 flex flex-col md:flex-row justify-between items-start gap-4">
     <%= render(SortFormComponent.new(
       url: contacts_path,
       sort_options: {

@@ -32,9 +32,16 @@ export default class extends Controller {
   }
 
   sortDirectionChanged(event) {
-    console.log("🔄 Sort direction changed to:", event.target.value)
-    
+    const nextDirection = event.target?.value
+    console.log("🔄 Sort direction changed to:", nextDirection)
+
+    // Ensure hidden field reflects the chosen direction so programmatic submits include it
+    const hidden = this.element.querySelector('input[name="order_direction"]')
+    if (hidden && nextDirection) hidden.value = nextDirection
+
     if (this.hasSortFieldTarget && this.sortFieldTarget.value === "distance") {
+      // Avoid double-submitting; we'll submit programmatically after possibly adding location
+      event.preventDefault()
       this.handleDistanceSorting()
     }
     // For non-distance sorting, let the normal form submission happen

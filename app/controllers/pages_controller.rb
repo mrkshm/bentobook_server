@@ -6,7 +6,7 @@ class PagesController < ApplicationController
       redirect_to home_dashboard_path
       return
     end
-    
+
     # The variant will be automatically set by ApplicationController
     respond_to do |format|
       format.html

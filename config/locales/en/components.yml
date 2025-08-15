@@ -1,10 +1,10 @@
 en:
   components:
     shared_restaurant_card_component:
-      already_in_your_restaurants: "This restaurant is already in your collection"
-      add_to_my_restaurants: "Add to My Restaurants"
+      already_in_your_restaurants: This restaurant is already in your collection
+      add_to_my_restaurants: Add to My Restaurants
     shared_list_actions_component:
-      shared_by: "Shared by %{owner}"
-      import_all: "Import All"
-      confirm_import_all: "Add all restaurants to your collection?"
-      confirm_remove: "Remove this list from your shared lists? This will remove it from your lists but not delete any of your restaurants."
+      shared_by: Shared by %{owner}
+      import_all: Import All
+      confirm_import_all: Add all restaurants to your collection?
+      confirm_remove: Remove this list from your shared lists? This will remove it from your lists but not delete any of your restaurants.
