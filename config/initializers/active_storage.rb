@@ -3,8 +3,11 @@ Rails.application.configure do
   config.active_storage.variant_processor = :vips
 
   # Configure caching for all variants
-  config.active_storage.service_urls_expire_in = 1.year
-  config.active_storage.urls_expire_in = 1.year
+  # IMPORTANT: AWS S3 presigned URLs cannot exceed 7 days
+  # Use a short expiry for direct uploads to S3
+  config.active_storage.service_urls_expire_in = 5.minutes
+  # For general service URLs (redirect style), stay within 7 days
+  config.active_storage.urls_expire_in = 7.days
 
   # Enable variant tracking
   config.active_storage.track_variants = true
@@ -29,7 +32,7 @@ Rails.application.configure do
   config.active_storage.web_image_content_types = %w[image/jpeg image/jpg image/png image/gif image/webp]
 
   # Enable direct uploads (allows JavaScript to create direct upload URLs)
-  config.active_storage.service_urls_expire_in = 1.year
+  # Note: expiration configured above; do not override here
 
   # Enable streaming downloads (important for large files)
   config.active_storage.resolve_model_to_route = :rails_storage_proxy

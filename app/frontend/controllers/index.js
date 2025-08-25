@@ -1,8 +1,10 @@
 // Stimulus controllers auto-registration
 console.log("🔧 Loading controllers/index.js...")
 import { Application } from "@hotwired/stimulus"
+import Lightbox from '@stimulus-components/lightbox'
 
 const application = Application.start()
+application.register('lightbox', Lightbox)
 
 // Configure Stimulus development experience
 application.debug = false
@@ -25,6 +27,7 @@ for (const path in controllerModules) {
 }
 
 console.log("🎯 All Stimulus controllers loaded via Vite!")
+import "lightgallery/css/lightgallery.css"
 
 // Listen for Turbo frame loads to re-scan for controllers
 document.addEventListener('turbo:frame-load', () => {
